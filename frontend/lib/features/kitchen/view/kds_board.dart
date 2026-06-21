@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/kitchen/bloc/kitchen_bloc.dart';
 import 'package:retail_os_frontend/features/kitchen/bloc/kitchen_event.dart';
@@ -75,7 +76,7 @@ class _KdsBoardState extends State<KdsBoard> {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            isConnected ? Icons.wifi : Icons.wifi_off,
+                            isConnected ? PhosphorIconsRegular.wifiHigh : PhosphorIconsRegular.wifiSlash,
                             color: isConnected ? AppColors.success : AppColors.danger,
                             size: 20,
                           ),
@@ -83,7 +84,7 @@ class _KdsBoardState extends State<KdsBoard> {
                         const SizedBox(width: 16),
                         IconButton(
                           icon: Icon(
-                            Icons.refresh_rounded, 
+                            PhosphorIconsRegular.arrowsClockwise, 
                             color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                           ),
                           onPressed: () {

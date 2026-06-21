@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/features/analytics/bloc/analytics_bloc.dart';
@@ -45,7 +46,7 @@ class _AnalyticsDashboardView extends StatelessWidget {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
+            icon: Icon(PhosphorIconsRegular.arrowsClockwise),
             tooltip: 'Обновить',
             onPressed: () {
               context.read<AnalyticsBloc>().add(LoadDashboardToday());
@@ -89,7 +90,7 @@ class _AnalyticsDashboardView extends StatelessWidget {
                           child: DashboardMetricCard(
                             title: 'Выручка за сегодня',
                             value: '${data.totalRevenue.toStringAsFixed(0)} ₸',
-                            icon: Icons.account_balance_wallet_rounded,
+                            icon: PhosphorIconsRegular.wallet,
                             gradientColors: const [AppColors.brandPrimary, AppColors.brandSecondary],
                           ),
                         ),
@@ -98,7 +99,7 @@ class _AnalyticsDashboardView extends StatelessWidget {
                           child: DashboardMetricCard(
                             title: 'Количество чеков',
                             value: '${data.totalOrders}',
-                            icon: Icons.receipt_long_rounded,
+                            icon: PhosphorIconsRegular.receipt,
                             gradientColors: const [Color(0xFF8B5CF6), Color(0xFFC084FC)], // Beautiful vibrant purple
                           ),
                         ),

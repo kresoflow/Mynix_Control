@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
@@ -18,7 +19,7 @@ class MobileLayout extends StatelessWidget {
         title: Text('Mynix Control', style: AppTextStyles.h2),
         actions: [
           IconButton(
-            icon: const Icon(Icons.wb_sunny_outlined),
+            icon: Icon(PhosphorIconsRegular.sun),
             onPressed: () => context.read<ThemeBloc>().add(ThemeEvent.toggleTheme),
           ),
         ],
@@ -34,14 +35,14 @@ class MobileLayout extends StatelessWidget {
                 style: AppTextStyles.h1.copyWith(color: const Color(0xFF0E1016)),
               ),
             ),
-            _drawerTile(context, Icons.point_of_sale, 'Касса', '/pos'),
-            _drawerTile(context, Icons.soup_kitchen, 'Кухня', '/kitchen'),
-            _drawerTile(context, Icons.menu_book, 'Каталог', '/catalog'),
-            _drawerTile(context, Icons.warehouse, 'Склад', '/warehouse'),
-            _drawerTile(context, Icons.settings, 'Настройки', '/settings'),
+            _drawerTile(context, PhosphorIconsRegular.monitor, 'Касса', '/pos'),
+            _drawerTile(context, PhosphorIconsRegular.cookingPot, 'Кухня', '/kitchen'),
+            _drawerTile(context, PhosphorIconsRegular.bookOpen, 'Каталог', '/catalog'),
+            _drawerTile(context, PhosphorIconsRegular.warehouse, 'Склад', '/warehouse'),
+            _drawerTile(context, PhosphorIconsRegular.gear, 'Настройки', '/settings'),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.logout, color: AppColors.danger),
+              leading: Icon(PhosphorIconsRegular.signOut, color: AppColors.danger),
               title: Text('Выйти', style: AppTextStyles.body.copyWith(color: AppColors.danger)),
               onTap: () => context.read<AuthBloc>().add(LoggedOut()),
             ),

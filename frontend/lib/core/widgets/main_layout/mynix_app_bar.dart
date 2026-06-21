@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
@@ -88,7 +89,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.account_balance_wallet_outlined,
+                          PhosphorIconsRegular.wallet,
                           size: 16,
                           color: isOpen ? AppColors.brandTertiary : AppColors.danger,
                         ),
@@ -111,7 +112,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
           const SizedBox(width: 12),
 
           IconBtn(
-            icon: Icons.wb_sunny_outlined,
+            icon: PhosphorIconsRegular.sun,
             tooltip: 'Переключить тему',
             onPressed: () => context.read<ThemeBloc>().add(ThemeEvent.toggleTheme),
           ),
