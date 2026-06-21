@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:retail_os_frontend/core/network/api_client.dart';
+import 'package:retail_os_frontend/core/router/app_router.dart';
+import 'package:retail_os_frontend/core/theme/app_theme.dart';
+import 'package:retail_os_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:retail_os_frontend/features/auth/bloc/auth_event.dart';
+import 'package:retail_os_frontend/features/auth/bloc/auth_state.dart';
+import 'package:retail_os_frontend/features/auth/repository/auth_repository.dart';
+import 'package:retail_os_frontend/features/pos/repository/menu_repository.dart';
+import 'package:retail_os_frontend/features/pos/repository/order_repository.dart';
+import 'package:retail_os_frontend/core/theme/theme_bloc.dart';
+import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
+import 'package:retail_os_frontend/features/pos/models/cart_item.dart';
+import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:retail_os_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:retail_os_frontend/features/pos/repository/shift_repository.dart';
+import 'package:retail_os_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:retail_os_frontend/features/pos/bloc/shift_event.dart';
+import 'package:retail_os_frontend/features/kitchen/repository/kitchen_repository.dart';
+import 'package:retail_os_frontend/features/kitchen/bloc/kitchen_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
+
+import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
+
+import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Hive
+  await Hive.initFlutter();
+  Hive.registerAdapter(MenuItemAdapter());
+  Hive.registerAdapter(CartItemAdapter());
+
+  runApp(const RetailOSApp());
+}
+
+class RetailOSApp extends StatefulWidget {
+  const RetailOSApp({super.key});
+
+  @override
+  State<RetailOSApp> createState() => _RetailOSAppState();
+}
+
+class _RetailOSAppState extends State<RetailOSApp> {
+  late final AuthRepository _authRepository;
+  late final MenuRepository _menuRepository;
+  late final OrderRepository _orderRepository;
+  late final KitchenRepository _kitchenRepository;
+  late final ShiftRepository _shiftRepository;
+  late final InventoryRepository _inventoryRepository;
+  late final AuthBloc _authBloc;
+  late final ThemeBloc _themeBloc;
+  late final MenuBloc _menuBloc;
+  late final CartBloc _cartBloc;
+  late final KitchenBloc _kitchenBloc;
+  late final ShiftBloc _shiftBloc;
+  late final IngredientBloc _ingredientBloc;
+  late final RecipeBloc _recipeBloc;
+  late final CategoryBloc _categoryBloc;
+  late final AppRouter _appRouter;
+
+  @override
+  void initState() {
+    super.initState();
+    _authRepository = AuthRepository(apiClient.dio);
+    _menuRepository = MenuRepository(apiClient.dio);
+    _orderRepository = OrderRepository(apiClient.dio);
+    _kitchenRepository = KitchenRepository();
+    _shiftRepository = ShiftRepository(apiClient.dio);
+    _inventoryRepository = InventoryRepository(apiClient.dio);
+    _authBloc = AuthBloc(_authRepository)..add(AppStarted());
+    _themeBloc = ThemeBloc();
+    _menuBloc = MenuBloc(_menuRepository);
+    _cartBloc = CartBloc(_orderRepository);
+    _kitchenBloc = KitchenBloc(_kitchenRepository);
+    _shiftBloc = ShiftBloc(_shiftRepository);
+    _ingredientBloc = IngredientBloc(_inventoryRepository);
+    _recipeBloc = RecipeBloc(_inventoryRepository);
+    _categoryBloc = CategoryBloc(_inventoryRepository);
+    _appRouter = AppRouter(_authBloc);
+  }
+
+  @override
+  void dispose() {
+    _authBloc.close();
+    _themeBloc.close();
+    _menuBloc.close();
+    _cartBloc.close();
+    _kitchenBloc.close();
+    _shiftBloc.close();
+    _ingredientBloc.close();
+    _recipeBloc.close();
+    _categoryBloc.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider.value(value: _authRepository),
+        RepositoryProvider.value(value: _menuRepository),
+        RepositoryProvider.value(value: _orderRepository),
+        RepositoryProvider.value(value: _kitchenRepository),
+        RepositoryProvider.value(value: _shiftRepository),
+        RepositoryProvider.value(value: _inventoryRepository),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: _authBloc),
+          BlocProvider.value(value: _themeBloc),
+          BlocProvider.value(value: _menuBloc),
+          BlocProvider.value(value: _cartBloc),
+          BlocProvider.value(value: _kitchenBloc),
+          BlocProvider.value(value: _shiftBloc),
+          BlocProvider.value(value: _ingredientBloc),
+          BlocProvider.value(value: _recipeBloc),
+          BlocProvider.value(value: _categoryBloc),
+        ],
+        child: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthAuthenticated) {
+              context.read<MenuBloc>().add(LoadMenu());
+              context.read<ShiftBloc>().add(CheckCurrentShift());
+              context.read<IngredientBloc>().add(LoadIngredients());
+              context.read<CategoryBloc>().add(LoadCategories());
+            }
+          },
+          child: BlocBuilder<ThemeBloc, ThemeMode>(
+            builder: (context, themeMode) {
+            return MaterialApp.router(
+              title: 'Mynix Control',
+              debugShowCheckedModeBanner: false,
+              themeMode: themeMode,
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+            routerConfig: _appRouter.router,
+          );
+        },
+      ),
+        ),
+      ),
+    );
+  }
+}

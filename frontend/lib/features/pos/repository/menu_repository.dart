@@ -1,0 +1,122 @@
+import 'package:dio/dio.dart';
+import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
+
+class MenuRepository {
+  final Dio _dio;
+
+  MenuRepository(this._dio);
+
+  Future<List<MenuItem>> getMenuItems() async {
+    try {
+      final response = await _dio.get('/menu/');
+      final data = response.data as List;
+      
+      return data.map((json) {
+        String fullName = json['name'] as String;
+        final type = json['type'] as String? ?? 'dish';
+
+        if (json['attributes'] != null) {
+          final attrs = json['attributes'] as Map<String, dynamic>;
+          final attrList = attrs.values.where((v) => v != null && v.toString().isNotEmpty).join(' • ');
+          if (attrList.isNotEmpty) {
+            fullName = '$fullName|ATTR|$attrList';
+          }
+        }
+        fullName = '$fullName|TYPE|$type';
+
+        return MenuItem(
+          id: json['id'] as int,
+          name: fullName,
+          shortName: json['short_name'] as String?,
+          tags: (json['tags'] as List?)?.map((e) => e.toString()).toList(),
+          price: (json['price'] as num).toDouble(),
+          categoryId: json['category_id']?.toString() ?? 'uncategorized',
+          categoryName: json['category_name'] as String?,
+        );
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to load menu: ${e.toString()}');
+    }
+  }
+
+  Future<void> createMenuItem({
+    required String name,
+    required double price,
+    required String category,
+    int sortOrder = 0,
+  }) async {
+    try {
+      await _dio.post('/menu/', data: {
+        'name': name,
+        'price': price,
+        'category_id': int.tryParse(category) ?? 0,
+        'is_available': true,
+        'sort_order': sortOrder,
+      });
+    } catch (e) {
+      throw Exception('Failed to create menu item: ${e.toString()}');
+    }
+  }
+
+  Future<void> createRetailProduct({
+    required String name,
+    required int categoryId,
+    required String unit,
+    required double purchasePrice,
+    required double sellingPrice,
+    Map<String, dynamic>? attributes,
+    double initialStock = 0.0,
+    int sortOrder = 0,
+  }) async {
+    try {
+      await _dio.post('/retail-product/', data: {
+        'name': name,
+        'category_id': categoryId,
+        'unit': unit,
+        'purchase_price': purchasePrice,
+        'selling_price': sellingPrice,
+        if (attributes != null) 'attributes': attributes,
+        'initial_stock': initialStock,
+        'sort_order': sortOrder,
+      });
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to create retail product');
+      }
+      throw Exception('Failed to create retail product: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteMenuItem(int id) async {
+    try {
+      await _dio.delete('/menu/$id');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to delete menu item');
+      }
+      throw Exception('Failed to delete menu item: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateMenuItem(int id, Map<String, dynamic> data) async {
+    try {
+      await _dio.put('/menu/$id', data: data);
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to update menu item');
+      }
+      throw Exception('Failed to update menu item: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateRetailProduct(int id, Map<String, dynamic> data) async {
+    try {
+      await _dio.put('/retail-product/$id', data: data);
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to update retail product');
+      }
+      throw Exception('Failed to update retail product: ${e.toString()}');
+    }
+  }
+}
