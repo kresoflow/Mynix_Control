@@ -10,10 +10,22 @@ import 'package:retail_os_frontend/features/auth/bloc/auth_event.dart';
 
 class MobileLayout extends StatelessWidget {
   final Widget child;
-  const MobileLayout({super.key, required this.child});
+  final String location;
+  const MobileLayout({super.key, required this.child, required this.location});
+
+  int _getSelectedIndex(String loc) {
+    if (loc.startsWith('/kitchen')) return 1;
+    if (loc.startsWith('/catalog')) return 2;
+    if (loc.startsWith('/warehouse')) return 3;
+    if (loc.startsWith('/analytics')) return 4;
+    if (loc.startsWith('/settings')) return 5;
+    return 0;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = _getSelectedIndex(location);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Mynix Control', style: AppTextStyles.h2),
@@ -29,23 +41,18 @@ class MobileLayout extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(gradient: AppColors.brandGradient),
+              decoration: BoxDecoration(gradient: AppColors.brandGradient),
               child: Text(
                 'Mynix Control',
                 style: AppTextStyles.h1.copyWith(color: const Color(0xFF0E1016)),
               ),
             ),
-            _drawerTile(context, PhosphorIconsRegular.monitor, 'Касса', '/pos'),
-            _drawerTile(context, PhosphorIconsRegular.cookingPot, 'Кухня', '/kitchen'),
-            _drawerTile(context, PhosphorIconsRegular.bookOpen, 'Каталог', '/catalog'),
-            _drawerTile(context, PhosphorIconsRegular.warehouse, 'Склад', '/warehouse'),
-            _drawerTile(context, PhosphorIconsRegular.gear, 'Настройки', '/settings'),
-            const Divider(),
-            ListTile(
-              leading: Icon(PhosphorIconsRegular.signOut, color: AppColors.danger),
-              title: Text('Выйти', style: AppTextStyles.body.copyWith(color: AppColors.danger)),
-              onTap: () => context.read<AuthBloc>().add(LoggedOut()),
-            ),
+            _drawerTile(context, PhosphorIconsRegular.monitor, 'Касса', '/pos', selectedIndex == 0),
+            _drawerTile(context, PhosphorIconsRegular.cookingPot, 'Кухня', '/kitchen', selectedIndex == 1),
+            _drawerTile(context, PhosphorIconsRegular.bookOpen, 'Каталог', '/catalog', selectedIndex == 2),
+            _drawerTile(context, PhosphorIconsRegular.warehouse, 'Склад', '/warehouse', selectedIndex == 3),
+            _drawerTile(context, PhosphorIconsRegular.chartLineUp, 'Аналитика', '/analytics', selectedIndex == 4),
+            _drawerTile(context, PhosphorIconsRegular.gear, 'Настройки', '/settings', selectedIndex == 5),
           ],
         ),
       ),
@@ -53,13 +60,15 @@ class MobileLayout extends StatelessWidget {
     );
   }
 
-  Widget _drawerTile(BuildContext context, IconData icon, String label, String route) {
+  Widget _drawerTile(BuildContext context, IconData icon, String label, String route, bool isSelected) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.darkSubtext),
-      title: Text(label, style: AppTextStyles.body),
+      selected: isSelected,
+      leading: Icon(icon, color: isSelected ? AppColors.brandPrimary : AppColors.darkSubtext),
+      title: Text(label, style: AppTextStyles.body.copyWith(
+        color: isSelected ? AppColors.brandPrimary : null,
+      )),
       onTap: () {
-        final t = DateTime.now().millisecondsSinceEpoch;
-        context.go('$route?t=$t');
+        context.go(route);
         Navigator.pop(context);
       },
     );

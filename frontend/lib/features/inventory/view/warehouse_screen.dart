@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:retail_os_frontend/features/inventory/view/receive_retail_screen.dart';
 import 'package:retail_os_frontend/features/inventory/view/widgets/retail_product_modal.dart';
 import 'package:retail_os_frontend/features/inventory/view/inventory_matrix_screen.dart';
@@ -45,32 +46,32 @@ class _WarehouseScreenState extends State<WarehouseScreen>
                   controller: _tabController,
                   isScrollable: true,
                   tabs: const [
-                    Tab(icon: Icon(Icons.grid_on), text: 'Матрица (Excel)'),
-                    Tab(icon: Icon(Icons.inventory), text: 'Остатки'),
-                    Tab(icon: Icon(Icons.local_shipping), text: 'Приход'),
+                    Tab(icon: Icon(PhosphorIconsRegular.gridFour), text: 'Матрица (Excel)'),
+                    Tab(icon: Icon(PhosphorIconsRegular.package), text: 'Остатки'),
+                    Tab(icon: Icon(PhosphorIconsRegular.truck), text: 'Приход'),
                     Tab(
-                      icon: Icon(Icons.remove_shopping_cart),
+                      icon: Icon(PhosphorIconsRegular.shoppingCart),
                       text: 'Списания',
                     ),
-                    Tab(icon: Icon(Icons.fact_check), text: 'Инвентаризация'),
+                    Tab(icon: Icon(PhosphorIconsRegular.clipboardText), text: 'Инвентаризация'),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
               OutlinedButton.icon(
-                icon: const Icon(Icons.add_box, size: 18),
+                icon: const Icon(PhosphorIconsRegular.plusSquare, size: 18),
                 label: const Text('Категория'),
                 onPressed: () => AddCategoryDialog.show(context),
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
-                icon: const Icon(Icons.kitchen, size: 18),
+                icon: const Icon(PhosphorIconsRegular.cookingPot, size: 18),
                 label: const Text('Сырье'),
                 onPressed: () => AddIngredientDialog.show(context),
               ),
               const SizedBox(width: 8),
               ElevatedButton.icon(
-                icon: const Icon(Icons.storefront, size: 18),
+                icon: const Icon(PhosphorIconsRegular.storefront, size: 18),
                 label: const Text('Витрина'),
                 onPressed: () => showDialog(
                   context: context,

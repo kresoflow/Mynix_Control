@@ -4,6 +4,7 @@ import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'dialogs/add_ingredient_to_recipe_dialog.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class RecipeDetailsPanel extends StatelessWidget {
   final int selectedMenuItemId;
@@ -36,7 +37,7 @@ class RecipeDetailsPanel extends StatelessWidget {
                                 context, selectedMenuItemId, ingState.ingredients);
                           }
                         },
-                        icon: const Icon(Icons.add),
+                        icon: const Icon(PhosphorIconsRegular.plus),
                         label: const Text('Добавить'),
                       );
                     },
@@ -68,7 +69,7 @@ class RecipeDetailsPanel extends StatelessWidget {
                             title: Text(recipe['ingredient_name'] ?? 'Unknown', style: const TextStyle(fontSize: 16)),
                             subtitle: Text('Расход: ${recipe['quantity_required']} ед.'),
                             trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.grey),
+                              icon: const Icon(PhosphorIconsRegular.trash, color: Colors.grey),
                               hoverColor: Colors.red.withValues(alpha: 0.1),
                               onPressed: () {
                                 context.read<RecipeBloc>().add(

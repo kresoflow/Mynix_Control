@@ -3,7 +3,7 @@ import 'app_colors.dart';
 import 'app_text_styles.dart';
 
 ThemeData getLightTheme() {
-  const colorScheme = ColorScheme(
+  final colorScheme = ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.brandPrimary,
     onPrimary: Colors.white,
@@ -52,14 +52,14 @@ ThemeData getLightTheme() {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.lightBorder, width: 1),
+        side: BorderSide(color: AppColors.lightBorder, width: 1),
       ),
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       shadowColor: Colors.black12,
     ),
 
-    dividerTheme: const DividerThemeData(
+    dividerTheme: DividerThemeData(
       color: AppColors.lightBorder,
       thickness: 1,
       space: 1,
@@ -71,19 +71,19 @@ ThemeData getLightTheme() {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.lightBorder),
+        borderSide: BorderSide(color: AppColors.lightBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.lightBorder),
+        borderSide: BorderSide(color: AppColors.lightBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.brandPrimary, width: 1.5),
+        borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.danger),
+        borderSide: BorderSide(color: AppColors.danger),
       ),
       labelStyle: AppTextStyles.caption.copyWith(color: AppColors.lightSubtext),
       prefixIconColor: AppColors.lightSubtext,
@@ -101,7 +101,7 @@ ThemeData getLightTheme() {
       ),
     ),
 
-    navigationRailTheme: const NavigationRailThemeData(
+    navigationRailTheme: NavigationRailThemeData(
       backgroundColor: AppColors.lightSurface,
       selectedIconTheme: IconThemeData(color: AppColors.brandPrimary, size: 24),
       unselectedIconTheme: IconThemeData(color: AppColors.lightSubtext, size: 24),
@@ -114,7 +114,7 @@ ThemeData getLightTheme() {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: const BorderSide(color: AppColors.lightBorder),
+        side: BorderSide(color: AppColors.lightBorder),
       ),
       titleTextStyle: AppTextStyles.h2.copyWith(color: AppColors.lightText),
       contentTextStyle: AppTextStyles.body.copyWith(color: AppColors.lightSubtext),
@@ -126,7 +126,7 @@ ThemeData getLightTheme() {
         return Colors.transparent;
       }),
       checkColor: WidgetStateProperty.all(Colors.white),
-      side: const BorderSide(color: AppColors.lightBorder, width: 1.5),
+      side: BorderSide(color: AppColors.lightBorder, width: 1.5),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),
   );

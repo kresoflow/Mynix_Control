@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:retail_os_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class IngredientTab extends StatelessWidget {
   const IngredientTab({super.key});
@@ -47,7 +48,7 @@ class IngredientTab extends StatelessWidget {
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                           leading: Icon(
-                            Icons.kitchen,
+                            PhosphorIconsRegular.cookingPot,
                             color: isLowStock ? Colors.red : Colors.grey,
                           ),
                           title: Text(item.name, style: const TextStyle(fontSize: 16)),
@@ -60,7 +61,7 @@ class IngredientTab extends StatelessWidget {
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
                               ),
                               PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                                icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
                                 onSelected: (val) {
                                   if (val == 'edit') {
                                     showAddIngredientDialog(context, itemToEdit: item);

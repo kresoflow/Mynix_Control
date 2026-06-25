@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class PosBreadcrumbBar extends StatelessWidget {
   final List<dynamic> history;
@@ -33,7 +34,7 @@ class PosBreadcrumbBar extends StatelessWidget {
         children: [
           if (onBack != null)
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_rounded, size: 16),
+              icon: const Icon(PhosphorIconsRegular.caretLeft, size: 16),
               color: AppColors.darkSubtext,
               onPressed: onBack,
               tooltip: 'Назад',
@@ -57,7 +58,7 @@ class PosBreadcrumbBar extends StatelessWidget {
                   for (int i = 0; i < history.length; i++) ...[
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Icon(Icons.chevron_right_rounded,
+                      child: Icon(PhosphorIconsRegular.caretRight,
                           size: 16, color: AppColors.darkSubtext),
                     ),
                     GestureDetector(

@@ -3,6 +3,7 @@ import 'package:retail_os_frontend/features/menu/view/widgets/catalog/catalog_br
 import 'package:retail_os_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:retail_os_frontend/features/menu/view/widgets/catalog/ingredient_tab.dart';
 import 'package:retail_os_frontend/features/menu/view/widgets/catalog/recipe_tab.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
@@ -39,11 +40,11 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                   controller: _tabController,
                   isScrollable: true,
                   tabs: const [
-                    Tab(icon: Icon(Icons.category), text: 'Категории'),
-                    Tab(icon: Icon(Icons.fastfood), text: 'Блюда'),
-                    Tab(icon: Icon(Icons.storefront), text: 'Витрина'),
-                    Tab(icon: Icon(Icons.kitchen), text: 'Сырье'),
-                    Tab(icon: Icon(Icons.receipt_long), text: 'Техкарты'),
+                    Tab(icon: Icon(PhosphorIconsRegular.squaresFour), text: 'Категории'),
+                    Tab(icon: Icon(PhosphorIconsRegular.hamburger), text: 'Блюда'),
+                    Tab(icon: Icon(PhosphorIconsRegular.storefront), text: 'Витрина'),
+                    Tab(icon: Icon(PhosphorIconsRegular.cookingPot), text: 'Сырье'),
+                    Tab(icon: Icon(PhosphorIconsRegular.receipt), text: 'Техкарты'),
                   ],
                 ),
               ),
@@ -63,12 +64,12 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                     showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: val);
                   },
                   itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'dish', child: ListTile(leading: Icon(Icons.fastfood), title: Text('Папка для Блюд'))),
-                    const PopupMenuItem(value: 'retail', child: ListTile(leading: Icon(Icons.storefront), title: Text('Папка для Витрины'))),
+                    const PopupMenuItem(value: 'dish', child: ListTile(leading: Icon(PhosphorIconsRegular.hamburger), title: Text('Папка для Блюд'))),
+                    const PopupMenuItem(value: 'retail', child: ListTile(leading: Icon(PhosphorIconsRegular.storefront), title: Text('Папка для Витрины'))),
                   ],
                   child: ElevatedButton.icon(
                     onPressed: null,
-                    icon: const Icon(Icons.add, color: Colors.white),
+                    icon: const Icon(PhosphorIconsRegular.plus, color: Colors.white),
                     label: const Text('Добавить', style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -90,12 +91,12 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                     }
                   },
                   itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(Icons.create_new_folder), title: Text('Категория'))),
-                    const PopupMenuItem(value: 'dish', child: ListTile(leading: Icon(Icons.fastfood), title: Text('Блюдо'))),
+                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(PhosphorIconsRegular.folderPlus), title: Text('Категория'))),
+                    const PopupMenuItem(value: 'dish', child: ListTile(leading: Icon(PhosphorIconsRegular.hamburger), title: Text('Блюдо'))),
                   ],
                   child: ElevatedButton.icon(
                     onPressed: null,
-                    icon: const Icon(Icons.add, color: Colors.white),
+                    icon: const Icon(PhosphorIconsRegular.plus, color: Colors.white),
                     label: const Text('Добавить', style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -117,12 +118,12 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                     }
                   },
                   itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(Icons.create_new_folder), title: Text('Категория'))),
-                    const PopupMenuItem(value: 'retail', child: ListTile(leading: Icon(Icons.storefront), title: Text('Товар витрины'))),
+                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(PhosphorIconsRegular.folderPlus), title: Text('Категория'))),
+                    const PopupMenuItem(value: 'retail', child: ListTile(leading: Icon(PhosphorIconsRegular.storefront), title: Text('Товар витрины'))),
                   ],
                   child: ElevatedButton.icon(
                     onPressed: null,
-                    icon: const Icon(Icons.add, color: Colors.white),
+                    icon: const Icon(PhosphorIconsRegular.plus, color: Colors.white),
                     label: const Text('Добавить', style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,

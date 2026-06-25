@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
+import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
 
 class RevenueShareWidget extends StatelessWidget {
   final double dishesRevenue;
@@ -110,6 +112,7 @@ class RevenueShareWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildLegendItem(
+                context: context,
                 color: dishesColor,
                 title: 'Блюда',
                 value: dishesRevenue,
@@ -117,6 +120,7 @@ class RevenueShareWidget extends StatelessWidget {
                 isDark: isDark,
               ),
               _buildLegendItem(
+                context: context,
                 color: retailColor,
                 title: 'Витрина',
                 value: retailRevenue,
@@ -131,6 +135,7 @@ class RevenueShareWidget extends StatelessWidget {
   }
 
   Widget _buildLegendItem({
+    required BuildContext context,
     required Color color,
     required String title,
     required double value,
@@ -168,7 +173,7 @@ class RevenueShareWidget extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${value.toStringAsFixed(0)} ₽ (${(share * 100).toStringAsFixed(1)}%)',
+              '${value.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency} (${(share * 100).toStringAsFixed(1)}%)',
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w800,
                 fontSize: 16,

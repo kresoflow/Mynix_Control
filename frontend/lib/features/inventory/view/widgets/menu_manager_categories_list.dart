@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
@@ -47,7 +48,7 @@ class MenuManagerCategoriesList extends StatelessWidget {
                 child: ListTile(
                   onTap: () => onNavigate(cat),
                   leading: const Icon(
-                    Icons.folder,
+                    PhosphorIconsRegular.folder,
                     color: Colors.amber,
                     size: 36,
                   ),
@@ -68,7 +69,7 @@ class MenuManagerCategoriesList extends StatelessWidget {
                         activeColor: Theme.of(context).colorScheme.primary,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
                         onPressed: () => onDelete(cat.id),
                       ),
                     ],

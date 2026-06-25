@@ -6,8 +6,9 @@
 - **Multi-Tenancy:** Никогда не добавляй колонку `tenant_id` в модели. Изоляция тенантов работает на уровне схем PostgreSQL. Всегда используй зависимость `get_tenant_session`, которая устанавливает `search_path`.
 - **PBAC (Access Control):** Защищай каждый эндпоинт в `router.py` зависимостью `require_permission('domain:action')`.
 - **Separation of Concerns:** 
-  - `router.py` — только маппинг HTTP, Pydantic-схемы и внедрение зависимостей.
-  - `services.py` — вся бизнес-логика и выполнение SQL-запросов.
+  - `routers/` — только маппинг HTTP, Pydantic-схемы и внедрение зависимостей.
+  - `services/` — вся бизнес-логика и выполнение SQL-запросов. Логика должна быть разбита на доменные файлы (например, `menu_service.py`).
+- **Micro-Architecture (Критически важно!):** Лимит строк файлов (как для роутеров, так и для сервисов) не должен превышать 250-300 строк. Избегайте "God Objects".
 - **SQLModel/SQLAlchemy:** Используй асинхронный драйвер (`asyncpg`). Выполняй запросы через `session.exec()`.
 
 ## 2. Frontend (Flutter, Dart)

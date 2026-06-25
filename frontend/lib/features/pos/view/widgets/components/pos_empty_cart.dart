@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class PosEmptyCart extends StatelessWidget {
   const PosEmptyCart({super.key});
@@ -13,7 +14,7 @@ class PosEmptyCart extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.shopping_bag_outlined,
+            PhosphorIconsRegular.shoppingBag,
             size: 48,
             color: AppColors.darkSubtext.withValues(alpha: 0.4),
           ),

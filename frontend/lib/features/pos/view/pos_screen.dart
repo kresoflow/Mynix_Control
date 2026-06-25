@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:retail_os_frontend/features/pos/bloc/shift_event.dart';
 import 'package:retail_os_frontend/features/pos/bloc/shift_state.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class PosScreen extends StatelessWidget {
   const PosScreen({super.key});
@@ -46,77 +47,12 @@ class PosScreen extends StatelessWidget {
             return const _OpenShiftScreen();
           }
 
-          return Stack(
-            children: [
-              const ResponsiveLayout(
-                mobile: _MobileLayout(),
-                tablet: _TabletLayout(),
-                desktop: _DesktopLayout(),
-              ),
-              Positioned(
-                top: 16,
-                right: 16,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    _showCloseShiftDialog(context);
-                  },
-                  icon: const Icon(Icons.lock_clock),
-                  label: const Text('Закрыть смену'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+          return const ResponsiveLayout(
+            mobile: _MobileLayout(),
+            tablet: _TabletLayout(),
+            desktop: _DesktopLayout(),
           );
         },
-      ),
-    );
-  }
-
-  void _showCloseShiftDialog(BuildContext context) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Закрытие смены'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Введите фактическую сумму наличных в кассе (Z-отчет):'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Сумма (с)',
-                prefixIcon: Icon(Icons.payments),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final amount = double.tryParse(controller.text) ?? 0.0;
-              context.read<ShiftBloc>().add(CloseShiftRequested(amount));
-              Navigator.pop(ctx);
-              
-              // We could show another dialog after closed to show discrepancy,
-              // but ShiftBloc will change state to ShiftClosed and PosScreen will re-render
-              // showing _OpenShiftScreen again.
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
-            child: const Text('ЗАКРЫТЬ'),
-          ),
-        ],
       ),
     );
   }
@@ -153,7 +89,7 @@ class _OpenShiftScreenState extends State<_OpenShiftScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.lock_outline, size: 64, color: theme.colorScheme.primary),
+            Icon(PhosphorIconsRegular.lock, size: 64, color: theme.colorScheme.primary),
             const SizedBox(height: 24),
             const Text(
               'Смена закрыта',
@@ -173,7 +109,7 @@ class _OpenShiftScreenState extends State<_OpenShiftScreen> {
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Разменные деньги (с)',
-                prefixIcon: Icon(Icons.account_balance_wallet),
+                prefixIcon: Icon(PhosphorIconsRegular.wallet),
               ),
             ),
             const SizedBox(height: 32),

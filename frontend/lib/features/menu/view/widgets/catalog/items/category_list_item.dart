@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import '../catalog_icons.dart';
 import '../catalog_enums.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CategoryListItem extends StatelessWidget {
   final dynamic category;
@@ -42,7 +43,7 @@ class CategoryListItem extends StatelessWidget {
         trailing: manageMode == CategoryManageMode.delete
             ? Checkbox(value: isSelected, onChanged: onToggleSelect)
             : PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
                 onSelected: (val) {
                   if (val == 'edit') onEdit();
                   else if (val == 'visibility') onVisibilityToggle();

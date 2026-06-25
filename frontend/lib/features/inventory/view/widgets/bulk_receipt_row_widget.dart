@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
 
@@ -70,7 +71,7 @@ class BulkReceiptRowWidget extends StatelessWidget {
                         border: OutlineInputBorder(),
                         isDense: true,
                         hintText: 'Поиск товара...',
-                        prefixIcon: Icon(Icons.search),
+                        prefixIcon: Icon(PhosphorIconsRegular.magnifyingGlass),
                       ),
                       onSubmitted: (String value) {
                         onFieldSubmitted();
@@ -124,7 +125,7 @@ class BulkReceiptRowWidget extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.grey),
+            icon: const Icon(PhosphorIconsRegular.trash, color: Colors.grey),
             hoverColor: Colors.red.withValues(alpha: 0.1),
             onPressed: onRemove,
           ),

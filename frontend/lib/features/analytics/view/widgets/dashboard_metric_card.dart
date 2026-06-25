@@ -6,14 +6,14 @@ class DashboardMetricCard extends StatefulWidget {
   final String title;
   final String value;
   final IconData icon;
-  final List<Color> gradientColors;
+  final List<Color>? gradientColors;
 
   const DashboardMetricCard({
     Key? key,
     required this.title,
     required this.value,
     required this.icon,
-    this.gradientColors = const [AppColors.brandPrimary, AppColors.brandSecondary],
+    this.gradientColors,
   }) : super(key: key);
 
   @override
@@ -26,6 +26,8 @@ class _DashboardMetricCardState extends State<DashboardMetricCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultGradient = [AppColors.brandPrimary, AppColors.brandSecondary];
+    final activeGradient = widget.gradientColors ?? defaultGradient;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -42,14 +44,14 @@ class _DashboardMetricCardState extends State<DashboardMetricCard> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _isHovered
-                  ? widget.gradientColors[0].withValues(alpha: 0.5)
+                  ? activeGradient[0].withValues(alpha: 0.5)
                   : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
                 color: _isHovered
-                    ? widget.gradientColors[1].withValues(alpha: 0.15)
+                    ? activeGradient[1].withValues(alpha: 0.15)
                     : Colors.black.withValues(alpha: 0.05),
                 blurRadius: _isHovered ? 16 : 8,
                 offset: const Offset(0, 4),
@@ -66,12 +68,12 @@ class _DashboardMetricCardState extends State<DashboardMetricCard> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: widget.gradientColors,
+                    colors: activeGradient,
                   ),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.gradientColors[1].withValues(alpha: 0.3),
+                      color: activeGradient[1].withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),

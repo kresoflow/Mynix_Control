@@ -4,6 +4,7 @@ import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
 import 'package:retail_os_frontend/core/widgets/app_card.dart';
 import '../catalog_icons.dart';
 import '../catalog_enums.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CategoryGridItem extends StatelessWidget {
   final dynamic category;
@@ -72,7 +73,7 @@ class CategoryGridItem extends StatelessWidget {
               top: 4,
               right: 4,
               child: IconButton(
-                icon: Icon(category.isVisible ? Icons.visibility : Icons.visibility_off, color: category.isVisible ? Colors.green : Colors.grey),
+                icon: Icon(category.isVisible ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash, color: category.isVisible ? Colors.green : Colors.grey),
                 tooltip: category.isVisible ? 'Отображается на кассе' : 'Скрыто на кассе',
                 onPressed: onVisibilityToggle,
               ),
@@ -82,7 +83,7 @@ class CategoryGridItem extends StatelessWidget {
               top: 0,
               right: 0,
               child: PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
                 onSelected: (val) {
                   if (val == 'edit') onEdit();
                   else if (val == 'visibility') onVisibilityToggle();
@@ -96,7 +97,7 @@ class CategoryGridItem extends StatelessWidget {
               ),
             ),
           if (!category.isVisible && manageMode == CategoryManageMode.none)
-            const Positioned(top: 8, left: 8, child: Icon(Icons.visibility_off, color: Colors.grey, size: 20)),
+            const Positioned(top: 8, left: 8, child: Icon(PhosphorIconsRegular.eyeSlash, color: Colors.grey, size: 20)),
         ],
       ),
     );

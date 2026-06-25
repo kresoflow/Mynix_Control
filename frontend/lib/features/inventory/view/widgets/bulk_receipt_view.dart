@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
@@ -133,7 +134,7 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
           children: [
             Row(
               children: [
-                const Icon(Icons.receipt_long, size: 32, color: Colors.grey),
+                const Icon(PhosphorIconsRegular.receipt, size: 32, color: Colors.grey),
                 const SizedBox(width: 16),
                 const Text(
                   'Приходная накладная',
@@ -141,7 +142,7 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.refresh),
+                  icon: const Icon(PhosphorIconsRegular.arrowsClockwise),
                   tooltip: 'Очистить форму',
                   onPressed: _clearForm,
                 ),
@@ -156,7 +157,7 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
                   labelText:
                       'Комментарий к накладной (поставщик, номер документа)',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.notes),
+                  prefixIcon: Icon(PhosphorIconsRegular.notepad),
                 ),
               ),
             ),
@@ -239,7 +240,7 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
               children: [
                 OutlinedButton.icon(
                   onPressed: _addRow,
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(PhosphorIconsRegular.plus),
                   label: const Text('Добавить строку'),
                 ),
                 Row(
@@ -254,7 +255,7 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
                     const SizedBox(width: 16),
                     ElevatedButton.icon(
                       onPressed: _saveAll,
-                      icon: const Icon(Icons.check),
+                      icon: const Icon(PhosphorIconsRegular.check),
                       label: const Text('Провести документ'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(

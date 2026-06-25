@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
@@ -189,7 +190,7 @@ class BulkAddCategorySelector extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
                 child: IconButton(
-                  icon: const Icon(Icons.add_box, size: 40, color: Colors.blue),
+                  icon: const Icon(PhosphorIconsRegular.plusSquare, size: 40, color: Colors.blue),
                   onPressed: () => _showCreateCategoryDialog(
                     context,
                     allowedType,

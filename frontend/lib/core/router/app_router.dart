@@ -9,6 +9,7 @@ import 'package:retail_os_frontend/features/kitchen/view/kitchen_screen.dart';
 import 'package:retail_os_frontend/features/menu/view/catalog_screen.dart';
 import 'package:retail_os_frontend/features/inventory/view/warehouse_screen.dart';
 import 'package:retail_os_frontend/features/analytics/view/analytics_dashboard_screen.dart';
+import 'package:retail_os_frontend/features/settings/view/settings_screen.dart';
 import 'package:retail_os_frontend/core/widgets/main_layout.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -55,27 +56,27 @@ class AppRouter {
         routes: [
           GoRoute(
             path: '/pos',
-            builder: (context, state) => PosScreen(key: ValueKey(state.uri.toString())),
+            builder: (context, state) => const PosScreen(),
           ),
           GoRoute(
             path: '/kitchen',
-            builder: (context, state) => KitchenScreen(key: ValueKey(state.uri.toString())),
+            builder: (context, state) => const KitchenScreen(),
           ),
           GoRoute(
             path: '/catalog',
-            builder: (context, state) => CatalogScreen(key: ValueKey(state.uri.toString())),
+            builder: (context, state) => const CatalogScreen(),
           ),
           GoRoute(
             path: '/warehouse',
-            builder: (context, state) => WarehouseScreen(key: ValueKey(state.uri.toString())),
+            builder: (context, state) => const WarehouseScreen(),
           ),
           GoRoute(
             path: '/analytics',
-            builder: (context, state) => AnalyticsDashboardScreen(key: ValueKey(state.uri.toString())),
+            builder: (context, state) => const AnalyticsDashboardScreen(),
           ),
           GoRoute(
             path: '/settings',
-            builder: (context, state) => const Center(child: Text('Настройки (в разработке)', style: TextStyle(fontSize: 24))),
+            builder: (context, state) => const SettingsScreen(),
           ),
         ],
       ),

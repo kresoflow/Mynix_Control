@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
 import 'package:retail_os_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:retail_os_frontend/features/auth/bloc/auth_event.dart';
-import 'icon_btn.dart';
 
 class MynixNavRail extends StatelessWidget {
+  final bool isOpen;
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
 
   const MynixNavRail({
     super.key,
+    required this.isOpen,
     required this.selectedIndex,
     required this.onDestinationSelected,
   });
 
   static const _items = [
-    _NavItem(Icons.point_of_sale_outlined, Icons.point_of_sale, 'Касса'),
-    _NavItem(Icons.soup_kitchen_outlined, Icons.soup_kitchen, 'Кухня'),
-    _NavItem(Icons.menu_book_outlined, Icons.menu_book, 'Каталог'),
-    _NavItem(Icons.warehouse_outlined, Icons.warehouse, 'Склад'),
-    _NavItem(Icons.insights_outlined, Icons.insights, 'Аналитика'),
-    _NavItem(Icons.settings_outlined, Icons.settings, 'Настройки'),
+    _NavItem(PhosphorIconsRegular.receipt, PhosphorIconsFill.receipt, 'Касса'),
+    _NavItem(PhosphorIconsRegular.cookingPot, PhosphorIconsFill.cookingPot, 'Кухня'),
+    _NavItem(PhosphorIconsRegular.bookOpenText, PhosphorIconsFill.bookOpenText, 'Каталог'),
+    _NavItem(PhosphorIconsRegular.package, PhosphorIconsFill.package, 'Склад'),
+    _NavItem(PhosphorIconsRegular.chartLineUp, PhosphorIconsFill.chartLineUp, 'Аналитика'),
+    _NavItem(PhosphorIconsRegular.gear, PhosphorIconsFill.gear, 'Настройки'),
   ];
 
   @override
@@ -30,31 +32,33 @@ class MynixNavRail extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
 
-    return Container(
-      width: 72,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      width: isOpen ? 240 : 0,
       color: bg,
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          for (int i = 0; i < _items.length; i++) ...[
-            _NavRailItem(
-              item: _items[i],
-              isSelected: selectedIndex == i,
-              onTap: () => onDestinationSelected(i),
-              isDark: isDark,
-            ),
-          ],
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: IconBtn(
-              icon: Icons.logout_rounded,
-              tooltip: 'Выйти',
-              color: AppColors.danger,
-              onPressed: () => context.read<AuthBloc>().add(LoggedOut()),
+      child: ClipRect(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
+          child: SizedBox(
+            width: 240,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 16),
+                for (int i = 0; i < _items.length; i++) ...[
+                  _NavSidebarItem(
+                    item: _items[i],
+                    isSelected: selectedIndex == i,
+                    onTap: () => onDestinationSelected(i),
+                    isDark: isDark,
+                  ),
+                ],
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -67,13 +71,13 @@ class _NavItem {
   const _NavItem(this.icon, this.selectedIcon, this.label);
 }
 
-class _NavRailItem extends StatefulWidget {
+class _NavSidebarItem extends StatefulWidget {
   final _NavItem item;
   final bool isSelected;
   final VoidCallback onTap;
   final bool isDark;
 
-  const _NavRailItem({
+  const _NavSidebarItem({
     required this.item,
     required this.isSelected,
     required this.onTap,
@@ -81,10 +85,10 @@ class _NavRailItem extends StatefulWidget {
   });
 
   @override
-  State<_NavRailItem> createState() => _NavRailItemState();
+  State<_NavSidebarItem> createState() => _NavSidebarItemState();
 }
 
-class _NavRailItemState extends State<_NavRailItem> {
+class _NavSidebarItemState extends State<_NavSidebarItem> {
   bool _hovered = false;
 
   @override
@@ -103,47 +107,43 @@ class _NavRailItemState extends State<_NavRailItem> {
                 : AppColors.lightBorder)
             : Colors.transparent;
 
-    return Tooltip(
-      message: widget.item.label,
-      preferBelow: false,
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(12),
-              border: widget.isSelected
-                  ? Border.all(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.25),
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  widget.isSelected ? widget.item.selectedIcon : widget.item.icon,
-                  size: 22,
-                  color: color,
-                ),
-                const SizedBox(height: 4),
-                Text(
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(12),
+            border: widget.isSelected
+                ? Border.all(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.25),
+                    width: 1,
+                  )
+                : Border.all(color: Colors.transparent, width: 1),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                widget.isSelected ? widget.item.selectedIcon : widget.item.icon,
+                size: 24,
+                color: color,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
                   widget.item.label,
-                  style: AppTextStyles.caption.copyWith(
-                    fontSize: 10,
+                  style: AppTextStyles.bodyLarge.copyWith(
                     color: color,
                     fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

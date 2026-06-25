@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
 
@@ -60,7 +61,7 @@ class MenuManagerItemsGrid extends StatelessWidget {
                       context,
                     ).colorScheme.primaryContainer,
                     child: Icon(
-                      Icons.fastfood,
+                      PhosphorIconsRegular.hamburger,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
@@ -76,7 +77,7 @@ class MenuManagerItemsGrid extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                    icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red, size: 20),
                     onPressed: () => onDelete(item.id),
                   ),
                 ),

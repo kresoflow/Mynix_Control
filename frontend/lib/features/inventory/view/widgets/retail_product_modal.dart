@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
@@ -179,8 +180,8 @@ class _RetailProductModalState extends State<RetailProductModal> {
                         Padding(
                           padding: const EdgeInsets.only(top: 4.0),
                           child: IconButton(
-                            icon: const Icon(
-                              Icons.add_box,
+                            icon: Icon(
+                              PhosphorIconsRegular.plusSquare,
                               size: 40,
                               color: AppColors.brandPrimary,
                             ),

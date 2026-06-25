@@ -88,7 +88,7 @@ class MenuGridItem extends StatelessWidget {
               top: 0,
               right: 0,
               child: PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
                 onSelected: (val) {
                   if (val == 'edit') onEdit();
                   else if (val == 'delete') onDelete();

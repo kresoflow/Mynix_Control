@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
@@ -90,7 +91,7 @@ class _InventoryMatrixScreenState extends State<InventoryMatrixScreen> {
                           Row(
                             children: [
                               OutlinedButton.icon(
-                                icon: const Icon(Icons.add),
+                                icon: const Icon(PhosphorIconsRegular.plus),
                                 label: const Text('Добавить строку'),
                                 onPressed: () {
                                   stateManager.insertRows(0, [
@@ -114,7 +115,7 @@ class _InventoryMatrixScreenState extends State<InventoryMatrixScreen> {
                               ),
                               const SizedBox(width: 16),
                               ElevatedButton.icon(
-                                icon: const Icon(Icons.save),
+                                icon: const Icon(PhosphorIconsRegular.floppyDisk),
                                 label: const Text('Сохранить изменения'),
                                 onPressed: _isDirty ? _saveChanges : null,
                                 style: ElevatedButton.styleFrom(

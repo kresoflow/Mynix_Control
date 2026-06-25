@@ -152,7 +152,7 @@ class AppBadge extends StatelessWidget {
     return Container(
       width: 20,
       height: 20,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.brandSecondary,
         shape: BoxShape.circle,
       ),

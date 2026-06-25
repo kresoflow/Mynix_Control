@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/receive_stock_dialog.dart';
@@ -110,7 +111,7 @@ class _StockTabState extends State<StockTab>
                                 vertical: 4,
                               ),
                               leading: Icon(
-                                isRetail ? Icons.storefront : Icons.kitchen,
+                                isRetail ? PhosphorIconsRegular.storefront : PhosphorIconsRegular.cookingPot,
                                 color: isLowStock ? Colors.red : Colors.grey,
                               ),
                               title: Text(
@@ -135,7 +136,7 @@ class _StockTabState extends State<StockTab>
                                   ElevatedButton.icon(
                                     onPressed: () =>
                                         ReceiveStockDialog.show(context, item),
-                                    icon: const Icon(Icons.add, size: 18),
+                                    icon: const Icon(PhosphorIconsRegular.plus, size: 18),
                                     label: const Text('Приход'),
                                   ),
                                 ],

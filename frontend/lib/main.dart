@@ -28,6 +28,7 @@ import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
 
 import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
+import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +57,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
   late final InventoryRepository _inventoryRepository;
   late final AuthBloc _authBloc;
   late final ThemeBloc _themeBloc;
+  late final SettingsBloc _settingsBloc;
   late final MenuBloc _menuBloc;
   late final CartBloc _cartBloc;
   late final KitchenBloc _kitchenBloc;
@@ -76,6 +78,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _inventoryRepository = InventoryRepository(apiClient.dio);
     _authBloc = AuthBloc(_authRepository)..add(AppStarted());
     _themeBloc = ThemeBloc();
+    _settingsBloc = SettingsBloc();
     _menuBloc = MenuBloc(_menuRepository);
     _cartBloc = CartBloc(_orderRepository);
     _kitchenBloc = KitchenBloc(_kitchenRepository);
@@ -90,6 +93,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
   void dispose() {
     _authBloc.close();
     _themeBloc.close();
+    _settingsBloc.close();
     _menuBloc.close();
     _cartBloc.close();
     _kitchenBloc.close();
@@ -115,6 +119,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
         providers: [
           BlocProvider.value(value: _authBloc),
           BlocProvider.value(value: _themeBloc),
+          BlocProvider.value(value: _settingsBloc),
           BlocProvider.value(value: _menuBloc),
           BlocProvider.value(value: _cartBloc),
           BlocProvider.value(value: _kitchenBloc),
@@ -132,18 +137,22 @@ class _RetailOSAppState extends State<RetailOSApp> {
               context.read<CategoryBloc>().add(LoadCategories());
             }
           },
-          child: BlocBuilder<ThemeBloc, ThemeMode>(
-            builder: (context, themeMode) {
-            return MaterialApp.router(
-              title: 'Mynix Control',
-              debugShowCheckedModeBanner: false,
-              themeMode: themeMode,
-              theme: AppTheme.light,
-              darkTheme: AppTheme.dark,
-            routerConfig: _appRouter.router,
-          );
-        },
-      ),
+          child: BlocBuilder<SettingsBloc, SettingsState>(
+            builder: (context, settingsState) {
+              return BlocBuilder<ThemeBloc, ThemeMode>(
+                builder: (context, themeMode) {
+                  return MaterialApp.router(
+                    title: 'Mynix Control',
+                    debugShowCheckedModeBanner: false,
+                    themeMode: themeMode,
+                    theme: AppTheme.light,
+                    darkTheme: AppTheme.dark,
+                    routerConfig: _appRouter.router,
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );

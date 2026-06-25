@@ -61,7 +61,7 @@ class _ReceiveRetailView extends StatelessWidget {
         child: BlocBuilder<ReceiveRetailBloc, ReceiveRetailState>(
           builder: (context, state) {
             if (state.isLoading) {
-              return const Center(
+              return Center(
                 child: CircularProgressIndicator(color: AppColors.brandPrimary),
               );
             }

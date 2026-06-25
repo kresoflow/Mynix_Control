@@ -16,6 +16,8 @@ class DesktopLayout extends StatefulWidget {
 }
 
 class _DesktopLayoutState extends State<DesktopLayout> {
+  bool _isSidebarOpen = false;
+
   int _getSelectedIndex(String location) {
     if (location.startsWith('/kitchen')) return 1;
     if (location.startsWith('/catalog')) return 2;
@@ -35,15 +37,20 @@ class _DesktopLayoutState extends State<DesktopLayout> {
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
       appBar: MynixAppBar(
         onCashTap: () => showCashboxModal(context),
+        onToggleSidebar: () {
+          setState(() {
+            _isSidebarOpen = !_isSidebarOpen;
+          });
+        },
       ),
       body: Row(
         children: [
           MynixNavRail(
+            isOpen: _isSidebarOpen,
             selectedIndex: selectedIndex,
             onDestinationSelected: (index) {
-              final t = DateTime.now().millisecondsSinceEpoch;
               final routes = ['/pos', '/kitchen', '/catalog', '/warehouse', '/analytics', '/settings'];
-              context.go('${routes[index]}?t=$t');
+              context.go(routes[index]);
             },
           ),
           Container(

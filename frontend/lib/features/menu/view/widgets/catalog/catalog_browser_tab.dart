@@ -9,6 +9,7 @@ import 'catalog_dialogs.dart';
 import 'catalog_header.dart';
 import 'catalog_content_view.dart';
 import 'catalog_enums.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CatalogBrowserTab extends StatefulWidget {
   final String categoryType;
@@ -76,7 +77,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.category),
+                leading: const Icon(PhosphorIconsRegular.squaresFour),
                 title: const Text('Создать подкатегорию'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -84,7 +85,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.fastfood),
+                leading: const Icon(PhosphorIconsRegular.hamburger),
                 title: const Text('Добавить блюдо'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -92,7 +93,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.storefront),
+                leading: const Icon(PhosphorIconsRegular.storefront),
                 title: const Text('Добавить товар (витрина)'),
                 onTap: () {
                   Navigator.pop(ctx);

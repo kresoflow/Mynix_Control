@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:retail_os_frontend/features/pos/models/menu_category.dart';
 
 class MenuManagerBreadcrumbs extends StatelessWidget {
@@ -33,7 +34,7 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
             onTap: onNavigateRoot,
             child: const Row(
               children: [
-                Icon(Icons.home, size: 20),
+                Icon(PhosphorIconsRegular.house, size: 20),
                 SizedBox(width: 8),
                 Text('Главная', style: TextStyle(fontWeight: FontWeight.bold)),
               ],
@@ -46,7 +47,7 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
                   child: Icon(
-                    Icons.chevron_right,
+                    PhosphorIconsRegular.caretRight,
                     size: 20,
                     color: Colors.grey,
                   ),
@@ -71,13 +72,13 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
           const Spacer(),
           ElevatedButton.icon(
             onPressed: onAddCategory,
-            icon: const Icon(Icons.create_new_folder),
+            icon: const Icon(PhosphorIconsRegular.folderPlus),
             label: const Text('Папка'),
           ),
           const SizedBox(width: 12),
           ElevatedButton.icon(
             onPressed: onAddMenuItem,
-            icon: const Icon(Icons.add_box),
+            icon: const Icon(PhosphorIconsRegular.plusSquare),
             label: const Text('Товар'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,

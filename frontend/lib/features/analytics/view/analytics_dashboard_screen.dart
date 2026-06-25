@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
+import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:retail_os_frontend/features/analytics/bloc/analytics_bloc.dart';
 import 'package:retail_os_frontend/features/analytics/bloc/analytics_event.dart';
 import 'package:retail_os_frontend/features/analytics/bloc/analytics_state.dart';
@@ -64,7 +65,7 @@ class _AnalyticsDashboardView extends StatelessWidget {
             return Center(
               child: Text(
                 state.message,
-                style: const TextStyle(color: AppColors.danger),
+                style: TextStyle(color: AppColors.danger),
               ),
             );
           }
@@ -89,9 +90,9 @@ class _AnalyticsDashboardView extends StatelessWidget {
                         Expanded(
                           child: DashboardMetricCard(
                             title: 'Выручка за сегодня',
-                            value: '${data.totalRevenue.toStringAsFixed(0)} ₸',
+                            value: '${data.totalRevenue.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency}',
                             icon: PhosphorIconsRegular.wallet,
-                            gradientColors: const [AppColors.brandPrimary, AppColors.brandSecondary],
+                            gradientColors: [AppColors.brandPrimary, AppColors.brandSecondary],
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -113,13 +114,9 @@ class _AnalyticsDashboardView extends StatelessWidget {
                           Expanded(
                             child: Column(
                               children: [
-                                RevenueShareWidget(
-                                  dishesRevenue: data.dishesRevenue,
-                                  retailRevenue: data.retailRevenue,
-                                  totalRevenue: data.totalRevenue,
-                                ),
+                                TopItemsWidget(topItems: data.topItems),
                                 const SizedBox(height: 24),
-                                RecentOrdersWidget(orders: data.recentOrders),
+                                LowStockAlertsWidget(alerts: data.lowStockAlerts),
                               ],
                             ),
                           ),
@@ -127,9 +124,13 @@ class _AnalyticsDashboardView extends StatelessWidget {
                           Expanded(
                             child: Column(
                               children: [
-                                TopItemsWidget(topItems: data.topItems),
+                                RevenueShareWidget(
+                                  dishesRevenue: data.dishesRevenue,
+                                  retailRevenue: data.retailRevenue,
+                                  totalRevenue: data.totalRevenue,
+                                ),
                                 const SizedBox(height: 24),
-                                LowStockAlertsWidget(alerts: data.lowStockAlerts),
+                                RecentOrdersWidget(orders: data.recentOrders),
                               ],
                             ),
                           ),

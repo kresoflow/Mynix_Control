@@ -46,15 +46,31 @@ class CheckoutCart extends CartEvent {
   List<Object?> get props => [paymentMethod];
 }
 
+class HoldCurrentCart extends CartEvent {
+  final String holdName;
+  const HoldCurrentCart(this.holdName);
+  @override
+  List<Object?> get props => [holdName];
+}
+
+class ResumeHeldCart extends CartEvent {
+  final String cartId;
+  const ResumeHeldCart(this.cartId);
+  @override
+  List<Object?> get props => [cartId];
+}
+
 // --- States ---
 class CartState extends Equatable {
   final List<CartItem> items;
+  final Map<String, List<CartItem>> heldCarts;
   final bool isSubmitting;
   final String? submitError;
   final bool submitSuccess;
   
   const CartState({
     this.items = const [],
+    this.heldCarts = const {},
     this.isSubmitting = false,
     this.submitError,
     this.submitSuccess = false,
@@ -64,12 +80,14 @@ class CartState extends Equatable {
   
   CartState copyWith({
     List<CartItem>? items,
+    Map<String, List<CartItem>>? heldCarts,
     bool? isSubmitting,
     String? submitError,
     bool? submitSuccess,
   }) {
     return CartState(
       items: items ?? this.items,
+      heldCarts: heldCarts ?? this.heldCarts,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       submitError: submitError, // Let null clear it
       submitSuccess: submitSuccess ?? false, // Reset success unless explicitly true
@@ -77,7 +95,7 @@ class CartState extends Equatable {
   }
   
   @override
-  List<Object?> get props => [items, isSubmitting, submitError, submitSuccess];
+  List<Object?> get props => [items, heldCarts, isSubmitting, submitError, submitSuccess];
 }
 
 // --- Bloc ---
@@ -90,6 +108,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<UpdateCartItemQuantity>(_onUpdateQuantity);
     on<ClearCart>(_onClearCart);
     on<CheckoutCart>(_onCheckoutCart);
+    on<HoldCurrentCart>(_onHoldCurrentCart);
+    on<ResumeHeldCart>(_onResumeHeldCart);
   }
 
   void _onAddItemToCart(AddItemToCart event, Emitter<CartState> emit) {
@@ -127,7 +147,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   void _onClearCart(ClearCart event, Emitter<CartState> emit) {
-    emit(const CartState(items: []));
+    emit(state.copyWith(items: const []));
   }
 
   Future<void> _onCheckoutCart(CheckoutCart event, Emitter<CartState> emit) async {
@@ -137,9 +157,40 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     try {
       await orderRepository.submitOrder(state.items, event.paymentMethod);
       // On success, clear the cart and signal success
-      emit(const CartState(items: [], submitSuccess: true));
+      emit(state.copyWith(items: const [], isSubmitting: false, submitSuccess: true));
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, submitError: e.toString()));
     }
+  }
+
+  void _onHoldCurrentCart(HoldCurrentCart event, Emitter<CartState> emit) {
+    if (state.items.isEmpty) return;
+    
+    final updatedHeld = Map<String, List<CartItem>>.from(state.heldCarts);
+    updatedHeld[event.holdName] = List.from(state.items);
+    
+    emit(state.copyWith(
+      items: const [],
+      heldCarts: updatedHeld,
+    ));
+  }
+
+  void _onResumeHeldCart(ResumeHeldCart event, Emitter<CartState> emit) {
+    if (!state.heldCarts.containsKey(event.cartId)) return;
+
+    final updatedHeld = Map<String, List<CartItem>>.from(state.heldCarts);
+    final itemsToResume = updatedHeld.remove(event.cartId)!;
+
+    // If current cart is NOT empty, we hold it automatically
+    if (state.items.isNotEmpty) {
+      final now = DateTime.now();
+      final autoHoldName = 'Чек ${now.hour}:${now.minute.toString().padLeft(2, '0')} (Авто)';
+      updatedHeld[autoHoldName] = List.from(state.items);
+    }
+
+    emit(state.copyWith(
+      items: itemsToResume,
+      heldCarts: updatedHeld,
+    ));
   }
 }

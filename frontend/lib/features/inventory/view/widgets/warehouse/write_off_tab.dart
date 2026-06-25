@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/write_off_dialog.dart';
@@ -101,7 +102,7 @@ class _WriteOffTabState extends State<WriteOffTab>
                                 vertical: 4,
                               ),
                               leading: Icon(
-                                isRetail ? Icons.storefront : Icons.kitchen,
+                                isRetail ? PhosphorIconsRegular.storefront : PhosphorIconsRegular.cookingPot,
                                 color: Theme.of(context).colorScheme.error,
                               ),
                               title: Text(
@@ -122,7 +123,7 @@ class _WriteOffTabState extends State<WriteOffTab>
                                 ),
                                 onPressed: () =>
                                     WriteOffDialog.show(context, item),
-                                icon: const Icon(Icons.remove, size: 18),
+                                icon: const Icon(PhosphorIconsRegular.minus, size: 18),
                                 label: const Text('Списание'),
                               ),
                             ),

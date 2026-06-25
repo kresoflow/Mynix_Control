@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 import 'bulk_add/dish_row.dart';
 import 'bulk_add/ingredient_row.dart';
@@ -129,7 +130,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(PhosphorIconsRegular.x),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -161,7 +162,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
                     ),
                     ElevatedButton.icon(
                       onPressed: _addRow,
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(PhosphorIconsRegular.plus),
                       label: const Text('Добавить строку'),
                     ),
                   ],
@@ -224,7 +225,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
                             children: [
                               IconButton(
                                 icon: const Icon(
-                                  Icons.copy,
+                                  PhosphorIconsRegular.copy,
                                   color: Colors.blue,
                                 ),
                                 onPressed: () => _duplicateRow(index),
@@ -232,7 +233,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
                               ),
                               IconButton(
                                 icon: const Icon(
-                                  Icons.delete,
+                                  PhosphorIconsRegular.trash,
                                   color: Colors.red,
                                 ),
                                 onPressed: () => _removeRow(index),

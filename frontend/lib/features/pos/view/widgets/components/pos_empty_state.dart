@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class PosEmptyState extends StatelessWidget {
   final bool inCategory;
@@ -17,7 +18,7 @@ class PosEmptyState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            inCategory ? Icons.fastfood_outlined : Icons.restaurant_menu_outlined,
+            inCategory ? PhosphorIconsRegular.hamburger : PhosphorIconsRegular.bookOpen,
             size: 52,
             color: Theme.of(context).brightness == Brightness.dark 
                 ? AppColors.darkSubtext.withValues(alpha: 0.35)

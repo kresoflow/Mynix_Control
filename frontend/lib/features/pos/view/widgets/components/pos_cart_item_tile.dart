@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
 import 'package:retail_os_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class PosCartItemTile extends StatefulWidget {
   final dynamic cartItem;
@@ -82,7 +83,7 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
               opacity: _hovered ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 150),
               child: IconButton(
-                icon: const Icon(Icons.close_rounded, size: 16),
+                icon: const Icon(PhosphorIconsRegular.x, size: 16),
                 color: AppColors.danger,
                 padding: const EdgeInsets.all(6),
                 constraints: const BoxConstraints(),
@@ -117,7 +118,7 @@ class _QtyControl extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _QtyBtn(
-            icon: Icons.remove,
+            icon: PhosphorIconsRegular.minus,
             onPressed: cartItem.quantity > 1
                 ? () => context
                     .read<CartBloc>()
@@ -139,7 +140,7 @@ class _QtyControl extends StatelessWidget {
             ),
           ),
           _QtyBtn(
-            icon: Icons.add,
+            icon: PhosphorIconsRegular.plus,
             onPressed: () => context
                 .read<CartBloc>()
                 .add(UpdateCartItemQuantity(cartItem.id, cartItem.quantity + 1)),

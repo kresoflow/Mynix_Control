@@ -5,6 +5,7 @@ import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
 import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'catalog_enums.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CatalogHeader extends StatelessWidget {
   final CategoryManageMode manageMode;
@@ -66,27 +67,27 @@ class CatalogHeader extends StatelessWidget {
                   Text('Выбрано: $selectedCount', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onErrorContainer)),
                   const Spacer(),
                   TextButton.icon(
-                    icon: Icon(isAllSelected ? Icons.deselect : Icons.select_all),
+                    icon: Icon(isAllSelected ? PhosphorIconsRegular.square : PhosphorIconsRegular.checkSquare),
                     label: Text(isAllSelected ? 'Снять выделение' : 'Выбрать все'),
                     style: TextButton.styleFrom(foregroundColor: colorScheme.onErrorContainer),
                     onPressed: onSelectAllToggle,
                   ),
                   const SizedBox(width: 8),
                   TextButton.icon(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(PhosphorIconsRegular.x),
                     label: const Text('Отмена'),
                     style: TextButton.styleFrom(foregroundColor: colorScheme.onErrorContainer),
                     onPressed: onClearSelection,
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.delete_forever),
+                    icon: const Icon(PhosphorIconsRegular.trash),
                     label: const Text('Удалить'),
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
                     onPressed: selectedCount == 0 ? null : onDeleteSelected,
                   ),
                 ] else if (manageMode == CategoryManageMode.visibility) ...[
-                  const Icon(Icons.visibility, color: Colors.green),
+                  const Icon(PhosphorIconsRegular.eye, color: Colors.green),
                   const SizedBox(width: 8),
                   const Text('Настройка видимости на кассе', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
                   const Spacer(),
@@ -101,7 +102,7 @@ class CatalogHeader extends StatelessWidget {
           : Row(
               children: [
                 if (navigationHistory.isNotEmpty) ...[
-                  IconButton(icon: const Icon(Icons.arrow_back), onPressed: onNavigateUp, tooltip: 'Назад'),
+                  IconButton(icon: const Icon(PhosphorIconsRegular.arrowLeft), onPressed: onNavigateUp, tooltip: 'Назад'),
                   const SizedBox(width: 8),
                 ],
                 Expanded(
@@ -121,7 +122,7 @@ class CatalogHeader extends StatelessWidget {
                           final isLast = index == navigationHistory.length - 1;
                           return Row(
                             children: [
-                              const Icon(Icons.chevron_right, color: Colors.grey),
+                              const Icon(PhosphorIconsRegular.caretRight, color: Colors.grey),
                               InkWell(
                                 onTap: isLast ? null : () => onNavigateToHistory(index),
                                 child: Padding(
@@ -147,7 +148,7 @@ class CatalogHeader extends StatelessWidget {
                   onPressed: () {
                     showDialog(context: context, builder: (context) => const BulkAddModal());
                   },
-                  icon: const Icon(Icons.format_list_bulleted_add),
+                  icon: const Icon(PhosphorIconsRegular.listPlus),
                   label: const Text('Массово'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.secondaryContainer,
@@ -157,12 +158,12 @@ class CatalogHeader extends StatelessWidget {
                 const SizedBox(width: 12),
                 addMenuBuilder != null ? addMenuBuilder!(context, currentCategoryId) : ElevatedButton.icon(
                   onPressed: onAddPressed,
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(PhosphorIconsRegular.plus),
                   label: const Text('Добавить'),
                 ),
                 const SizedBox(width: 12),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.tune),
+                  icon: const Icon(PhosphorIconsRegular.faders),
                   tooltip: 'Настройки вида и управления',
                   onSelected: (value) {
                     if (value == 'view_grid') onViewModeChanged(CategoryViewMode.grid);
@@ -172,12 +173,12 @@ class CatalogHeader extends StatelessWidget {
                   },
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                     if (viewMode == CategoryViewMode.list)
-                      const PopupMenuItem<String>(value: 'view_grid', child: ListTile(leading: Icon(Icons.grid_view), title: Text('Вид: Сетка'), contentPadding: EdgeInsets.zero)),
+                      const PopupMenuItem<String>(value: 'view_grid', child: ListTile(leading: Icon(PhosphorIconsRegular.gridFour), title: Text('Вид: Сетка'), contentPadding: EdgeInsets.zero)),
                     if (viewMode == CategoryViewMode.grid)
-                      const PopupMenuItem<String>(value: 'view_list', child: ListTile(leading: Icon(Icons.view_list), title: Text('Вид: Список'), contentPadding: EdgeInsets.zero)),
+                      const PopupMenuItem<String>(value: 'view_list', child: ListTile(leading: Icon(PhosphorIconsRegular.list), title: Text('Вид: Список'), contentPadding: EdgeInsets.zero)),
                     const PopupMenuDivider(),
-                    const PopupMenuItem<String>(value: 'manage_visibility', child: ListTile(leading: Icon(Icons.visibility), title: Text('Настроить видимость'), contentPadding: EdgeInsets.zero)),
-                    const PopupMenuItem<String>(value: 'manage_delete', child: ListTile(leading: Icon(Icons.delete_outline, color: Colors.red), title: Text('Удалить элементы', style: TextStyle(color: Colors.red)), contentPadding: EdgeInsets.zero)),
+                    const PopupMenuItem<String>(value: 'manage_visibility', child: ListTile(leading: Icon(PhosphorIconsRegular.eye), title: Text('Настроить видимость'), contentPadding: EdgeInsets.zero)),
+                    const PopupMenuItem<String>(value: 'manage_delete', child: ListTile(leading: Icon(PhosphorIconsRegular.trash, color: Colors.red), title: Text('Удалить элементы', style: TextStyle(color: Colors.red)), contentPadding: EdgeInsets.zero)),
                   ],
                 ),
               ],

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
 import 'package:retail_os_frontend/features/analytics/models/dashboard_data.dart';
+import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:intl/intl.dart';
 
 class RecentOrdersWidget extends StatelessWidget {
@@ -41,13 +43,13 @@ class RecentOrdersWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...orders.map((order) => _buildOrderCard(order, isDark)).toList(),
+          ...orders.map((order) => _buildOrderCard(context, order, isDark)).toList(),
         ],
       ),
     );
   }
 
-  Widget _buildOrderCard(RecentOrder order, bool isDark) {
+  Widget _buildOrderCard(BuildContext context, RecentOrder order, bool isDark) {
     final dateFormat = DateFormat('HH:mm, dd MMM');
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -73,7 +75,7 @@ class RecentOrdersWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                '${order.total.toStringAsFixed(2)} ₸',
+                '${order.total.toStringAsFixed(2)} ${context.watch<SettingsBloc>().state.currency}',
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.brandPrimary,
