@@ -8,6 +8,10 @@ class Ingredient {
   final bool isLowStock;
   final double? price;
   final Map<String, dynamic>? attributes;
+  final int? categoryId;
+  final String? categoryName;
+
+  bool get isRetail => attributes?['is_retail'] == true;
 
   Ingredient({
     required this.id,
@@ -19,6 +23,8 @@ class Ingredient {
     required this.isLowStock,
     this.price,
     this.attributes,
+    this.categoryId,
+    this.categoryName,
   });
 
   factory Ingredient.fromJson(Map<String, dynamic> json) {
@@ -32,6 +38,8 @@ class Ingredient {
       isLowStock: json['is_low_stock'] ?? false,
       price: json['price'] != null ? (json['price'] as num).toDouble() : null,
       attributes: json['attributes'],
+      categoryId: json['category_id'],
+      categoryName: json['category_name'],
     );
   }
 }

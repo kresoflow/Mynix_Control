@@ -43,3 +43,28 @@ class RemoveIngredientFromRecipe extends RecipeEvent {
   @override
   List<Object?> get props => [menuItemId, ingredientId];
 }
+
+class UpdateIngredientQuantityInRecipe extends RecipeEvent {
+  final int menuItemId;
+  final int ingredientId;
+  final double quantity;
+
+  const UpdateIngredientQuantityInRecipe({
+    required this.menuItemId,
+    required this.ingredientId,
+    required this.quantity,
+  });
+
+  @override
+  List<Object?> get props => [menuItemId, ingredientId, quantity];
+}
+
+class SaveBulkRecipe extends RecipeEvent {
+  final int menuItemId;
+  final List<Map<String, dynamic>> recipes;
+
+  const SaveBulkRecipe({required this.menuItemId, required this.recipes});
+
+  @override
+  List<Object?> get props => [menuItemId, recipes];
+}

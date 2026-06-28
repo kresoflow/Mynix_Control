@@ -8,7 +8,8 @@ import 'bulk_add/bulk_add_category_selector.dart';
 import 'bulk_add/bulk_add_save_helper.dart';
 
 class BulkAddModal extends StatefulWidget {
-  const BulkAddModal({super.key});
+  final int initialTabIndex;
+  const BulkAddModal({super.key, this.initialTabIndex = 0});
 
   @override
   State<BulkAddModal> createState() => _BulkAddModalState();
@@ -27,6 +28,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
   @override
   void initState() {
     super.initState();
+    _tabIndex = widget.initialTabIndex;
     _addRow();
   }
 
@@ -174,7 +176,6 @@ class _BulkAddModalState extends State<BulkAddModal> {
                   selectedChildId: _selectedChildId,
                   onParentChanged: (val) => setState(() {
                     _selectedParentId = val;
-                    _selectedChildId = null;
                   }),
                   onChildChanged: (val) =>
                       setState(() => _selectedChildId = val),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
 import 'package:retail_os_frontend/features/pos/models/menu_category.dart';
+import 'package:retail_os_frontend/core/utils/icon_helper.dart';
 
 class MenuManagerCategoriesList extends StatelessWidget {
   final int? currentParentId;
@@ -47,10 +48,10 @@ class MenuManagerCategoriesList extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   onTap: () => onNavigate(cat),
-                  leading: const Icon(
-                    PhosphorIconsRegular.folder,
-                    color: Colors.amber,
+                  leading: IconHelper.buildIcon(
+                    cat.icon,
                     size: 36,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: Text(
                     cat.name,

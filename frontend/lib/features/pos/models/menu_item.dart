@@ -40,13 +40,20 @@ class MenuItem extends Equatable {
   List<Object?> get props => [id, name, price, categoryId, categoryName, shortName, tags];
 
   String get cleanName {
-    return name.split('|TYPE|')[0].split('|ATTR|')[0];
+    return name.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];
   }
 
   String? get attributesString {
     final noType = name.split('|TYPE|')[0];
     if (noType.contains('|ATTR|')) {
-      return noType.split('|ATTR|')[1];
+      return noType.split('|ATTR|')[1].split('|ICON|')[0];
+    }
+    return null;
+  }
+
+  String? get icon {
+    if (name.contains('|ICON|')) {
+      return name.split('|ICON|')[1].split('|TYPE|')[0].split('|ATTR|')[0].replaceAll('icon:', '');
     }
     return null;
   }

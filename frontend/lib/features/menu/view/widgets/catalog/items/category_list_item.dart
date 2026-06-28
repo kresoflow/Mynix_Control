@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import '../catalog_icons.dart';
+import 'package:retail_os_frontend/core/utils/icon_helper.dart';
 import '../catalog_enums.dart';
+import '../catalog_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CategoryListItem extends StatelessWidget {
@@ -28,13 +31,33 @@ class CategoryListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? effectiveIcon = category.icon;
+    final catState = context.read<CategoryBloc>().state;
+    if (catState is CategoryLoaded) {
+      effectiveIcon = category.getInheritedIcon(catState.categories);
+    }
+
     return Material(
       color: Colors.transparent,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Opacity(
           opacity: category.isVisible ? 1.0 : 0.5,
-          child: buildCategoryIcon(category.name, size: 24, color: AppColors.brandPrimary),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.brandPrimary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: (effectiveIcon == null || effectiveIcon.isEmpty)
+                ? buildCategoryIcon(category.name, size: 24, color: AppColors.brandPrimary)
+                : IconHelper.buildIcon(
+                    effectiveIcon,
+                    fallback: PhosphorIconsRegular.list,
+                    size: 24,
+                    color: AppColors.brandPrimary,
+                  ),
+          ),
         ),
         title: Opacity(
           opacity: category.isVisible ? 1.0 : 0.5,

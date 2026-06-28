@@ -14,6 +14,7 @@ class CreateIngredient extends IngredientEvent {
   final String unit;
   final double minStockAlert;
   final double costPerUnit;
+  final int? categoryId;
 
   final double initialStock;
   final int sortOrder;
@@ -23,6 +24,7 @@ class CreateIngredient extends IngredientEvent {
     required this.unit,
     required this.minStockAlert,
     required this.costPerUnit,
+    this.categoryId,
     this.initialStock = 0.0,
     this.sortOrder = 0,
   });
@@ -33,6 +35,7 @@ class CreateIngredient extends IngredientEvent {
     unit,
     minStockAlert,
     costPerUnit,
+    categoryId,
     initialStock,
     sortOrder,
   ];
@@ -63,4 +66,12 @@ class UpdateIngredient extends IngredientEvent {
 
   @override
   List<Object?> get props => [id, data];
+}
+
+class DeleteIngredient extends IngredientEvent {
+  final int id;
+  const DeleteIngredient(this.id);
+
+  @override
+  List<Object?> get props => [id];
 }

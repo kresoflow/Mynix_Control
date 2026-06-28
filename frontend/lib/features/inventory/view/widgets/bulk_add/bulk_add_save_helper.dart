@@ -38,6 +38,10 @@ void performBulkSave({
       );
     }
   } else if (tabIndex == 2) {
+    if (targetCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Выберите категорию!')));
+      return;
+    }
     int sortIndex = 0;
     for (var row in ingredientRows) {
       final name = row.nameController.text.trim();
@@ -54,6 +58,7 @@ void performBulkSave({
           costPerUnit: cost,
           minStockAlert: alert,
           initialStock: stock,
+          categoryId: targetCategoryId,
           sortOrder: sortIndex++,
         ),
       );
@@ -75,8 +80,6 @@ void performBulkSave({
       final sell = double.tryParse(row.sellController.text) ?? 0.0;
       final stock = double.tryParse(row.stockController.text) ?? 0.0;
 
-      final typeText = row.typeController.text.trim();
-
       final flavors = row.flavorController.text
           .split(',')
           .map((e) => e.trim())
@@ -94,8 +97,11 @@ void performBulkSave({
       for (var flavor in flavors) {
         for (var volume in volumes) {
           final Map<String, dynamic> attributes = {};
-          if (typeText.isNotEmpty) attributes['Тип'] = typeText;
-          if (flavor.isNotEmpty) attributes['Вкус'] = flavor;
+          
+          if (flavor.isNotEmpty) {
+            attributes['Вкус'] = flavor;
+          }
+          
           if (volume.isNotEmpty) {
             String uLabel = '';
             if (row.selectedUnit == 'l')
@@ -108,6 +114,7 @@ void performBulkSave({
               uLabel = 'г';
             else if (row.selectedUnit == 'pcs')
               uLabel = 'шт';
+            
             attributes['Объем'] = '$volume $uLabel'.trim();
           }
 

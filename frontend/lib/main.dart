@@ -25,7 +25,8 @@ import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart'
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
 
 import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
-
+import 'package:retail_os_frontend/features/inventory/bloc/document_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/document_event.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
 import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
@@ -65,6 +66,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
   late final IngredientBloc _ingredientBloc;
   late final RecipeBloc _recipeBloc;
   late final CategoryBloc _categoryBloc;
+  late final DocumentBloc _documentBloc;
   late final AppRouter _appRouter;
 
   @override
@@ -86,6 +88,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _ingredientBloc = IngredientBloc(_inventoryRepository);
     _recipeBloc = RecipeBloc(_inventoryRepository);
     _categoryBloc = CategoryBloc(_inventoryRepository);
+    _documentBloc = DocumentBloc(_inventoryRepository);
     _appRouter = AppRouter(_authBloc);
   }
 
@@ -101,6 +104,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _ingredientBloc.close();
     _recipeBloc.close();
     _categoryBloc.close();
+    _documentBloc.close();
     super.dispose();
   }
 
@@ -127,6 +131,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
           BlocProvider.value(value: _ingredientBloc),
           BlocProvider.value(value: _recipeBloc),
           BlocProvider.value(value: _categoryBloc),
+          BlocProvider.value(value: _documentBloc),
         ],
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
@@ -135,6 +140,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
               context.read<ShiftBloc>().add(CheckCurrentShift());
               context.read<IngredientBloc>().add(LoadIngredients());
               context.read<CategoryBloc>().add(LoadCategories());
+              context.read<DocumentBloc>().add(const LoadDocuments());
             }
           },
           child: BlocBuilder<SettingsBloc, SettingsState>(

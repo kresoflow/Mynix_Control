@@ -97,12 +97,12 @@ class BulkAddCategorySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (tabIndex != 0 && tabIndex != 1) return const SizedBox.shrink();
+    if (tabIndex != 0 && tabIndex != 1 && tabIndex != 2) return const SizedBox.shrink();
 
     return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, catState) {
         if (catState is CategoryLoaded) {
-          final allowedType = tabIndex == 0 ? 'dish' : 'retail';
+          final allowedType = tabIndex == 0 ? 'dish' : (tabIndex == 1 ? 'retail' : 'ingredient');
           final allFiltered = catState.categories
               .where((c) => c.categoryType == allowedType)
               .toList();
@@ -117,16 +117,21 @@ class BulkAddCategorySelector extends StatelessWidget {
                     .toList()
               : allChildren;
 
-          if (children.isNotEmpty &&
-              selectedChildId != null &&
-              !children.any((c) => c.id == selectedChildId)) {
-            WidgetsBinding.instance.addPostFrameCallback(
-              (_) => onChildChanged(null),
-            );
+          final bool parentExists = parents.any((c) => c.id == selectedParentId);
+          final int? safeParentId = parentExists ? selectedParentId : null;
+          
+          final bool childExists = children.any((c) => c.id == selectedChildId);
+          final int? safeChildId = childExists ? selectedChildId : null;
+
+          if (selectedChildId != safeChildId) {
+            WidgetsBinding.instance.addPostFrameCallback((_) => onChildChanged(safeChildId));
+          }
+          if (selectedParentId != safeParentId) {
+            WidgetsBinding.instance.addPostFrameCallback((_) => onParentChanged(safeParentId));
           }
 
           String? parentName = parents
-              .where((c) => c.id == selectedParentId)
+              .where((c) => c.id == safeParentId)
               .firstOrNull
               ?.name;
 
@@ -135,7 +140,7 @@ class BulkAddCategorySelector extends StatelessWidget {
             children: [
               Expanded(
                 child: DropdownButtonFormField<int?>(
-                  value: selectedParentId,
+                  value: safeParentId,
                   decoration: const InputDecoration(
                     labelText: 'Главная категория',
                     border: OutlineInputBorder(),
@@ -158,7 +163,7 @@ class BulkAddCategorySelector extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: DropdownButtonFormField<int?>(
-                  value: selectedChildId,
+                  value: safeChildId,
                   decoration: const InputDecoration(
                     labelText: 'Подкатегория',
                     border: OutlineInputBorder(),
@@ -194,7 +199,7 @@ class BulkAddCategorySelector extends StatelessWidget {
                   onPressed: () => _showCreateCategoryDialog(
                     context,
                     allowedType,
-                    selectedParentId,
+                    safeParentId,
                     parentName,
                   ),
                   tooltip: 'Создать категорию',

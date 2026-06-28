@@ -7,7 +7,7 @@ import 'package:retail_os_frontend/features/inventory/view/inventory_matrix_scre
 import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/add_category_dialog.dart';
 import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/add_ingredient_dialog.dart';
 import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/stock_tab.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/write_off_tab.dart';
+import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/documents_journal_tab.dart';
 
 class WarehouseScreen extends StatefulWidget {
   const WarehouseScreen({super.key});
@@ -23,7 +23,7 @@ class _WarehouseScreenState extends State<WarehouseScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -48,12 +48,7 @@ class _WarehouseScreenState extends State<WarehouseScreen>
                   tabs: const [
                     Tab(icon: Icon(PhosphorIconsRegular.gridFour), text: 'Матрица (Excel)'),
                     Tab(icon: Icon(PhosphorIconsRegular.package), text: 'Остатки'),
-                    Tab(icon: Icon(PhosphorIconsRegular.truck), text: 'Приход'),
-                    Tab(
-                      icon: Icon(PhosphorIconsRegular.shoppingCart),
-                      text: 'Списания',
-                    ),
-                    Tab(icon: Icon(PhosphorIconsRegular.clipboardText), text: 'Инвентаризация'),
+                    Tab(icon: Icon(PhosphorIconsRegular.bookOpenText), text: 'Журнал Документов'),
                   ],
                 ),
               ),
@@ -87,14 +82,7 @@ class _WarehouseScreenState extends State<WarehouseScreen>
             children: const [
               InventoryMatrixScreen(),
               StockTab(filter: 'all'),
-              ReceiveRetailScreen(),
-              WriteOffTab(),
-              Center(
-                child: Text(
-                  'Инвентаризация (В разработке)',
-                  style: TextStyle(fontSize: 24, color: Colors.grey),
-                ),
-              ),
+              DocumentsJournalTab(),
             ],
           ),
         ),

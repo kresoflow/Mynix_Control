@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
+import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:retail_os_frontend/core/widgets/icon_picker_field.dart';
 
 void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   final isEditing = itemToEdit != null;
@@ -9,6 +11,8 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
   
   final sellingPriceController = TextEditingController(text: isEditing ? itemToEdit.price.toInt().toString() : '');
   String selectedUnit = 'pcs';
+  String? selectedIcon;
+  final currency = context.read<SettingsBloc>().state.currency;
 
   showDialog(
     context: context,
@@ -30,7 +34,16 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                   TextField(
                     controller: sellingPriceController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'Цена продажи на кассе (₽)'),
+                    decoration: InputDecoration(labelText: 'Цена продажи на кассе ($currency)'),
+                  ),
+                  const SizedBox(height: 16),
+                  IconPickerField(
+                    selectedIcon: selectedIcon,
+                    onIconSelected: (icon) {
+                      setState(() {
+                        selectedIcon = icon;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -44,16 +57,17 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                 onPressed: () {
                   final sPrice = double.tryParse(sellingPriceController.text) ?? 0.0;
                   if (nameController.text.isNotEmpty && sPrice > 0) {
+                    final Map<String, dynamic> attributes = {};
+                    if (selectedIcon != null) {
+                      attributes['icon'] = 'icon:$selectedIcon';
+                    }
                     if (isEditing) {
-                      context.read<MenuBloc>().add(
-                            UpdateRetailProduct(
-                              itemToEdit.id,
-                              {
-                                'name': nameController.text,
-                                'price': sPrice,
-                              },
-                            ),
-                          );
+                      final Map<String, dynamic> data = {
+                        'name': nameController.text,
+                        'price': sPrice,
+                      };
+                      if (attributes.isNotEmpty) data['attributes'] = attributes;
+                      context.read<MenuBloc>().add(UpdateRetailProduct(itemToEdit.id, data));
                     } else {
                       context.read<MenuBloc>().add(
                             CreateRetailProduct(
@@ -62,6 +76,7 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                               unit: selectedUnit,
                               purchasePrice: 0.0,
                               sellingPrice: sPrice,
+                              attributes: attributes.isNotEmpty ? attributes : null,
                             ),
                           );
                     }

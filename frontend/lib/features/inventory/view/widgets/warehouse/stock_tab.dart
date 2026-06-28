@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/receive_stock_dialog.dart';
 
 class StockTab extends StatefulWidget {
   final String filter;
@@ -67,11 +66,61 @@ class _StockTabState extends State<StockTab>
                   );
                 }
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
-                  ),
+                double totalCapital = 0;
+                int lowStockCount = 0;
+                for (var item in filtered) {
+                  if (item.currentStock > 0) {
+                    totalCapital += item.currentStock * item.costPerUnit;
+                  }
+                  if (item.isLowStock) {
+                    lowStockCount++;
+                  }
+                }
+
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricCard(
+                              context,
+                              title: 'Складской капитал',
+                              value: '${totalCapital.toStringAsFixed(2)} с',
+                              icon: PhosphorIconsRegular.wallet,
+                              color: Colors.green,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildMetricCard(
+                              context,
+                              title: 'Позиций на исходе',
+                              value: lowStockCount.toString(),
+                              icon: PhosphorIconsRegular.warningCircle,
+                              color: lowStockCount > 0 ? Colors.red : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildMetricCard(
+                              context,
+                              title: 'Всего позиций',
+                              value: filtered.length.toString(),
+                              icon: PhosphorIconsRegular.package,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 8,
+                        ),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
@@ -99,45 +148,69 @@ class _StockTabState extends State<StockTab>
                         itemBuilder: (context, index) {
                           final item = filtered[index];
                           final isLowStock = item.isLowStock;
-                          final isRetail =
-                              item.attributes != null &&
-                              item.attributes!['is_retail'] == true;
 
                           return Material(
-                            color: Colors.transparent,
+                            color: isLowStock ? Colors.red.withValues(alpha: 0.05) : Colors.transparent,
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
-                                vertical: 4,
+                                vertical: 8,
                               ),
-                              leading: Icon(
-                                isRetail ? PhosphorIconsRegular.storefront : PhosphorIconsRegular.cookingPot,
-                                color: isLowStock ? Colors.red : Colors.grey,
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  item.unit,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                                ),
                               ),
                               title: Text(
                                 item.name,
-                                style: const TextStyle(fontSize: 16),
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                              subtitle: Text(
-                                'Остаток: ${item.currentStock} ${item.unit} | Мин: ${item.minStockAlert} ${item.unit}',
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Остаток: ${item.currentStock.toInt()} ${item.unit}',
+                                        style: TextStyle(
+                                          color: isLowStock ? Colors.red : Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Text(
+                                        'Мин: ${item.minStockAlert.toInt()} ${item.unit}',
+                                        style: const TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
                                     '${item.costPerUnit.toStringAsFixed(2)} с / ${item.unit}',
                                     style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
                                       color: Colors.grey,
                                     ),
                                   ),
-                                  const SizedBox(width: 24),
-                                  ElevatedButton.icon(
-                                    onPressed: () =>
-                                        ReceiveStockDialog.show(context, item),
-                                    icon: const Icon(PhosphorIconsRegular.plus, size: 18),
-                                    label: const Text('Приход'),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Σ: ${(item.currentStock * item.costPerUnit).toStringAsFixed(2)} с',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -147,13 +220,60 @@ class _StockTabState extends State<StockTab>
                       ),
                     ),
                   ),
-                );
+                ),
+              ),
+            ],
+          );
               }
               return const Center(child: Text('Ошибка загрузки склада'));
             },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildMetricCard(BuildContext context, {required String title, required String value, required IconData icon, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

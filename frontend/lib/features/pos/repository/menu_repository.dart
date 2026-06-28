@@ -17,7 +17,14 @@ class MenuRepository {
 
         if (json['attributes'] != null) {
           final attrs = json['attributes'] as Map<String, dynamic>;
-          final attrList = attrs.values.where((v) => v != null && v.toString().isNotEmpty).join(' • ');
+          final iconValue = attrs['icon'];
+          if (iconValue != null) {
+            fullName = '$fullName|ICON|$iconValue';
+          }
+          final attrList = attrs.entries
+              .where((e) => e.key != 'icon' && e.value != null && e.value.toString().isNotEmpty)
+              .map((e) => e.value.toString())
+              .join('\n');
           if (attrList.isNotEmpty) {
             fullName = '$fullName|ATTR|$attrList';
           }
@@ -27,11 +34,11 @@ class MenuRepository {
         return MenuItem(
           id: json['id'] as int,
           name: fullName,
+          price: (json['price'] as num).toDouble(),
+          categoryId: json['category_id']?.toString() ?? '0',
+          categoryName: json['category_name'] as String?,
           shortName: json['short_name'] as String?,
           tags: (json['tags'] as List?)?.map((e) => e.toString()).toList(),
-          price: (json['price'] as num).toDouble(),
-          categoryId: json['category_id']?.toString() ?? 'uncategorized',
-          categoryName: json['category_name'] as String?,
         );
       }).toList();
     } catch (e) {

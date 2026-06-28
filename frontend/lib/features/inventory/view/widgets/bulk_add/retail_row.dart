@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class RetailRowData {
   final TextEditingController nameController;
-  final TextEditingController typeController;
   final TextEditingController flavorController;
   final TextEditingController volumeController;
   final TextEditingController purchaseController;
@@ -13,7 +12,6 @@ class RetailRowData {
 
   RetailRowData({
     String name = '',
-    String type = '',
     String flavor = '',
     String volume = '',
     String purchase = '0',
@@ -21,7 +19,6 @@ class RetailRowData {
     String stock = '0',
     this.selectedUnit = 'pcs',
   }) : nameController = TextEditingController(text: name),
-       typeController = TextEditingController(text: type),
        flavorController = TextEditingController(text: flavor),
        volumeController = TextEditingController(text: volume),
        purchaseController = TextEditingController(text: purchase),
@@ -31,7 +28,6 @@ class RetailRowData {
   RetailRowData clone() {
     return RetailRowData(
       name: nameController.text,
-      type: typeController.text,
       flavor: flavorController.text,
       volume: volumeController.text,
       purchase: purchaseController.text,
@@ -80,15 +76,6 @@ class _RetailRowWidgetState extends State<RetailRowWidget> {
               DropdownMenuItem(value: 'g', child: Text('г')),
             ],
             onChanged: (val) => setState(() => widget.row.selectedUnit = val!),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          flex: 2,
-          child: TextField(
-            controller: widget.row.typeController,
-            textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Тип'),
           ),
         ),
         const SizedBox(width: 8),

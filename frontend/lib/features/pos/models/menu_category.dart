@@ -52,4 +52,16 @@ class MenuCategory {
       'parent_id': parentId,
     };
   }
+
+  String? getInheritedIcon(List<MenuCategory> allCategories) {
+    if (icon != null && icon!.isNotEmpty) return icon;
+    if (parentId != null) {
+      try {
+        final parent = allCategories.firstWhere((c) => c.id == parentId);
+        final parentIcon = parent.getInheritedIcon(allCategories);
+        if (parentIcon != null && parentIcon.isNotEmpty) return parentIcon;
+      } catch (_) {}
+    }
+    return null;
+  }
 }

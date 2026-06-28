@@ -38,6 +38,8 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     on<LoadRecipe>(_onLoadRecipe);
     on<AddIngredientToRecipe>(_onAddIngredient);
     on<RemoveIngredientFromRecipe>(_onRemoveIngredient);
+    on<UpdateIngredientQuantityInRecipe>(_onUpdateQuantity);
+    on<SaveBulkRecipe>(_onSaveBulkRecipe);
   }
 
   Future<void> _onLoadRecipe(
@@ -78,6 +80,35 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         event.menuItemId,
         event.ingredientId,
       );
+      add(LoadRecipe(event.menuItemId));
+    } catch (e) {
+      emit(RecipeError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateQuantity(
+    UpdateIngredientQuantityInRecipe event,
+    Emitter<RecipeState> emit,
+  ) async {
+    try {
+      await repository.addIngredientToRecipe(
+        event.menuItemId,
+        event.ingredientId,
+        event.quantity,
+      );
+      add(LoadRecipe(event.menuItemId));
+    } catch (e) {
+      emit(RecipeError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onSaveBulkRecipe(
+    SaveBulkRecipe event,
+    Emitter<RecipeState> emit,
+  ) async {
+    emit(RecipeLoading());
+    try {
+      await repository.bulkUpdateRecipe(event.menuItemId, event.recipes);
       add(LoadRecipe(event.menuItemId));
     } catch (e) {
       emit(RecipeError(message: e.toString()));

@@ -36,6 +36,7 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
     on<CreateIngredient>(_onCreateIngredient);
     on<ReceiveStock>(_onReceiveStock);
     on<UpdateIngredient>(_onUpdateIngredient);
+    on<DeleteIngredient>(_onDeleteIngredient);
   }
 
   Future<void> _onLoadIngredients(
@@ -63,6 +64,7 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
         unit: event.unit,
         minStockAlert: event.minStockAlert,
         costPerUnit: event.costPerUnit,
+        categoryId: event.categoryId,
         initialStock: event.initialStock,
         sortOrder: event.sortOrder,
       );
@@ -97,6 +99,19 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
   ) async {
     try {
       await repository.updateIngredient(event.id, event.data);
+      add(LoadIngredients());
+    } catch (e) {
+      emit(IngredientError(message: e.toString()));
+      add(LoadIngredients());
+    }
+  }
+
+  Future<void> _onDeleteIngredient(
+    DeleteIngredient event,
+    Emitter<IngredientState> emit,
+  ) async {
+    try {
+      await repository.deleteIngredient(event.id);
       add(LoadIngredients());
     } catch (e) {
       emit(IngredientError(message: e.toString()));

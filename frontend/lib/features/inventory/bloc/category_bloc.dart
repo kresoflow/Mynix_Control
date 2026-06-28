@@ -63,6 +63,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         color: event.color,
         parentId: event.parentId,
         isVisible: event.isVisible,
+        icon: event.icon,
       );
       add(LoadCategories());
     } catch (e) {
@@ -82,6 +83,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         sortOrder: event.sortOrder,
         color: event.color,
         isVisible: event.isVisible,
+        icon: event.icon,
       );
       add(LoadCategories());
     } catch (e) {

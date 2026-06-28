@@ -191,44 +191,65 @@ class _GeneralSettings extends StatelessWidget {
                   subtitle: 'Выбор светлой или темной темы',
                   trailing: BlocBuilder<ThemeBloc, ThemeMode>(
                     builder: (context, themeMode) {
-                      return Row(
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
                           _buildThemeVariantBtn(
                             context,
                             isDark: isDark,
-                            label: 'Светлая',
-                            isSelected: themeMode == ThemeMode.light,
+                            label: 'Светлая (Basic)',
+                            isSelected: themeMode == ThemeMode.light && state.themeVariant == 'basic',
                             onTap: () {
+                              context.read<SettingsBloc>().add(const UpdateThemeVariant('basic'));
                               if (themeMode != ThemeMode.light) {
                                 context.read<ThemeBloc>().add(ThemeEvent.toggleTheme);
                               }
                             },
                           ),
-                          const SizedBox(width: 8),
+                          _buildThemeVariantBtn(
+                            context,
+                            isDark: isDark,
+                            label: 'Светлая (Cream)',
+                            isSelected: themeMode == ThemeMode.light && state.themeVariant == 'soft_cream',
+                            onTap: () {
+                              context.read<SettingsBloc>().add(const UpdateThemeVariant('soft_cream'));
+                              if (themeMode != ThemeMode.light) {
+                                context.read<ThemeBloc>().add(ThemeEvent.toggleTheme);
+                              }
+                            },
+                          ),
+                          _buildThemeVariantBtn(
+                            context,
+                            isDark: isDark,
+                            label: 'Светлая (Contrast)',
+                            isSelected: themeMode == ThemeMode.light && state.themeVariant == 'high_contrast_light',
+                            onTap: () {
+                              context.read<SettingsBloc>().add(const UpdateThemeVariant('high_contrast_light'));
+                              if (themeMode != ThemeMode.light) {
+                                context.read<ThemeBloc>().add(ThemeEvent.toggleTheme);
+                              }
+                            },
+                          ),
                           _buildThemeVariantBtn(
                             context,
                             isDark: isDark,
                             label: 'Темная (Ember)',
                             isSelected: themeMode == ThemeMode.dark && state.themeVariant == 'basic',
                             onTap: () {
-                              if (state.themeVariant != 'basic') {
-                                context.read<SettingsBloc>().add(const UpdateThemeVariant('basic'));
-                              }
+                              context.read<SettingsBloc>().add(const UpdateThemeVariant('basic'));
                               if (themeMode != ThemeMode.dark) {
                                 context.read<ThemeBloc>().add(ThemeEvent.toggleTheme);
                               }
                             },
                           ),
-                          const SizedBox(width: 8),
                           _buildThemeVariantBtn(
                             context,
                             isDark: isDark,
                             label: 'Темная (Deep Ocean)',
                             isSelected: themeMode == ThemeMode.dark && state.themeVariant == 'deep_ocean',
                             onTap: () {
-                              if (state.themeVariant != 'deep_ocean') {
-                                context.read<SettingsBloc>().add(const UpdateThemeVariant('deep_ocean'));
-                              }
+                              context.read<SettingsBloc>().add(const UpdateThemeVariant('deep_ocean'));
                               if (themeMode != ThemeMode.dark) {
                                 context.read<ThemeBloc>().add(ThemeEvent.toggleTheme);
                               }
@@ -251,13 +272,13 @@ class _GeneralSettings extends StatelessWidget {
                   isDark: isDark,
                   title: 'Валюта по умолчанию',
                   subtitle: 'Отображается в кассе, чеках и аналитике',
-                  trailing: Row(
+                  trailing: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       _buildCurrencyBtn(context, isDark, state, '₽', 'Рубль'),
-                      const SizedBox(width: 8),
                       _buildCurrencyBtn(context, isDark, state, '₸', 'Тенге'),
-                      const SizedBox(width: 8),
-                      _buildCurrencyBtn(context, isDark, state, 'с', 'Сом'),
+                      _buildCurrencyBtn(context, isDark, state, 'с', 'TJS'),
                     ],
                   ),
                 ),
@@ -337,6 +358,7 @@ class _GeneralSettings extends StatelessWidget {
           ),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               code,
@@ -602,7 +624,11 @@ class _SettingsRow extends StatelessWidget {
               ],
             ),
           ),
-          trailing,
+          const SizedBox(width: 24),
+          Flexible(
+            flex: 2,
+            child: trailing,
+          ),
         ],
       ),
     );

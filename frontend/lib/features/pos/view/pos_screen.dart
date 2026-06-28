@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:retail_os_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:retail_os_frontend/features/pos/bloc/shift_event.dart';
 import 'package:retail_os_frontend/features/pos/bloc/shift_state.dart';
+import 'package:retail_os_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class PosScreen extends StatelessWidget {
@@ -47,10 +48,13 @@ class PosScreen extends StatelessWidget {
             return const _OpenShiftScreen();
           }
 
-          return const ResponsiveLayout(
-            mobile: _MobileLayout(),
-            tablet: _TabletLayout(),
-            desktop: _DesktopLayout(),
+          return BlocProvider(
+            create: (context) => PosNavCubit(),
+            child: const ResponsiveLayout(
+              mobile: _MobileLayout(),
+              tablet: _TabletLayout(),
+              desktop: _DesktopLayout(),
+            ),
           );
         },
       ),

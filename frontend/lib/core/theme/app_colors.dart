@@ -66,6 +66,42 @@ abstract class AppColors {
       lightSurface = const Color(0xFFFFFFFF);
       lightCard = const Color(0xFFFFFFFF);
       lightBorder = const Color(0xFFCDE0F5);
+    } else if (variant == 'soft_cream') {
+      brandPrimary = const Color(0xFFD97706);
+      brandSecondary = const Color(0xFFB45309);
+      brandTertiary = const Color(0xFF047857);
+      
+      // We don't change dark theme here as user requested Light Themes, 
+      // but we should set them to default just in case.
+      darkBg = const Color(0xFF0E1016);
+      darkSurface = const Color(0xFF161B22);
+      darkCard = const Color(0xFF1C2130);
+      darkCardHover = const Color(0xFF212840);
+      darkBorder = const Color(0xFF2A3245);
+      
+      lightBg = const Color(0xFFF9F6F0);
+      lightSurface = const Color(0xFFFCFAF5);
+      lightCard = const Color(0xFFFCFAF5);
+      lightBorder = const Color(0xFFE5E0D8);
+      lightText = const Color(0xFF2C2724);
+      lightSubtext = const Color(0xFF78716C);
+    } else if (variant == 'high_contrast_light') {
+      brandPrimary = const Color(0xFF0284C7);
+      brandSecondary = const Color(0xFF0369A1);
+      brandTertiary = const Color(0xFF0F766E);
+      
+      darkBg = const Color(0xFF0E1016);
+      darkSurface = const Color(0xFF161B22);
+      darkCard = const Color(0xFF1C2130);
+      darkCardHover = const Color(0xFF212840);
+      darkBorder = const Color(0xFF2A3245);
+      
+      lightBg = const Color(0xFFEAECEF);
+      lightSurface = const Color(0xFFFFFFFF);
+      lightCard = const Color(0xFFFFFFFF);
+      lightBorder = const Color(0xFF9CA3AF);
+      lightText = const Color(0xFF000000);
+      lightSubtext = const Color(0xFF4B5563);
     } else {
       // Basic Ember
       brandPrimary = const Color(0xFFE8A020);
@@ -82,6 +118,8 @@ abstract class AppColors {
       lightSurface = const Color(0xFFFFFFFF);
       lightCard = const Color(0xFFFFFFFF);
       lightBorder = const Color(0xFFE2E6ED);
+      lightText = const Color(0xFF0E1016);
+      lightSubtext = const Color(0xFF6B7280);
     }
   }
 }

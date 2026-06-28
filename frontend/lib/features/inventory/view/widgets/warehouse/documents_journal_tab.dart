@@ -1,0 +1,242 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/document_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/document_event.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/document_state.dart';
+import 'package:retail_os_frontend/features/inventory/models/document.dart';
+import 'package:retail_os_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
+
+class DocumentsJournalTab extends StatefulWidget {
+  const DocumentsJournalTab({super.key});
+
+  @override
+  State<DocumentsJournalTab> createState() => _DocumentsJournalTabState();
+}
+
+class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
+  String _selectedFilter = 'all'; // all, receipt, write_off, inventory
+
+  @override
+  void initState() {
+    super.initState();
+    // Wrap in Builder or make sure Bloc is provided above this widget
+  }
+
+  Color _getStatusColor(String status) {
+    if (status == 'completed') return Colors.green;
+    if (status == 'draft') return Colors.orange;
+    if (status == 'cancelled') return Colors.red;
+    return Colors.grey;
+  }
+
+  String _getStatusLabel(String status) {
+    if (status == 'completed') return 'Проведен';
+    if (status == 'draft') return 'Черновик';
+    if (status == 'cancelled') return 'Отменен';
+    return status;
+  }
+
+  String _getTypeLabel(String type) {
+    if (type == 'receipt') return 'Приход';
+    if (type == 'write_off') return 'Списание';
+    if (type == 'inventory') return 'Инвентаризация';
+    return type;
+  }
+
+  Color _getTypeColor(String type) {
+    if (type == 'receipt') return Colors.blue;
+    if (type == 'write_off') return Colors.deepOrange;
+    if (type == 'inventory') return Colors.purple;
+    return Colors.grey;
+  }
+
+  void _showReceiveDocumentDialog(BuildContext context) {
+    // Show wide modal
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider.value(
+        value: context.read<DocumentBloc>(),
+        child: const ReceiveDocumentDialog(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Toolbar
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'all', label: Text('Все документы')),
+                  ButtonSegment(value: 'receipt', label: Text('Приходы')),
+                  ButtonSegment(value: 'write_off', label: Text('Списания')),
+                ],
+                selected: {_selectedFilter},
+                onSelectionChanged: (Set<String> newSelection) {
+                  setState(() => _selectedFilter = newSelection.first);
+                  context.read<DocumentBloc>().add(
+                        LoadDocuments(
+                          type: _selectedFilter == 'all' ? null : _selectedFilter,
+                        ),
+                      );
+                },
+              ),
+              const Spacer(),
+              ElevatedButton.icon(
+                onPressed: () => _showReceiveDocumentDialog(context),
+                icon: const Icon(PhosphorIconsRegular.truck),
+                label: const Text('Оформить приход'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: () {},
+                icon: const Icon(PhosphorIconsRegular.shoppingCart),
+                label: const Text('Списание'),
+              ),
+            ],
+          ),
+        ),
+        
+        // Table Header
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
+          ),
+          child: Row(
+            children: const [
+              SizedBox(width: 50, child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('Дата', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('Тип', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 3, child: Text('Поставщик / Комментарий', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('Сумма', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('Статус', style: TextStyle(fontWeight: FontWeight.bold))),
+              SizedBox(width: 50), // Actions
+            ],
+          ),
+        ),
+
+        // List
+        Expanded(
+          child: BlocBuilder<DocumentBloc, DocumentState>(
+            builder: (context, state) {
+              if (state.status == DocumentStatus.initial ||
+                  state.status == DocumentStatus.loading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state.status == DocumentStatus.failure) {
+                return Center(
+                  child: Text('Ошибка загрузки: ${state.errorMessage}',
+                      style: const TextStyle(color: Colors.red)),
+                );
+              }
+              if (state.documents.isEmpty) {
+                return const Center(child: Text('Нет документов'));
+              }
+
+              return ListView.separated(
+                itemCount: state.documents.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final doc = state.documents[index];
+                  return InkWell(
+                    onTap: () {
+                      // Open details
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 50, child: Text('#${doc.id}')),
+                          Expanded(
+                            flex: 2,
+                            child: Text(DateFormat('dd.MM.yyyy HH:mm').format(doc.date.toLocal())),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _getTypeColor(doc.type).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  _getTypeLabel(doc.type),
+                                  style: TextStyle(
+                                    color: _getTypeColor(doc.type),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              doc.type == 'receipt'
+                                  ? (doc.supplierName ?? 'Неизвестный поставщик')
+                                  : (doc.reason ?? '-'),
+                              style: const TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              '${doc.totalAmount.toStringAsFixed(2)} ₸',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(doc.status).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  _getStatusLabel(doc.status),
+                                  style: TextStyle(
+                                    color: _getStatusColor(doc.status),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 50,
+                            child: Icon(PhosphorIconsRegular.caretRight, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}

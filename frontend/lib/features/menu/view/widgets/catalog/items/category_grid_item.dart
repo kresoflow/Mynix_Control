@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
+import 'package:retail_os_frontend/core/utils/icon_helper.dart';
 import 'package:retail_os_frontend/core/widgets/app_card.dart';
-import '../catalog_icons.dart';
 import '../catalog_enums.dart';
+import '../catalog_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CategoryGridItem extends StatelessWidget {
@@ -30,6 +33,12 @@ class CategoryGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? effectiveIcon = category.icon;
+    final catState = context.read<CategoryBloc>().state;
+    if (catState is CategoryLoaded) {
+      effectiveIcon = category.getInheritedIcon(catState.categories);
+    }
+
     return AppCard(
       onTap: onTap,
       child: Stack(
@@ -50,7 +59,14 @@ class CategoryGridItem extends StatelessWidget {
                       color: AppColors.brandPrimary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: buildCategoryIcon(category.name, size: 32, color: AppColors.brandPrimary),
+                    child: (effectiveIcon == null || effectiveIcon.isEmpty)
+                        ? buildCategoryIcon(category.name, size: 32, color: AppColors.brandPrimary)
+                        : IconHelper.buildIcon(
+                            effectiveIcon,
+                            fallback: PhosphorIconsRegular.list,
+                            size: 32,
+                            color: AppColors.brandPrimary,
+                          ),
                   ),
                   const SizedBox(height: 14),
                   Text(

@@ -2,20 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
 import 'package:retail_os_frontend/core/widgets/app_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:retail_os_frontend/core/utils/icon_helper.dart';
+import 'package:retail_os_frontend/features/menu/view/widgets/catalog/catalog_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-Widget _buildCategoryIcon(String name, {required double size, required Color color}) {
-  final lower = name.toLowerCase();
-  if (lower.contains('пицца')) return Icon(PhosphorIcons.pizza(), size: size, color: color);
-  if (lower.contains('бургер')) return Icon(PhosphorIcons.hamburger(), size: size, color: color);
-  if (lower.contains('напит') || lower.contains('вода') || lower.contains('сок')) return Center(child: FaIcon(FontAwesomeIcons.bottleWater, size: size, color: color));
-  if (lower.contains('соус')) return Icon(PhosphorIcons.drop(), size: size, color: color);
-  if (lower.contains('гарнир') || lower.contains('салат')) return Icon(PhosphorIcons.bowlFood(), size: size, color: color);
-  if (lower.contains('десерт') || lower.contains('сладкое')) return Icon(PhosphorIcons.cookie(), size: size, color: color);
-  if (lower.contains('хотдог')) return Center(child: FaIcon(FontAwesomeIcons.hotdog, size: size, color: color));
-  return Icon(PhosphorIcons.package(), size: size, color: color);
-}
 
 class PosCategoryCard extends StatelessWidget {
   final dynamic cat;
@@ -31,6 +22,12 @@ class PosCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? effectiveIcon = cat.icon;
+    final catState = context.read<CategoryBloc>().state;
+    if (catState is CategoryLoaded) {
+      effectiveIcon = cat.getInheritedIcon(catState.categories);
+    }
+
     return AppCard(
       onTap: onTap,
       child: Padding(
@@ -49,11 +46,14 @@ class PosCategoryCard extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: _buildCategoryIcon(
-                cat.name,
-                size: 32, 
-                color: Colors.white
-              ),
+              child: (effectiveIcon == null || effectiveIcon.isEmpty)
+                  ? buildCategoryIcon(cat.name, size: 32, color: Colors.white)
+                  : IconHelper.buildIcon(
+                      effectiveIcon,
+                      fallback: PhosphorIconsRegular.list,
+                      size: 32,
+                      color: Colors.white,
+                    ),
             ),
             Text(
               cat.name,

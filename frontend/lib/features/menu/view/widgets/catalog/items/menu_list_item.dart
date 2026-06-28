@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:retail_os_frontend/core/theme/app_colors.dart';
 import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
+import 'package:retail_os_frontend/core/utils/icon_helper.dart';
 import '../catalog_enums.dart';
+import '../catalog_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class MenuListItem extends StatelessWidget {
@@ -25,11 +30,40 @@ class MenuListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? effectiveIcon = item.icon;
+    Widget? customCategoryIcon;
+    if (effectiveIcon == null || effectiveIcon.isEmpty) {
+      final categoryState = context.read<CategoryBloc>().state;
+      if (categoryState is CategoryLoaded) {
+        try {
+          final category = categoryState.categories.firstWhere((c) => c.id.toString() == item.categoryId);
+          effectiveIcon = category.getInheritedIcon(categoryState.categories);
+          if (effectiveIcon == null || effectiveIcon.isEmpty) {
+            customCategoryIcon = buildCategoryIcon(category.name, size: 20, color: AppColors.brandPrimary);
+          }
+        } catch (_) {}
+      }
+    }
+
     return Material(
       color: Colors.transparent,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: const Icon(PhosphorIconsRegular.hamburger, color: Colors.grey),
+        leading: Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.brandPrimary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: customCategoryIcon ?? IconHelper.buildIcon(
+            effectiveIcon,
+            fallback: item.isRetail ? PhosphorIconsRegular.package : PhosphorIconsRegular.hamburger,
+            size: 20,
+            color: AppColors.brandPrimary,
+          ),
+        ),
         title: Text(item.cleanName, style: const TextStyle(fontSize: 16)),
         subtitle: item.attributesString != null ? Text(item.attributesString!) : null,
         trailing: manageMode == CategoryManageMode.delete
