@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 import 'bulk_add/dish_row.dart';
 import 'bulk_add/ingredient_row.dart';
 import 'bulk_add/retail_row.dart';
 import 'bulk_add/bulk_add_category_selector.dart';
+import 'bulk_add/bulk_add_list_widget.dart';
+import 'bulk_add/bulk_add_footer.dart';
 import 'bulk_add/bulk_add_save_helper.dart';
 
 class BulkAddModal extends StatefulWidget {
@@ -103,6 +106,14 @@ class _BulkAddModalState extends State<BulkAddModal> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tabLabels = ['Блюда', 'Товары витрины', 'Сырьё'];
+    final tabIcons = [
+      PhosphorIconsRegular.cookingPot,
+      PhosphorIconsRegular.storefront,
+      PhosphorIconsRegular.leaf,
+    ];
+
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): _saveAll,
@@ -111,159 +122,191 @@ class _BulkAddModalState extends State<BulkAddModal> {
       child: Focus(
         autofocus: true,
         child: Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+          elevation: 0,
           child: Container(
             width: MediaQuery.of(context).size.width * 0.95,
-            height: MediaQuery.of(context).size.height * 0.85,
-            padding: const EdgeInsets.all(24),
+            height: MediaQuery.of(context).size.height * 0.88,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 40,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Массовое добавление',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(PhosphorIconsRegular.x),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SegmentedButton<int>(
-                      segments: const [
-                        ButtonSegment(value: 0, label: Text('Блюда')),
-                        ButtonSegment(value: 1, label: Text('Товары витрины')),
-                        ButtonSegment(
-                          value: 2,
-                          label: Text('Сырье / Ингредиенты'),
+                // ── Шапка ──────────────────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.fromLTRB(28, 20, 20, 0),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.brandGradient,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      ],
-                      selected: {_tabIndex},
-                      onSelectionChanged: (val) {
-                        setState(() {
-                          _tabIndex = val.first;
-                          if ((_tabIndex == 0 && _dishRows.isEmpty) ||
-                              (_tabIndex == 1 && _retailRows.isEmpty) ||
-                              (_tabIndex == 2 && _ingredientRows.isEmpty)) {
-                            _addRow();
-                          }
-                        });
-                      },
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _addRow,
-                      icon: const Icon(PhosphorIconsRegular.plus),
-                      label: const Text('Добавить строку'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                BulkAddCategorySelector(
-                  tabIndex: _tabIndex,
-                  selectedParentId: _selectedParentId,
-                  selectedChildId: _selectedChildId,
-                  onParentChanged: (val) => setState(() {
-                    _selectedParentId = val;
-                  }),
-                  onChildChanged: (val) =>
-                      setState(() => _selectedChildId = val),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: _tabIndex == 0
-                        ? _dishRows.length
-                        : (_tabIndex == 1
-                              ? _retailRows.length
-                              : _ingredientRows.length),
-                    separatorBuilder: (context, index) => const Divider(),
-                    itemBuilder: (context, index) {
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: 12.0,
-                              right: 8.0,
-                            ),
-                            child: Text(
-                              '${index + 1}.',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: _tabIndex == 0
-                                ? DishRowWidget(
-                                    row: _dishRows[index],
-                                    onAddRow: _addRow,
-                                  )
-                                : (_tabIndex == 1
-                                      ? RetailRowWidget(
-                                          row: _retailRows[index],
-                                          onAddRow: _addRow,
-                                        )
-                                      : IngredientRowWidget(
-                                          row: _ingredientRows[index],
-                                          onAddRow: _addRow,
-                                        )),
-                          ),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(
-                                  PhosphorIconsRegular.copy,
-                                  color: Colors.blue,
-                                ),
-                                onPressed: () => _duplicateRow(index),
-                                tooltip: 'Дублировать',
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  PhosphorIconsRegular.trash,
-                                  color: Colors.red,
-                                ),
-                                onPressed: () => _removeRow(index),
-                                tooltip: 'Удалить',
-                              ),
-                            ],
-                          ),
-                        ],
-                      );
-                    },
+                        child: const Icon(PhosphorIconsRegular.listBullets, color: Colors.white, size: 18),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Массовое добавление',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: Icon(PhosphorIconsRegular.x,
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                        onPressed: () => Navigator.pop(context),
+                        tooltip: 'Закрыть',
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: _saveAll,
-                    child: const Text(
-                      'Сохранить всё (Ctrl+S)',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+
+                // ── Pill-tabs + кнопка добавить ───────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Row(
+                    children: [
+                      // Pill tabs
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkBg : AppColors.lightBg,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(tabLabels.length, (i) {
+                            final selected = _tabIndex == i;
+                            return GestureDetector(
+                              onTap: () => setState(() {
+                                _tabIndex = i;
+                                if ((i == 0 && _dishRows.isEmpty) ||
+                                    (i == 1 && _retailRows.isEmpty) ||
+                                    (i == 2 && _ingredientRows.isEmpty)) {
+                                  _addRow();
+                                }
+                              }),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: selected
+                                      ? AppColors.brandPrimary
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: selected
+                                      ? [BoxShadow(
+                                          color: AppColors.brandPrimary.withValues(alpha: 0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        )]
+                                      : null,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      tabIcons[i],
+                                      size: 16,
+                                      color: selected
+                                          ? Colors.white
+                                          : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      tabLabels[i],
+                                      style: TextStyle(
+                                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                                        fontSize: 13,
+                                        color: selected
+                                            ? Colors.white
+                                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: _addRow,
+                        icon: const Icon(PhosphorIconsRegular.plus, size: 16),
+                        label: const Text('Строка'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.brandPrimary,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // ── Выбор категорий ───────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                       ),
                     ),
+                    child: BulkAddCategorySelector(
+                      tabIndex: _tabIndex,
+                      selectedParentId: _selectedParentId,
+                      selectedChildId: _selectedChildId,
+                      onParentChanged: (val) => setState(() {
+                        _selectedParentId = val;
+                        _selectedChildId = null;
+                      }),
+                      onChildChanged: (val) => setState(() => _selectedChildId = val),
+                    ),
                   ),
+                ),
+                const SizedBox(height: 12),
+
+                // ── Список строк ──────────────────────────────────────────
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: BulkAddListWidget(
+                      tabIndex: _tabIndex,
+                      dishRows: _dishRows,
+                      retailRows: _retailRows,
+                      ingredientRows: _ingredientRows,
+                      onAddRow: _addRow,
+                      onDuplicateRow: _duplicateRow,
+                      onRemoveRow: _removeRow,
+                    ),
+                  ),
+                ),
+
+                // ── Footer ────────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 8, 28, 20),
+                  child: BulkAddFooter(onSaveAll: _saveAll),
                 ),
               ],
             ),
@@ -272,6 +315,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
       ),
     );
   }
+
 
   @override
   void dispose() {

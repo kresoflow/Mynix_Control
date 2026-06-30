@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
@@ -104,9 +104,9 @@ void performBulkSave({
           
           if (volume.isNotEmpty) {
             String uLabel = '';
-            if (row.selectedUnit == 'l')
+            if (row.selectedUnit == 'l') {
               uLabel = 'л';
-            else if (row.selectedUnit == 'ml')
+            } else if (row.selectedUnit == 'ml')
               uLabel = 'мл';
             else if (row.selectedUnit == 'kg')
               uLabel = 'кг';

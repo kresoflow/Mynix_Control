@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 
 class BulkAddCategorySelector extends StatelessWidget {
   final int tabIndex;
@@ -140,7 +140,7 @@ class BulkAddCategorySelector extends StatelessWidget {
             children: [
               Expanded(
                 child: DropdownButtonFormField<int?>(
-                  value: safeParentId,
+                  initialValue: safeParentId,
                   decoration: const InputDecoration(
                     labelText: 'Главная категория',
                     border: OutlineInputBorder(),
@@ -163,7 +163,7 @@ class BulkAddCategorySelector extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: DropdownButtonFormField<int?>(
-                  value: safeChildId,
+                  initialValue: safeChildId,
                   decoration: const InputDecoration(
                     labelText: 'Подкатегория',
                     border: OutlineInputBorder(),

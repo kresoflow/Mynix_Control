@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'bulk_input_decoration.dart';
 
 class DishRowData {
   final TextEditingController nameController;
@@ -30,7 +31,7 @@ class DishRowWidget extends StatelessWidget {
             controller: row.nameController,
             focusNode: row.firstFocusNode,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Название блюда'),
+            decoration: buildBulkInputDecoration(context, 'Название блюда'),
           ),
         ),
         const SizedBox(width: 8),
@@ -40,10 +41,11 @@ class DishRowWidget extends StatelessWidget {
             controller: row.priceController,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => onAddRow(),
-            decoration: const InputDecoration(labelText: 'Цена продажи (с)'),
+            decoration: buildBulkInputDecoration(context, 'Цена продажи (с)'),
           ),
         ),
       ],
     );
   }
 }
+

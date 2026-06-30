@@ -62,7 +62,7 @@ class _IngredientRowWidgetState extends State<IngredientRowWidget> {
         Expanded(
           flex: 2,
           child: DropdownButtonFormField<String>(
-            value: widget.row.selectedUnit,
+            initialValue: widget.row.selectedUnit,
             decoration: const InputDecoration(labelText: 'Ед. изм.'),
             items: const [
               DropdownMenuItem(value: 'pcs', child: Text('Штуки')),
