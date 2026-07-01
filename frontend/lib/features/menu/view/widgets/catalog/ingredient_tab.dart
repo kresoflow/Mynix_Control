@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
-import 'package:retail_os_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_category_sidebar.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_item_row.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:retail_os_frontend/core/utils/icon_helper.dart';
 
 class IngredientTab extends StatefulWidget {
   const IngredientTab({super.key});
@@ -20,13 +20,14 @@ class IngredientTab extends StatefulWidget {
 class _IngredientTabState extends State<IngredientTab> {
   int? _selectedCategoryId;
   bool _isManageMode = false;
-  Set<int> _selectedIngredients = {};
+  final Set<int> _selectedIngredients = {};
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
+          // Header Bar
           Container(
             height: 60,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -48,7 +49,7 @@ class _IngredientTabState extends State<IngredientTab> {
                             ? rawIngredients
                             : rawIngredients.where((i) => i.categoryId == _selectedCategoryId).toList();
                         setState(() {
-                          _selectedIngredients = filteredIngredients.map((i) => i.id).toSet();
+                          _selectedIngredients.addAll(filteredIngredients.map((i) => i.id));
                         });
                       }
                     },
@@ -132,6 +133,8 @@ class _IngredientTabState extends State<IngredientTab> {
               ],
             ),
           ),
+          
+          // Main Content Area
           Expanded(
             child: BlocBuilder<IngredientBloc, IngredientState>(
               builder: (context, state) {
@@ -141,60 +144,13 @@ class _IngredientTabState extends State<IngredientTab> {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Sidebar for categories
-                      Container(
-                        width: 250,
-                        decoration: BoxDecoration(
-                          border: Border(right: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.5))),
-                        ),
-                        child: BlocBuilder<CategoryBloc, CategoryState>(
-                          builder: (context, catState) {
-                            if (catState is CategoryLoading) return const Center(child: CircularProgressIndicator());
-                            if (catState is CategoryLoaded) {
-                              final ingredientCategories = catState.categories.where((c) => c.categoryType == 'ingredient').toList();
-                              return ListView(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                children: [
-                                  ListTile(
-                                    title: const Text('Все сырье', style: TextStyle(fontWeight: FontWeight.bold)),
-                                    selected: _selectedCategoryId == null,
-                                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-                                    onTap: () => setState(() => _selectedCategoryId = null),
-                                  ),
-                                  const Divider(),
-                                  ...ingredientCategories.map((cat) => ListTile(
-                                    leading: IconHelper.buildIcon(
-                                      cat.icon, 
-                                      size: 24, 
-                                      color: _selectedCategoryId == cat.id ? Theme.of(context).colorScheme.primary : Colors.grey
-                                    ),
-                                    title: Text(cat.name),
-                                    selected: _selectedCategoryId == cat.id,
-                                    selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-                                    onTap: () => setState(() => _selectedCategoryId = cat.id),
-                                    trailing: PopupMenuButton<String>(
-                                      icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, size: 18, color: Colors.grey),
-                                      onSelected: (val) {
-                                        if (val == 'edit') {
-                                          showAddCategoryDialog(context, itemToEdit: cat);
-                                        } else if (val == 'delete') {
-                                          context.read<CategoryBloc>().add(DeleteCategory(cat.id, mode: 'all'));
-                                        }
-                                      },
-                                      itemBuilder: (ctx) => [
-                                        const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                                        const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
-                                      ],
-                                    ),
-                                  )),
-                                ],
-                              );
-                            }
-                            return const SizedBox();
-                          },
-                        ),
+                      // Sidebar Tree
+                      IngredientCategorySidebar(
+                        selectedCategoryId: _selectedCategoryId,
+                        onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
                       ),
-                      // Main Content
+                      
+                      // Ingredient List
                       Expanded(
                         child: Builder(
                           builder: (context) {
@@ -202,12 +158,14 @@ class _IngredientTabState extends State<IngredientTab> {
                             final filteredIngredients = _selectedCategoryId == null
                                 ? rawIngredients
                                 : rawIngredients.where((i) => i.categoryId == _selectedCategoryId).toList();
+                                
                             final currency = context.watch<SettingsBloc>().state.currency;
                             final catState = context.watch<CategoryBloc>().state;
                                 
                             if (filteredIngredients.isEmpty) {
                               return const Center(child: Text('В этой категории пусто'));
                             }
+                            
                             return Padding(
                               padding: const EdgeInsets.all(24),
                               child: Container(
@@ -225,59 +183,35 @@ class _IngredientTabState extends State<IngredientTab> {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: ListView.separated(
+                                  child: ListView.builder(
                                     padding: EdgeInsets.zero,
                                     itemCount: filteredIngredients.length,
-                                    separatorBuilder: (context, index) => const Divider(height: 1),
                                     itemBuilder: (context, index) {
                                       final item = filteredIngredients[index];
-                                      final isLowStock = item.isLowStock;
-                                      return Material(
-                                        color: _selectedIngredients.contains(item.id) 
-                                            ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3) 
-                                            : Colors.transparent,
-                                        child: ListTile(
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                          leading: _isManageMode
-                                            ? Checkbox(
-                                                value: _selectedIngredients.contains(item.id),
-                                                onChanged: (val) {
-                                                  setState(() {
-                                                    if (val == true) _selectedIngredients.add(item.id);
-                                                    else _selectedIngredients.remove(item.id);
-                                                  });
-                                                },
-                                              )
-                                            : () {
-                                                final cat = catState is CategoryLoaded ? catState.categories.where((c) => c.id == item.categoryId).firstOrNull : null;
-                                                return IconHelper.buildIcon(cat?.icon, color: isLowStock ? Colors.red : Colors.grey);
-                                              }(),
-                                          title: Text(item.name, style: const TextStyle(fontSize: 16)),
-                                          subtitle: Text('Остаток: ${item.currentStock.toInt()} ${item.unit} | Алерт: ${item.minStockAlert.toInt()} ${item.unit}'),
-                                          trailing: _isManageMode ? null : Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                '${item.costPerUnit.toInt()} $currency / ${item.unit}',
-                                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
-                                              ),
-                                              PopupMenuButton<String>(
-                                                icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
-                                                onSelected: (val) {
-                                                  if (val == 'edit') {
-                                                    showAddIngredientDialog(context, itemToEdit: item);
-                                                  } else if (val == 'delete') {
-                                                    context.read<IngredientBloc>().add(DeleteIngredient(item.id));
-                                                  }
-                                                },
-                                                itemBuilder: (ctx) => [
-                                                  const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                                                  const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                      
+                                      String? iconStr;
+                                      if (catState is CategoryLoaded) {
+                                        final cat = catState.categories.where((c) => c.id == item.categoryId).firstOrNull;
+                                        iconStr = cat?.icon;
+                                      }
+
+                                      return IngredientItemRow(
+                                        item: item,
+                                        categoryIcon: iconStr,
+                                        currency: currency,
+                                        isManageMode: _isManageMode,
+                                        isSelected: _selectedIngredients.contains(item.id),
+                                        onSelect: (val) {
+                                          setState(() {
+                                            if (val == true) {
+                                              _selectedIngredients.add(item.id);
+                                            } else {
+                                              _selectedIngredients.remove(item.id);
+                                            }
+                                          });
+                                        },
+                                        onEdit: () => showAddIngredientDialog(context, itemToEdit: item),
+                                        onDelete: () => context.read<IngredientBloc>().add(DeleteIngredient(item.id)),
                                       );
                                     },
                                   ),
