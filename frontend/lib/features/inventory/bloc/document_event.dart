@@ -35,3 +35,34 @@ class CompleteDocument extends DocumentEvent {
   @override
   List<Object?> get props => [documentId];
 }
+
+class CreateSupplier extends DocumentEvent {
+  final String name;
+  final String? contactInfo;
+
+  const CreateSupplier(this.name, {this.contactInfo});
+
+  @override
+  List<Object?> get props => [name, contactInfo];
+}
+
+class UpdateSupplier extends DocumentEvent {
+  final int id;
+  final String name;
+  final String? contactInfo;
+  final bool? isActive;
+
+  const UpdateSupplier(this.id, {required this.name, this.contactInfo, this.isActive});
+
+  @override
+  List<Object?> get props => [id, name, contactInfo, isActive];
+}
+
+class DeleteSupplier extends DocumentEvent {
+  final int id;
+
+  const DeleteSupplier(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}

@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_category.dart';
-import 'package:retail_os_frontend/features/inventory/models/document.dart';
-import 'package:retail_os_frontend/features/inventory/models/supplier.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/features/inventory/models/document.dart';
+import 'package:mynix_frontend/features/inventory/models/supplier.dart';
 
 class InventoryRepository {
   final Dio _dio;
@@ -38,7 +38,7 @@ class InventoryRepository {
           'cost_per_unit': costPerUnit,
           'initial_stock': initialStock,
           'sort_order': sortOrder,
-          if (categoryId != null) 'category_id': categoryId,
+          'category_id': ?categoryId,
         },
       );
     } catch (e) {
@@ -259,10 +259,7 @@ class InventoryRepository {
     try {
       final response = await _dio.post(
         '/suppliers/',
-        data: {
-          'name': name,
-          if (contactInfo != null) 'contact_info': contactInfo,
-        },
+        data: {'name': name, if (contactInfo != null) 'contact_info': contactInfo},
       );
       return Supplier.fromJson(response.data);
     } catch (e) {
@@ -270,11 +267,35 @@ class InventoryRepository {
     }
   }
 
+  Future<Supplier> updateSupplier(int id, {required String name, String? contactInfo, bool? isActive}) async {
+    try {
+      final response = await _dio.put(
+        '/suppliers/$id',
+        data: {
+          'name': name,
+          if (contactInfo != null) 'contact_info': contactInfo,
+          if (isActive != null) 'is_active': isActive,
+        },
+      );
+      return Supplier.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to update supplier: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteSupplier(int id) async {
+    try {
+      await _dio.delete('/suppliers/$id');
+    } catch (e) {
+      throw Exception('Failed to delete supplier: ${e.toString()}');
+    }
+  }
+
   // --- Documents ---
   Future<List<InventoryDocument>> getDocuments({String? type}) async {
     try {
       final response = await _dio.get('/documents/', queryParameters: {
-        if (type != null) 'type': type,
+        'type': ?type,
       });
       final data = response.data as List;
       return data.map((json) => InventoryDocument.fromJson(json)).toList();

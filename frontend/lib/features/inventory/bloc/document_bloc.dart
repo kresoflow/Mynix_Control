@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
 import 'document_event.dart';
 import 'document_state.dart';
 
@@ -11,6 +11,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<LoadSuppliers>(_onLoadSuppliers);
     on<CreateDocument>(_onCreateDocument);
     on<CompleteDocument>(_onCompleteDocument);
+    on<CreateSupplier>(_onCreateSupplier);
+    on<UpdateSupplier>(_onUpdateSupplier);
+    on<DeleteSupplier>(_onDeleteSupplier);
   }
 
   Future<void> _onLoadDocuments(
@@ -73,15 +76,53 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     try {
       await _repository.completeDocument(event.documentId);
       final documents = await _repository.getDocuments();
-      emit(state.copyWith(
-        isSubmitting: false,
-        documents: documents,
-      ));
+      emit(state.copyWith(isSubmitting: false, documents: documents));
     } catch (e) {
-      emit(state.copyWith(
-        isSubmitting: false,
-        errorMessage: e.toString(),
-      ));
+      emit(state.copyWith(isSubmitting: false, errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onCreateSupplier(
+    CreateSupplier event,
+    Emitter<DocumentState> emit,
+  ) async {
+    try {
+      await _repository.createSupplier(event.name, contactInfo: event.contactInfo);
+      final suppliers = await _repository.getSuppliers();
+      emit(state.copyWith(suppliers: suppliers));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateSupplier(
+    UpdateSupplier event,
+    Emitter<DocumentState> emit,
+  ) async {
+    try {
+      await _repository.updateSupplier(
+        event.id,
+        name: event.name,
+        contactInfo: event.contactInfo,
+        isActive: event.isActive,
+      );
+      final suppliers = await _repository.getSuppliers();
+      emit(state.copyWith(suppliers: suppliers));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteSupplier(
+    DeleteSupplier event,
+    Emitter<DocumentState> emit,
+  ) async {
+    try {
+      await _repository.deleteSupplier(event.id);
+      final suppliers = await _repository.getSuppliers();
+      emit(state.copyWith(suppliers: suppliers));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
     }
   }
 }
