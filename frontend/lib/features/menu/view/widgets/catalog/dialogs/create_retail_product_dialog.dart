@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:retail_os_frontend/core/widgets/icon_picker_field.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
 
 void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   final isEditing = itemToEdit != null;

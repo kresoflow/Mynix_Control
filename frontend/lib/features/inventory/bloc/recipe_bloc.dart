@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:retail_os_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
 import 'recipe_event.dart';
 
 abstract class RecipeState extends Equatable {

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:retail_os_frontend/features/inventory/repository/inventory_repository.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'category_event.dart';
 
 abstract class CategoryState extends Equatable {

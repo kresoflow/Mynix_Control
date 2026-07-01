@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:retail_os_frontend/features/analytics/models/dashboard_data.dart';
+import 'package:mynix_frontend/features/analytics/models/dashboard_data.dart';
 
 class AnalyticsRepository {
   final Dio _dio;

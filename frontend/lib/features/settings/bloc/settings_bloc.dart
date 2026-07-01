@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 
 // --- Events ---
 abstract class SettingsEvent extends Equatable {

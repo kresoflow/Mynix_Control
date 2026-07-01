@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:retail_os_frontend/features/inventory/models/document.dart';
-import 'package:retail_os_frontend/features/inventory/models/supplier.dart';
+import 'package:mynix_frontend/features/inventory/models/document.dart';
+import 'package:mynix_frontend/features/inventory/models/supplier.dart';
 
 enum DocumentStatus { initial, loading, success, failure }
 

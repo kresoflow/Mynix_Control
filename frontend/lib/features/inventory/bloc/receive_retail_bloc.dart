@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
 import 'receive_retail_event.dart';
 import 'receive_retail_state.dart';
 

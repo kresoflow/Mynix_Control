@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
-import 'package:retail_os_frontend/features/analytics/models/dashboard_data.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/features/analytics/models/dashboard_data.dart';
 
 class LowStockAlertsWidget extends StatelessWidget {
   final List<LowStockAlert> alerts;
 
-  const LowStockAlertsWidget({Key? key, required this.alerts}) : super(key: key);
+  const LowStockAlertsWidget({super.key, required this.alerts});
 
   @override
   Widget build(BuildContext context) {

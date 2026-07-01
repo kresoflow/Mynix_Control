@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
-import 'package:retail_os_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:retail_os_frontend/features/auth/bloc/auth_event.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class MynixNavRail extends StatelessWidget {
   final bool isOpen;

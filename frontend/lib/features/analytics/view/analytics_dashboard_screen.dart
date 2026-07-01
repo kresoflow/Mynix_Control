@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:retail_os_frontend/features/analytics/bloc/analytics_bloc.dart';
-import 'package:retail_os_frontend/features/analytics/bloc/analytics_event.dart';
-import 'package:retail_os_frontend/features/analytics/bloc/analytics_state.dart';
-import 'package:retail_os_frontend/features/analytics/repository/analytics_repository.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/analytics/bloc/analytics_bloc.dart';
+import 'package:mynix_frontend/features/analytics/bloc/analytics_event.dart';
+import 'package:mynix_frontend/features/analytics/bloc/analytics_state.dart';
+import 'package:mynix_frontend/features/analytics/repository/analytics_repository.dart';
 import 'widgets/dashboard_metric_card.dart';
 import 'widgets/revenue_share_widget.dart';
 import 'widgets/low_stock_alerts_widget.dart';
 import 'widgets/top_items_widget.dart';
 import 'widgets/recent_orders_widget.dart';
-import 'package:retail_os_frontend/core/network/api_client.dart';
+import 'package:mynix_frontend/core/network/api_client.dart';
 
 class AnalyticsDashboardScreen extends StatelessWidget {
   const AnalyticsDashboardScreen({super.key});

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 
 void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int? initialCategoryId}) {
   final isEditing = itemToEdit != null;
@@ -34,7 +34,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedUnit,
+                    initialValue: selectedUnit,
                     decoration: const InputDecoration(labelText: 'Единица измерения'),
                     items: const [
                       DropdownMenuItem(value: 'pcs', child: Text('Штуки (шт)')),
@@ -58,7 +58,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                         final ingredientCategories = state.categories.where((c) => c.categoryType == 'ingredient').toList();
                         if (ingredientCategories.isNotEmpty) {
                           return DropdownButtonFormField<int>(
-                            value: selectedCategoryId,
+                            initialValue: selectedCategoryId,
                             decoration: const InputDecoration(labelText: 'Категория'),
                             items: [
                               const DropdownMenuItem<int>(

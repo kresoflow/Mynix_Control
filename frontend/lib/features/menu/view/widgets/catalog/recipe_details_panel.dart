@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_event.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'dialogs/recipe_bulk_edit_dialog.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 

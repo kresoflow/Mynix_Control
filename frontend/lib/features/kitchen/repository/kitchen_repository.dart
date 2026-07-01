@@ -1,7 +1,6 @@
 import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:retail_os_frontend/core/network/api_client.dart';
+import 'package:mynix_frontend/core/network/api_client.dart';
 
 class KitchenRepository {
   WebSocketChannel? _channel;

@@ -13,9 +13,9 @@ class MainLayout extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= 800) {
-          return DesktopLayout(child: child, location: location);
+          return DesktopLayout(location: location, child: child);
         } else {
-          return MobileLayout(child: child, location: location);
+          return MobileLayout(location: location, child: child);
         }
       },
     );

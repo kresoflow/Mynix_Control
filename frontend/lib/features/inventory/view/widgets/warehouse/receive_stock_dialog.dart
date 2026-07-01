@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 
 class ReceiveStockDialog extends StatefulWidget {
   final Ingredient item;

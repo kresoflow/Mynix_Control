@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 
 class MenuManagerItemsGrid extends StatelessWidget {
   final int? currentParentId;

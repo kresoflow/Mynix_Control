@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:retail_os_frontend/core/theme/theme_bloc.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -301,7 +301,7 @@ class _GeneralSettings extends StatelessWidget {
                   isDark: isDark,
                   title: 'Звуковые уведомления',
                   subtitle: 'Звуки при успешной оплате или ошибках',
-                  trailing: Switch(value: true, onChanged: (_) {}, activeColor: AppColors.brandPrimary),
+                  trailing: Switch(value: true, onChanged: (_) {}, activeThumbColor: AppColors.brandPrimary),
                 ),
               ],
             ),
@@ -418,7 +418,7 @@ class _HardwareSettings extends StatelessWidget {
               isDark: isDark,
               title: 'Сканер штрих-кодов',
               subtitle: 'Режим эмуляции клавиатуры',
-              trailing: Switch(value: true, onChanged: (_) {}, activeColor: AppColors.brandPrimary),
+              trailing: Switch(value: true, onChanged: (_) {}, activeThumbColor: AppColors.brandPrimary),
             ),
           ],
         ),
@@ -492,7 +492,7 @@ class _TaxSettings extends StatelessWidget {
               isDark: isDark,
               title: 'Включать налоги в цену',
               subtitle: 'Цены в каталоге отображаются с учетом налога',
-              trailing: Switch(value: true, onChanged: (_) {}, activeColor: AppColors.brandPrimary),
+              trailing: Switch(value: true, onChanged: (_) {}, activeThumbColor: AppColors.brandPrimary),
             ),
           ],
         ),

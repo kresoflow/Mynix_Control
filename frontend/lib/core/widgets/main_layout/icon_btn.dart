@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 
 class IconBtn extends StatefulWidget {
   final IconData icon;

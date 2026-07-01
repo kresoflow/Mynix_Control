@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
-import 'package:retail_os_frontend/core/utils/icon_helper.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import '../catalog_enums.dart';
 import '../catalog_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -75,8 +75,9 @@ class MenuListItem extends StatelessWidget {
                   PopupMenuButton<String>(
                     icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
                     onSelected: (val) {
-                      if (val == 'edit') onEdit();
-                      else if (val == 'delete') onDelete();
+                      if (val == 'edit') {
+                        onEdit();
+                      } else if (val == 'delete') onDelete();
                     },
                     itemBuilder: (ctx) => [
                       const PopupMenuItem(value: 'edit', child: Text('Редактировать')),

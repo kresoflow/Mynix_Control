@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 
 class ReceiveRetailState extends Equatable {
   final bool isLoading;

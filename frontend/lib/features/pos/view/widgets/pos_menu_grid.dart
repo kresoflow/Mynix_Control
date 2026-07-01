@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/cart_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/pos_nav_cubit.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 
 import 'components/pos_breadcrumb_bar.dart';
 import 'components/pos_category_card.dart';

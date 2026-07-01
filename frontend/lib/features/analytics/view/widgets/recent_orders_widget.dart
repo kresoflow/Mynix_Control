@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
-import 'package:retail_os_frontend/features/analytics/models/dashboard_data.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/features/analytics/models/dashboard_data.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:intl/intl.dart';
 
 class RecentOrdersWidget extends StatelessWidget {
   final List<RecentOrder> orders;
 
-  const RecentOrdersWidget({Key? key, required this.orders}) : super(key: key);
+  const RecentOrdersWidget({super.key, required this.orders});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,7 @@ class RecentOrdersWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...orders.map((order) => _buildOrderCard(context, order, isDark)).toList(),
+          ...orders.map((order) => _buildOrderCard(context, order, isDark)),
         ],
       ),
     );

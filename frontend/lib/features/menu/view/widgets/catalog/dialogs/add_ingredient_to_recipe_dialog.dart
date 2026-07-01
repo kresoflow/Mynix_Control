@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
 
 void showAddIngredientToRecipeDialog(BuildContext context, int menuItemId, List<dynamic> ingredients) {
   int? selectedIngredientId;
@@ -18,7 +18,7 @@ void showAddIngredientToRecipeDialog(BuildContext context, int menuItemId, List<
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<int>(
-                  value: selectedIngredientId,
+                  initialValue: selectedIngredientId,
                   decoration: const InputDecoration(labelText: 'Сырье'),
                   items: ingredients.map((ing) {
                     return DropdownMenuItem<int>(

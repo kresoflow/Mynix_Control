@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   const AddIngredientDialog({super.key});
@@ -43,7 +43,7 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: selectedUnit,
+              initialValue: selectedUnit,
               decoration: const InputDecoration(labelText: 'Единица измерения'),
               items: const [
                 DropdownMenuItem(value: 'pcs', child: Text('Штуки (шт)')),

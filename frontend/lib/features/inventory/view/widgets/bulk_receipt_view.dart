@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
 import 'bulk_receipt_row_widget.dart';
 

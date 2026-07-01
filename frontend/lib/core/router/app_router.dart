@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:retail_os_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:retail_os_frontend/features/auth/bloc/auth_state.dart';
-import 'package:retail_os_frontend/features/auth/view/login_screen.dart';
-import 'package:retail_os_frontend/features/pos/view/pos_screen.dart';
-import 'package:retail_os_frontend/features/kitchen/view/kitchen_screen.dart';
-import 'package:retail_os_frontend/features/menu/view/catalog_screen.dart';
-import 'package:retail_os_frontend/features/inventory/view/warehouse_screen.dart';
-import 'package:retail_os_frontend/features/analytics/view/analytics_dashboard_screen.dart';
-import 'package:retail_os_frontend/features/settings/view/settings_screen.dart';
-import 'package:retail_os_frontend/core/widgets/main_layout.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'package:mynix_frontend/features/auth/view/login_screen.dart';
+import 'package:mynix_frontend/features/pos/view/pos_screen.dart';
+import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
+import 'package:mynix_frontend/features/menu/view/catalog_screen.dart';
+import 'package:mynix_frontend/features/inventory/view/warehouse_screen.dart';
+import 'package:mynix_frontend/features/analytics/view/analytics_dashboard_screen.dart';
+import 'package:mynix_frontend/features/settings/view/settings_screen.dart';
+import 'package:mynix_frontend/core/widgets/main_layout.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
@@ -51,7 +51,7 @@ class AppRouter {
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) {
-          return MainLayout(child: child, location: state.uri.path);
+          return MainLayout(location: state.uri.path, child: child);
         },
         routes: [
           GoRoute(

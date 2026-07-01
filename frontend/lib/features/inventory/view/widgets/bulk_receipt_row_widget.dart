@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
 
 class BulkReceiptRowWidget extends StatelessWidget {

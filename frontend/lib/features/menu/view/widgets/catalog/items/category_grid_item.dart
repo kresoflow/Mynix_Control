@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
-import 'package:retail_os_frontend/core/utils/icon_helper.dart';
-import 'package:retail_os_frontend/core/widgets/app_card.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/utils/icon_helper.dart';
+import 'package:mynix_frontend/core/widgets/app_card.dart';
 import '../catalog_enums.dart';
 import '../catalog_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -101,8 +101,9 @@ class CategoryGridItem extends StatelessWidget {
               child: PopupMenuButton<String>(
                 icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
                 onSelected: (val) {
-                  if (val == 'edit') onEdit();
-                  else if (val == 'visibility') onVisibilityToggle();
+                  if (val == 'edit') {
+                    onEdit();
+                  } else if (val == 'visibility') onVisibilityToggle();
                   else if (val == 'delete') onDelete();
                 },
                 itemBuilder: (ctx) => [

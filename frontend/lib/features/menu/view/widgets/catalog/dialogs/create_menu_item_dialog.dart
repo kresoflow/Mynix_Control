@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 
 void showAddMenuItemDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   final isEditing = itemToEdit != null;
@@ -12,8 +12,8 @@ void showAddMenuItemDialog(BuildContext context, {int? currentCategoryId, MenuIt
   
   int? selectedCategoryId = currentCategoryId;
   final currency = context.read<SettingsBloc>().state.currency;
-  if (isEditing && itemToEdit?.categoryId != null) {
-    selectedCategoryId = int.tryParse(itemToEdit!.categoryId);
+  if (isEditing) {
+    selectedCategoryId = int.tryParse(itemToEdit.categoryId);
   }
 
   showDialog(
@@ -46,7 +46,7 @@ void showAddMenuItemDialog(BuildContext context, {int? currentCategoryId, MenuIt
                         final dishCategories = catState.categories.where((c) => c.categoryType == 'dish').toList();
                         return DropdownButtonFormField<int>(
                           decoration: const InputDecoration(labelText: 'Категория'),
-                          value: selectedCategoryId,
+                          initialValue: selectedCategoryId,
                           items: [
                             const DropdownMenuItem<int>(value: null, child: Text('Без категории')),
                             ...dishCategories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))),

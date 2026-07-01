@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
-import 'package:retail_os_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 
 class RevenueShareWidget extends StatelessWidget {
   final double dishesRevenue;
@@ -10,11 +10,11 @@ class RevenueShareWidget extends StatelessWidget {
   final double totalRevenue;
 
   const RevenueShareWidget({
-    Key? key,
+    super.key,
     required this.dishesRevenue,
     required this.retailRevenue,
     required this.totalRevenue,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

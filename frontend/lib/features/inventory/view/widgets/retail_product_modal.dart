@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 
 class RetailProductModal extends StatefulWidget {
   final int? preselectedCategoryId;
@@ -160,7 +160,7 @@ class _RetailProductModalState extends State<RetailProductModal> {
                               labelText: 'Категория',
                               border: OutlineInputBorder(),
                             ),
-                            value: _selectedCategoryId,
+                            initialValue: _selectedCategoryId,
                             items: state.categories.map((c) {
                               return DropdownMenuItem(
                                 value: c.id,
@@ -204,7 +204,7 @@ class _RetailProductModalState extends State<RetailProductModal> {
                         labelText: 'Ед. изм.',
                         border: OutlineInputBorder(),
                       ),
-                      value: _selectedUnit,
+                      initialValue: _selectedUnit,
                       items: _units.entries.map((e) {
                         return DropdownMenuItem(
                           value: e.key,

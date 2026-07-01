@@ -1,17 +1,16 @@
  import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_event.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
-import 'package:retail_os_frontend/core/widgets/app_card.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_card.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -90,7 +89,7 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
                   const SizedBox(height: 16),
                   if (catState is CategoryLoaded)
                     DropdownButtonFormField<int>(
-                      value: selectedCategoryId,
+                      initialValue: selectedCategoryId,
                       decoration: const InputDecoration(labelText: 'Категория'),
                       items: catState.categories.map((c) {
                         return DropdownMenuItem(
@@ -159,7 +158,7 @@ class _InventoryScreenState extends State<InventoryScreen> with SingleTickerProv
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: selectedUnit,
+                      initialValue: selectedUnit,
                       decoration: const InputDecoration(labelText: 'Единица измерения'),
                       items: const [
                         DropdownMenuItem(value: 'pcs', child: Text('Штуки (шт)')),
@@ -540,7 +539,7 @@ class _CategoryTabState extends State<_CategoryTab> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: selectedUnit,
+                      initialValue: selectedUnit,
                       decoration: const InputDecoration(labelText: 'Единица измерения'),
                       items: const [
                         DropdownMenuItem(value: 'pcs', child: Text('Штуки (шт)')),
@@ -587,8 +586,9 @@ class _CategoryTabState extends State<_CategoryTab> {
                       if (flavorController.text.isNotEmpty) attributes['Вкус'] = flavorController.text;
                       if (volumeController.text.isNotEmpty) {
                         String uLabel = '';
-                        if (selectedUnit == 'l') uLabel = 'л';
-                        else if (selectedUnit == 'ml') uLabel = 'мл';
+                        if (selectedUnit == 'l') {
+                          uLabel = 'л';
+                        } else if (selectedUnit == 'ml') uLabel = 'мл';
                         else if (selectedUnit == 'kg') uLabel = 'кг';
                         else if (selectedUnit == 'g') uLabel = 'г';
                         else if (selectedUnit == 'pcs') uLabel = 'шт';
@@ -1058,7 +1058,7 @@ attributes['Объем'] = '${volumeController.text} $uLabel'.trim();
 }
 
 class _MenuTab extends StatelessWidget {
-  const _MenuTab({super.key});
+  const _MenuTab();
 
   @override
   Widget build(BuildContext context) {
@@ -1109,7 +1109,7 @@ class _MenuTab extends StatelessWidget {
 }
 
 class _IngredientTab extends StatelessWidget {
-  const _IngredientTab({super.key});
+  const _IngredientTab();
 
   @override
   Widget build(BuildContext context) {
@@ -1182,7 +1182,7 @@ class _RecipeTabState extends State<_RecipeTab> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<int>(
-                    value: selectedIngredientId,
+                    initialValue: selectedIngredientId,
                     decoration: const InputDecoration(labelText: 'Сырье'),
                     items: ingredients.map((ing) {
                       return DropdownMenuItem<int>(

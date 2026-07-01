@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:retail_os_frontend/features/pos/models/cart_item.dart';
+import 'package:mynix_frontend/features/pos/models/cart_item.dart';
 
 class OrderRepository {
   final Dio _dio;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/write_off_dialog.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/write_off_dialog.dart';
 
 class WriteOffTab extends StatefulWidget {
   const WriteOffTab({super.key});

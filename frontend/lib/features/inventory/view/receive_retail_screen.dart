@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/receive_retail_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/receive_retail_event.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/receive_retail_state.dart';
-import 'package:retail_os_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/features/inventory/bloc/receive_retail_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/receive_retail_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/receive_retail_state.dart';
+import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
 import 'widgets/receive_retail_item_widget.dart';
 
 class ReceiveRetailScreen extends StatelessWidget {
-  const ReceiveRetailScreen({Key? key}) : super(key: key);
+  const ReceiveRetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class ReceiveRetailScreen extends StatelessWidget {
 }
 
 class _ReceiveRetailView extends StatelessWidget {
-  const _ReceiveRetailView({Key? key}) : super(key: key);
+  const _ReceiveRetailView();
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +76,7 @@ class _ReceiveRetailView extends StatelessWidget {
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: state.products.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final product = state.products[index];
                       final quantity = state.quantities[product.id] ?? 0.0;

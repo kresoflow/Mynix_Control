@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'cashbox_modal.dart';
 import 'mynix_app_bar.dart';
 import 'mynix_nav_rail.dart';

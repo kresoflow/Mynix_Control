@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_event.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
-import 'package:retail_os_frontend/core/utils/icon_helper.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/core/utils/icon_helper.dart';
 
 class RecipeMenuList extends StatelessWidget {
   final int? selectedMenuItemId;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:retail_os_frontend/features/auth/bloc/auth_state.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 
 class HasPermission extends StatelessWidget {
   final String permission;

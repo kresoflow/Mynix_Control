@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:retail_os_frontend/features/analytics/models/dashboard_data.dart';
+import 'package:mynix_frontend/features/analytics/models/dashboard_data.dart';
 
 abstract class AnalyticsState extends Equatable {
   const AnalyticsState();

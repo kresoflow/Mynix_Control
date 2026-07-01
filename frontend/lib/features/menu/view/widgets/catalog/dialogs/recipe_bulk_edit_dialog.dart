@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 

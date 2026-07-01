@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 
 class WriteOffDialog extends StatefulWidget {
   final Ingredient item;
@@ -48,7 +48,7 @@ class _WriteOffDialogState extends State<WriteOffDialog> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: 'Порча',
+            initialValue: 'Порча',
             decoration: const InputDecoration(labelText: 'Причина списания'),
             items: const [
               DropdownMenuItem(

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'catalog_dialogs.dart';
 import 'catalog_header.dart';
@@ -214,8 +214,12 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
                                 onPressed: () {
-                                  for (var itemId in _selectedItems) context.read<MenuBloc>().add(DeleteMenuItem(itemId));
-                                  for (var catId in _selectedCategories) context.read<CategoryBloc>().add(DeleteCategory(catId, mode: 'all'));
+                                  for (var itemId in _selectedItems) {
+                                    context.read<MenuBloc>().add(DeleteMenuItem(itemId));
+                                  }
+                                  for (var catId in _selectedCategories) {
+                                    context.read<CategoryBloc>().add(DeleteCategory(catId, mode: 'all'));
+                                  }
                                   setState(() {
                                     _selectedItems.clear();
                                     _selectedCategories.clear();

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
-import 'package:retail_os_frontend/features/analytics/models/dashboard_data.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/features/analytics/models/dashboard_data.dart';
 
 class TopItemsWidget extends StatelessWidget {
   final List<TopItem> topItems;
 
-  const TopItemsWidget({Key? key, required this.topItems}) : super(key: key);
+  const TopItemsWidget({super.key, required this.topItems});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class TopItemsWidget extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 12.0),
               child: _buildItemRow(item, index + 1, isFirst, isDark),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

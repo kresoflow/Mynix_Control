@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
-import 'package:retail_os_frontend/core/widgets/app_button.dart';
-import 'package:retail_os_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 
 class PosCheckoutPanel extends StatelessWidget {
   const PosCheckoutPanel({super.key});

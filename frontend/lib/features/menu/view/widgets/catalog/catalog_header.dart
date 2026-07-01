@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'catalog_enums.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -166,8 +162,9 @@ class CatalogHeader extends StatelessWidget {
                   icon: const Icon(PhosphorIconsRegular.faders),
                   tooltip: 'Настройки вида и управления',
                   onSelected: (value) {
-                    if (value == 'view_grid') onViewModeChanged(CategoryViewMode.grid);
-                    else if (value == 'view_list') onViewModeChanged(CategoryViewMode.list);
+                    if (value == 'view_grid') {
+                      onViewModeChanged(CategoryViewMode.grid);
+                    } else if (value == 'view_list') onViewModeChanged(CategoryViewMode.list);
                     else if (value == 'manage_visibility') onManageModeChanged(CategoryManageMode.visibility);
                     else if (value == 'manage_delete') onManageModeChanged(CategoryManageMode.delete);
                   },

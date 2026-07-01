@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 
 void main() async {
   // Let's just execute python script to fetch the JSON via HTTP

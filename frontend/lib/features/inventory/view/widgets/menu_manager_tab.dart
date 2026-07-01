@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
-import 'package:retail_os_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 
-import 'menu_manager_breadcrumbs.dart';
 import 'menu_manager_categories_list.dart';
 import 'menu_manager_items_grid.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/menu_manager_breadcrumbs.dart';
 
 class MenuManagerTab extends StatefulWidget {
   const MenuManagerTab({super.key});

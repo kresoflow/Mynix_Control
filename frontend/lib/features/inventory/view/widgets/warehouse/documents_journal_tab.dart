@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/document_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/document_event.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/document_state.dart';
-import 'package:retail_os_frontend/features/inventory/models/document.dart';
-import 'package:retail_os_frontend/features/inventory/repository/inventory_repository.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
+import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
 
 class DocumentsJournalTab extends StatefulWidget {
   const DocumentsJournalTab({super.key});

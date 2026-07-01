@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 
 class MenuManagerBreadcrumbs extends StatelessWidget {
   final List<MenuCategory> navigationHistory;

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:retail_os_frontend/core/widgets/responsive_layout.dart';
-import 'package:retail_os_frontend/features/pos/view/widgets/pos_menu_grid.dart';
-import 'package:retail_os_frontend/features/pos/view/widgets/pos_cart.dart';
+import 'package:mynix_frontend/core/widgets/responsive_layout.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/pos_menu_grid.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/pos_cart.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/shift_bloc.dart';
-import 'package:retail_os_frontend/features/pos/bloc/shift_event.dart';
-import 'package:retail_os_frontend/features/pos/bloc/shift_state.dart';
-import 'package:retail_os_frontend/features/pos/bloc/pos_nav_cubit.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
+import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class PosScreen extends StatelessWidget {

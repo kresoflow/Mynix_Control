@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:retail_os_frontend/features/pos/models/cart_item.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
-import 'package:retail_os_frontend/features/pos/repository/order_repository.dart';
+import 'package:mynix_frontend/features/pos/models/cart_item.dart';
+import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/features/pos/repository/order_repository.dart';
 
 // --- Events ---
 abstract class CartEvent extends Equatable {

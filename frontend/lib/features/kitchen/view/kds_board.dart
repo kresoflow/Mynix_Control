@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/kitchen/bloc/kitchen_bloc.dart';
-import 'package:retail_os_frontend/features/kitchen/bloc/kitchen_event.dart';
-import 'package:retail_os_frontend/features/kitchen/bloc/kitchen_state.dart';
-import 'package:retail_os_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:retail_os_frontend/features/auth/bloc/auth_state.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/features/kitchen/bloc/kitchen_bloc.dart';
+import 'package:mynix_frontend/features/kitchen/bloc/kitchen_event.dart';
+import 'package:mynix_frontend/features/kitchen/bloc/kitchen_state.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class KdsBoard extends StatefulWidget {
   const KdsBoard({super.key});

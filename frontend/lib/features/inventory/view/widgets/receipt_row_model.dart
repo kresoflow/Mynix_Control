@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:retail_os_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 
 class ReceiptRowModel {
   Ingredient? ingredient;

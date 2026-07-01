@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
-import 'package:retail_os_frontend/core/widgets/icon_picker_field.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
+import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
 
 void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynamic itemToEdit, String type = 'dish'}) {
   final isEditing = itemToEdit != null;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/core/theme/app_colors.dart';
-import 'package:retail_os_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 
 import 'components/pos_cart_header.dart';
 import 'components/pos_cart_item_tile.dart';
