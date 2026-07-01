@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -56,64 +59,82 @@ class StockCategoryAccordion extends StatelessWidget {
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          initiallyExpanded: isExpanded,
-          onExpansionChanged: onExpansionChanged,
-          tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          iconColor: AppColors.brandPrimary,
-          collapsedIconColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          title: Row(
-            children: [
-              Icon(
-                PhosphorIconsRegular.folder,
-                color: isExpanded ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  categoryName,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isExpanded ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
-                  ),
-                ),
-              ),
-              // Бейджики категории
-              if (!isExpanded) ...[
-                if (lowStockCount > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+        child: BlocBuilder<CategoryBloc, CategoryState>(
+          builder: (context, catState) {
+            String? iconString;
+            if (catState is CategoryLoaded && items.isNotEmpty && items.first.categoryId != null) {
+              final cat = catState.categories.where((c) => c.id == items.first.categoryId).firstOrNull;
+              iconString = cat?.icon;
+            }
+
+            return ExpansionTile(
+              key: PageStorageKey('$categoryName-$isExpanded'), // Принудительно перестраивает при изменении внешнего isExpanded
+              initiallyExpanded: isExpanded,
+              onExpansionChanged: onExpansionChanged,
+              tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              iconColor: AppColors.brandPrimary,
+              collapsedIconColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              title: Row(
+                children: [
+                  if (iconString != null && iconString.isNotEmpty)
+                    IconHelper.buildIcon(
+                      iconString,
+                      size: 24,
+                      color: isExpanded ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                    )
+                  else
+                    Icon(
+                      PhosphorIconsRegular.folder,
+                      color: isExpanded ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                     ),
+                  const SizedBox(width: 12),
+                  Expanded(
                     child: Text(
-                      '$lowStockCount мало',
-                      style: const TextStyle(fontSize: 11, color: Colors.red, fontWeight: FontWeight.bold),
+                      categoryName,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isExpanded ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
+                      ),
                     ),
                   ),
-                const SizedBox(width: 8),
-                Text(
-                  '${items.length} поз.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  'Σ ${totalCapital.toStringAsFixed(0)} с',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
-                ),
-              ],
-            ],
-          ),
-          children: items.map((item) => StockItemRow(item: item)).toList(),
+                  // Бейджики категории
+                  if (!isExpanded) ...[
+                    if (lowStockCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$lowStockCount мало',
+                          style: const TextStyle(fontSize: 11, color: Colors.red, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${items.length} поз.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Σ ${totalCapital.toStringAsFixed(0)} с',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              children: items.map((item) => StockItemRow(item: item)).toList(),
+            );
+          },
         ),
       ),
     );

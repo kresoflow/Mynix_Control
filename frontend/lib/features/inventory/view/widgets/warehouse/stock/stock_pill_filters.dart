@@ -23,7 +23,9 @@ class StockPillFilters extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          const Spacer(),
           _buildPill(
             context: context,
             label: 'Все',
@@ -44,7 +46,7 @@ class StockPillFilters extends StatelessWidget {
             value: 'retail',
             isDark: isDark,
           ),
-          const Spacer(),
+          const SizedBox(width: 24),
           TextButton.icon(
             onPressed: onToggleExpandAll,
             icon: Icon(
