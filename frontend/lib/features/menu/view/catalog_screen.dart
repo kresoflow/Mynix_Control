@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:retail_os_frontend/features/menu/view/widgets/catalog/catalog_browser_tab.dart';
-import 'package:retail_os_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
-import 'package:retail_os_frontend/features/menu/view/widgets/catalog/ingredient_tab.dart';
-import 'package:retail_os_frontend/features/menu/view/widgets/catalog/recipe_tab.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_browser_tab.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CatalogScreen extends StatefulWidget {
@@ -18,7 +16,7 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -43,8 +41,6 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                     Tab(icon: Icon(PhosphorIconsRegular.squaresFour), text: 'Категории'),
                     Tab(icon: Icon(PhosphorIconsRegular.hamburger), text: 'Блюда'),
                     Tab(icon: Icon(PhosphorIconsRegular.storefront), text: 'Витрина'),
-                    Tab(icon: Icon(PhosphorIconsRegular.cookingPot), text: 'Сырье'),
-                    Tab(icon: Icon(PhosphorIconsRegular.receipt), text: 'Техкарты'),
                   ],
                 ),
               ),
@@ -132,8 +128,6 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                   ),
                 ),
               ),
-              const IngredientTab(),
-              const RecipeTab(),
             ],
           ),
         ),

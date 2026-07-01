@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:retail_os_frontend/features/inventory/view/receive_retail_screen.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/retail_product_modal.dart';
-import 'package:retail_os_frontend/features/inventory/view/inventory_matrix_screen.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/retail_product_modal.dart';
+import 'package:mynix_frontend/features/inventory/view/inventory_matrix_screen.dart';
 
-import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/add_category_dialog.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/add_ingredient_dialog.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/stock_tab.dart';
-import 'package:retail_os_frontend/features/inventory/view/widgets/warehouse/documents_journal_tab.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/add_category_dialog.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/add_ingredient_dialog.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock_tab.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/documents_journal_tab.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/suppliers_tab.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient_tab.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/recipe_tab.dart';
 
 class WarehouseScreen extends StatefulWidget {
   const WarehouseScreen({super.key});
@@ -23,7 +25,7 @@ class _WarehouseScreenState extends State<WarehouseScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -49,6 +51,9 @@ class _WarehouseScreenState extends State<WarehouseScreen>
                     Tab(icon: Icon(PhosphorIconsRegular.gridFour), text: 'Матрица (Excel)'),
                     Tab(icon: Icon(PhosphorIconsRegular.package), text: 'Остатки'),
                     Tab(icon: Icon(PhosphorIconsRegular.bookOpenText), text: 'Журнал Документов'),
+                    Tab(icon: Icon(PhosphorIconsRegular.truck), text: 'Поставщики'),
+                    Tab(icon: Icon(PhosphorIconsRegular.cookingPot), text: 'Сырье'),
+                    Tab(icon: Icon(PhosphorIconsRegular.receipt), text: 'Техкарты'),
                   ],
                 ),
               ),
@@ -83,6 +88,9 @@ class _WarehouseScreenState extends State<WarehouseScreen>
               InventoryMatrixScreen(),
               StockTab(filter: 'all'),
               DocumentsJournalTab(),
+              SuppliersTab(),
+              IngredientTab(),
+              RecipeTab(),
             ],
           ),
         ),
