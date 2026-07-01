@@ -137,8 +137,19 @@ class _IngredientTabState extends State<IngredientTab> {
           
           // Main Content Area
           Expanded(
-            child: BlocBuilder<IngredientBloc, IngredientState>(
-              builder: (context, state) {
+            child: BlocListener<IngredientBloc, IngredientState>(
+              listener: (context, state) {
+                if (state is IngredientError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message.replaceAll('Exception: ', '')),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: BlocBuilder<IngredientBloc, IngredientState>(
+                builder: (context, state) {
                 if (state is IngredientLoading) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (state is IngredientLoaded) {
@@ -249,6 +260,7 @@ class _IngredientTabState extends State<IngredientTab> {
                 return const Center(child: Text('Ошибка загрузки склада'));
               },
             ),
+          ),
           ),
         ],
       ),
