@@ -95,7 +95,7 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
               autofocus: true,
               decoration: InputDecoration(
                 labelText: 'Название поставщика *',
-                prefixIcon: Icon(PhosphorIconsRegular.buildingStorefront,
+                prefixIcon: Icon(PhosphorIconsRegular.storefront,
                     color: AppColors.brandPrimary, size: 18),
                 filled: true,
                 fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
