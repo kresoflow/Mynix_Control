@@ -54,16 +54,13 @@ class StockPillFilters extends StatelessWidget {
               icon: Icon(
                 isExpandedAll ? PhosphorIconsRegular.caretUp : PhosphorIconsRegular.caretDown,
                 size: 16,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
               ),
               label: Text(
                 isExpandedAll ? 'Свернуть все' : 'Развернуть все',
-                style: TextStyle(
-                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               style: TextButton.styleFrom(
+                foregroundColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,

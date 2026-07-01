@@ -68,7 +68,7 @@ class StockCategoryAccordion extends StatelessWidget {
             }
 
             return ExpansionTile(
-              key: PageStorageKey('$categoryName-$isExpanded'), // Принудительно перестраивает при изменении внешнего isExpanded
+              key: ValueKey('$categoryName-$isExpanded'), // Принудительно перестраивает при изменении внешнего isExpanded, используем ValueKey чтобы избежать коллизий PageStorage
               initiallyExpanded: isExpanded,
               onExpansionChanged: onExpansionChanged,
               tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
