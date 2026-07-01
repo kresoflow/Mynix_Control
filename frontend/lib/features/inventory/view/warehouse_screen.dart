@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/retail_product_modal.dart';
-import 'package:mynix_frontend/features/inventory/view/inventory_matrix_screen.dart';
 
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/add_category_dialog.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/add_ingredient_dialog.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock_tab.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/documents_journal_tab.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/suppliers_tab.dart';
@@ -25,7 +21,7 @@ class _WarehouseScreenState extends State<WarehouseScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -48,34 +44,12 @@ class _WarehouseScreenState extends State<WarehouseScreen>
                   controller: _tabController,
                   isScrollable: true,
                   tabs: const [
-                    Tab(icon: Icon(PhosphorIconsRegular.gridFour), text: 'Матрица (Excel)'),
                     Tab(icon: Icon(PhosphorIconsRegular.package), text: 'Остатки'),
-                    Tab(icon: Icon(PhosphorIconsRegular.bookOpenText), text: 'Журнал Документов'),
-                    Tab(icon: Icon(PhosphorIconsRegular.truck), text: 'Поставщики'),
                     Tab(icon: Icon(PhosphorIconsRegular.cookingPot), text: 'Сырье'),
                     Tab(icon: Icon(PhosphorIconsRegular.receipt), text: 'Техкарты'),
+                    Tab(icon: Icon(PhosphorIconsRegular.bookOpenText), text: 'Журнал Документов'),
+                    Tab(icon: Icon(PhosphorIconsRegular.truck), text: 'Поставщики'),
                   ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              OutlinedButton.icon(
-                icon: const Icon(PhosphorIconsRegular.plusSquare, size: 18),
-                label: const Text('Категория'),
-                onPressed: () => AddCategoryDialog.show(context),
-              ),
-              const SizedBox(width: 8),
-              OutlinedButton.icon(
-                icon: const Icon(PhosphorIconsRegular.cookingPot, size: 18),
-                label: const Text('Сырье'),
-                onPressed: () => AddIngredientDialog.show(context),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(
-                icon: const Icon(PhosphorIconsRegular.storefront, size: 18),
-                label: const Text('Витрина'),
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (_) => const RetailProductModal(),
                 ),
               ),
             ],
@@ -85,12 +59,11 @@ class _WarehouseScreenState extends State<WarehouseScreen>
           child: TabBarView(
             controller: _tabController,
             children: const [
-              InventoryMatrixScreen(),
               StockTab(filter: 'all'),
-              DocumentsJournalTab(),
-              SuppliersTab(),
               IngredientTab(),
               RecipeTab(),
+              DocumentsJournalTab(),
+              SuppliersTab(),
             ],
           ),
         ),
