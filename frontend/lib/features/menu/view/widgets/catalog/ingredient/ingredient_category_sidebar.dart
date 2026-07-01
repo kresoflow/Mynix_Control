@@ -114,7 +114,7 @@ class IngredientCategorySidebar extends StatelessWidget {
           initiallyExpanded: isChildSelected || isSelected,
           tilePadding: EdgeInsets.only(left: 16.0 + (level * 16.0), right: 8.0),
           leading: IconHelper.buildIcon(
-            category.icon,
+            category.getInheritedIcon(allCategories),
             size: 24,
             color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
           ),
@@ -143,7 +143,7 @@ class IngredientCategorySidebar extends StatelessWidget {
         padding: EdgeInsets.only(left: level * 16.0),
         child: ListTile(
           leading: IconHelper.buildIcon(
-            category.icon,
+            category.getInheritedIcon(allCategories),
             size: 24,
             color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
           ),

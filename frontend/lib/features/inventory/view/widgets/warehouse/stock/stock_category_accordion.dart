@@ -62,9 +62,9 @@ class StockCategoryAccordion extends StatelessWidget {
         child: BlocBuilder<CategoryBloc, CategoryState>(
           builder: (context, catState) {
             String? iconString;
-            if (catState is CategoryLoaded && items.isNotEmpty && items.first.categoryId != null) {
-              final cat = catState.categories.where((c) => c.id == items.first.categoryId).firstOrNull;
-              iconString = cat?.icon;
+            if (catState is CategoryLoaded) {
+              final rootCat = catState.categories.where((c) => c.name == categoryName).firstOrNull;
+              iconString = rootCat?.getInheritedIcon(catState.categories);
             }
 
             return ExpansionTile(

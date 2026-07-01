@@ -7,6 +7,7 @@ import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.da
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_category_sidebar.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_item_row.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -154,13 +155,34 @@ class _IngredientTabState extends State<IngredientTab> {
                       Expanded(
                         child: Builder(
                           builder: (context) {
+                            final catState = context.watch<CategoryBloc>().state;
+                            List<MenuCategory> allCategories = [];
+                            if (catState is CategoryLoaded) {
+                              allCategories = catState.categories;
+                            }
+
+                            Set<int> getCategoryAndSubcategories(int parentId) {
+                              final result = {parentId};
+                              var toCheck = [parentId];
+                              while (toCheck.isNotEmpty) {
+                                final current = toCheck.removeLast();
+                                final children = allCategories.where((c) => c.parentId == current).map((c) => c.id).toList();
+                                result.addAll(children);
+                                toCheck.addAll(children);
+                              }
+                              return result;
+                            }
+
                             final rawIngredients = state.ingredients.where((i) => !i.isRetail).toList();
                             final filteredIngredients = _selectedCategoryId == null
                                 ? rawIngredients
-                                : rawIngredients.where((i) => i.categoryId == _selectedCategoryId).toList();
+                                : rawIngredients.where((i) {
+                                    if (i.categoryId == null) return false;
+                                    final validIds = getCategoryAndSubcategories(_selectedCategoryId!);
+                                    return validIds.contains(i.categoryId);
+                                  }).toList();
                                 
                             final currency = context.watch<SettingsBloc>().state.currency;
-                            final catState = context.watch<CategoryBloc>().state;
                                 
                             if (filteredIngredients.isEmpty) {
                               return const Center(child: Text('В этой категории пусто'));
@@ -192,7 +214,7 @@ class _IngredientTabState extends State<IngredientTab> {
                                       String? iconStr;
                                       if (catState is CategoryLoaded) {
                                         final cat = catState.categories.where((c) => c.id == item.categoryId).firstOrNull;
-                                        iconStr = cat?.icon;
+                                        iconStr = cat?.getInheritedIcon(catState.categories);
                                       }
 
                                       return IngredientItemRow(

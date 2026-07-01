@@ -4,6 +4,8 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_pill_filters.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_accordion.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class StockTab extends StatefulWidget {
@@ -96,10 +98,29 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                   }
                 }
 
+                final catState = context.watch<CategoryBloc>().state;
+                List<MenuCategory> allCategories = [];
+                if (catState is CategoryLoaded) {
+                  allCategories = catState.categories;
+                }
+
+                String getRootCategoryName(Ingredient item) {
+                  if (item.categoryId == null) return 'Без категории';
+                  var currentCat = allCategories.where((c) => c.id == item.categoryId).firstOrNull;
+                  if (currentCat == null) return item.categoryName ?? 'Без категории';
+                  
+                  while (currentCat?.parentId != null) {
+                    final parent = allCategories.where((c) => c.id == currentCat!.parentId).firstOrNull;
+                    if (parent == null) break;
+                    currentCat = parent;
+                  }
+                  return currentCat?.name ?? item.categoryName ?? 'Без категории';
+                }
+
                 // Группировка по категориям
                 final Map<String, List<Ingredient>> grouped = {};
                 for (var item in filtered) {
-                  final cat = item.categoryName ?? 'Без категории';
+                  final cat = getRootCategoryName(item);
                   if (!grouped.containsKey(cat)) {
                     grouped[cat] = [];
                     // Инициализируем состояние развертывания, если его еще нет
