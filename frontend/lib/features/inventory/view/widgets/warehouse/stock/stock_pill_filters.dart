@@ -22,52 +22,55 @@ class StockPillFilters extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          const Spacer(),
-          _buildPill(
-            context: context,
-            label: 'Все',
-            value: 'all',
-            isDark: isDark,
-          ),
-          const SizedBox(width: 8),
-          _buildPill(
-            context: context,
-            label: 'Сырье для кухни',
-            value: 'raw',
-            isDark: isDark,
-          ),
-          const SizedBox(width: 8),
-          _buildPill(
-            context: context,
-            label: 'Витрина',
-            value: 'retail',
-            isDark: isDark,
-          ),
-          const SizedBox(width: 24),
-          TextButton.icon(
-            onPressed: onToggleExpandAll,
-            icon: Icon(
-              isExpandedAll ? PhosphorIconsRegular.caretUp : PhosphorIconsRegular.caretDown,
-              size: 16,
-              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+      child: SizedBox(
+        width: double.infinity,
+        child: Wrap(
+          alignment: WrapAlignment.end,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8.0,
+          runSpacing: 12.0,
+          children: [
+            _buildPill(
+              context: context,
+              label: 'Все',
+              value: 'all',
+              isDark: isDark,
             ),
-            label: Text(
-              isExpandedAll ? 'Свернуть все' : 'Развернуть все',
-              style: TextStyle(
+            _buildPill(
+              context: context,
+              label: 'Сырье для кухни',
+              value: 'raw',
+              isDark: isDark,
+            ),
+            _buildPill(
+              context: context,
+              label: 'Витрина',
+              value: 'retail',
+              isDark: isDark,
+            ),
+            const SizedBox(width: 16),
+            TextButton.icon(
+              onPressed: onToggleExpandAll,
+              icon: Icon(
+                isExpandedAll ? PhosphorIconsRegular.caretUp : PhosphorIconsRegular.caretDown,
+                size: 16,
                 color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                fontWeight: FontWeight.w600,
+              ),
+              label: Text(
+                isExpandedAll ? 'Свернуть все' : 'Развернуть все',
+                style: TextStyle(
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
               ),
             ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
