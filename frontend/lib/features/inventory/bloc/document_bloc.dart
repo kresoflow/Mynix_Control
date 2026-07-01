@@ -54,7 +54,10 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   ) async {
     emit(state.copyWith(isSubmitting: true));
     try {
-      await _repository.createDocument(event.data);
+      final createdDoc = await _repository.createDocument(event.data);
+      if (event.data['status'] == 'completed') {
+        await _repository.completeDocument(createdDoc.id);
+      }
       final documents = await _repository.getDocuments();
       emit(state.copyWith(
         isSubmitting: false,

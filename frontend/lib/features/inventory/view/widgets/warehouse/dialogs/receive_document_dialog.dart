@@ -139,6 +139,18 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
           if (categoryId == null) {
             throw Exception('Не выбрана категория для новых товаров ("${item.newName}"). Укажите категорию сверху.');
           }
+          String unitKey = 'pcs';
+          switch (item.selectedUnit) {
+            case 'кг': unitKey = 'kg'; break;
+            case 'г': unitKey = 'g'; break;
+            case 'л': unitKey = 'l'; break;
+            case 'мл': unitKey = 'ml'; break;
+            case 'шт':
+            case 'порц':
+            default:
+              unitKey = 'pcs'; break;
+          }
+
           if (_tabIndex == 1) { // Retail
             final Map<String, dynamic> attributes = {};
             final flavor = item.flavorController.text.trim();
@@ -149,7 +161,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
             finalRetailProductId = await menuRepo.createRetailProduct(
               name: item.newName.trim(),
               categoryId: categoryId,
-              unit: item.selectedUnit,
+              unit: unitKey,
               purchasePrice: item.price,
               sellingPrice: item.price,
               attributes: attributes.isNotEmpty ? attributes : null,
@@ -158,7 +170,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
           } else { // Ingredient
             finalIngredientId = await repo.createIngredient(
               name: item.newName.trim(),
-              unit: item.selectedUnit,
+              unit: unitKey,
               minStockAlert: 0,
               costPerUnit: item.price,
               categoryId: categoryId,
