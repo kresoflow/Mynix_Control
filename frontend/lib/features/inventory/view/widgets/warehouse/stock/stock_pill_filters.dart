@@ -57,9 +57,9 @@ class StockPillFilters extends StatelessWidget {
               ),
               label: Text(
                 isExpandedAll ? 'Свернуть все' : 'Развернуть все',
-                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               style: TextButton.styleFrom(
+                textStyle: const TextStyle(fontWeight: FontWeight.w600),
                 foregroundColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

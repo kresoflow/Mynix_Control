@@ -39,98 +39,109 @@ class _IngredientTabState extends State<IngredientTab> {
             child: Row(
               children: [
                 const Text('Управление сырьем', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const Spacer(),
-                if (_isManageMode) ...[
-                  TextButton.icon(
-                    onPressed: () {
-                      final state = context.read<IngredientBloc>().state;
-                      if (state is IngredientLoaded) {
-                        final rawIngredients = state.ingredients.where((i) => !i.isRetail).toList();
-                        final filteredIngredients = _selectedCategoryId == null
-                            ? rawIngredients
-                            : rawIngredients.where((i) => i.categoryId == _selectedCategoryId).toList();
-                        setState(() {
-                          _selectedIngredients.addAll(filteredIngredients.map((i) => i.id));
-                        });
-                      }
-                    },
-                    icon: const Icon(PhosphorIconsRegular.checkSquareOffset),
-                    label: const Text('Выбрать все'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Массовое удаление'),
-                          content: Text('Удалить выбранные элементы (${_selectedIngredients.length} шт.)?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-                              onPressed: () {
-                                for (var itemId in _selectedIngredients) {
-                                  context.read<IngredientBloc>().add(DeleteIngredient(itemId));
-                                }
+                const SizedBox(width: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    reverse: true, // to keep buttons on the right side
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (_isManageMode) ...[
+                          TextButton.icon(
+                            onPressed: () {
+                              final state = context.read<IngredientBloc>().state;
+                              if (state is IngredientLoaded) {
+                                final rawIngredients = state.ingredients.where((i) => !i.isRetail).toList();
+                                final filteredIngredients = _selectedCategoryId == null
+                                    ? rawIngredients
+                                    : rawIngredients.where((i) => i.categoryId == _selectedCategoryId).toList();
                                 setState(() {
-                                  _selectedIngredients.clear();
-                                  _isManageMode = false;
+                                  _selectedIngredients.addAll(filteredIngredients.map((i) => i.id));
                                 });
-                                Navigator.pop(ctx);
-                              },
-                              child: const Text('Удалить'),
+                              }
+                            },
+                            icon: const Icon(PhosphorIconsRegular.checkSquareOffset),
+                            label: const Text('Выбрать все'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Массовое удаление'),
+                                  content: Text('Удалить выбранные элементы (${_selectedIngredients.length} шт.)?'),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                                      onPressed: () {
+                                        for (var itemId in _selectedIngredients) {
+                                          context.read<IngredientBloc>().add(DeleteIngredient(itemId));
+                                        }
+                                        setState(() {
+                                          _selectedIngredients.clear();
+                                          _isManageMode = false;
+                                        });
+                                        Navigator.pop(ctx);
+                                      },
+                                      child: const Text('Удалить'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            icon: const Icon(PhosphorIconsRegular.trash),
+                            label: Text('Удалить (${_selectedIngredients.length})'),
+                          ),
+                          const SizedBox(width: 8),
+                          TextButton(
+                            onPressed: () => setState(() {
+                              _isManageMode = false;
+                              _selectedIngredients.clear();
+                            }),
+                            child: const Text('Отмена'),
+                          ),
+                        ] else ...[
+                          ElevatedButton.icon(
+                            onPressed: () => setState(() => _isManageMode = true),
+                            icon: const Icon(PhosphorIconsRegular.pencilSimple),
+                            label: const Text('Управление'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                              foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                    icon: const Icon(PhosphorIconsRegular.trash),
-                    label: Text('Удалить (${_selectedIngredients.length})'),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _isManageMode = false;
-                      _selectedIngredients.clear();
-                    }),
-                    child: const Text('Отмена'),
-                  ),
-                ] else ...[
-                  ElevatedButton.icon(
-                    onPressed: () => setState(() => _isManageMode = true),
-                    icon: const Icon(PhosphorIconsRegular.pencilSimple),
-                    label: const Text('Управление'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
-                      foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (_) => const BulkAddModal(initialTabIndex: 2),
+                              );
+                            },
+                            icon: const Icon(PhosphorIconsRegular.listPlus),
+                            label: const Text('Массово'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                              foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              showAddIngredientDialog(context, initialCategoryId: _selectedCategoryId);
+                            },
+                            icon: const Icon(PhosphorIconsRegular.plus),
+                            label: const Text('Добавить'),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => const BulkAddModal(initialTabIndex: 2),
-                      );
-                    },
-                    icon: const Icon(PhosphorIconsRegular.listPlus),
-                    label: const Text('Массово'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                      foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      showAddIngredientDialog(context, initialCategoryId: _selectedCategoryId);
-                    },
-                    icon: const Icon(PhosphorIconsRegular.plus),
-                    label: const Text('Добавить'),
-                  ),
-                ],
+                ),
               ],
             ),
           ),
