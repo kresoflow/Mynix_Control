@@ -44,31 +44,56 @@ class IngredientCategorySidebar extends StatelessWidget {
             // Строим дерево
             final rootCategories = ingredientCategories.where((c) => c.parentId == null).toList();
 
-            return ListView(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+            return Column(
               children: [
-                ListTile(
-                  title: Text(
-                    'Все сырье',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: selectedCategoryId == null 
-                          ? AppColors.brandPrimary 
-                          : (isDark ? AppColors.darkText : AppColors.lightText),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    children: [
+                      ListTile(
+                        title: Text(
+                          'Все сырье',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: selectedCategoryId == null 
+                                ? AppColors.brandPrimary 
+                                : (isDark ? AppColors.darkText : AppColors.lightText),
+                          ),
+                        ),
+                        selected: selectedCategoryId == null,
+                        selectedTileColor: AppColors.brandPrimary.withValues(alpha: 0.1),
+                        onTap: () => onCategorySelected(null),
+                      ),
+                      const Divider(),
+                      ...rootCategories.map((rootCat) => _buildCategoryNode(
+                            context: context,
+                            category: rootCat,
+                            allCategories: ingredientCategories,
+                            isDark: isDark,
+                            level: 0,
+                          )),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        showAddCategoryDialog(context, type: 'ingredient');
+                      },
+                      icon: const Icon(PhosphorIconsRegular.folderPlus),
+                      label: const Text('Создать категорию'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
-                  selected: selectedCategoryId == null,
-                  selectedTileColor: AppColors.brandPrimary.withValues(alpha: 0.1),
-                  onTap: () => onCategorySelected(null),
                 ),
-                const Divider(),
-                ...rootCategories.map((rootCat) => _buildCategoryNode(
-                      context: context,
-                      category: rootCat,
-                      allCategories: ingredientCategories,
-                      isDark: isDark,
-                      level: 0,
-                    )),
               ],
             );
           }

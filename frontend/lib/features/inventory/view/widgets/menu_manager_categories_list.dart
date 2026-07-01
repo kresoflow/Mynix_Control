@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:retail_os_frontend/features/inventory/bloc/category_event.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_category.dart';
-import 'package:retail_os_frontend/core/utils/icon_helper.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/core/utils/icon_helper.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_category_dialog.dart';
 
 class MenuManagerCategoriesList extends StatelessWidget {
   final int? currentParentId;
@@ -29,55 +30,80 @@ class MenuManagerCategoriesList extends StatelessWidget {
               .where((c) => c.parentId == currentParentId)
               .toList();
 
-          if (subCategories.isEmpty) {
-            return const Center(
-              child: Text('Нет подкатегорий. Создайте новую папку.'),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: subCategories.length,
-            itemBuilder: (context, index) {
-              final cat = subCategories[index];
-              return Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  onTap: () => onNavigate(cat),
-                  leading: IconHelper.buildIcon(
-                    cat.icon,
-                    size: 36,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: Text(
-                    cat.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Switch(
-                        value: cat.isVisible,
-                        onChanged: (val) {
-                          context.read<CategoryBloc>().add(
-                            UpdateCategory(id: cat.id, isVisible: val),
+          return Column(
+            children: [
+              Expanded(
+                child: subCategories.isEmpty
+                    ? const Center(
+                        child: Text('Нет подкатегорий. Создайте новую папку.'),
+                      )
+                    : ListView.builder(
+                        itemCount: subCategories.length,
+                        itemBuilder: (context, index) {
+                          final cat = subCategories[index];
+                          return Card(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              onTap: () => onNavigate(cat),
+                              leading: IconHelper.buildIcon(
+                                cat.icon,
+                                size: 36,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              title: Text(
+                                cat.name,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Switch(
+                                    value: cat.isVisible,
+                                    onChanged: (val) {
+                                      context.read<CategoryBloc>().add(
+                                        UpdateCategory(id: cat.id, isVisible: val),
+                                      );
+                                    },
+                                    activeThumbColor: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                                    onPressed: () => onDelete(cat.id),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         },
-                        activeColor: Theme.of(context).colorScheme.primary,
                       ),
-                      IconButton(
-                        icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
-                        onPressed: () => onDelete(cat.id),
-                      ),
-                    ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    showAddCategoryDialog(
+                      context,
+                      currentCategoryId: currentParentId,
+                      type: 'ingredient',
+                    );
+                  },
+                  icon: const Icon(PhosphorIconsRegular.folderPlus),
+                  label: const Text('Создать категорию'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
-              );
-            },
+              ),
+            ],
           );
         }
         return const SizedBox.shrink();

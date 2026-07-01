@@ -117,11 +117,14 @@ class _RetailRowWidgetState extends State<RetailRowWidget> {
         const SizedBox(width: 8),
         Expanded(
           flex: 2,
-          child: TextField(
-            controller: widget.row.stockController,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => widget.onAddRow(),
-            decoration: const InputDecoration(labelText: 'Приход (шт)'),
+          child: Tooltip(
+            message: 'Позволяет сразу задать количество на складе без создания документа прихода',
+            child: TextField(
+              controller: widget.row.stockController,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => widget.onAddRow(),
+              decoration: const InputDecoration(labelText: 'Нач. остаток'),
+            ),
           ),
         ),
       ],
