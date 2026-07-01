@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:retail_os_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 
 class MenuRepository {
   final Dio _dio;
@@ -65,7 +65,7 @@ class MenuRepository {
     }
   }
 
-  Future<void> createRetailProduct({
+  Future<int> createRetailProduct({
     required String name,
     required int categoryId,
     required String unit,
@@ -76,16 +76,17 @@ class MenuRepository {
     int sortOrder = 0,
   }) async {
     try {
-      await _dio.post('/retail-product/', data: {
+      final response = await _dio.post('/retail-product/', data: {
         'name': name,
         'category_id': categoryId,
         'unit': unit,
         'purchase_price': purchasePrice,
         'selling_price': sellingPrice,
-        if (attributes != null) 'attributes': attributes,
+        'attributes': attributes,
         'initial_stock': initialStock,
         'sort_order': sortOrder,
       });
+      return response.data['id'] as int;
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
         throw Exception(e.response?.data['detail'] ?? 'Failed to create retail product');

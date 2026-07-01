@@ -19,7 +19,7 @@ class InventoryRepository {
     }
   }
 
-  Future<void> createIngredient({
+  Future<int> createIngredient({
     required String name,
     required String unit,
     required double minStockAlert,
@@ -29,7 +29,7 @@ class InventoryRepository {
     int sortOrder = 0,
   }) async {
     try {
-      await _dio.post(
+      final response = await _dio.post(
         '/ingredients/',
         data: {
           'name': name,
@@ -38,9 +38,10 @@ class InventoryRepository {
           'cost_per_unit': costPerUnit,
           'initial_stock': initialStock,
           'sort_order': sortOrder,
-          'category_id': ?categoryId,
+          'category_id': categoryId,
         },
       );
+      return response.data['id'] as int;
     } catch (e) {
       throw Exception('Failed to create ingredient: ${e.toString()}');
     }
@@ -295,7 +296,7 @@ class InventoryRepository {
   Future<List<InventoryDocument>> getDocuments({String? type}) async {
     try {
       final response = await _dio.get('/documents/', queryParameters: {
-        'type': ?type,
+        'type': type,
       });
       final data = response.data as List;
       return data.map((json) => InventoryDocument.fromJson(json)).toList();
