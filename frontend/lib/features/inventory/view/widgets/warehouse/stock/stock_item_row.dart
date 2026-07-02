@@ -143,7 +143,7 @@ class StockItemRow extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Σ ${(${(item.currentStock * item.costPerUnit)}).toCurrency(context)}',
+                        'Σ ${(item.currentStock * item.costPerUnit).toCurrency(context)}',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
