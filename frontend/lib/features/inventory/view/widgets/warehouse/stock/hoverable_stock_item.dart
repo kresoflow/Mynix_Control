@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/quick_stock_action_dialog.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class HoverableStockItem extends StatefulWidget {
   final Ingredient item;
@@ -95,7 +96,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Σ: ${(widget.item.currentStock * widget.item.costPerUnit).toStringAsFixed(2)} с',
+                    'Σ: ${(${(widget.item.currentStock * widget.item.costPerUnit)}).toCurrency(context)}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class StockItemRow extends StatelessWidget {
   final Ingredient item;
@@ -142,7 +143,7 @@ class StockItemRow extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Σ ${(item.currentStock * item.costPerUnit).toStringAsFixed(2)} с',
+                        'Σ ${(${(item.currentStock * item.costPerUnit)}).toCurrency(context)}',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

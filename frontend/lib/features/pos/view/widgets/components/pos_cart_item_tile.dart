@@ -5,6 +5,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class PosCartItemTile extends StatefulWidget {
   final dynamic cartItem;
@@ -68,7 +69,7 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
             SizedBox(
               width: 64,
               child: Text(
-                '${item.total.toInt()} с',
+                '${item.total.toCurrency(context)}',
                 textAlign: TextAlign.right,
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 14,

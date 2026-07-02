@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 void showCashboxModal(BuildContext context) {
   showDialog(
@@ -25,7 +26,7 @@ void showCashboxModal(BuildContext context) {
                 const Divider(),
                 const SizedBox(height: 16),
                 Text(
-                  'Ожидаемая сумма: $expectedCash с',
+                  'Ожидаемая сумма: ${expectedCash.toCurrency(context)}',
                   style: AppTextStyles.h2,
                 ),
               ],

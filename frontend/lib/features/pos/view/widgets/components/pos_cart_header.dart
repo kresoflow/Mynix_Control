@@ -4,6 +4,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class PosCartHeader extends StatelessWidget {
   const PosCartHeader({super.key});
@@ -126,7 +127,7 @@ class PosCartHeader extends StatelessWidget {
                     Text('$count поз.', style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext)),
                   ],
                 ),
-                Text('${total.toStringAsFixed(0)} с', style: AppTextStyles.body.copyWith(color: AppColors.brandPrimary)),
+                Text('${total.toCurrency(context)}', style: AppTextStyles.body.copyWith(color: AppColors.brandPrimary)),
               ],
             ),
           );

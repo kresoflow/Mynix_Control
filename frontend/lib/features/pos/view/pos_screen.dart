@@ -9,6 +9,7 @@ import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class PosScreen extends StatelessWidget {
   const PosScreen({super.key});
@@ -21,7 +22,7 @@ class PosScreen extends StatelessWidget {
           final diff = state.report['discrepancy'] ?? 0;
           final msg = diff == 0 
               ? 'Смена закрыта успешно. Расхождений нет.' 
-              : 'Смена закрыта. Недостача/излишек: $diff с';
+              : 'Смена закрыта. Недостача/излишек: ${(diff as num).toCurrency(context)}';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(msg),

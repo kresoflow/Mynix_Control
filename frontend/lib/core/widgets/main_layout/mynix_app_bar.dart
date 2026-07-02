@@ -11,6 +11,7 @@ import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 import 'icon_btn.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCashTap;
@@ -79,7 +80,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
             builder: (context, state) {
               final isOpen = state is ShiftOpen;
               final cash = isOpen
-                  ? '${state.shiftDetails['current_cash_expected'] ?? state.shiftDetails['opening_cash']} с'
+                  ? '${(${state.shiftDetails['current_cash_expected'] ?? state.shiftDetails['opening_cash']}).toCurrency(context)}'
                   : 'Закрыто';
 
               return GestureDetector(

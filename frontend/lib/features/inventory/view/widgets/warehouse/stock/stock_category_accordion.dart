@@ -6,6 +6,7 @@ import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class StockCategoryAccordion extends StatelessWidget {
   final String categoryName;
@@ -122,7 +123,7 @@ class StockCategoryAccordion extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      'Σ ${totalCapital.toStringAsFixed(0)} с',
+                      'Σ ${totalCapital.toCurrency(context)}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

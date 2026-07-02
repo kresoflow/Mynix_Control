@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class MenuManagerItemsGrid extends StatelessWidget {
   final int? currentParentId;
@@ -73,7 +74,7 @@ class MenuManagerItemsGrid extends StatelessWidget {
                   subtitle: Text(
                     item.attributesString != null
                         ? '${item.attributesString}\n${item.price} с'
-                        : '${item.price} с',
+                        : '${item.price.toCurrency(context)}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   trailing: IconButton(

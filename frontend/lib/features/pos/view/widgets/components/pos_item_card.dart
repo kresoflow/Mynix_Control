@@ -8,6 +8,7 @@ import 'package:mynix_frontend/core/widgets/app_card.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_icons.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class PosItemCard extends StatelessWidget {
   final dynamic item;
@@ -108,7 +109,7 @@ class PosItemCard extends StatelessWidget {
                     color: AppColors.brandPrimary.withValues(alpha: 0.3)),
               ),
               child: Text(
-                '${item.price.toInt()} с',
+                '${item.price.toCurrency(context)}',
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,

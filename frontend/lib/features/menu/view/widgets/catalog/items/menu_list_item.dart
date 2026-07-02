@@ -7,6 +7,7 @@ import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import '../catalog_enums.dart';
 import '../catalog_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class MenuListItem extends StatelessWidget {
   final MenuItem item;
@@ -71,7 +72,7 @@ class MenuListItem extends StatelessWidget {
             : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('${item.price.toInt()} с', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  Text('${item.price.toCurrency(context)}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                   PopupMenuButton<String>(
                     icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
                     onSelected: (val) {

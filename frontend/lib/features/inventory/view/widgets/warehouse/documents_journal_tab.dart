@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
 
 class DocumentsJournalTab extends StatefulWidget {
@@ -196,7 +197,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
                           Expanded(
                             flex: 2,
                             child: Text(
-                              '${doc.totalAmount.toStringAsFixed(2)} ₸',
+                              doc.totalAmount.toCurrency(context),
                               style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),

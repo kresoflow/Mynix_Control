@@ -4,6 +4,8 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/cart_state.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class PosCheckoutPanel extends StatelessWidget {
   const PosCheckoutPanel({super.key});
@@ -49,7 +51,7 @@ class PosCheckoutPanel extends StatelessWidget {
                       style: AppTextStyles.body.copyWith(
                           color: AppColors.darkSubtext)),
                   Text(
-                    '${state.total.toInt()} с',
+                    state.total.toCurrency(context),
                     style: AppTextStyles.priceLarge.copyWith(
                       color: isDark ? AppColors.darkText : AppColors.lightText,
                     ),
@@ -63,7 +65,7 @@ class PosCheckoutPanel extends StatelessWidget {
                     ? 'ОБРАБОТКА...'
                     : (state.items.isEmpty
                         ? 'ОПЛАТИТЬ'
-                        : 'ОПЛАТИТЬ — ${state.total.toInt()} с'),
+                        : 'ОПЛАТИТЬ — ${state.total.toCurrency(context)}'),
                 height: 60,
                 onPressed: state.items.isEmpty || state.isSubmitting
                     ? null

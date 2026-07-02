@@ -7,6 +7,7 @@ import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/s
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class StockTab extends StatefulWidget {
   final String filter;
@@ -149,7 +150,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                             child: _buildMetricCard(
                               context,
                               title: 'Складской капитал',
-                              value: '${totalCapital.toStringAsFixed(2)} с',
+                              value: '${totalCapital.toCurrency(context)}',
                               icon: PhosphorIconsRegular.wallet,
                               color: Colors.green,
                             ),

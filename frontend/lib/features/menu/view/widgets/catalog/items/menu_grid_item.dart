@@ -6,6 +6,7 @@ import 'package:mynix_frontend/core/widgets/app_card.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../catalog_enums.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class MenuGridItem extends StatelessWidget {
   final MenuItem item;
@@ -110,7 +111,7 @@ class MenuGridItem extends StatelessWidget {
                       border: Border.all(color: accentColor.withAlpha(80)),
                     ),
                     child: Text(
-                      '${item.price.toInt()} с',
+                      '${item.price.toCurrency(context)}',
                       style: GoogleFonts.jetBrainsMono(fontSize: 14, fontWeight: FontWeight.w800, color: accentColor),
                     ),
                   ),

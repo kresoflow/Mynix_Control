@@ -14,6 +14,7 @@ import 'package:mynix_frontend/core/widgets/app_card.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 Widget _buildCategoryIcon(String name, {required double size, required Color color}) {
   final lower = name.toLowerCase();
@@ -1008,7 +1009,7 @@ attributes['Объем'] = '${volumeController.text} $uLabel'.trim();
                                                       color: AppColors.brandPrimary.withValues(alpha: 0.3)),
                                                 ),
                                                 child: Text(
-                                                  '${item.price.toInt()} с',
+                                                  '${item.price.toCurrency(context)}',
                                                   style: GoogleFonts.jetBrainsMono(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.w800,
@@ -1087,7 +1088,7 @@ class _MenuTab extends StatelessWidget {
                           child: Icon(Icons.fastfood, color: Theme.of(context).colorScheme.primary),
                         ),
                         title: Text(item.cleanName),
-                        subtitle: Text('${item.price} с'),
+                        subtitle: Text('${item.price.toCurrency(context)}'),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () {
