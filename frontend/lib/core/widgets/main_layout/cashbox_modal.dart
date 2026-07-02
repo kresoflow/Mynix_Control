@@ -21,12 +21,12 @@ void showCashboxModal(BuildContext context) {
               children: [
                 Text('Смена открыта: ${shift['opened_at']}', style: AppTextStyles.body),
                 const SizedBox(height: 8),
-                Text('Сумма размена: ${shift['opening_cash']} с', style: AppTextStyles.body),
+                Text('Сумма размена: ${(shift['opening_cash'] as num).toCurrency(context)}', style: AppTextStyles.body),
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 16),
                 Text(
-                  'Ожидаемая сумма: ${expectedCash.toCurrency(context)}',
+                  'Ожидаемая сумма: ${(expectedCash as num).toCurrency(context)}',
                   style: AppTextStyles.h2,
                 ),
               ],

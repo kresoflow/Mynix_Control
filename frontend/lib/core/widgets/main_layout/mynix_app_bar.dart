@@ -80,7 +80,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
             builder: (context, state) {
               final isOpen = state is ShiftOpen;
               final cash = isOpen
-                  ? (state.shiftDetails['current_cash_expected'] ?? state.shiftDetails['opening_cash']).toCurrency(context)
+                  ? ((state.shiftDetails['current_cash_expected'] ?? state.shiftDetails['opening_cash']) as num).toCurrency(context)
                   : 'Закрыто';
 
               return GestureDetector(

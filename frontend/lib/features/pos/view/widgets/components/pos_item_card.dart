@@ -109,7 +109,7 @@ class PosItemCard extends StatelessWidget {
                     color: AppColors.brandPrimary.withValues(alpha: 0.3)),
               ),
               child: Text(
-                '${item.price.toCurrency(context)}',
+                '${(item.price as num).toCurrency(context)}',
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,

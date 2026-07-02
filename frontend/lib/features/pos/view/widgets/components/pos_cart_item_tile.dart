@@ -69,7 +69,7 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
             SizedBox(
               width: 64,
               child: Text(
-                '${item.total.toCurrency(context)}',
+                '${(item.total as num).toCurrency(context)}',
                 textAlign: TextAlign.right,
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 14,
