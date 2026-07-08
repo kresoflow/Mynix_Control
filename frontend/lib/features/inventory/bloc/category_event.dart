@@ -40,6 +40,15 @@ class CreateCategory extends CategoryEvent {
   ];
 }
 
+class CreateCategoriesBulk extends CategoryEvent {
+  final List<Map<String, dynamic>> categories;
+
+  const CreateCategoriesBulk({required this.categories});
+
+  @override
+  List<Object?> get props => [categories];
+}
+
 class UpdateCategory extends CategoryEvent {
   final int id;
   final String? name;

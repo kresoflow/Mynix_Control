@@ -7,6 +7,7 @@ import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'dialogs/recipe_bulk_edit_dialog.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class RecipeDetailsPanel extends StatelessWidget {
   final int selectedMenuItemId;
@@ -166,7 +167,7 @@ class RecipeDetailsPanel extends StatelessWidget {
                                             );
                                           },
                                         ),
-                                        Text('$qty $unit', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        Text('$qty $unit', style: const AppTextStyles.bodyLargeBold),
                                         IconButton(
                                           icon: const Icon(PhosphorIconsRegular.plus, size: 16),
                                           constraints: const BoxConstraints(),

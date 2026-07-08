@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class MenuManagerItemsGrid extends StatelessWidget {
   final int? currentParentId;
@@ -75,7 +76,7 @@ class MenuManagerItemsGrid extends StatelessWidget {
                     item.attributesString != null
                         ? '${item.attributesString}\n${item.price} с'
                         : '${item.price.toCurrency(context)}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const AppTextStyles.bodyLargeBold,
                   ),
                   trailing: IconButton(
                     icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red, size: 20),

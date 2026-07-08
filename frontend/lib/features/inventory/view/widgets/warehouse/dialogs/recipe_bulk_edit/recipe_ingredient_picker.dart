@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> availableIngredients) {
   final Map<String, List<dynamic>> grouped = {};
@@ -26,7 +27,7 @@ Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> avai
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Выберите сырье', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text('Выберите сырье', style: AppTextStyles.h3),
                 IconButton(
                   icon: const Icon(PhosphorIconsRegular.x),
                   onPressed: () => Navigator.of(ctx).pop(),
@@ -41,7 +42,7 @@ Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> avai
                   final catName = sortedKeys[index];
                   final items = grouped[catName]!;
                   return ExpansionTile(
-                    title: Text(catName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(catName, style: const AppTextStyles.bodyLargeBold),
                     initiallyExpanded: false,
                     shape: const Border(),
                     children: items.map((ing) => ListTile(

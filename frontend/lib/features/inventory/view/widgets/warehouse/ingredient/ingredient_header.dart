@@ -6,6 +6,7 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_ingredient_dialog.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class IngredientHeader extends StatelessWidget {
   final bool isManageMode;
@@ -36,7 +37,7 @@ class IngredientHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Text('Управление сырьем', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Управление сырьем', style: AppTextStyles.h3),
           const Spacer(),
           if (isManageMode) ...[
             TextButton.icon(

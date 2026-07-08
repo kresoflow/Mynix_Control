@@ -4,6 +4,7 @@ import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class RecipeRowState {
   int? ingredientId;
@@ -137,7 +138,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Выберите сырье', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text('Выберите сырье', style: AppTextStyles.h3),
                   IconButton(
                     icon: const Icon(PhosphorIconsRegular.x),
                     onPressed: () => Navigator.of(ctx).pop(),
@@ -152,7 +153,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                     final catName = sortedKeys[index];
                     final items = grouped[catName]!;
                     return ExpansionTile(
-                      title: Text(catName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(catName, style: const AppTextStyles.bodyLargeBold),
                       initiallyExpanded: false,
                       shape: const Border(),
                       children: items.map((ing) => ListTile(
@@ -202,7 +203,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                   children: [
                     const Text(
                       'Редактор техкарты',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: AppTextStyles.h2,
                     ),
                     Row(
                       children: [

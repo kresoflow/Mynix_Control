@@ -76,7 +76,7 @@ class InventoryDocument {
       id: json['id'],
       type: json['type'],
       status: json['status'],
-      date: DateTime.parse(json['date']),
+      date: json['date'] != null ? DateTime.tryParse(json['date'].toString()) ?? DateTime.now() : DateTime.now(),
       supplierId: json['supplier_id'],
       supplierName: json['supplier_name'],
       invoiceNumber: json['invoice_number'],

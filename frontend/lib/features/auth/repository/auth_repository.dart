@@ -33,7 +33,7 @@ class AuthRepository {
       final response = await _dio.post(
         '/auth/pin',
         data: {
-          'tenant_id': tenantId,
+          'tenant_id': int.tryParse(tenantId) ?? 0,
           'pin_code': pinCode,
         },
       );

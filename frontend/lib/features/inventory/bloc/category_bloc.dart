@@ -34,8 +34,22 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   CategoryBloc(this.repository) : super(CategoryLoading()) {
     on<LoadCategories>(_onLoadCategories);
     on<CreateCategory>(_onCreateCategory);
+    on<CreateCategoriesBulk>(_onCreateCategoriesBulk);
     on<UpdateCategory>(_onUpdateCategory);
     on<DeleteCategory>(_onDeleteCategory);
+  }
+
+  Future<void> _onCreateCategoriesBulk(
+    CreateCategoriesBulk event,
+    Emitter<CategoryState> emit,
+  ) async {
+    try {
+      await repository.createCategoriesBulk(event.categories);
+      add(LoadCategories());
+    } catch (e) {
+      emit(CategoryError(message: e.toString()));
+      add(LoadCategories());
+    }
   }
 
   Future<void> _onLoadCategories(

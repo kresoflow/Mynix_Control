@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class ReceiveDocumentFooter extends StatelessWidget {
   final double totalSum;
@@ -35,7 +36,7 @@ class ReceiveDocumentFooter extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Итого к оплате:', style: TextStyle(color: Colors.grey, fontSize: 14)),
-              Text('${totalSum.toStringAsFixed(2)} $currency', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+              Text('${totalSum.toStringAsFixed(2)} $currency', style: const AppTextStyles.h1),
             ],
           ),
           const Spacer(),

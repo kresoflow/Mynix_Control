@@ -84,6 +84,17 @@ class InventoryRepository {
     }
   }
 
+  Future<void> createCategoriesBulk(List<Map<String, dynamic>> categories) async {
+    try {
+      await _dio.post(
+        '/categories/bulk',
+        data: categories,
+      );
+    } catch (e) {
+      throw Exception('Failed to bulk create categories: ${e.toString()}');
+    }
+  }
+
   Future<void> updateCategory({
     required int id,
     String? name,

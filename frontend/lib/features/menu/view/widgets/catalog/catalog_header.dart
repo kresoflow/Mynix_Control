@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'catalog_enums.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class CatalogHeader extends StatelessWidget {
   final CategoryManageMode manageMode;
@@ -110,7 +111,7 @@ class CatalogHeader extends StatelessWidget {
                           onTap: onNavigateToRoot,
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
-                            child: Text('Все категории', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            child: Text('Все категории', style: AppTextStyles.h3),
                           ),
                         ),
                         ...List.generate(navigationHistory.length, (index) {

@@ -4,6 +4,7 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class BlindInventoryDialog extends StatefulWidget {
   const BlindInventoryDialog({super.key});
@@ -113,7 +114,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
                     children: [
                       Text(
                         'Слепая Инвентаризация',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: AppTextStyles.h2,
                       ),
                       Text(
                         'Введите фактическое количество товара на полках',
@@ -144,7 +145,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
                           _controllers[item.id] = TextEditingController();
                         }
                         return ListTile(
-                          title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          title: Text(item.name, style: const AppTextStyles.bodyLargeBold),
                           subtitle: Text(item.attributes?['is_retail'] == true ? 'Витрина' : 'Сырье'),
                           trailing: SizedBox(
                             width: 150,

@@ -6,6 +6,7 @@ import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_category_dialog.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class MenuManagerCategoriesList extends StatelessWidget {
   final int? currentParentId;
@@ -57,7 +58,7 @@ class MenuManagerCategoriesList extends StatelessWidget {
                               ),
                               title: Text(
                                 cat.name,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const AppTextStyles.bodyLargeBold,
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,

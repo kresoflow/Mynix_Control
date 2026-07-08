@@ -10,6 +10,7 @@ import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class PosScreen extends StatelessWidget {
   const PosScreen({super.key});
@@ -98,7 +99,7 @@ class _OpenShiftScreenState extends State<_OpenShiftScreen> {
             const SizedBox(height: 24),
             const Text(
               'Смена закрыта',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              style: AppTextStyles.h1,
             ),
             const SizedBox(height: 8),
             const Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class MenuManagerBreadcrumbs extends StatelessWidget {
   final List<MenuCategory> navigationHistory;
@@ -36,7 +37,7 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
               children: [
                 Icon(PhosphorIconsRegular.house, size: 20),
                 SizedBox(width: 8),
-                Text('Главная', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Главная', style: AppTextStyles.bodyLargeBold),
               ],
             ),
           ),

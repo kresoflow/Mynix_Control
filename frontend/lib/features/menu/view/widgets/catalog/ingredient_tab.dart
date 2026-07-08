@@ -10,6 +10,7 @@ import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ing
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class IngredientTab extends StatefulWidget {
   const IngredientTab({super.key});
@@ -38,7 +39,7 @@ class _IngredientTabState extends State<IngredientTab> {
             ),
             child: Row(
               children: [
-                const Text('Управление сырьем', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text('Управление сырьем', style: AppTextStyles.h3),
                 const SizedBox(width: 16),
                 Expanded(
                   child: SingleChildScrollView(

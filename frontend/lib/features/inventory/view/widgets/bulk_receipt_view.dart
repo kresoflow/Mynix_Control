@@ -6,6 +6,7 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
 import 'bulk_receipt_row_widget.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class BulkReceiptView extends StatefulWidget {
   const BulkReceiptView({super.key});
@@ -138,7 +139,7 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
                 const SizedBox(width: 16),
                 const Text(
                   'Приходная накладная',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.h1,
                 ),
                 const Spacer(),
                 IconButton(

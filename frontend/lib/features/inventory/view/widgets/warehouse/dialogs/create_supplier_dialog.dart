@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class CreateSupplierDialog extends StatefulWidget {
   const CreateSupplierDialog({super.key});
@@ -63,7 +64,7 @@ class _CreateSupplierDialogState extends State<CreateSupplierDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Новый поставщик', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text('Новый поставщик', style: AppTextStyles.h3),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close),

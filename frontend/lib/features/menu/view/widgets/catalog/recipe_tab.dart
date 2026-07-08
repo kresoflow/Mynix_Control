@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'recipe_menu_list.dart';
 import 'recipe_details_panel.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class RecipeTab extends StatefulWidget {
   const RecipeTab({super.key});
@@ -24,7 +25,7 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
         children: [
           const Text(
             'Настройка технологических карт',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: AppTextStyles.h2,
           ),
           const SizedBox(height: 24),
           Expanded(

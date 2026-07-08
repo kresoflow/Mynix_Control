@@ -10,7 +10,10 @@ import 'catalog_header.dart';
 import 'catalog_content_view.dart';
 import 'catalog_enums.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 class CatalogBrowserTab extends StatefulWidget {
   final String categoryType;
   final bool Function(MenuItem) itemFilter;
@@ -206,13 +209,23 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       onDeleteSelected: () {
                         showDialog(
                           context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('Массовое удаление'),
-                            content: Text('Удалить выбранные элементы ($selectedCount шт.)?'),
+                          builder: (ctx) => MynixDialog(
+                            title: 'Массовое удаление',
+                            icon: PhosphorIconsRegular.trash,
+                            isDestructive: true,
+                            content: Text(
+                              'Удалить выбранные элементы ($selectedCount шт.)?\nЭто действие нельзя отменить.',
+                              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.lightSubtext), // Or context dependent, MynixDialog handles dark mode usually. Better to just use Text
+                            ),
                             actions: [
-                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                              AppGhostButton(
+                                label: 'Отмена',
+                                onPressed: () => Navigator.pop(ctx),
+                              ),
+                              const SizedBox(width: 12),
+                              AppDangerButton(
+                                label: 'Удалить',
+                                icon: PhosphorIconsRegular.trash,
                                 onPressed: () {
                                   for (var itemId in _selectedItems) {
                                     context.read<MenuBloc>().add(DeleteMenuItem(itemId));
@@ -227,7 +240,6 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                                   });
                                   Navigator.pop(ctx);
                                 },
-                                child: const Text('Удалить'),
                               ),
                             ],
                           ),

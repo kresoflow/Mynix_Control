@@ -65,6 +65,7 @@ class PosCheckoutPanel extends StatelessWidget {
                     : (state.items.isEmpty
                         ? 'ОПЛАТИТЬ'
                         : 'ОПЛАТИТЬ — ${state.total.toCurrency(context)}'),
+                width: double.infinity,
                 height: 60,
                 onPressed: state.items.isEmpty || state.isSubmitting
                     ? null

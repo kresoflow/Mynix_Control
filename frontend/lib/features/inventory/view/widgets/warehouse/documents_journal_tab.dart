@@ -7,7 +7,8 @@ import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
-
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 class DocumentsJournalTab extends StatefulWidget {
   const DocumentsJournalTab({super.key});
 
@@ -89,20 +90,16 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
                 },
               ),
               const Spacer(),
-              ElevatedButton.icon(
+              AppPrimaryButton(
+                label: 'Оформить приход',
+                icon: PhosphorIconsRegular.truck,
                 onPressed: () => _showReceiveDocumentDialog(context),
-                icon: const Icon(PhosphorIconsRegular.truck),
-                label: const Text('Оформить приход'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                ),
               ),
               const SizedBox(width: 8),
-              OutlinedButton.icon(
+              AppGhostButton(
+                label: 'Списание',
+                icon: PhosphorIconsRegular.shoppingCart,
                 onPressed: () {},
-                icon: const Icon(PhosphorIconsRegular.shoppingCart),
-                label: const Text('Списание'),
               ),
             ],
           ),
@@ -117,12 +114,12 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
           ),
           child: Row(
             children: const [
-              SizedBox(width: 50, child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Дата', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Тип', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 3, child: Text('Поставщик / Комментарий', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Сумма', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Статус', style: TextStyle(fontWeight: FontWeight.bold))),
+              SizedBox(width: 50, child: Text('ID', style: AppTextStyles.bodyLargeBold)),
+              Expanded(flex: 2, child: Text('Дата', style: AppTextStyles.bodyLargeBold)),
+              Expanded(flex: 2, child: Text('Тип', style: AppTextStyles.bodyLargeBold)),
+              Expanded(flex: 3, child: Text('Поставщик / Комментарий', style: AppTextStyles.bodyLargeBold)),
+              Expanded(flex: 2, child: Text('Сумма', style: AppTextStyles.bodyLargeBold)),
+              Expanded(flex: 2, child: Text('Статус', style: AppTextStyles.bodyLargeBold)),
               SizedBox(width: 50), // Actions
             ],
           ),
@@ -198,7 +195,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
                             flex: 2,
                             child: Text(
                               doc.totalAmount.toCurrency(context),
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const AppTextStyles.bodyLargeBold,
                             ),
                           ),
                           Expanded(

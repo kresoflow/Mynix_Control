@@ -787,7 +787,7 @@ attributes['Объем'] = '${volumeController.text} $uLabel'.trim();
                                           onTap: _navigateToRoot,
                                           child: const Padding(
                                             padding: EdgeInsets.all(8.0),
-                                            child: Text('Все категории', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                            child: Text('Все категории', style: AppTextStyles.h3),
                                           ),
                                         ),
                                         ...List.generate(_navigationHistory.length, (index) {
@@ -1243,7 +1243,7 @@ class _RecipeTabState extends State<_RecipeTab> {
         children: [
           const Text(
             'Настройка технологических карт',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: AppTextStyles.h2,
           ),
           const SizedBox(height: 24),
           Expanded(
@@ -1434,7 +1434,7 @@ class _ReceiptTab extends StatelessWidget {
         children: [
           const Text(
             'Приход сырья на склад',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: AppTextStyles.h2,
           ),
           const SizedBox(height: 24),
           Expanded(

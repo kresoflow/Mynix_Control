@@ -21,7 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final profile = await authRepository.getMe();
         emit(AuthAuthenticated(
           tenantId: profile['tenant_id']?.toString() ?? 'unknown',
-          role: (profile['roles'] as List<dynamic>).firstOrNull ?? 'unknown',
+          role: (profile['roles'] is List) ? (profile['roles'] as List).firstOrNull?.toString() ?? 'unknown' : 'unknown',
           permissions: List<String>.from(profile['permissions'] ?? []),
         ));
       } else {
@@ -40,7 +40,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final profile = await authRepository.getMe();
         emit(AuthAuthenticated(
           tenantId: profile['tenant_id']?.toString() ?? 'unknown',
-          role: (profile['roles'] as List<dynamic>).firstOrNull ?? 'unknown',
+          role: (profile['roles'] is List) ? (profile['roles'] as List).firstOrNull?.toString() ?? 'unknown' : 'unknown',
           permissions: List<String>.from(profile['permissions'] ?? []),
         ));
       } else {
