@@ -204,7 +204,7 @@ class GeneralSettings extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Text(
               name,
               style: AppTextStyles.bodyMedium.copyWith(

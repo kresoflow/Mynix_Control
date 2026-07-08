@@ -37,7 +37,7 @@ class IngredientHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Text('Управление сырьем', style: AppTextStyles.h3),
+          Text('Управление сырьем', style: AppTextStyles.h3),
           const Spacer(),
           if (isManageMode) ...[
             TextButton.icon(

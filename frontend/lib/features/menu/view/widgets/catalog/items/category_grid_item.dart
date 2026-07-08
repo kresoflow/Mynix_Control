@@ -68,7 +68,7 @@ class CategoryGridItem extends StatelessWidget {
                             color: AppColors.brandPrimary,
                           ),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     category.name,
                     style: AppTextStyles.h3.copyWith(

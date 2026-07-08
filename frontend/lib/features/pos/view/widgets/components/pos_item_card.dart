@@ -60,7 +60,7 @@ class PosItemCard extends StatelessWidget {
                 color: AppColors.brandPrimary,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -79,7 +79,7 @@ class PosItemCard extends StatelessWidget {
                     ),
                   ),
                   if (item.attributesString != null) ...[
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Flexible(
                       child: Text(
                         item.attributesString!,

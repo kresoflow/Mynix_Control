@@ -39,7 +39,7 @@ class _IngredientTabState extends State<IngredientTab> {
             ),
             child: Row(
               children: [
-                const Text('Управление сырьем', style: AppTextStyles.h3),
+                Text('Управление сырьем', style: AppTextStyles.h3),
                 const SizedBox(width: 16),
                 Expanded(
                   child: SingleChildScrollView(

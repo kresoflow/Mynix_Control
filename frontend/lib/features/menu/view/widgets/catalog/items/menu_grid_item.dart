@@ -78,7 +78,7 @@ class MenuGridItem extends StatelessWidget {
                     child: Icon(itemIcon, size: 26, color: accentColor),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -94,7 +94,7 @@ class MenuGridItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (item.attributesString != null) ...[
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(item.attributesString!, style: AppTextStyles.caption.copyWith(fontSize: 11), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
                       ],
                     ],

@@ -109,7 +109,7 @@ class CatalogHeader extends StatelessWidget {
                       children: [
                         InkWell(
                           onTap: onNavigateToRoot,
-                          child: const Padding(
+                          child: Padding(
                             padding: EdgeInsets.all(8.0),
                             child: Text('Все категории', style: AppTextStyles.h3),
                           ),

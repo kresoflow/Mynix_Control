@@ -97,7 +97,7 @@ class _DashboardMetricCardState extends State<DashboardMetricCard> {
                         letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     Text(
                       widget.value,
                       style: AppTextStyles.display.copyWith(

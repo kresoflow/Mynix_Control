@@ -13,10 +13,12 @@ abstract class CartEvent extends Equatable {
 
 class AddItemToCart extends CartEvent {
   final MenuItem item;
-  const AddItemToCart(this.item);
+  final String? selectedOptionsJson;
+  final double selectedOptionsPrice;
+  const AddItemToCart(this.item, {this.selectedOptionsJson, this.selectedOptionsPrice = 0.0});
   
   @override
-  List<Object?> get props => [item];
+  List<Object?> get props => [item, selectedOptionsJson, selectedOptionsPrice];
 }
 
 class RemoveItemFromCart extends CartEvent {
@@ -114,7 +116,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
   void _onAddItemToCart(AddItemToCart event, Emitter<CartState> emit) {
     // Check if item already exists in cart, then just increase quantity
-    final existingIndex = state.items.indexWhere((i) => i.menuItem.id == event.item.id);
+    final existingIndex = state.items.indexWhere((i) => i.menuItem.id == event.item.id && i.selectedOptionsJson == event.selectedOptionsJson);
     
     if (existingIndex >= 0) {
       final updatedItems = List<CartItem>.from(state.items);
@@ -126,6 +128,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         id: DateTime.now().millisecondsSinceEpoch.toString(), // Pseudo UUID
         menuItem: event.item,
         quantity: 1,
+        selectedOptionsJson: event.selectedOptionsJson,
+        selectedOptionsPrice: event.selectedOptionsPrice,
       );
       emit(state.copyWith(items: [...state.items, newItem]));
     }

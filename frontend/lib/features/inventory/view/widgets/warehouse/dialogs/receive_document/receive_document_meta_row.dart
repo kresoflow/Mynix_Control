@@ -131,6 +131,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
                     const SizedBox(width: 16),
                     const Expanded(child: Text('Новые названия будут автоматически созданы в указанной категории.', style: TextStyle(color: Colors.blue, fontSize: 13))),
                     SegmentedButton<int>(
+                      showSelectedIcon: false,
                       segments: const [
                         ButtonSegment(value: 1, label: Text('Витрина')),
                         ButtonSegment(value: 2, label: Text('Сырье')),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -7,6 +8,8 @@ import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/blind_inventory_dialog.dart';
+
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 class DocumentsJournalTab extends StatefulWidget {
@@ -73,21 +76,14 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'all', label: Text('Все документы')),
-                  ButtonSegment(value: 'receipt', label: Text('Приходы')),
-                  ButtonSegment(value: 'write_off', label: Text('Списания')),
+              Wrap(
+                spacing: 8.0,
+                children: [
+                  _buildPill(context, 'Все', 'all'),
+                  _buildPill(context, 'Приходы', 'receipt'),
+                  _buildPill(context, 'Списания', 'write_off'),
+                  _buildPill(context, 'Инвентаризации', 'inventory'),
                 ],
-                selected: {_selectedFilter},
-                onSelectionChanged: (Set<String> newSelection) {
-                  setState(() => _selectedFilter = newSelection.first);
-                  context.read<DocumentBloc>().add(
-                        LoadDocuments(
-                          type: _selectedFilter == 'all' ? null : _selectedFilter,
-                        ),
-                      );
-                },
               ),
               const Spacer(),
               AppPrimaryButton(
@@ -99,7 +95,25 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
               AppGhostButton(
                 label: 'Списание',
                 icon: PhosphorIconsRegular.shoppingCart,
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Раздел массового списания находится в разработке.'),
+                      backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                          ? const Color(0xFF161B22) 
+                          : Colors.black87,
+                      behavior: SnackBarBehavior.floating,
+                      margin: const EdgeInsets.all(16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              AppGhostButton(
+                label: 'Инвентаризация',
+                icon: PhosphorIconsRegular.clipboardText,
+                onPressed: () => BlindInventoryDialog.show(context),
               ),
             ],
           ),
@@ -113,13 +127,13 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
             border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
           ),
           child: Row(
-            children: const [
-              SizedBox(width: 50, child: Text('ID', style: AppTextStyles.bodyLargeBold)),
-              Expanded(flex: 2, child: Text('Дата', style: AppTextStyles.bodyLargeBold)),
-              Expanded(flex: 2, child: Text('Тип', style: AppTextStyles.bodyLargeBold)),
-              Expanded(flex: 3, child: Text('Поставщик / Комментарий', style: AppTextStyles.bodyLargeBold)),
-              Expanded(flex: 2, child: Text('Сумма', style: AppTextStyles.bodyLargeBold)),
-              Expanded(flex: 2, child: Text('Статус', style: AppTextStyles.bodyLargeBold)),
+            children: [
+              SizedBox(width: 50, child: Text('ID', style: AppTextStyles.h3)),
+              Expanded(flex: 2, child: Text('Дата', style: AppTextStyles.h3)),
+              Expanded(flex: 2, child: Text('Тип', style: AppTextStyles.h3)),
+              Expanded(flex: 3, child: Text('Поставщик / Комментарий', style: AppTextStyles.h3)),
+              Expanded(flex: 2, child: Text('Сумма', style: AppTextStyles.h3)),
+              Expanded(flex: 2, child: Text('Статус', style: AppTextStyles.h3)),
               SizedBox(width: 50), // Actions
             ],
           ),
@@ -195,7 +209,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
                             flex: 2,
                             child: Text(
                               doc.totalAmount.toCurrency(context),
-                              style: const AppTextStyles.bodyLargeBold,
+                              style: AppTextStyles.h3,
                             ),
                           ),
                           Expanded(
@@ -233,6 +247,43 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPill(BuildContext context, String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isSelected = _selectedFilter == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() => _selectedFilter = value);
+        context.read<DocumentBloc>().add(
+              LoadDocuments(
+                type: _selectedFilter == 'all' ? null : _selectedFilter,
+              ),
+            );
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBg : AppColors.lightBg),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: AppColors.brandPrimary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))]
+              : [],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 }

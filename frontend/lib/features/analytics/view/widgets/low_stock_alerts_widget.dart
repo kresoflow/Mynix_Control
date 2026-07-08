@@ -62,7 +62,7 @@ class LowStockAlertsWidget extends StatelessWidget {
                   size: 28,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: Text(
                   hasAlerts
@@ -129,7 +129,7 @@ class LowStockAlertsWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     alert.name,

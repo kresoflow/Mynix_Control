@@ -96,8 +96,8 @@ class _OpenShiftScreenState extends State<_OpenShiftScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(PhosphorIconsRegular.lock, size: 64, color: theme.colorScheme.primary),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24),
+            Text(
               'Смена закрыта',
               style: AppTextStyles.h1,
             ),

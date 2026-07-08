@@ -68,13 +68,13 @@ abstract class AppTextStyles {
     fontSize: 15,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.5,
-  );
+  ).copyWith(inherit: true);
 
   static TextStyle get buttonLarge => GoogleFonts.spaceGrotesk(
     fontSize: 18,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.5,
-  );
+  ).copyWith(inherit: true);
 
   // ── TextTheme для ThemeData ────────────────────────────────────────────────
   static TextTheme get textTheme => TextTheme(

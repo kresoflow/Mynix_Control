@@ -58,7 +58,7 @@ class MenuManagerCategoriesList extends StatelessWidget {
                               ),
                               title: Text(
                                 cat.name,
-                                style: const AppTextStyles.bodyLargeBold,
+                                style: AppTextStyles.h3,
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,

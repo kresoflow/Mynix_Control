@@ -20,19 +20,25 @@ class CartItemAdapter extends TypeAdapter<CartItem> {
       id: fields[0] as String,
       menuItem: fields[1] as MenuItem,
       quantity: fields[2] as int,
+      selectedOptionsJson: fields[3] as String?,
+      selectedOptionsPrice: fields[4] as double,
     );
   }
 
   @override
   void write(BinaryWriter writer, CartItem obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.menuItem)
       ..writeByte(2)
-      ..write(obj.quantity);
+      ..write(obj.quantity)
+      ..writeByte(3)
+      ..write(obj.selectedOptionsJson)
+      ..writeByte(4)
+      ..write(obj.selectedOptionsPrice);
   }
 
   @override

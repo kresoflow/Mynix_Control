@@ -96,7 +96,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Σ: ${(${(widget.item.currentStock * widget.item.costPerUnit)}).toCurrency(context)}',
+                    'Σ: ${(widget.item.currentStock * widget.item.costPerUnit).toCurrency(context)}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,

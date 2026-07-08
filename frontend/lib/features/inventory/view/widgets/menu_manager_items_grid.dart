@@ -76,7 +76,7 @@ class MenuManagerItemsGrid extends StatelessWidget {
                     item.attributesString != null
                         ? '${item.attributesString}\n${item.price} с'
                         : '${item.price.toCurrency(context)}',
-                    style: const AppTextStyles.bodyLargeBold,
+                    style: AppTextStyles.h3,
                   ),
                   trailing: IconButton(
                     icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red, size: 20),

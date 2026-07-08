@@ -138,7 +138,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Выберите сырье', style: AppTextStyles.h3),
+                  Text('Выберите сырье', style: AppTextStyles.h3),
                   IconButton(
                     icon: const Icon(PhosphorIconsRegular.x),
                     onPressed: () => Navigator.of(ctx).pop(),
@@ -153,7 +153,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                     final catName = sortedKeys[index];
                     final items = grouped[catName]!;
                     return ExpansionTile(
-                      title: Text(catName, style: const AppTextStyles.bodyLargeBold),
+                      title: Text(catName, style: AppTextStyles.h3),
                       initiallyExpanded: false,
                       shape: const Border(),
                       children: items.map((ing) => ListTile(
@@ -201,7 +201,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Редактор техкарты',
                       style: AppTextStyles.h2,
                     ),

@@ -27,7 +27,7 @@ Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> avai
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Выберите сырье', style: AppTextStyles.h3),
+                Text('Выберите сырье', style: AppTextStyles.h3),
                 IconButton(
                   icon: const Icon(PhosphorIconsRegular.x),
                   onPressed: () => Navigator.of(ctx).pop(),
@@ -42,7 +42,7 @@ Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> avai
                   final catName = sortedKeys[index];
                   final items = grouped[catName]!;
                   return ExpansionTile(
-                    title: Text(catName, style: const AppTextStyles.bodyLargeBold),
+                    title: Text(catName, style: AppTextStyles.h3),
                     initiallyExpanded: false,
                     shape: const Border(),
                     children: items.map((ing) => ListTile(

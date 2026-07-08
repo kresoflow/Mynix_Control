@@ -9,6 +9,7 @@ import 'components/pos_breadcrumb_bar.dart';
 import 'components/pos_category_card.dart';
 import 'components/pos_item_card.dart';
 import 'components/pos_empty_state.dart';
+import 'menu_modifiers_dialog.dart';
 
 // Colour accents cycled per category card
 const _kCategoryColors = [
@@ -96,8 +97,24 @@ class PosMenuGrid extends StatelessWidget {
                         final item = items[index - categories.length];
                         return PosItemCard(
                           item: item,
-                          onTap: () =>
-                              context.read<CartBloc>().add(AddItemToCart(item)),
+                          onTap: () async {
+                            if (item.attributesJson != null && item.attributesJson!.isNotEmpty) {
+                              final result = await showDialog<Map<String, dynamic>>(
+                                context: context,
+                                builder: (ctx) => MenuModifiersDialog(item: item),
+                              );
+                              if (result != null) {
+                                // ignore: use_build_context_synchronously
+                                context.read<CartBloc>().add(AddItemToCart(
+                                  item,
+                                  selectedOptionsJson: result['json'],
+                                  selectedOptionsPrice: result['price'],
+                                ));
+                              }
+                            } else {
+                              context.read<CartBloc>().add(AddItemToCart(item));
+                            }
+                          },
                         );
                       }
                     },

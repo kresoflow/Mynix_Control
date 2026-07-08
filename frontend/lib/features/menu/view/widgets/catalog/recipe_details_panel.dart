@@ -167,7 +167,7 @@ class RecipeDetailsPanel extends StatelessWidget {
                                             );
                                           },
                                         ),
-                                        Text('$qty $unit', style: const AppTextStyles.bodyLargeBold),
+                                        Text('$qty $unit', style: AppTextStyles.h3),
                                         IconButton(
                                           icon: const Icon(PhosphorIconsRegular.plus, size: 16),
                                           constraints: const BoxConstraints(),

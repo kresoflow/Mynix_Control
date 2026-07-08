@@ -125,7 +125,7 @@ class _KdsOrderCardState extends State<KdsOrderCard> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             item['menu_item_name'] ?? 'Item',

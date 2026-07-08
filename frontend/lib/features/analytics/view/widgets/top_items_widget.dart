@@ -77,7 +77,7 @@ class TopItemsWidget extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: Text(
             item.name,

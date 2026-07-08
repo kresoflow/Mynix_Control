@@ -115,7 +115,7 @@ class _ReceiveRetailItemWidgetState extends State<ReceiveRetailItemWidget> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   'На складе: ${widget.product.currentStock} ${widget.product.unit}',
                   style: AppTextStyles.caption.copyWith(

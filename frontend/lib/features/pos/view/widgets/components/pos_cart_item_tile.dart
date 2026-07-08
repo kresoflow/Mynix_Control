@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,6 +17,22 @@ class PosCartItemTile extends StatefulWidget {
 }
 
 class _PosCartItemTileState extends State<PosCartItemTile> {
+  String _parseSelectedOptions(String jsonStr) {
+    try {
+      final map = jsonDecode(jsonStr);
+      final List<String> parts = [];
+      if (map['variation'] != null) parts.add(map['variation']);
+      if (map['modifiers'] != null) {
+        for (var m in map['modifiers']) {
+          parts.add(m['name']);
+        }
+      }
+      return parts.join(', ');
+    } catch (_) {
+      return '';
+    }
+  }
+
   bool _hovered = false;
 
   @override
@@ -54,6 +71,13 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
                     Text(
                       item.menuItem.attributesString!,
                       style: AppTextStyles.caption,
+                    ),
+                  if (item.selectedOptionsJson != null)
+                    Text(
+                      _parseSelectedOptions(item.selectedOptionsJson!),
+                      style: AppTextStyles.caption.copyWith(color: AppColors.brandPrimary),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                 ],
               ),

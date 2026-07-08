@@ -23,7 +23,7 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Настройка технологических карт',
             style: AppTextStyles.h2,
           ),

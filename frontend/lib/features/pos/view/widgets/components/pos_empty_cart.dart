@@ -18,12 +18,12 @@ class PosEmptyCart extends StatelessWidget {
             size: 48,
             color: AppColors.darkSubtext.withValues(alpha: 0.4),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             'Заказ пуст',
             style: AppTextStyles.h3.copyWith(color: AppColors.darkSubtext),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             'Выберите блюда из меню',
             style: AppTextStyles.caption,

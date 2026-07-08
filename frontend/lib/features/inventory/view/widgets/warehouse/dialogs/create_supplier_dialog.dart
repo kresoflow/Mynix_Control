@@ -64,7 +64,7 @@ class _CreateSupplierDialogState extends State<CreateSupplierDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Новый поставщик', style: AppTextStyles.h3),
+                  Text('Новый поставщик', style: AppTextStyles.h3),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close),

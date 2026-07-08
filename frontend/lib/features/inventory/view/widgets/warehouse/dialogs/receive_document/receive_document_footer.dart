@@ -35,8 +35,8 @@ class ReceiveDocumentFooter extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Итого к оплате:', style: TextStyle(color: Colors.grey, fontSize: 14)),
-              Text('${totalSum.toStringAsFixed(2)} $currency', style: const AppTextStyles.h1),
+              Text('Итого к оплате:', style: TextStyle(color: Colors.grey, fontSize: 14)),
+              Text('${totalSum.toStringAsFixed(2)} $currency', style: AppTextStyles.h1),
             ],
           ),
           const Spacer(),

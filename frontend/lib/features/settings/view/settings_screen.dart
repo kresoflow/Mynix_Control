@@ -148,7 +148,7 @@ class _CategoryTile extends StatelessWidget {
         child: Row(
           children: [
             Icon(category.icon, color: color, size: 24),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Text(
               category.title,
               style: AppTextStyles.bodyLarge.copyWith(
@@ -367,7 +367,7 @@ class _GeneralSettings extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Text(
               name,
               style: AppTextStyles.bodyMedium.copyWith(
@@ -614,7 +614,7 @@ class _SettingsRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: AppTextStyles.bodyMedium.copyWith(

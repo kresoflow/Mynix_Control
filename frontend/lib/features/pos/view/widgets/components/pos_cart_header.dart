@@ -30,7 +30,7 @@ class PosCartHeader extends StatelessWidget {
             size: 20,
             color: AppColors.brandPrimary,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Text('Текущий заказ', style: AppTextStyles.h3),
           const Spacer(),
           BlocBuilder<CartBloc, CartState>(
@@ -100,7 +100,7 @@ class PosCartHeader extends StatelessWidget {
         child: Row(
           children: [
             Icon(PhosphorIconsRegular.folderOpen, size: 18, color: AppColors.brandSecondary),
-            const SizedBox(width: 4),
+            SizedBox(width: 4),
             Text(
               '${heldCarts.length}',
               style: AppTextStyles.caption.copyWith(color: AppColors.brandSecondary, fontWeight: FontWeight.bold),

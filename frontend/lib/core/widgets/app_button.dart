@@ -44,7 +44,7 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton> {
           opacity: enabled ? 1.0 : 0.45,
           duration: const Duration(milliseconds: 200),
           child: Container(
-            width: widget.width ?? double.infinity,
+            width: widget.width,
             height: widget.height,
             decoration: BoxDecoration(
               gradient: enabled
@@ -61,8 +61,10 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton> {
                     ]
                   : null,
             ),
-            child: Center(
-              child: widget.isLoading
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Center(
+                child: widget.isLoading
                   ? const SizedBox(
                       width: 22,
                       height: 22,
@@ -86,6 +88,7 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton> {
                         ),
                       ],
                     ),
+              ),
             ),
           ),
         ),
@@ -160,7 +163,7 @@ class AppGhostButton extends StatelessWidget {
         side: BorderSide(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: AppTextStyles.button,
       ),

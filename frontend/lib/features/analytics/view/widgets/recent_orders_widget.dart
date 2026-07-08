@@ -83,7 +83,7 @@ class RecentOrdersWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             dateFormat.format(order.createdAt),
             style: AppTextStyles.caption.copyWith(

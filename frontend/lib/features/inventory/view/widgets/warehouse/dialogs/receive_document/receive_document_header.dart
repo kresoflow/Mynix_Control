@@ -22,8 +22,8 @@ class ReceiveDocumentHeader extends StatelessWidget {
             ),
             child: const Icon(PhosphorIconsRegular.truck, color: Colors.blue, size: 28),
           ),
-          const SizedBox(width: 16),
-          const Text('Новая Приходная Накладная', style: AppTextStyles.h2),
+          SizedBox(width: 16),
+          Text('Новая Приходная Накладная', style: AppTextStyles.h2),
           const Spacer(),
           IconButton(
             icon: const Icon(PhosphorIconsRegular.x),

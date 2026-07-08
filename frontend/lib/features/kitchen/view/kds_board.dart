@@ -113,7 +113,7 @@ class _KdsBoardState extends State<KdsBoard> {
               ),
               // KDS Orders Grid
               if (state is KitchenLoading)
-                const Expanded(child: Center(child: CircularProgressIndicator()))
+                Expanded(child: Center(child: CircularProgressIndicator()))
               else if (orders.isEmpty)
                 Expanded(
                   child: Center(
@@ -270,7 +270,7 @@ class _KdsOrderCardState extends State<_KdsOrderCard> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             item['menu_item_name'] ?? 'Item',

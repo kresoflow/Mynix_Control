@@ -26,6 +26,9 @@ class MenuItem extends Equatable {
   @HiveField(6)
   final List<String>? tags;
 
+  @HiveField(7)
+  final String? attributesJson;
+
   const MenuItem({
     required this.id,
     required this.name,
@@ -34,10 +37,11 @@ class MenuItem extends Equatable {
     this.categoryName,
     this.shortName,
     this.tags,
+    this.attributesJson,
   });
 
   @override
-  List<Object?> get props => [id, name, price, categoryId, categoryName, shortName, tags];
+  List<Object?> get props => [id, name, price, categoryId, categoryName, shortName, tags, attributesJson];
 
   String get cleanName {
     return name.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];
@@ -46,7 +50,9 @@ class MenuItem extends Equatable {
   String? get attributesString {
     final noType = name.split('|TYPE|')[0];
     if (noType.contains('|ATTR|')) {
-      return noType.split('|ATTR|')[1].split('|ICON|')[0];
+      final attrStr = noType.split('|ATTR|')[1].split('|ICON|')[0];
+      if (attrStr.startsWith('[{') || attrStr.startsWith('{')) return null;
+      return attrStr;
     }
     return null;
   }

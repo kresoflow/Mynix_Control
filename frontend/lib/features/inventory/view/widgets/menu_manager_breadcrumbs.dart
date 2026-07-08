@@ -33,11 +33,11 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
         children: [
           InkWell(
             onTap: onNavigateRoot,
-            child: const Row(
+            child: Row(
               children: [
                 Icon(PhosphorIconsRegular.house, size: 20),
                 SizedBox(width: 8),
-                Text('Главная', style: AppTextStyles.bodyLargeBold),
+                Text('Главная', style: AppTextStyles.h3),
               ],
             ),
           ),

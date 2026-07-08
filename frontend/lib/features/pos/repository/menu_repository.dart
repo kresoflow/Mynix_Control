@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 
@@ -22,7 +23,7 @@ class MenuRepository {
             fullName = '$fullName|ICON|$iconValue';
           }
           final attrList = attrs.entries
-              .where((e) => e.key != 'icon' && e.value != null && e.value.toString().isNotEmpty)
+              .where((e) => e.key != 'icon' && e.key != 'variations' && e.key != 'modifier_groups' && e.value != null && e.value.toString().isNotEmpty)
               .map((e) => e.value.toString())
               .join('\n');
           if (attrList.isNotEmpty) {
@@ -39,6 +40,7 @@ class MenuRepository {
           categoryName: json['category_name'] as String?,
           shortName: json['short_name'] as String?,
           tags: (json['tags'] as List?)?.map((e) => e.toString()).toList(),
+          attributesJson: json['attributes'] != null ? jsonEncode(json['attributes']) : null,
         );
       }).toList();
     } catch (e) {
