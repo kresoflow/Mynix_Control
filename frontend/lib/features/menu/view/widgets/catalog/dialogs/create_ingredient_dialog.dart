@@ -5,7 +5,11 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_radii.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int? initialCategoryId}) {
   final isEditing = itemToEdit != null;
   final nameController = TextEditingController(text: itemToEdit?.name ?? '');
@@ -21,21 +25,41 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
     builder: (ctx) {
       return StatefulBuilder(
         builder: (context, setState) {
-          return AlertDialog(
-            title: Text(isEditing ? 'Редактировать сырье' : 'Новый ингредиент'),
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+
+          return MynixDialog(
+            title: isEditing ? 'Редактировать сырье' : 'Новый ингредиент',
+            icon: PhosphorIconsRegular.leaf,
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
+                  TextFormField(
                     controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Название сырья'),
+                    decoration: InputDecoration(
+                      labelText: 'Название сырья',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                     autofocus: true,
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: selectedUnit,
-                    decoration: const InputDecoration(labelText: 'Единица измерения'),
+                    decoration: InputDecoration(
+                      labelText: 'Единица измерения',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                     items: const [
                       DropdownMenuItem(value: 'pcs', child: Text('Штуки (шт)')),
                       DropdownMenuItem(value: 'g', child: Text('Граммы (г)')),
@@ -59,7 +83,16 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                         if (ingredientCategories.isNotEmpty) {
                           return DropdownButtonFormField<int>(
                             initialValue: selectedCategoryId,
-                            decoration: const InputDecoration(labelText: 'Категория'),
+                            decoration: InputDecoration(
+                              labelText: 'Категория',
+                              filled: true,
+                              fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                              border: OutlineInputBorder(
+                                borderRadius: AppRadii.inputRadius,
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                             items: [
                               const DropdownMenuItem<int>(
                                 value: null,
@@ -82,34 +115,62 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                     },
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  TextFormField(
                     controller: costController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(labelText: 'Себестоимость за ед. ($currency)'),
+                    decoration: InputDecoration(
+                      labelText: 'Себестоимость за ед. ($currency)',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  TextFormField(
                     controller: alertController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'Минимальный остаток (алерт)'),
+                    decoration: InputDecoration(
+                      labelText: 'Минимальный остаток (алерт)',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                   if (!isEditing) ...[
                     const SizedBox(height: 16),
-                    TextField(
+                    TextFormField(
                       controller: initialStockController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Начальный остаток'),
+                      decoration: InputDecoration(
+                        labelText: 'Начальный остаток',
+                        filled: true,
+                        fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                        border: OutlineInputBorder(
+                          borderRadius: AppRadii.inputRadius,
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
                     ),
                   ],
                 ],
               ),
             ),
             actions: [
-              TextButton(
+              AppGhostButton(
+                label: 'Отмена',
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Отмена'),
               ),
-              ElevatedButton(
+              const SizedBox(width: 12),
+              AppPrimaryButton(
+                label: isEditing ? 'Сохранить' : 'Создать',
+                icon: PhosphorIconsRegular.floppyDisk,
+                width: 140,
                 onPressed: () {
                   final cost = double.tryParse(costController.text) ?? 0.0;
                   final alert = double.tryParse(alertController.text) ?? 0.0;
@@ -143,7 +204,6 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                     Navigator.pop(ctx);
                   }
                 },
-                child: Text(isEditing ? 'Сохранить' : 'Создать'),
               ),
             ],
           );

@@ -4,7 +4,11 @@ import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_radii.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 void showAddMenuItemDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   final isEditing = itemToEdit != null;
   final nameController = TextEditingController(text: itemToEdit?.cleanName ?? '');
@@ -21,23 +25,42 @@ void showAddMenuItemDialog(BuildContext context, {int? currentCategoryId, MenuIt
     builder: (ctx) {
       return StatefulBuilder(
         builder: (context, setState) {
-          return AlertDialog(
-            title: Text(isEditing ? 'Редактировать блюдо' : 'Новое блюдо'),
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          
+          return MynixDialog(
+            title: isEditing ? 'Редактировать блюдо' : 'Новое блюдо',
+            icon: PhosphorIconsRegular.cookingPot,
             content: SizedBox(
-              width: 400,
+              width: 450,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
+                  TextFormField(
                     controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Название блюда'),
+                    decoration: InputDecoration(
+                      labelText: 'Название блюда',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                     autofocus: !isEditing,
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  TextFormField(
                     controller: priceController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(labelText: 'Цена ($currency)'),
+                    decoration: InputDecoration(
+                      labelText: 'Цена ($currency)',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   BlocBuilder<CategoryBloc, CategoryState>(
@@ -45,8 +68,17 @@ void showAddMenuItemDialog(BuildContext context, {int? currentCategoryId, MenuIt
                       if (catState is CategoryLoaded) {
                         final dishCategories = catState.categories.where((c) => c.categoryType == 'dish').toList();
                         return DropdownButtonFormField<int>(
-                          decoration: const InputDecoration(labelText: 'Категория'),
+                          decoration: InputDecoration(
+                            labelText: 'Категория',
+                            filled: true,
+                            fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                            border: OutlineInputBorder(
+                              borderRadius: AppRadii.inputRadius,
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
                           initialValue: selectedCategoryId,
+                          dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                           items: [
                             const DropdownMenuItem<int>(value: null, child: Text('Без категории')),
                             ...dishCategories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))),
@@ -65,11 +97,15 @@ void showAddMenuItemDialog(BuildContext context, {int? currentCategoryId, MenuIt
               ),
             ),
             actions: [
-              TextButton(
+              AppGhostButton(
+                label: 'Отмена',
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Отмена'),
               ),
-              ElevatedButton(
+              const SizedBox(width: 12),
+              AppPrimaryButton(
+                label: isEditing ? 'Сохранить' : 'Создать',
+                icon: PhosphorIconsRegular.floppyDisk,
+                width: 140,
                 onPressed: () {
                   final price = double.tryParse(priceController.text) ?? 0.0;
                   if (nameController.text.isNotEmpty && price > 0) {
@@ -96,7 +132,6 @@ void showAddMenuItemDialog(BuildContext context, {int? currentCategoryId, MenuIt
                     Navigator.pop(ctx);
                   }
                 },
-                child: Text(isEditing ? 'Сохранить' : 'Создать'),
               ),
             ],
           );

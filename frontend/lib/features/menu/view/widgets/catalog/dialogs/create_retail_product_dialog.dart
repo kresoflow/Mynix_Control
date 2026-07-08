@@ -4,7 +4,11 @@ import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
-
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_radii.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   final isEditing = itemToEdit != null;
   final nameController = TextEditingController(text: itemToEdit?.cleanName ?? '');
@@ -19,22 +23,41 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
     builder: (ctx) {
       return StatefulBuilder(
         builder: (context, setState) {
-          return AlertDialog(
-            title: Text(isEditing ? 'Редактировать товар' : 'Новый товар для витрины'),
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          
+          return MynixDialog(
+            title: isEditing ? 'Редактировать товар' : 'Новый товар для витрины',
+            icon: PhosphorIconsRegular.storefront,
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(
+                  TextFormField(
                     controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Название товара (Сникерс, Кола)'),
+                    decoration: InputDecoration(
+                      labelText: 'Название товара (Сникерс, Кола)',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                     autofocus: true,
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  TextFormField(
                     controller: sellingPriceController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(labelText: 'Цена продажи на кассе ($currency)'),
+                    decoration: InputDecoration(
+                      labelText: 'Цена продажи на кассе ($currency)',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   IconPickerField(
@@ -49,11 +72,15 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
               ),
             ),
             actions: [
-              TextButton(
+              AppGhostButton(
+                label: 'Отмена',
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Отмена'),
               ),
-              ElevatedButton(
+              const SizedBox(width: 12),
+              AppPrimaryButton(
+                label: isEditing ? 'Сохранить' : 'Создать',
+                icon: PhosphorIconsRegular.floppyDisk,
+                width: 140,
                 onPressed: () {
                   final sPrice = double.tryParse(sellingPriceController.text) ?? 0.0;
                   if (nameController.text.isNotEmpty && sPrice > 0) {
@@ -83,7 +110,6 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                     Navigator.pop(ctx);
                   }
                 },
-                child: Text(isEditing ? 'Сохранить' : 'Создать'),
               ),
             ],
           );
