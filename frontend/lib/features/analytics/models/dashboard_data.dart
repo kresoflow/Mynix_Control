@@ -1,13 +1,31 @@
 class TopItem {
   final String name;
+  final String? options;
   final int quantitySold;
 
-  TopItem({required this.name, required this.quantitySold});
+  TopItem({required this.name, this.options, required this.quantitySold});
 
   factory TopItem.fromJson(Map<String, dynamic> json) {
     return TopItem(
       name: json['name'] ?? '',
+      options: json['options'],
       quantitySold: json['quantity_sold'] ?? 0,
+    );
+  }
+}
+
+class RecentOrderItem {
+  final String name;
+  final String? options;
+  final int quantity;
+
+  RecentOrderItem({required this.name, this.options, required this.quantity});
+
+  factory RecentOrderItem.fromJson(Map<String, dynamic> json) {
+    return RecentOrderItem(
+      name: json['name'] ?? '',
+      options: json['options'],
+      quantity: json['quantity'] ?? 1,
     );
   }
 }
@@ -16,7 +34,7 @@ class RecentOrder {
   final String orderNumber;
   final DateTime createdAt;
   final double total;
-  final List<String> items;
+  final List<RecentOrderItem> items;
 
   RecentOrder({
     required this.orderNumber,
@@ -30,7 +48,7 @@ class RecentOrder {
       orderNumber: json['order_number'] ?? '',
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       total: (json['total'] as num?)?.toDouble() ?? 0.0,
-      items: (json['items'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      items: (json['items'] as List?)?.map((e) => RecentOrderItem.fromJson(e)).toList() ?? [],
     );
   }
 }

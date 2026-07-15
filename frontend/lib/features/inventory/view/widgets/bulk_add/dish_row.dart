@@ -3,15 +3,17 @@ import 'bulk_input_decoration.dart';
 
 class DishRowData {
   final TextEditingController nameController;
+  final TextEditingController optionsController;
   final TextEditingController priceController;
   final FocusNode firstFocusNode = FocusNode();
 
-  DishRowData({String name = '', String price = '0'})
+  DishRowData({String name = '', String options = '', String price = '0'})
     : nameController = TextEditingController(text: name),
+      optionsController = TextEditingController(text: options),
       priceController = TextEditingController(text: price);
 
   DishRowData clone() {
-    return DishRowData(name: nameController.text, price: priceController.text);
+    return DishRowData(name: nameController.text, options: optionsController.text, price: priceController.text);
   }
 }
 
@@ -36,12 +38,21 @@ class DishRowWidget extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Expanded(
+          flex: 3,
+          child: TextField(
+            controller: row.optionsController,
+            textInputAction: TextInputAction.next,
+            decoration: buildBulkInputDecoration(context, 'Размеры (S, M, L)'),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
           flex: 2,
           child: TextField(
             controller: row.priceController,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => onAddRow(),
-            decoration: buildBulkInputDecoration(context, 'Цена продажи (с)'),
+            decoration: buildBulkInputDecoration(context, 'Цена (через запятую)'),
           ),
         ),
       ],

@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/menu_modifiers_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'catalog_dialogs.dart';
 import 'catalog_header.dart';
@@ -14,6 +17,7 @@ import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+
 class CatalogBrowserTab extends StatefulWidget {
   final String categoryType;
   final bool Function(MenuItem) itemFilter;
@@ -280,9 +284,31 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                             onCategoryVisibilityToggle: (cat) => context.read<CategoryBloc>().add(UpdateCategory(id: cat.id, isVisible: !cat.isVisible)),
                             onCategoryEdit: (cat) => showAddCategoryDialog(context, currentCategoryId: _currentCategoryId, itemToEdit: cat),
                             onCategoryDelete: (cat) => context.read<CategoryBloc>().add(DeleteCategory(cat.id, mode: 'all')),
-                            onItemTap: (item) {
+                            onItemTap: (item) async {
                               if (_manageMode == CategoryManageMode.delete) {
                                 setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id));
+                              } else if (_manageMode == CategoryManageMode.none) {
+                                bool hasOptions = false;
+                                if (item.attributesJson != null && item.attributesJson!.isNotEmpty && item.attributesJson != '{}') {
+                                   try {
+                                      final attrs = jsonDecode(item.attributesJson!);
+                                      final variations = attrs['variations'] as List?;
+                                      final modifiers = attrs['modifier_groups'] as List?;
+                                      if ((variations != null && variations.isNotEmpty) || (modifiers != null && modifiers.isNotEmpty)) {
+                                         hasOptions = true;
+                                      }
+                                   } catch (_) {}
+                                }
+                                if (hasOptions) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => MenuModifiersDialog(item: item, isReadOnly: true),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('У этого блюда нет опций для предпросмотра.')),
+                                  );
+                                }
                               }
                             },
                             onItemToggle: (item, val) => setState(() => val == true ? _selectedItems.add(item.id) : _selectedItems.remove(item.id)),

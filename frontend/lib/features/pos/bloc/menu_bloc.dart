@@ -17,12 +17,14 @@ class CreateMenuItem extends MenuEvent {
   final double price;
   final String category;
   final int sortOrder;
+  final Map<String, dynamic>? attributes;
 
   const CreateMenuItem({
     required this.name,
     required this.price,
     required this.category,
     this.sortOrder = 0,
+    this.attributes,
   });
 
   @override
@@ -139,6 +141,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
         price: event.price,
         category: event.category,
         sortOrder: event.sortOrder,
+        attributes: event.attributes,
       );
       // Reload menu after creation
       add(LoadMenu());

@@ -26,14 +26,41 @@ void performBulkSave({
     for (var row in dishRows) {
       final name = row.nameController.text.trim();
       if (name.isEmpty) continue;
-      final price = double.tryParse(row.priceController.text) ?? 0.0;
+      
+      final optionsRaw = row.optionsController.text.trim();
+      Map<String, dynamic>? attributes;
+      double basePrice = 0.0;
+      
+      if (optionsRaw.isNotEmpty) {
+         final opts = optionsRaw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+         final prices = row.priceController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+         
+         List<Map<String, dynamic>> variations = [];
+         for (int i = 0; i < opts.length; i++) {
+            double p = 0.0;
+            if (i < prices.length) {
+               p = double.tryParse(prices[i]) ?? 0.0;
+            } else if (prices.isNotEmpty) {
+               p = double.tryParse(prices.last) ?? 0.0;
+            }
+            variations.add({'name': opts[i], 'price': p});
+         }
+         
+         if (variations.isNotEmpty) {
+            attributes = {'variations': variations};
+            basePrice = variations.first['price'] as double;
+         }
+      } else {
+         basePrice = double.tryParse(row.priceController.text) ?? 0.0;
+      }
 
       context.read<MenuBloc>().add(
         CreateMenuItem(
           name: name,
-          price: price,
+          price: basePrice,
           category: targetCategoryId.toString(),
           sortOrder: sortIndex++,
+          attributes: attributes,
         ),
       );
     }
@@ -77,7 +104,6 @@ void performBulkSave({
       if (name.isEmpty) continue;
 
       final purchase = double.tryParse(row.purchaseController.text) ?? 0.0;
-      final sell = double.tryParse(row.sellController.text) ?? 0.0;
       final stock = double.tryParse(row.stockController.text) ?? 0.0;
 
       final flavors = row.flavorController.text
@@ -90,48 +116,68 @@ void performBulkSave({
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .toList();
+      final prices = row.sellController.text
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
 
-      if (flavors.isEmpty) flavors.add('');
-      if (volumes.isEmpty) volumes.add('');
+      Map<String, dynamic>? attributes;
+      double baseSellingPrice = 0.0;
 
-      for (var flavor in flavors) {
-        for (var volume in volumes) {
-          final Map<String, dynamic> attributes = {};
-          
-          if (flavor.isNotEmpty) {
-            attributes['Вкус'] = flavor;
-          }
-          
-          if (volume.isNotEmpty) {
-            String uLabel = '';
-            if (row.selectedUnit == 'l') {
-              uLabel = 'л';
-            } else if (row.selectedUnit == 'ml')
-              uLabel = 'мл';
-            else if (row.selectedUnit == 'kg')
-              uLabel = 'кг';
-            else if (row.selectedUnit == 'g')
-              uLabel = 'г';
-            else if (row.selectedUnit == 'pcs')
-              uLabel = 'шт';
-            
-            attributes['Объем'] = '$volume $uLabel'.trim();
-          }
-
-          context.read<MenuBloc>().add(
-            CreateRetailProduct(
-              name: name,
-              categoryId: targetCategoryId,
-              unit: row.selectedUnit,
-              purchasePrice: purchase,
-              sellingPrice: sell,
-              attributes: attributes.isNotEmpty ? attributes : null,
-              initialStock: stock,
-              sortOrder: sortIndex++,
-            ),
-          );
-        }
+      List<Map<String, dynamic>> modifierGroups = [];
+      if (flavors.isNotEmpty) {
+        modifierGroups.add({
+          'name': 'Вкус',
+          'required': true,
+          'max_selections': 1,
+          'modifiers': flavors.map((f) => {'name': f, 'price': 0.0}).toList(),
+        });
       }
+
+      List<Map<String, dynamic>> variations = [];
+      if (volumes.isNotEmpty) {
+        String uLabel = '';
+        if (row.selectedUnit == 'l') uLabel = 'л';
+        else if (row.selectedUnit == 'ml') uLabel = 'мл';
+        else if (row.selectedUnit == 'kg') uLabel = 'кг';
+        else if (row.selectedUnit == 'g') uLabel = 'г';
+        else if (row.selectedUnit == 'pcs') uLabel = 'шт';
+
+        for (int i = 0; i < volumes.length; i++) {
+          double p = 0.0;
+          if (i < prices.length) {
+            p = double.tryParse(prices[i]) ?? 0.0;
+          } else if (prices.isNotEmpty) {
+            p = double.tryParse(prices.last) ?? 0.0;
+          }
+          variations.add({'name': '${volumes[i]} $uLabel'.trim(), 'price': p});
+        }
+      } else {
+        baseSellingPrice = double.tryParse(row.sellController.text) ?? 0.0;
+      }
+
+      if (modifierGroups.isNotEmpty || variations.isNotEmpty) {
+        attributes = {};
+        if (variations.isNotEmpty) {
+           attributes['variations'] = variations;
+           baseSellingPrice = variations.first['price'] as double;
+        }
+        if (modifierGroups.isNotEmpty) attributes['modifier_groups'] = modifierGroups;
+      }
+
+      context.read<MenuBloc>().add(
+        CreateRetailProduct(
+          name: name,
+          categoryId: targetCategoryId,
+          unit: row.selectedUnit,
+          purchasePrice: purchase,
+          sellingPrice: baseSellingPrice,
+          attributes: attributes,
+          initialStock: stock,
+          sortOrder: sortIndex++,
+        ),
+      );
     }
   }
 

@@ -143,7 +143,26 @@ class CatalogHeader extends StatelessWidget {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    showDialog(context: context, builder: (context) => const BulkAddModal());
+                    int? parentId;
+                    int? childId;
+                    if (navigationHistory.isNotEmpty) {
+                      final currentCat = navigationHistory.last;
+                      if (currentCat != null) {
+                        if (currentCat.parentId == null) {
+                          parentId = currentCat.id;
+                        } else {
+                          parentId = currentCat.parentId;
+                          childId = currentCat.id;
+                        }
+                      }
+                    }
+                    showDialog(
+                      context: context, 
+                      builder: (context) => BulkAddModal(
+                        initialParentId: parentId,
+                        initialChildId: childId,
+                      )
+                    );
                   },
                   icon: const Icon(PhosphorIconsRegular.listPlus),
                   label: const Text('Массово'),

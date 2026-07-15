@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
@@ -98,19 +99,32 @@ class PosMenuGrid extends StatelessWidget {
                         return PosItemCard(
                           item: item,
                           onTap: () async {
-                            if (item.attributesJson != null && item.attributesJson!.isNotEmpty) {
-                              final result = await showDialog<Map<String, dynamic>>(
+                            
+                            bool hasOptions = false;
+                            if (item.attributesJson != null && item.attributesJson!.isNotEmpty && item.attributesJson != '{}') {
+                               try {
+                                  final attrs = jsonDecode(item.attributesJson!);
+                                  final variations = attrs['variations'] as List?;
+                                  final modifiers = attrs['modifier_groups'] as List?;
+                                  if ((variations != null && variations.isNotEmpty) || (modifiers != null && modifiers.isNotEmpty)) {
+                                     hasOptions = true;
+                                  }
+                               } catch (_) {}
+                            }
+                            if (hasOptions) {
+                              showDialog(
                                 context: context,
-                                builder: (ctx) => MenuModifiersDialog(item: item),
+                                builder: (ctx) => MenuModifiersDialog(
+                                  item: item,
+                                  onAdd: (result) {
+                                    context.read<CartBloc>().add(AddItemToCart(
+                                      item,
+                                      selectedOptionsJson: result['json'],
+                                      selectedOptionsPrice: result['price'],
+                                    ));
+                                  },
+                                ),
                               );
-                              if (result != null) {
-                                // ignore: use_build_context_synchronously
-                                context.read<CartBloc>().add(AddItemToCart(
-                                  item,
-                                  selectedOptionsJson: result['json'],
-                                  selectedOptionsPrice: result['price'],
-                                ));
-                              }
                             } else {
                               context.read<CartBloc>().add(AddItemToCart(item));
                             }

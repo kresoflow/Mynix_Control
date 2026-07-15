@@ -1,3 +1,4 @@
+import 'menu_item_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -58,6 +59,12 @@ class MenuManagerItemsGrid extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => MenuItemModal(existingItem: item),
+                    );
+                  },
                   leading: CircleAvatar(
                     backgroundColor: Theme.of(
                       context,
@@ -74,8 +81,8 @@ class MenuManagerItemsGrid extends StatelessWidget {
                   ),
                   subtitle: Text(
                     item.attributesString != null
-                        ? '${item.attributesString}\n${item.price} с'
-                        : '${item.price.toCurrency(context)}',
+                        ? '${item.attributesString}\n${item.variationPrices != null && item.variationPrices!.isNotEmpty ? item.variationPrices!.map((p) => (p as num).toCurrency(context)).join(" | ") : "${item.price} с"}'
+                        : '${(item.price as num).toCurrency(context)}',
                     style: AppTextStyles.h3,
                   ),
                   trailing: IconButton(

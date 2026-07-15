@@ -53,6 +53,7 @@ class MenuRepository {
     required double price,
     required String category,
     int sortOrder = 0,
+    Map<String, dynamic>? attributes,
   }) async {
     try {
       await _dio.post('/menu/', data: {
@@ -61,6 +62,7 @@ class MenuRepository {
         'category_id': int.tryParse(category) ?? 0,
         'is_available': true,
         'sort_order': sortOrder,
+        'attributes': attributes,
       });
     } catch (e) {
       throw Exception('Failed to create menu item: ${e.toString()}');

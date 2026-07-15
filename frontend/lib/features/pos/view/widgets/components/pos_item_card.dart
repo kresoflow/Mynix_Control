@@ -97,23 +97,32 @@ class PosItemCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? AppColors.darkBg 
-                    : AppColors.lightBg,
-                borderRadius: BorderRadius.circular(100),
-                border: Border.all(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.3)),
-              ),
-              child: Text(
-                '${(item.price as num).toCurrency(context)}',
-                style: GoogleFonts.jetBrainsMono(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.brandPrimary,
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark 
+                      ? AppColors.darkBg 
+                      : AppColors.lightBg,
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    item.variationPrices != null && item.variationPrices!.isNotEmpty
+                        ? item.variationPrices!.map((p) => (p as num).toCurrency(context)).join(' | ')
+                        : '${(item.price as num).toCurrency(context)}',
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.brandPrimary,
+                    ),
+                    maxLines: 1,
+                  ),
                 ),
               ),
             ),

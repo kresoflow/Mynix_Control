@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
 
@@ -66,6 +67,19 @@ class MenuItem extends Equatable {
 
   bool get isRetail {
     return name.contains('|TYPE|retail');
+  }
+
+  List<double>? get variationPrices {
+    if (attributesJson != null && attributesJson!.isNotEmpty) {
+      try {
+        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
+        if (attrs['variations'] != null && attrs['variations'] is List) {
+          final vars = attrs['variations'] as List;
+          return vars.map((v) => (v['price'] as num).toDouble()).toList();
+        }
+      } catch (_) {}
+    }
+    return null;
   }
 }
 

@@ -128,7 +128,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
               AppPrimaryButton(
                 label: isEditing ? 'Сохранить' : (parsedCount > 1 ? 'Создать $parsedCount категорий' : 'Создать'),
                 icon: PhosphorIconsRegular.floppyDisk,
-                width: parsedCount > 1 ? 240 : 140,
+                width: null,
                 onPressed: () {
                   final sortOrder = int.tryParse(sortOrderController.text) ?? 0;
                   final finalIcon = (selectedIcon == '') ? null : selectedIcon;

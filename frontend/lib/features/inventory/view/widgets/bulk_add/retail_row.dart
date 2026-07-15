@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'bulk_input_decoration.dart';
 
 class RetailRowData {
   final TextEditingController nameController;
@@ -102,7 +103,8 @@ class _RetailRowWidgetState extends State<RetailRowWidget> {
           child: TextField(
             controller: widget.row.purchaseController,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Закупка (с)'),
+            keyboardType: TextInputType.number,
+            decoration: buildBulkInputDecoration(context, 'Себестоимость'),
           ),
         ),
         const SizedBox(width: 8),
@@ -111,7 +113,8 @@ class _RetailRowWidgetState extends State<RetailRowWidget> {
           child: TextField(
             controller: widget.row.sellController,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Продажа (с)'),
+            keyboardType: TextInputType.text, // Text because of comma separated values
+            decoration: buildBulkInputDecoration(context, 'Цена (через запятую)'),
           ),
         ),
         const SizedBox(width: 8),

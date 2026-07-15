@@ -108,11 +108,28 @@ class RecentOrdersWidget extends StatelessWidget {
                         : Colors.black.withValues(alpha: 0.1),
                   ),
                 ),
-                child: Text(
-                  item,
-                  style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${item.name} x${item.quantity}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                    if (item.options != null && item.options!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          item.options!,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.brandPrimary,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               );
             }).toList(),

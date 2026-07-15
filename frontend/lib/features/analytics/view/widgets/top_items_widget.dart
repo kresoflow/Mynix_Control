@@ -79,14 +79,30 @@ class TopItemsWidget extends StatelessWidget {
         ),
         SizedBox(width: 12),
         Expanded(
-          child: Text(
-            item.name,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: isDark ? AppColors.darkText : AppColors.lightText,
-              fontWeight: isFirst ? FontWeight.w600 : FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.name,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                  fontWeight: isFirst ? FontWeight.w600 : FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (item.options != null && item.options!.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  item.options!,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.brandPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(width: 12),

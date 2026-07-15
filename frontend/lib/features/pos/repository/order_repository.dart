@@ -12,6 +12,8 @@ class OrderRepository {
       'items': items.map((item) => {
         'menu_item_id': item.menuItem.id,
         'quantity': item.quantity,
+        'unit_price_override': item.menuItem.price + item.selectedOptionsPrice,
+        if (item.selectedOptionsJson != null) 'options_json': item.selectedOptionsJson,
       }).toList(),
     };
 

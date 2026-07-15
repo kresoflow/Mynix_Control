@@ -111,16 +111,18 @@ class BulkAddCategorySelector extends StatelessWidget {
               .where((c) => c.parentId != null)
               .toList();
 
-          final children = selectedParentId != null
-              ? allFiltered
-                    .where((c) => c.parentId == selectedParentId)
-                    .toList()
-              : allChildren;
+          final children = allChildren;
 
           final bool parentExists = parents.any((c) => c.id == selectedParentId);
           final int? safeParentId = parentExists ? selectedParentId : null;
           
-          final bool childExists = children.any((c) => c.id == selectedChildId);
+          bool childExists = children.any((c) => c.id == selectedChildId);
+          if (childExists && safeParentId != null && selectedChildId != null) {
+            final child = children.firstWhere((c) => c.id == selectedChildId);
+            if (child.parentId != safeParentId) {
+              childExists = false;
+            }
+          }
           final int? safeChildId = childExists ? selectedChildId : null;
 
           if (selectedChildId != safeChildId) {

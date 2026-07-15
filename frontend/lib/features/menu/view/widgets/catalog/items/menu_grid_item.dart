@@ -110,9 +110,15 @@ class MenuGridItem extends StatelessWidget {
                       borderRadius: BorderRadius.circular(100),
                       border: Border.all(color: accentColor.withAlpha(80)),
                     ),
-                    child: Text(
-                      '${item.price.toCurrency(context)}',
-                      style: GoogleFonts.jetBrainsMono(fontSize: 14, fontWeight: FontWeight.w800, color: accentColor),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        item.variationPrices != null && item.variationPrices!.isNotEmpty
+                            ? item.variationPrices!.map((p) => (p as num).toCurrency(context)).join(' | ')
+                            : '${(item.price as num).toCurrency(context)}',
+                        style: GoogleFonts.jetBrainsMono(fontSize: 13, fontWeight: FontWeight.w800, color: accentColor),
+                        maxLines: 1,
+                      ),
                     ),
                   ),
                 ),

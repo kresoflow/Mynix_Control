@@ -85,9 +85,11 @@ class MynixDialog extends StatelessWidget {
             const SizedBox(height: 20),
 
             // ── Контент ────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: content,
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: content,
+              ),
             ),
             const SizedBox(height: 28),
 

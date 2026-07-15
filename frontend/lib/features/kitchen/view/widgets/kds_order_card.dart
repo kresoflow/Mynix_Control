@@ -127,12 +127,49 @@ class _KdsOrderCardState extends State<KdsOrderCard> {
                         ),
                         SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            item['menu_item_name'] ?? 'Item',
-                            style: AppTextStyles.h2.copyWith(
-                              color: widget.isDark ? AppColors.darkText : AppColors.lightText,
-                              height: 1.3,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['menu_item_name'] ?? 'Item',
+                                style: AppTextStyles.h2.copyWith(
+                                  color: widget.isDark ? AppColors.darkText : AppColors.lightText,
+                                  height: 1.3,
+                                ),
+                              ),
+                                if (item['selected_options'] != null)
+                                  ...(() {
+                                    try {
+                                      final options = item['selected_options'] as Map;
+                                      final List<String> parts = [];
+                                      if (options['variation'] != null) parts.add(options['variation'].toString());
+                                      if (options['modifiers'] != null) {
+                                        for (var m in (options['modifiers'] as List)) {
+                                          parts.add(m['name'].toString());
+                                        }
+                                      }
+                                      if (parts.isEmpty) return <Widget>[
+                                        Text('Opts empty: ${item['selected_options']}', style: const TextStyle(color: Colors.red, fontSize: 10))
+                                      ];
+                                      return [
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          parts.join(', '),
+                                          style: AppTextStyles.caption.copyWith(
+                                            color: AppColors.brandPrimary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        )
+                                      ];
+                                    } catch (e) {
+                                      return <Widget>[
+                                        Text('Err: $e', style: const TextStyle(color: Colors.red, fontSize: 10))
+                                      ];
+                                    }
+                                  })()
+                                else
+                                  Text('selected_options is NULL', style: const TextStyle(color: Colors.red, fontSize: 10)),
+                            ],
                           ),
                         ),
                       ],
