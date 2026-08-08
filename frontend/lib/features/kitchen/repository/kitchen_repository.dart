@@ -26,7 +26,7 @@ class KitchenRepository {
 
   /// Connect to WebSocket stream for realtime updates
   Stream<Map<String, dynamic>> connectToKitchenStream(String tenantId) {
-    final wsUrl = Uri.parse('ws://127.0.0.1:8000/ws/kitchen/$tenantId');
+    final wsUrl = Uri.parse('wss://api.kresoflow.com/ws/kitchen/$tenantId');
     _channel = WebSocketChannel.connect(wsUrl);
     
     return _channel!.stream.map((message) {
