@@ -29,6 +29,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "frontend/build/web/*"
           target: "/var/www/flutter"
           strip_components: 3 # Убирает лишние папки из пути, кладет файлы прямо в корень
