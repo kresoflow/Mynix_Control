@@ -1,0 +1,34 @@
+name: Deploy Frontend (Manual)
+
+on:
+  workflow_dispatch: # Позволяет запускать скрипт по кнопке "Run workflow"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: flutter pub get
+
+      - name: Build Web App
+        working-directory: ./frontend
+        run: flutter build web --release
+
+      - name: Deploy to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "frontend/build/web/*"
+          target: "/var/www/flutter"
+          strip_components: 3 # Убирает лишние папки из пути, кладет файлы прямо в корень
