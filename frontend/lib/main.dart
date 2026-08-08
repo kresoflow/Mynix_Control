@@ -40,6 +40,8 @@ import 'package:flutter/foundation.dart'; // Added for kReleaseMode
 
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
 
+import 'package:sentry_flutter/sentry_flutter.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
@@ -49,10 +51,17 @@ void main() async {
   Hive.registerAdapter(MenuItemAdapter());
   Hive.registerAdapter(CartItemAdapter());
 
-  runApp(
-    DevicePreview(
-      enabled: false, // Отключено для работы с полноэкранным вебом/десктопом
-      builder: (context) => const RetailOSApp(),
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = 'https://95ba1567f2be41c4645bc1942ff77bd5@o4511875643015168.ingest.de.sentry.io/4511875668050000';
+      options.tracesSampleRate = 1.0;
+      options.attachScreenshot = true;
+    },
+    appRunner: () => runApp(
+      DevicePreview(
+        enabled: false, // Отключено для работы с полноэкранным вебом/десктопом
+        builder: (context) => const RetailOSApp(),
+      ),
     ),
   );
 }

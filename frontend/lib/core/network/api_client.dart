@@ -1,15 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sentry_dio/sentry_dio.dart';
 
 class ApiClient {
-  static const String _baseUrl = 'https://api.kresoflow.com/api/v1'; // Production Backend
+  static const String _baseUrl = String.fromEnvironment(
+    'API_URL', 
+    defaultValue: 'http://127.0.0.1:8000/api/v1'
+  );
 
   final Dio dio;
 
   ApiClient() : dio = Dio(BaseOptions(
     baseUrl: _baseUrl,
   )) {
+    dio.addSentry();
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {

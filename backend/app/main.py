@@ -47,6 +47,15 @@ async def lifespan(app: FastAPI):
 
 # ── Create FastAPI App ───────────────────────────────────────────
 
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://ee579c86969f6643e4786fef0ebd98a6@o4511875643015168.ingest.de.sentry.io/4511875720544336",
+    send_default_pii=True,
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)
+
 app = FastAPI(
     title=settings.app_name,
     description=(

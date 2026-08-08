@@ -73,7 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       create: (_) => SuperadminBloc(
                         repository: SuperadminRepository(
                           dio: Dio(BaseOptions(
-                            baseUrl: 'https://api.kresoflow.com/api/v1',
+                            baseUrl: const String.fromEnvironment(
+                              'API_URL', 
+                              defaultValue: 'http://127.0.0.1:8000/api/v1'
+                            ),
                           )),
                         ),
                       ),

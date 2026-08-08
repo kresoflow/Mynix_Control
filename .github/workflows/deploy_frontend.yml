@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Web App
         working-directory: ./frontend
-        run: flutter build web --release
+        run: flutter build web --release --dart-define=API_URL=https://api.kresoflow.com/api/v1 --dart-define=WS_URL=wss://api.kresoflow.com/ws
 
       - name: Deploy to Server
         uses: appleboy/scp-action@v0.1.7
