@@ -84,6 +84,7 @@ from app.inventory.router import router as inventory_router
 from app.kitchen.router import router as kitchen_router
 from app.analytics.router import router as analytics_router
 from app.system.router import router as system_router
+from app.system.integrations import router as integrations_router
 
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(pos_router, prefix="/api/v1")
@@ -91,6 +92,7 @@ app.include_router(inventory_router, prefix="/api/v1")
 app.include_router(kitchen_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1", tags=["Analytics"])
 app.include_router(system_router, prefix="/api/v1/system")
+app.include_router(integrations_router, prefix="/api/v1")
 app.include_router(ws_router)  # WebSocket at root /ws/kitchen/{tenant_id}
 
 
