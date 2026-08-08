@@ -3,6 +3,10 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 class MynixNavRail extends StatelessWidget {
   final bool isOpen;
   final int selectedIndex;
@@ -15,13 +19,14 @@ class MynixNavRail extends StatelessWidget {
     required this.onDestinationSelected,
   });
 
-  static const _items = [
-    _NavItem(PhosphorIconsRegular.receipt, PhosphorIconsFill.receipt, 'Касса'),
-    _NavItem(PhosphorIconsRegular.cookingPot, PhosphorIconsFill.cookingPot, 'Кухня'),
-    _NavItem(PhosphorIconsRegular.bookOpenText, PhosphorIconsFill.bookOpenText, 'Каталог'),
-    _NavItem(PhosphorIconsRegular.package, PhosphorIconsFill.package, 'Склад'),
-    _NavItem(PhosphorIconsRegular.chartLineUp, PhosphorIconsFill.chartLineUp, 'Аналитика'),
-    _NavItem(PhosphorIconsRegular.gear, PhosphorIconsFill.gear, 'Настройки'),
+  static const _allItems = [
+    _NavItem(PhosphorIconsRegular.receipt, PhosphorIconsFill.receipt, 'Касса', '/pos'),
+    _NavItem(PhosphorIconsRegular.listNumbers, PhosphorIconsFill.listNumbers, 'Заказы', '/orders'),
+    _NavItem(PhosphorIconsRegular.cookingPot, PhosphorIconsFill.cookingPot, 'Кухня', '/kitchen'),
+    _NavItem(PhosphorIconsRegular.bookOpenText, PhosphorIconsFill.bookOpenText, 'Каталог', '/catalog'),
+    _NavItem(PhosphorIconsRegular.package, PhosphorIconsFill.package, 'Склад', '/warehouse'),
+    _NavItem(PhosphorIconsRegular.chartLineUp, PhosphorIconsFill.chartLineUp, 'Аналитика', '/analytics'),
+    _NavItem(PhosphorIconsRegular.gear, PhosphorIconsFill.gear, 'Настройки', '/settings'),
   ];
 
   @override
@@ -29,34 +34,68 @@ class MynixNavRail extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOutCubic,
-      width: isOpen ? 240 : 0,
-      color: bg,
-      child: ClipRect(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const NeverScrollableScrollPhysics(),
-          child: SizedBox(
-            width: 240,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 16),
-                for (int i = 0; i < _items.length; i++) ...[
-                  _NavSidebarItem(
-                    item: _items[i],
-                    isSelected: selectedIndex == i,
-                    onTap: () => onDestinationSelected(i),
-                    isDark: isDark,
-                  ),
-                ],
-              ],
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        String role = 'unknown';
+        if (authState is AuthAuthenticated) {
+          role = authState.role.toLowerCase();
+        }
+
+        final visibleItems = _allItems.where((item) {
+          if (role.contains('owner') || role.contains('superadmin')) return true;
+          
+          if (role.contains('manager') || role.contains('admin')) {
+            return item.route != '/settings';
+          }
+          if (role.contains('universal')) {
+            return item.route != '/analytics' && item.route != '/settings';
+          }
+          if (role.contains('warehouse')) {
+            return item.route == '/warehouse' || item.route == '/catalog';
+          }
+          if (role.contains('cashier')) {
+            return item.route == '/pos' || item.route == '/orders';
+          }
+          if (role.contains('cook') || role.contains('kitchen')) {
+            return item.route == '/kitchen';
+          }
+          
+          return false; // Unknown role
+        }).toList();
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          width: isOpen ? 240 : 0,
+          color: bg,
+          child: ClipRect(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              child: SizedBox(
+                width: 240,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
+                    for (int i = 0; i < visibleItems.length; i++) ...[
+                      _NavSidebarItem(
+                        item: visibleItems[i],
+                        isSelected: _allItems.indexOf(visibleItems[i]) == selectedIndex,
+                        onTap: () {
+                          // Pass the ORIGINAL index so the router matches it.
+                          onDestinationSelected(_allItems.indexOf(visibleItems[i]));
+                        },
+                        isDark: isDark,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -65,7 +104,8 @@ class _NavItem {
   final IconData icon;
   final IconData selectedIcon;
   final String label;
-  const _NavItem(this.icon, this.selectedIcon, this.label);
+  final String route;
+  const _NavItem(this.icon, this.selectedIcon, this.label, this.route);
 }
 
 class _NavSidebarItem extends StatefulWidget {

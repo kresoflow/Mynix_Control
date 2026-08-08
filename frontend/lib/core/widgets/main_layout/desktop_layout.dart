@@ -19,11 +19,12 @@ class _DesktopLayoutState extends State<DesktopLayout> {
   bool _isSidebarOpen = false;
 
   int _getSelectedIndex(String location) {
-    if (location.startsWith('/kitchen')) return 1;
-    if (location.startsWith('/catalog')) return 2;
-    if (location.startsWith('/warehouse')) return 3;
-    if (location.startsWith('/analytics')) return 4;
-    if (location.startsWith('/settings')) return 5;
+    if (location.startsWith('/orders')) return 1;
+    if (location.startsWith('/kitchen')) return 2;
+    if (location.startsWith('/catalog')) return 3;
+    if (location.startsWith('/warehouse')) return 4;
+    if (location.startsWith('/analytics')) return 5;
+    if (location.startsWith('/settings')) return 6;
     return 0;
   }
 
@@ -49,7 +50,7 @@ class _DesktopLayoutState extends State<DesktopLayout> {
             isOpen: _isSidebarOpen,
             selectedIndex: selectedIndex,
             onDestinationSelected: (index) {
-              final routes = ['/pos', '/kitchen', '/catalog', '/warehouse', '/analytics', '/settings'];
+              final routes = ['/pos', '/orders', '/kitchen', '/catalog', '/warehouse', '/analytics', '/settings'];
               context.go(routes[index]);
             },
           ),

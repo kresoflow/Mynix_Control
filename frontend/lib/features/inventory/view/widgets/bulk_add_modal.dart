@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'bulk_add/dish_row.dart';
 import 'bulk_add/ingredient_row.dart';
 import 'bulk_add/retail_row.dart';
+import 'bulk_add/category_row.dart';
 import 'bulk_add/bulk_add_category_selector.dart';
 import 'bulk_add/bulk_add_list_widget.dart';
 import 'bulk_add/bulk_add_footer.dart';
@@ -35,6 +36,8 @@ class _BulkAddModalState extends State<BulkAddModal> {
   final List<DishRowData> _dishRows = [];
   final List<RetailRowData> _retailRows = [];
   final List<IngredientRowData> _ingredientRows = [];
+  final List<CategoryRowData> _categoryRows = [];
+  String _categoryType = 'dish';
 
   @override
   void initState() {
@@ -50,9 +53,19 @@ class _BulkAddModalState extends State<BulkAddModal> {
       if (_tabIndex == 0) {
         _dishRows.add(DishRowData());
       } else if (_tabIndex == 1) {
-        _retailRows.add(RetailRowData());
+        final newRow = RetailRowData();
+        if (_retailRows.isNotEmpty) {
+          newRow.selectedUnit = _retailRows.last.selectedUnit;
+        }
+        _retailRows.add(newRow);
+      } else if (_tabIndex == 2) {
+        final newRow = IngredientRowData();
+        if (_ingredientRows.isNotEmpty) {
+          newRow.selectedUnit = _ingredientRows.last.selectedUnit;
+        }
+        _ingredientRows.add(newRow);
       } else {
-        _ingredientRows.add(IngredientRowData());
+        _categoryRows.add(CategoryRowData());
       }
     });
     _focusRow(
@@ -60,7 +73,9 @@ class _BulkAddModalState extends State<BulkAddModal> {
           ? _dishRows.last.firstFocusNode
           : (_tabIndex == 1
                 ? _retailRows.last.firstFocusNode
-                : _ingredientRows.last.firstFocusNode),
+                : (_tabIndex == 2 
+                    ? _ingredientRows.last.firstFocusNode 
+                    : _categoryRows.last.firstFocusNode)),
     );
   }
 
@@ -78,8 +93,10 @@ class _BulkAddModalState extends State<BulkAddModal> {
         _dishRows.insert(index + 1, _dishRows[index].clone());
       } else if (_tabIndex == 1) {
         _retailRows.insert(index + 1, _retailRows[index].clone());
-      } else {
+      } else if (_tabIndex == 2) {
         _ingredientRows.insert(index + 1, _ingredientRows[index].clone());
+      } else {
+        _categoryRows.insert(index + 1, _categoryRows[index].clone());
       }
     });
     _focusRow(
@@ -87,7 +104,9 @@ class _BulkAddModalState extends State<BulkAddModal> {
           ? _dishRows[index + 1].firstFocusNode
           : (_tabIndex == 1
                 ? _retailRows[index + 1].firstFocusNode
-                : _ingredientRows[index + 1].firstFocusNode),
+                : (_tabIndex == 2 
+                    ? _ingredientRows[index + 1].firstFocusNode 
+                    : _categoryRows[index + 1].firstFocusNode)),
     );
   }
 
@@ -97,8 +116,10 @@ class _BulkAddModalState extends State<BulkAddModal> {
         _dishRows.removeAt(index);
       } else if (_tabIndex == 1) {
         _retailRows.removeAt(index);
-      } else {
+      } else if (_tabIndex == 2) {
         _ingredientRows.removeAt(index);
+      } else {
+        _categoryRows.removeAt(index);
       }
     });
   }
@@ -111,17 +132,20 @@ class _BulkAddModalState extends State<BulkAddModal> {
       dishRows: _dishRows,
       ingredientRows: _ingredientRows,
       retailRows: _retailRows,
+      categoryRows: _categoryRows,
+      globalCategoryType: _categoryType,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final tabLabels = ['Блюда', 'Товары витрины', 'Сырьё'];
+    final tabLabels = ['Блюда', 'Товары витрины', 'Сырьё', 'Папки'];
     final tabIcons = [
       PhosphorIconsRegular.cookingPot,
       PhosphorIconsRegular.storefront,
       PhosphorIconsRegular.leaf,
+      PhosphorIconsRegular.folderPlus,
     ];
 
     return CallbackShortcuts(
@@ -208,7 +232,8 @@ class _BulkAddModalState extends State<BulkAddModal> {
                                 _tabIndex = i;
                                 if ((i == 0 && _dishRows.isEmpty) ||
                                     (i == 1 && _retailRows.isEmpty) ||
-                                    (i == 2 && _ingredientRows.isEmpty)) {
+                                    (i == 2 && _ingredientRows.isEmpty) ||
+                                    (i == 3 && _categoryRows.isEmpty)) {
                                   _addRow();
                                 }
                               }),
@@ -257,6 +282,24 @@ class _BulkAddModalState extends State<BulkAddModal> {
                         ),
                       ),
                       const Spacer(),
+                      if (_tabIndex == 3) ...[
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkBg : AppColors.lightBg,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildPillTab('Для блюд', 'dish', isDark),
+                              _buildPillTab('Для витрины', 'retail', isDark),
+                              _buildPillTab('Для сырья', 'ingredient', isDark),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
                       TextButton.icon(
                         onPressed: _addRow,
                         icon: const Icon(PhosphorIconsRegular.plus, size: 16),
@@ -285,6 +328,8 @@ class _BulkAddModalState extends State<BulkAddModal> {
                     ),
                     child: BulkAddCategorySelector(
                       tabIndex: _tabIndex,
+                      globalCategoryType: _categoryType,
+                      onCategoryTypeChanged: (val) => setState(() => _categoryType = val),
                       selectedParentId: _selectedParentId,
                       selectedChildId: _selectedChildId,
                       onParentChanged: (val) => setState(() => _selectedParentId = val),
@@ -303,6 +348,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
                       dishRows: _dishRows,
                       retailRows: _retailRows,
                       ingredientRows: _ingredientRows,
+                      categoryRows: _categoryRows,
                       onAddRow: _addRow,
                       onDuplicateRow: _duplicateRow,
                       onRemoveRow: _removeRow,
@@ -323,6 +369,42 @@ class _BulkAddModalState extends State<BulkAddModal> {
     );
   }
 
+  Widget _buildPillTab(String label, String value, bool isDark) {
+    final selected = _categoryType == value;
+
+    return GestureDetector(
+      onTap: () => setState(() => _categoryType = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.only(right: 4),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.brandPrimary : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: AppColors.brandPrimary.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            fontSize: 13,
+            color: selected
+                ? Colors.white
+                : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+          ),
+        ),
+      ),
+    );
+  }
+
 
   @override
   void dispose() {
@@ -333,6 +415,9 @@ class _BulkAddModalState extends State<BulkAddModal> {
       r.firstFocusNode.dispose();
     }
     for (var r in _ingredientRows) {
+      r.firstFocusNode.dispose();
+    }
+    for (var r in _categoryRows) {
       r.firstFocusNode.dispose();
     }
     super.dispose();

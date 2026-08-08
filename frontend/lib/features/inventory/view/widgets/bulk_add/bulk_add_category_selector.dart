@@ -3,9 +3,13 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class BulkAddCategorySelector extends StatelessWidget {
   final int tabIndex;
+  final String? globalCategoryType;
+  final ValueChanged<String>? onCategoryTypeChanged;
   final int? selectedParentId;
   final int? selectedChildId;
   final Function(int?) onParentChanged;
@@ -14,6 +18,8 @@ class BulkAddCategorySelector extends StatelessWidget {
   const BulkAddCategorySelector({
     super.key,
     required this.tabIndex,
+    this.globalCategoryType,
+    this.onCategoryTypeChanged,
     required this.selectedParentId,
     required this.selectedChildId,
     required this.onParentChanged,
@@ -97,12 +103,12 @@ class BulkAddCategorySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (tabIndex != 0 && tabIndex != 1 && tabIndex != 2) return const SizedBox.shrink();
+    if (tabIndex < 0 || tabIndex > 3) return const SizedBox.shrink();
 
     return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, catState) {
         if (catState is CategoryLoaded) {
-          final allowedType = tabIndex == 0 ? 'dish' : (tabIndex == 1 ? 'retail' : 'ingredient');
+          final allowedType = tabIndex == 0 ? 'dish' : (tabIndex == 1 ? 'retail' : (tabIndex == 2 ? 'ingredient' : globalCategoryType ?? 'dish'));
           final allFiltered = catState.categories
               .where((c) => c.categoryType == allowedType)
               .toList();
@@ -137,75 +143,81 @@ class BulkAddCategorySelector extends StatelessWidget {
               .firstOrNull
               ?.name;
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: DropdownButtonFormField<int?>(
-                  initialValue: safeParentId,
-                  decoration: const InputDecoration(
-                    labelText: 'Главная категория',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: [
-                    const DropdownMenuItem<int?>(
-                      value: null,
-                      child: Text('— Все категории —'),
-                    ),
-                    ...parents.map(
-                      (c) => DropdownMenuItem<int?>(
-                        value: c.id,
-                        child: Text(c.name),
+
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<int?>(
+                      initialValue: safeParentId,
+                      decoration: const InputDecoration(
+                        labelText: 'Главная категория',
+                        border: OutlineInputBorder(),
                       ),
+                      items: [
+                        const DropdownMenuItem<int?>(
+                          value: null,
+                          child: Text('— Все категории —'),
+                        ),
+                        ...parents.map(
+                          (c) => DropdownMenuItem<int?>(
+                            value: c.id,
+                            child: Text(c.name),
+                          ),
+                        ),
+                      ],
+                      onChanged: onParentChanged,
                     ),
-                  ],
-                  onChanged: onParentChanged,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<int?>(
-                  initialValue: safeChildId,
-                  decoration: const InputDecoration(
-                    labelText: 'Подкатегория',
-                    border: OutlineInputBorder(),
                   ),
-                  items: [
-                    const DropdownMenuItem<int?>(
-                      value: null,
-                      child: Text('— Без подкатегории —'),
-                    ),
-                    ...children.map(
-                      (c) => DropdownMenuItem<int?>(
-                        value: c.id,
-                        child: Text(c.name),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButtonFormField<int?>(
+                      initialValue: safeChildId,
+                      decoration: const InputDecoration(
+                        labelText: 'Подкатегория',
+                        border: OutlineInputBorder(),
                       ),
+                      items: [
+                        const DropdownMenuItem<int?>(
+                          value: null,
+                          child: Text('— Без подкатегории —'),
+                        ),
+                        ...children.map(
+                          (c) => DropdownMenuItem<int?>(
+                            value: c.id,
+                            child: Text(c.name),
+                          ),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        onChildChanged(val);
+                        if (val != null) {
+                          final child = allChildren.firstWhere((c) => c.id == val);
+                          if (child.parentId != selectedParentId) {
+                            onParentChanged(child.parentId);
+                          }
+                        }
+                      },
                     ),
-                  ],
-                  onChanged: (val) {
-                    onChildChanged(val);
-                    if (val != null) {
-                      final child = allChildren.firstWhere((c) => c.id == val);
-                      if (child.parentId != selectedParentId) {
-                        onParentChanged(child.parentId);
-                      }
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: IconButton(
-                  icon: const Icon(PhosphorIconsRegular.plusSquare, size: 40, color: Colors.blue),
-                  onPressed: () => _showCreateCategoryDialog(
-                    context,
-                    allowedType,
-                    safeParentId,
-                    parentName,
                   ),
-                  tooltip: 'Создать категорию',
-                ),
+                  const SizedBox(width: 16),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: IconButton(
+                      icon: Icon(PhosphorIconsRegular.plusSquare, size: 40, color: AppColors.info),
+                      onPressed: () => _showCreateCategoryDialog(
+                        context,
+                        allowedType,
+                        safeParentId,
+                        parentName,
+                      ),
+                      tooltip: 'Создать категорию',
+                    ),
+                  ),
+                ],
               ),
             ],
           );
@@ -214,4 +226,6 @@ class BulkAddCategorySelector extends StatelessWidget {
       },
     );
   }
+
+
 }

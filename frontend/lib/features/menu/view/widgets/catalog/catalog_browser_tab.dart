@@ -20,6 +20,7 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class CatalogBrowserTab extends StatefulWidget {
   final String categoryType;
+  final String rootTitle;
   final bool Function(MenuItem) itemFilter;
   final Widget Function(BuildContext context, int? categoryId)? addMenuBuilder;
   final String emptyMessage;
@@ -27,6 +28,7 @@ class CatalogBrowserTab extends StatefulWidget {
   const CatalogBrowserTab({
     super.key,
     required this.categoryType,
+    required this.rootTitle,
     required this.itemFilter,
     this.addMenuBuilder,
     this.emptyMessage = 'Здесь пока пусто. Нажмите "Добавить".',
@@ -44,6 +46,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
   CategoryViewMode _viewMode = CategoryViewMode.grid;
   Set<int> _selectedCategories = {};
   Set<int> _selectedItems = {};
+  bool _showArchived = false;
 
   @override
   void initState() {
@@ -122,12 +125,12 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
         listeners: [
           BlocListener<CategoryBloc, CategoryState>(
             listener: (context, state) {
-              if (state is CategoryError) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.red));
+              if (state is CategoryError) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: AppColors.danger));
             },
           ),
           BlocListener<MenuBloc, MenuState>(
             listener: (context, state) {
-              if (state is MenuError) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.orange));
+              if (state is MenuError) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: AppColors.warning));
             },
           ),
         ],
@@ -154,10 +157,11 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                 if (menuState is MenuLoaded) {
                   final currentCatStr = _currentCategoryId?.toString();
                   currentItems = menuState.items.where((i) {
+                    if (!_showArchived && !i.isAvailable) return false;
                     final iCatStr = i.categoryId.toString();
                     final isRootItem = iCatStr == '0' || iCatStr == 'null' || iCatStr == 'uncategorized' || iCatStr == '';
                     final inCategory = iCatStr == currentCatStr || (isRootItem && currentCatStr == null);
-                    return inCategory && widget.itemFilter(i);
+                    return inCategory && i.parentId == null && widget.itemFilter(i);
                   }).toList();
                 }
 
@@ -176,6 +180,13 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       isAllSelected: isAllSelected,
                       navigationHistory: _navigationHistory,
                       currentCategoryId: _currentCategoryId,
+                      showArchived: _showArchived,
+                      rootTitle: widget.rootTitle,
+                      onShowArchivedToggle: () {
+                        setState(() {
+                          _showArchived = !_showArchived;
+                        });
+                      },
                       addMenuBuilder: widget.addMenuBuilder,
                       onManageModeChanged: (mode) {
                         setState(() {
@@ -288,22 +299,24 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               if (_manageMode == CategoryManageMode.delete) {
                                 setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id));
                               } else if (_manageMode == CategoryManageMode.none) {
-                                bool hasOptions = false;
-                                if (item.attributesJson != null && item.attributesJson!.isNotEmpty && item.attributesJson != '{}') {
-                                   try {
-                                      final attrs = jsonDecode(item.attributesJson!);
-                                      final variations = attrs['variations'] as List?;
-                                      final modifiers = attrs['modifier_groups'] as List?;
-                                      if ((variations != null && variations.isNotEmpty) || (modifiers != null && modifiers.isNotEmpty)) {
-                                         hasOptions = true;
-                                      }
-                                   } catch (_) {}
-                                }
-                                if (hasOptions) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (ctx) => MenuModifiersDialog(item: item, isReadOnly: true),
-                                  );
+                                  bool hasOptions = false;
+                                  List<dynamic>? variations;
+                                  List<dynamic>? modifiers;
+                                  if (item.attributesJson != null && item.attributesJson!.isNotEmpty && item.attributesJson != '{}') {
+                                     try {
+                                        final attrs = jsonDecode(item.attributesJson!);
+                                        variations = attrs['variations'] as List?;
+                                        modifiers = attrs['modifier_groups'] as List?;
+                                        if ((variations != null && variations.length > 1) || (modifiers != null && modifiers.isNotEmpty)) {
+                                           hasOptions = true;
+                                        }
+                                     } catch (_) {}
+                                  }
+                                  if (hasOptions) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => MenuModifiersDialog(item: item, isReadOnly: true),
+                                    );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('У этого блюда нет опций для предпросмотра.')),
@@ -314,6 +327,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                             onItemToggle: (item, val) => setState(() => val == true ? _selectedItems.add(item.id) : _selectedItems.remove(item.id)),
                             onItemEdit: (item) => showAddMenuItemDialog(context, itemToEdit: item),
                             onItemDelete: (item) => context.read<MenuBloc>().add(DeleteMenuItem(item.id)),
+                            onItemRestore: (item) => context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true})),
                           );
                         },
                       ),

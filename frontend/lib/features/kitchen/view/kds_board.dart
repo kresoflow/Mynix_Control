@@ -57,10 +57,14 @@ class _KdsBoardState extends State<KdsBoard> {
                     ),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 16,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 12,
                       children: [
                         Text(
                           'КУХНЯ: ЗАКАЗЫ',
@@ -68,7 +72,6 @@ class _KdsBoardState extends State<KdsBoard> {
                             color: isDark ? AppColors.darkText : AppColors.lightText,
                           ),
                         ),
-                        const SizedBox(width: 16),
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -81,7 +84,6 @@ class _KdsBoardState extends State<KdsBoard> {
                             size: 20,
                           ),
                         ),
-                        const SizedBox(width: 16),
                         IconButton(
                           icon: Icon(
                             PhosphorIconsRegular.arrowsClockwise, 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
@@ -8,6 +9,26 @@ class LowStockAlertsWidget extends StatelessWidget {
   final List<LowStockAlert> alerts;
 
   const LowStockAlertsWidget({super.key, required this.alerts});
+
+  void _copyToClipboard(BuildContext context) {
+    if (alerts.isEmpty) return;
+    
+    final sb = StringBuffer();
+    sb.writeln('📋 Список для закупки:');
+    sb.writeln('----------------------');
+    for (var alert in alerts) {
+      sb.writeln('- ${alert.name} (Остаток: ${alert.currentStock.toStringAsFixed(1)})');
+    }
+    
+    Clipboard.setData(ClipboardData(text: sb.toString()));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Список скопирован в буфер обмена'),
+        backgroundColor: AppColors.success,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +40,7 @@ class LowStockAlertsWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: hasAlerts 
@@ -62,7 +83,7 @@ class LowStockAlertsWidget extends StatelessWidget {
                   size: 28,
                 ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   hasAlerts
@@ -73,6 +94,14 @@ class LowStockAlertsWidget extends StatelessWidget {
                   ),
                 ),
               ),
+              if (hasAlerts)
+                Tooltip(
+                  message: 'Скопировать список для закупки',
+                  child: IconButton(
+                    icon: Icon(PhosphorIconsRegular.copy, color: AppColors.brandPrimary),
+                    onPressed: () => _copyToClipboard(context),
+                  ),
+                ),
             ],
           ),
           if (hasAlerts) ...[
@@ -94,7 +123,7 @@ class LowStockAlertsWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightBg,
+        color: isDark ? AppColors.darkCard : AppColors.lightBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.danger.withValues(alpha: 0.15),

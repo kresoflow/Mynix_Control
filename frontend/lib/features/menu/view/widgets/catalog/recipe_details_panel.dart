@@ -8,6 +8,8 @@ import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'dialogs/recipe_bulk_edit_dialog.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class RecipeDetailsPanel extends StatelessWidget {
   final int selectedMenuItemId;
@@ -58,11 +60,11 @@ class RecipeDetailsPanel extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatColumn('Себестоимость', '${totalCost.toStringAsFixed(2)} $currency', Colors.redAccent),
+                    _buildStatColumn('Себестоимость', '${totalCost.toStringAsFixed(2)} $currency', AppColors.danger),
                     Container(height: 40, width: 1, color: Colors.grey.withValues(alpha: 0.3)),
                     _buildStatColumn('Отпускная цена', '${price.toStringAsFixed(2)} $currency', Theme.of(context).colorScheme.primary),
                     Container(height: 40, width: 1, color: Colors.grey.withValues(alpha: 0.3)),
-                    _buildStatColumn('Маржа / Наценка', '${margin.toStringAsFixed(2)} $currency (${marginPercent.toStringAsFixed(1)}%)', margin >= 0 ? Colors.green : Colors.red),
+                    _buildStatColumn('Маржа / Наценка', '${margin.toStringAsFixed(2)} $currency (${marginPercent.toStringAsFixed(1)}%)', margin >= 0 ? AppColors.success : AppColors.danger),
                   ],
                 ),
               ),
@@ -142,7 +144,7 @@ class RecipeDetailsPanel extends StatelessWidget {
                                   Container(
                                     width: 80,
                                     alignment: Alignment.centerRight,
-                                    child: Text('${rowCost.toStringAsFixed(2)} $currency', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.redAccent)),
+                                    child: Text('${rowCost.toStringAsFixed(2)} $currency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.danger)),
                                   ),
                                   const SizedBox(width: 16),
                                   // Quantity Editor
@@ -188,7 +190,7 @@ class RecipeDetailsPanel extends StatelessWidget {
                                   const SizedBox(width: 8),
                                   IconButton(
                                     icon: const Icon(PhosphorIconsRegular.trash, color: Colors.grey),
-                                    hoverColor: Colors.red.withValues(alpha: 0.1),
+                                    hoverColor: AppColors.danger.withValues(alpha: 0.1),
                                     onPressed: () {
                                       context.read<RecipeBloc>().add(
                                         RemoveIngredientFromRecipe(
@@ -210,7 +212,7 @@ class RecipeDetailsPanel extends StatelessWidget {
             ],
           );
         } else if (state is RecipeError) {
-          return Center(child: Text('Ошибка: ${state.message}', style: const TextStyle(color: Colors.red)));
+          return Center(child: Text('Ошибка: ${state.message}', style: TextStyle(color: AppColors.danger)));
         }
         return const Center(child: Text('Загрузка техкарты...'));
       },

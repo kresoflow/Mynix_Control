@@ -38,21 +38,20 @@ class PosCategoryCard extends StatelessWidget {
             Container(
               width: 56,
               height: 56,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [accent, accent.withValues(alpha: 0.6)],
-                ),
-                borderRadius: BorderRadius.circular(16),
+                color: accent.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
               ),
               child: (effectiveIcon == null || effectiveIcon.isEmpty)
-                  ? buildCategoryIcon(cat.name, size: 32, color: Colors.white)
+                  ? Text(
+                      cat.name.isNotEmpty ? cat.name[0].toUpperCase() : '?',
+                      style: AppTextStyles.h2.copyWith(color: accent, fontWeight: FontWeight.bold),
+                    )
                   : IconHelper.buildIcon(
                       effectiveIcon,
-                      fallback: PhosphorIconsRegular.list,
                       size: 32,
-                      color: Colors.white,
+                      color: accent,
                     ),
             ),
             Text(

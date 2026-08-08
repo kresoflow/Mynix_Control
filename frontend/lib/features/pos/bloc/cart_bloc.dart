@@ -49,10 +49,9 @@ class CheckoutCart extends CartEvent {
 }
 
 class HoldCurrentCart extends CartEvent {
-  final String holdName;
-  const HoldCurrentCart(this.holdName);
+  const HoldCurrentCart();
   @override
-  List<Object?> get props => [holdName];
+  List<Object?> get props => [];
 }
 
 class ResumeHeldCart extends CartEvent {
@@ -66,6 +65,7 @@ class ResumeHeldCart extends CartEvent {
 class CartState extends Equatable {
   final List<CartItem> items;
   final Map<String, List<CartItem>> heldCarts;
+  final int holdCounter;
   final bool isSubmitting;
   final String? submitError;
   final bool submitSuccess;
@@ -73,6 +73,7 @@ class CartState extends Equatable {
   const CartState({
     this.items = const [],
     this.heldCarts = const {},
+    this.holdCounter = 1,
     this.isSubmitting = false,
     this.submitError,
     this.submitSuccess = false,
@@ -83,6 +84,7 @@ class CartState extends Equatable {
   CartState copyWith({
     List<CartItem>? items,
     Map<String, List<CartItem>>? heldCarts,
+    int? holdCounter,
     bool? isSubmitting,
     String? submitError,
     bool? submitSuccess,
@@ -90,6 +92,7 @@ class CartState extends Equatable {
     return CartState(
       items: items ?? this.items,
       heldCarts: heldCarts ?? this.heldCarts,
+      holdCounter: holdCounter ?? this.holdCounter,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       submitError: submitError, // Let null clear it
       submitSuccess: submitSuccess ?? false, // Reset success unless explicitly true
@@ -97,7 +100,7 @@ class CartState extends Equatable {
   }
   
   @override
-  List<Object?> get props => [items, heldCarts, isSubmitting, submitError, submitSuccess];
+  List<Object?> get props => [items, heldCarts, holdCounter, isSubmitting, submitError, submitSuccess];
 }
 
 // --- Bloc ---
@@ -171,11 +174,15 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     if (state.items.isEmpty) return;
     
     final updatedHeld = Map<String, List<CartItem>>.from(state.heldCarts);
-    updatedHeld[event.holdName] = List.from(state.items);
+    final now = DateTime.now();
+    final name = 'Чек #${state.holdCounter} (${now.hour}:${now.minute.toString().padLeft(2, '0')})';
+    
+    updatedHeld[name] = List.from(state.items);
     
     emit(state.copyWith(
       items: const [],
       heldCarts: updatedHeld,
+      holdCounter: state.holdCounter + 1,
     ));
   }
 
@@ -188,13 +195,14 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     // If current cart is NOT empty, we hold it automatically
     if (state.items.isNotEmpty) {
       final now = DateTime.now();
-      final autoHoldName = 'Чек ${now.hour}:${now.minute.toString().padLeft(2, '0')} (Авто)';
+      final autoHoldName = 'Чек #${state.holdCounter} (Авто, ${now.hour}:${now.minute.toString().padLeft(2, '0')})';
       updatedHeld[autoHoldName] = List.from(state.items);
     }
 
     emit(state.copyWith(
       items: itemsToResume,
       heldCarts: updatedHeld,
+      holdCounter: state.items.isNotEmpty ? state.holdCounter + 1 : state.holdCounter,
     ));
   }
 }

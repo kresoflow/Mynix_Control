@@ -35,12 +35,15 @@ class MenuRepository {
         return MenuItem(
           id: json['id'] as int,
           name: fullName,
-          price: (json['price'] as num).toDouble(),
+          price: (json['price'] as num?)?.toDouble() ?? 0.0,
           categoryId: json['category_id']?.toString() ?? '0',
           categoryName: json['category_name'] as String?,
           shortName: json['short_name'] as String?,
           tags: (json['tags'] as List?)?.map((e) => e.toString()).toList(),
           attributesJson: json['attributes'] != null ? jsonEncode(json['attributes']) : null,
+          isAvailable: json['is_available'] as bool? ?? true,
+          barcode: json['barcode'] as String?,
+          parentId: json['parent_id'] as int?,
         );
       }).toList();
     } catch (e) {
@@ -48,22 +51,27 @@ class MenuRepository {
     }
   }
 
-  Future<void> createMenuItem({
+  Future<int> createMenuItem({
     required String name,
     required double price,
     required String category,
     int sortOrder = 0,
     Map<String, dynamic>? attributes,
+    String? barcode,
+    String type = 'dish',
   }) async {
     try {
-      await _dio.post('/menu/', data: {
+      final response = await _dio.post('/menu/', data: {
         'name': name,
         'price': price,
         'category_id': int.tryParse(category) ?? 0,
         'is_available': true,
         'sort_order': sortOrder,
         'attributes': attributes,
+        'barcode': barcode,
+        'type': type,
       });
+      return response.data['id'] as int;
     } catch (e) {
       throw Exception('Failed to create menu item: ${e.toString()}');
     }
@@ -77,7 +85,10 @@ class MenuRepository {
     required double sellingPrice,
     Map<String, dynamic>? attributes,
     double initialStock = 0.0,
+    double minStockAlert = 0.0,
     int sortOrder = 0,
+    String? barcode,
+    int? parentId,
   }) async {
     try {
       final response = await _dio.post('/retail-product/', data: {
@@ -88,7 +99,10 @@ class MenuRepository {
         'selling_price': sellingPrice,
         'attributes': attributes,
         'initial_stock': initialStock,
+        'min_stock_alert': minStockAlert,
         'sort_order': sortOrder,
+        'barcode': barcode,
+        'parent_id': parentId,
       });
       return response.data['id'] as int;
     } catch (e) {

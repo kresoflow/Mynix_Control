@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/widgets/responsive_layout.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/pos_menu_grid.dart';
+import 'dart:convert';
 import 'package:mynix_frontend/features/pos/view/widgets/pos_cart.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,11 @@ import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/barcode_scanner_listener.dart';
+
 
 class PosScreen extends StatelessWidget {
   const PosScreen({super.key});
@@ -27,15 +33,27 @@ class PosScreen extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(msg),
-              backgroundColor: diff == 0 ? Colors.green : Colors.orange,
+              backgroundColor: diff == 0 ? AppColors.success : AppColors.warning,
               duration: const Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
+                left: 16,
+                right: 16,
+              ),
             ),
           );
         } else if (state is ShiftError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.danger,
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
+                left: 16,
+                right: 16,
+              ),
             ),
           );
         }
@@ -52,10 +70,78 @@ class PosScreen extends StatelessWidget {
 
           return BlocProvider(
             create: (context) => PosNavCubit(),
-            child: const ResponsiveLayout(
-              mobile: _MobileLayout(),
-              tablet: _TabletLayout(),
-              desktop: _DesktopLayout(),
+            child: BarcodeScannerListener(
+              onBarcodeScanned: (barcode) {
+                final menuState = context.read<MenuBloc>().state;
+                if (menuState is MenuLoaded) {
+                  final child = menuState.items.where((i) => i.barcode == barcode && i.parentId != null).firstOrNull;
+                  
+                  if (child != null) {
+                    final parent = menuState.items.where((i) => i.id == child.parentId).firstOrNull;
+                    if (parent != null) {
+                      context.read<CartBloc>().add(AddItemToCart(
+                        parent,
+                        selectedOptionsJson: jsonEncode({
+                          'variation': child.cleanName,
+                          'child_item_id': child.id,
+                        }),
+                        selectedOptionsPrice: child.price - parent.price,
+                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${parent.cleanName} (${child.cleanName}) добавлен'),
+                          backgroundColor: AppColors.success,
+                          duration: const Duration(seconds: 1),
+                          behavior: SnackBarBehavior.floating,
+                          margin: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
+                            left: 16,
+                            right: 16,
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                  }
+
+                  final item = menuState.items.where((i) => i.barcode == barcode).firstOrNull;
+                  if (item != null) {
+                    context.read<CartBloc>().add(AddItemToCart(item));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${item.cleanName} добавлен'),
+                        backgroundColor: AppColors.success,
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                        margin: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
+                          left: 16,
+                          right: 16,
+                        ),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Товар со штрихкодом не найден'),
+                        backgroundColor: Color(0xFFF59E0B),
+                        duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        margin: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
+                          left: 16,
+                          right: 16,
+                        ),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const ResponsiveLayout(
+                mobile: _MobileLayout(),
+                tablet: _TabletLayout(),
+                desktop: _DesktopLayout(),
+              ),
             ),
           );
         },
@@ -86,7 +172,7 @@ class _OpenShiftScreenState extends State<_OpenShiftScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             )
@@ -102,16 +188,16 @@ class _OpenShiftScreenState extends State<_OpenShiftScreen> {
               style: AppTextStyles.h1,
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Для начала работы с кассой необходимо открыть смену и внести разменные деньги.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: AppTextStyles.body.copyWith(color: AppColors.lightSubtext),
             ),
             const SizedBox(height: 32),
             TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(fontSize: 24),
+              style: AppTextStyles.h2,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Разменные деньги (с)',
@@ -128,9 +214,9 @@ class _OpenShiftScreenState extends State<_OpenShiftScreen> {
                   context.read<ShiftBloc>().add(OpenShiftRequested(amount));
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
-                  textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  textStyle: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
                 ),
                 child: const Text('ОТКРЫТЬ СМЕНУ'),
               ),
@@ -147,10 +233,82 @@ class _MobileLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Stack(
       children: [
-        Expanded(flex: 1, child: PosMenuGrid()),
-        Expanded(flex: 1, child: PosCart()),
+        const Positioned.fill(
+          child: PosMenuGrid(),
+        ),
+        BlocBuilder<CartBloc, CartState>(
+          builder: (context, state) {
+            final itemCount = state.items.fold(0, (sum, item) => sum + item.quantity);
+            if (itemCount == 0) return const SizedBox.shrink();
+
+            return Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: SafeArea(
+                child: ElevatedButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => BlocListener<CartBloc, CartState>(
+                        listenWhen: (previous, current) => !previous.submitSuccess && current.submitSuccess,
+                        listener: (context, state) {
+                          if (state.submitSuccess) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.85,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                          ),
+                          child: const ClipRRect(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                            child: PosCart(),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.brandPrimary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 8,
+                    shadowColor: AppColors.brandPrimary.withOpacity(0.5),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$itemCount',
+                          style: AppTextStyles.h3.copyWith(color: Colors.white),
+                        ),
+                      ),
+                      Text('Корзина', style: AppTextStyles.h3.copyWith(color: Colors.white)),
+                      Text(
+                        state.total.toCurrency(context),
+                        style: AppTextStyles.h3.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ],
     );
   }

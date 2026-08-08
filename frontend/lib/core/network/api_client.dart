@@ -3,10 +3,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
 class ApiClient {
-  static const String _baseUrl = 'http://localhost:8000/api/v1'; // Local Dev Backend
+  static const String _baseUrl = 'http://127.0.0.1:8000/api/v1'; // Local Dev Backend
+
   final Dio dio;
 
-  ApiClient() : dio = Dio(BaseOptions(baseUrl: _baseUrl)) {
+  ApiClient() : dio = Dio(BaseOptions(
+    baseUrl: _baseUrl,
+  )) {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {

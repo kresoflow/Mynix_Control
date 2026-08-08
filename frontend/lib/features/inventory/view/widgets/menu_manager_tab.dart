@@ -8,6 +8,8 @@ import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'menu_manager_categories_list.dart';
 import 'menu_manager_items_grid.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/menu_manager_breadcrumbs.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class MenuManagerTab extends StatefulWidget {
   const MenuManagerTab({super.key});
@@ -176,7 +178,7 @@ class _MenuManagerTabState extends State<MenuManagerTab> {
       listener: (context, state) {
         if (state is CategoryError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+            SnackBar(content: Text(state.message), backgroundColor: AppColors.danger),
           );
         }
       },

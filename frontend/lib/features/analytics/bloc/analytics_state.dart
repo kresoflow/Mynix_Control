@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:mynix_frontend/features/analytics/models/dashboard_data.dart';
+import 'package:mynix_frontend/features/analytics/models/analytics_models.dart';
 
 abstract class AnalyticsState extends Equatable {
   const AnalyticsState();
@@ -11,12 +11,13 @@ abstract class AnalyticsState extends Equatable {
 class AnalyticsLoading extends AnalyticsState {}
 
 class AnalyticsLoaded extends AnalyticsState {
-  final DashboardData data;
+  final AnalyticsMetrics metrics;
+  final AnalyticsXRay xray;
 
-  const AnalyticsLoaded(this.data);
+  const AnalyticsLoaded({required this.metrics, required this.xray});
 
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [metrics, xray];
 }
 
 class AnalyticsError extends AnalyticsState {

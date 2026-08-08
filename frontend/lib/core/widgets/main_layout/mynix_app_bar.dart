@@ -10,6 +10,7 @@ import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
+import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'icon_btn.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
@@ -80,7 +81,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
             builder: (context, state) {
               final isOpen = state is ShiftOpen;
               final cash = isOpen
-                  ? ((state.shiftDetails['current_cash_expected'] ?? state.shiftDetails['opening_cash']) as num).toCurrency(context)
+                  ? ((state.shiftDetails['current_cash_expected'] ?? state.shiftDetails['opening_cash'] ?? 0) as num).toCurrency(context)
                   : 'Закрыто';
 
               return GestureDetector(
@@ -126,6 +127,17 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           const SizedBox(width: 12),
 
+          BlocBuilder<PosSettingsCubit, PosSettingsState>(
+            builder: (context, posSettings) {
+              return IconBtn(
+                icon: PhosphorIconsRegular.palette,
+                tooltip: posSettings.enableRainbowColors ? 'Отключить радужные цвета' : 'Включить радужные цвета',
+                color: posSettings.enableRainbowColors ? AppColors.brandPrimary : null,
+                onPressed: () => context.read<PosSettingsCubit>().toggleRainbowColors(),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
           IconBtn(
             icon: PhosphorIconsRegular.sun,
             tooltip: 'Переключить тему',
@@ -235,7 +247,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
               context.read<ShiftBloc>().add(CloseShiftRequested(amount));
               Navigator.pop(ctx);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
             child: const Text('ЗАКРЫТЬ'),
           ),
         ],

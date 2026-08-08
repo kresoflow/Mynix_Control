@@ -19,6 +19,7 @@ extension IngredientsPart on InventoryRepository {
     int? categoryId,
     double initialStock = 0.0,
     int sortOrder = 0,
+    String? barcode,
   }) async {
     try {
       final response = await _dio.post(
@@ -31,6 +32,7 @@ extension IngredientsPart on InventoryRepository {
           'initial_stock': initialStock,
           'sort_order': sortOrder,
           if (categoryId != null) 'category_id': categoryId,
+          if (barcode != null) 'barcode': barcode,
         },
       );
       return response.data['id'] as int;
@@ -48,12 +50,15 @@ extension IngredientsPart on InventoryRepository {
           id: json['id'],
           name: json['name'],
           unit: json['unit'],
-          currentStock: (json['current_stock'] as num).toDouble(),
-          minStockAlert: (json['min_stock_alert'] as num).toDouble(),
-          costPerUnit: (json['cost'] as num).toDouble(),
+          currentStock: (json['current_stock'] as num?)?.toDouble() ?? 0.0,
+          minStockAlert: (json['min_stock_alert'] as num?)?.toDouble() ?? 0.0,
+          costPerUnit: (json['cost'] as num?)?.toDouble() ?? 0.0,
           isLowStock: json['is_low_stock'] ?? false,
           price: (json['price'] as num?)?.toDouble(),
           attributes: {...?json['attributes'], 'is_retail': true},
+          barcode: json['barcode'],
+          categoryId: json['category_id'],
+          categoryName: json['category_name'],
         );
       }).toList();
     } catch (e) {

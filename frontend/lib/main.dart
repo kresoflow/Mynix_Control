@@ -30,16 +30,31 @@ import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/orders/repository/orders_repository.dart';
+import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+
+import 'package:device_preview/device_preview.dart';
+
+import 'package:flutter/foundation.dart'; // Added for kReleaseMode
+
+import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   
   // Initialize Hive
   await Hive.initFlutter();
   Hive.registerAdapter(MenuItemAdapter());
   Hive.registerAdapter(CartItemAdapter());
 
-  runApp(const RetailOSApp());
+  runApp(
+    DevicePreview(
+      enabled: false, // Отключено для работы с полноэкранным вебом/десктопом
+      builder: (context) => const RetailOSApp(),
+    ),
+  );
 }
 
 class RetailOSApp extends StatefulWidget {
@@ -67,6 +82,9 @@ class _RetailOSAppState extends State<RetailOSApp> {
   late final RecipeBloc _recipeBloc;
   late final CategoryBloc _categoryBloc;
   late final DocumentBloc _documentBloc;
+  late final OrdersRepository _ordersHistoryRepository;
+  late final OrdersBloc _ordersBloc;
+  late final PosSettingsCubit _posSettingsCubit;
   late final AppRouter _appRouter;
 
   @override
@@ -89,6 +107,9 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _recipeBloc = RecipeBloc(_inventoryRepository);
     _categoryBloc = CategoryBloc(_inventoryRepository);
     _documentBloc = DocumentBloc(_inventoryRepository);
+    _ordersHistoryRepository = OrdersRepository(dio: apiClient.dio);
+    _ordersBloc = OrdersBloc(repository: _ordersHistoryRepository);
+    _posSettingsCubit = PosSettingsCubit();
     _appRouter = AppRouter(_authBloc);
   }
 
@@ -105,6 +126,8 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _recipeBloc.close();
     _categoryBloc.close();
     _documentBloc.close();
+    _ordersBloc.close();
+    _posSettingsCubit.close();
     super.dispose();
   }
 
@@ -118,6 +141,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
         RepositoryProvider.value(value: _kitchenRepository),
         RepositoryProvider.value(value: _shiftRepository),
         RepositoryProvider.value(value: _inventoryRepository),
+        RepositoryProvider.value(value: _ordersHistoryRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -132,6 +156,8 @@ class _RetailOSAppState extends State<RetailOSApp> {
           BlocProvider.value(value: _recipeBloc),
           BlocProvider.value(value: _categoryBloc),
           BlocProvider.value(value: _documentBloc),
+          BlocProvider.value(value: _ordersBloc),
+          BlocProvider.value(value: _posSettingsCubit),
         ],
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
@@ -154,6 +180,8 @@ class _RetailOSAppState extends State<RetailOSApp> {
                     theme: AppTheme.light,
                     darkTheme: AppTheme.dark,
                     routerConfig: _appRouter.router,
+                    locale: DevicePreview.locale(context),
+                    builder: DevicePreview.appBuilder,
                   );
                 },
               );

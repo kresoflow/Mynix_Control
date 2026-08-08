@@ -10,6 +10,7 @@ class Ingredient {
   final Map<String, dynamic>? attributes;
   final int? categoryId;
   final String? categoryName;
+  final String? barcode;
 
   bool get isRetail => attributes?['is_retail'] == true;
 
@@ -25,6 +26,7 @@ class Ingredient {
     this.attributes,
     this.categoryId,
     this.categoryName,
+    this.barcode,
   });
 
   factory Ingredient.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class Ingredient {
       attributes: json['attributes'],
       categoryId: json['category_id'],
       categoryName: json['category_name'],
+      barcode: json['barcode'],
     );
   }
 }

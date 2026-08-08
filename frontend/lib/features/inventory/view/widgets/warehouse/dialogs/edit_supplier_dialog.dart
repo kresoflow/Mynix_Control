@@ -158,7 +158,7 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
                   Text(
                     _isActive ? 'Активен' : 'Неактивен',
                     style: TextStyle(
-                      color: _isActive ? Colors.green : Colors.grey,
+                      color: _isActive ? AppColors.success : Colors.grey,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),

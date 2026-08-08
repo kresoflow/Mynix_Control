@@ -17,6 +17,8 @@ import 'receive_document/receive_document_meta_row.dart';
 import 'receive_document/receive_document_table_header.dart';
 import 'receive_document/receive_document_item_row.dart';
 import 'receive_document/receive_document_footer.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class ReceiveDocumentDialog extends StatefulWidget {
   const ReceiveDocumentDialog({super.key});
@@ -217,7 +219,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       }
     } catch (e) {
        if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger));
          setState(() => _isSaving = false);
        }
     }
@@ -335,8 +337,10 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                                   },
                                   onFlavorSubmitted: () => _focusRow(item.volumeFocusNode),
                                   onVolumeSubmitted: () => _focusRow(item.qtyFocusNode),
-                                  onQtySubmitted: () => _focusRow(item.priceFocusNode),
-                                  onPriceSubmitted: () {
+                                  onQtySubmitted: () => _focusRow(item.minStockAlertFocusNode),
+                                  onMinStockAlertSubmitted: () => _focusRow(item.priceFocusNode),
+                                  onPriceSubmitted: () => _focusRow(item.sellPriceFocusNode),
+                                  onSellPriceSubmitted: () {
                                     if (index == _items.length - 1) {
                                       _addItem();
                                     } else {
@@ -350,9 +354,17 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                                     final num = double.tryParse(val);
                                     if (num != null) setState(() => item.quantity = num);
                                   },
+                                  onMinStockAlertChanged: (val) {
+                                    final num = double.tryParse(val);
+                                    if (num != null) setState(() => item.minStockAlert = num);
+                                  },
                                   onPriceChanged: (val) {
                                     final num = double.tryParse(val);
                                     if (num != null) setState(() => item.price = num);
+                                  },
+                                  onSellPriceChanged: (val) {
+                                    final num = double.tryParse(val);
+                                    if (num != null) setState(() => item.sellPrice = num);
                                   },
                                   onRemove: () => _removeItem(index),
                                 );

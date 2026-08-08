@@ -105,12 +105,12 @@ class StockCategoryAccordion extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.1),
+                          color: AppColors.danger.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           '$lowStockCount мало',
-                          style: const TextStyle(fontSize: 11, color: Colors.red, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 11, color: AppColors.danger, fontWeight: FontWeight.bold),
                         ),
                       ),
                     const SizedBox(width: 8),

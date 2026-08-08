@@ -8,6 +8,7 @@ import 'package:mynix_frontend/features/inventory/models/supplier.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/edit_supplier_dialog.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
 
 class SuppliersTab extends StatefulWidget {
   const SuppliersTab({super.key});
@@ -72,7 +73,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
               Navigator.pop(dCtx);
               ctx.read<DocumentBloc>().add(DeleteSupplier(supplier.id));
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
             child: const Text('Удалить'),
           ),
         ],
@@ -87,7 +88,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
     return BlocBuilder<DocumentBloc, DocumentState>(
       builder: (ctx, state) {
         if (state.status == DocumentStatus.loading && state.suppliers.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const SkeletonList();
         }
 
         return Column(
@@ -326,14 +327,14 @@ class _SupplierRowState extends State<_SupplierRow> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: s.isActive
-                          ? Colors.green.withValues(alpha: 0.12)
-                          : Colors.red.withValues(alpha: 0.10),
+                          ? AppColors.success.withValues(alpha: 0.12)
+                          : AppColors.danger.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       s.isActive ? 'Активен' : 'Неактивен',
                       style: TextStyle(
-                        color: s.isActive ? Colors.green : Colors.red,
+                        color: s.isActive ? AppColors.success : AppColors.danger,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
@@ -362,8 +363,8 @@ class _SupplierRowState extends State<_SupplierRow> {
                       ),
                       const SizedBox(width: 4),
                       IconButton(
-                        icon: const Icon(PhosphorIconsRegular.trash,
-                            color: Colors.redAccent, size: 16),
+                        icon: Icon(PhosphorIconsRegular.trash,
+                            color: AppColors.danger, size: 16),
                         onPressed: widget.onDelete,
                         tooltip: 'Удалить / Деактивировать',
                         padding: const EdgeInsets.all(6),

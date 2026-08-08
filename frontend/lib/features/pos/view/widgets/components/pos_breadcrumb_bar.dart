@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 
 class PosBreadcrumbBar extends StatelessWidget {
   final List<dynamic> history;
@@ -80,6 +82,13 @@ class PosBreadcrumbBar extends StatelessWidget {
               ),
             ),
           ),
+          if (MediaQuery.of(context).size.width < 768)
+            IconButton(
+              icon: Icon(PhosphorIconsRegular.sun),
+              color: AppColors.darkSubtext,
+              onPressed: () => context.read<ThemeBloc>().add(ThemeEvent.toggleTheme),
+              tooltip: 'Сменить тему',
+            ),
         ],
       ),
     );

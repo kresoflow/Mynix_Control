@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
+import 'category_row.dart';
 
 void performBulkSave({
   required BuildContext context,
@@ -14,8 +17,41 @@ void performBulkSave({
   required List<DishRowData> dishRows,
   required List<IngredientRowData> ingredientRows,
   required List<RetailRowData> retailRows,
+  required List<CategoryRowData> categoryRows,
+  String globalCategoryType = 'dish',
 }) {
-  if (tabIndex == 0) {
+  if (tabIndex == 3) {
+    int defaultSortOrder = 1;
+    final bulkData = <Map<String, dynamic>>[];
+    for (final row in categoryRows) {
+      final name = row.nameController.text.trim();
+      if (name.isEmpty) continue;
+      
+      int sortOrder = defaultSortOrder;
+      final customSortRaw = row.sortOrderController.text.trim();
+      if (customSortRaw.isNotEmpty) {
+        sortOrder = int.tryParse(customSortRaw) ?? defaultSortOrder;
+      }
+
+      String? iconPayload;
+      if (row.selectedIcon != null && row.selectedIcon!.isNotEmpty) {
+        iconPayload = 'icon:${row.selectedIcon}';
+      }
+
+      bulkData.add({
+        'name': name,
+        'category_type': globalCategoryType,
+        'parent_id': targetCategoryId,
+        'sort_order': sortOrder,
+        'is_visible': true,
+        'icon': iconPayload,
+      });
+      defaultSortOrder++;
+    }
+    if (bulkData.isNotEmpty) {
+      context.read<CategoryBloc>().add(CreateCategoriesBulk(categories: bulkData));
+    }
+  } else if (tabIndex == 0) {
     if (targetCategoryId == null) {
       ScaffoldMessenger.of(
         context,
@@ -100,84 +136,97 @@ void performBulkSave({
 
     int sortIndex = 0;
     for (var row in retailRows) {
-      final name = row.nameController.text.trim();
-      if (name.isEmpty) continue;
+      final baseName = row.nameController.text.trim();
+      if (baseName.isEmpty) continue;
 
-      final purchase = double.tryParse(row.purchaseController.text) ?? 0.0;
-      final stock = double.tryParse(row.stockController.text) ?? 0.0;
+      final flavors = row.flavorController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final volumes = row.volumeController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final purchases = row.purchaseController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final sells = row.sellController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final stocks = row.stockController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final alerts = row.alertController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final barcodes = row.barcodeController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
 
-      final flavors = row.flavorController.text
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-      final volumes = row.volumeController.text
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-      final prices = row.sellController.text
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
+      if (flavors.isEmpty) flavors.add('');
+      if (volumes.isEmpty) volumes.add('');
 
-      Map<String, dynamic>? attributes;
-      double baseSellingPrice = 0.0;
+      String uLabel = '';
+      if (row.selectedUnit == 'l') uLabel = 'л';
+      else if (row.selectedUnit == 'ml') uLabel = 'мл';
+      else if (row.selectedUnit == 'kg') uLabel = 'кг';
+      else if (row.selectedUnit == 'g') uLabel = 'г';
+      else if (row.selectedUnit == 'pcs') uLabel = 'шт';
 
-      List<Map<String, dynamic>> modifierGroups = [];
-      if (flavors.isNotEmpty) {
-        modifierGroups.add({
-          'name': 'Вкус',
-          'required': true,
-          'max_selections': 1,
-          'modifiers': flavors.map((f) => {'name': f, 'price': 0.0}).toList(),
-        });
+      bool hasOptions = !(flavors.length == 1 && flavors[0] == '' && volumes.length == 1 && volumes[0] == '');
+
+      if (!hasOptions) {
+        final purchase = purchases.isNotEmpty ? (double.tryParse(purchases.first) ?? 0.0) : 0.0;
+        final sell = sells.isNotEmpty ? (double.tryParse(sells.first) ?? 0.0) : 0.0;
+        final stock = stocks.isNotEmpty ? (double.tryParse(stocks.first) ?? 0.0) : 0.0;
+        final alert = alerts.isNotEmpty ? (double.tryParse(alerts.first) ?? 0.0) : 0.0;
+        final barcode = barcodes.isNotEmpty ? barcodes.first : null;
+
+        context.read<MenuBloc>().add(
+          CreateRetailProduct(
+            name: baseName,
+            categoryId: targetCategoryId,
+            unit: row.selectedUnit,
+            purchasePrice: purchase,
+            sellingPrice: sell,
+            initialStock: stock,
+            minStockAlert: alert,
+            barcode: barcode,
+          ),
+        );
+        continue;
       }
 
-      List<Map<String, dynamic>> variations = [];
-      if (volumes.isNotEmpty) {
-        String uLabel = '';
-        if (row.selectedUnit == 'l') uLabel = 'л';
-        else if (row.selectedUnit == 'ml') uLabel = 'мл';
-        else if (row.selectedUnit == 'kg') uLabel = 'кг';
-        else if (row.selectedUnit == 'g') uLabel = 'г';
-        else if (row.selectedUnit == 'pcs') uLabel = 'шт';
+      for (int f = 0; f < flavors.length; f++) {
+        final flavor = flavors[f];
+        final groupName = baseName;
 
-        for (int i = 0; i < volumes.length; i++) {
-          double p = 0.0;
-          if (i < prices.length) {
-            p = double.tryParse(prices[i]) ?? 0.0;
-          } else if (prices.isNotEmpty) {
-            p = double.tryParse(prices.last) ?? 0.0;
+        List<Map<String, dynamic>> variations = [];
+
+        for (int v = 0; v < volumes.length; v++) {
+          final volume = volumes[v];
+          
+          List<String> nameParts = [baseName];
+          if (flavor.isNotEmpty) nameParts.add(flavor);
+          if (volume.isNotEmpty) nameParts.add('$volume $uLabel'.trim());
+          
+          final fullName = nameParts.join(' ');
+
+          double getValue(List<String> list, int index) {
+             if (list.isEmpty) return 0.0;
+             if (index < list.length) return double.tryParse(list[index]) ?? 0.0;
+             return double.tryParse(list.last) ?? 0.0;
           }
-          variations.add({'name': '${volumes[i]} $uLabel'.trim(), 'price': p});
-        }
-      } else {
-        baseSellingPrice = double.tryParse(row.sellController.text) ?? 0.0;
-      }
 
-      if (modifierGroups.isNotEmpty || variations.isNotEmpty) {
-        attributes = {};
-        if (variations.isNotEmpty) {
-           attributes['variations'] = variations;
-           baseSellingPrice = variations.first['price'] as double;
-        }
-        if (modifierGroups.isNotEmpty) attributes['modifier_groups'] = modifierGroups;
-      }
+          final purchase = getValue(purchases, v);
+          final sell = getValue(sells, v);
+          final stock = getValue(stocks, v);
+          final alert = getValue(alerts, v);
+          final barcode = v < barcodes.length ? barcodes[v] : (barcodes.isNotEmpty ? barcodes.last : null);
 
-      context.read<MenuBloc>().add(
-        CreateRetailProduct(
-          name: name,
-          categoryId: targetCategoryId,
-          unit: row.selectedUnit,
-          purchasePrice: purchase,
-          sellingPrice: baseSellingPrice,
-          attributes: attributes,
-          initialStock: stock,
-          sortOrder: sortIndex++,
-        ),
-      );
+          variations.add({
+            'name': fullName,
+            'unit': row.selectedUnit,
+            'purchasePrice': purchase,
+            'price': sell,
+            'stock': stock,
+            'barcode': barcode,
+          });
+        }
+
+        context.read<MenuBloc>().add(
+          CreateRetailProductGroup(
+            name: groupName,
+            categoryId: targetCategoryId,
+            flavor: flavor,
+            variations: variations,
+          ),
+        );
+      }
     }
   }
 

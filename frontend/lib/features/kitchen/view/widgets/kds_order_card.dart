@@ -149,7 +149,7 @@ class _KdsOrderCardState extends State<KdsOrderCard> {
                                         }
                                       }
                                       if (parts.isEmpty) return <Widget>[
-                                        Text('Opts empty: ${item['selected_options']}', style: const TextStyle(color: Colors.red, fontSize: 10))
+                                        Text('Opts empty: ${item['selected_options']}', style: AppTextStyles.caption.copyWith(color: AppColors.danger, fontSize: 10))
                                       ];
                                       return [
                                         const SizedBox(height: 4),
@@ -163,12 +163,12 @@ class _KdsOrderCardState extends State<KdsOrderCard> {
                                       ];
                                     } catch (e) {
                                       return <Widget>[
-                                        Text('Err: $e', style: const TextStyle(color: Colors.red, fontSize: 10))
+                                        Text('Err: $e', style: AppTextStyles.caption.copyWith(color: AppColors.danger, fontSize: 10))
                                       ];
                                     }
                                   })()
                                 else
-                                  Text('selected_options is NULL', style: const TextStyle(color: Colors.red, fontSize: 10)),
+                                  Text('selected_options is NULL', style: AppTextStyles.caption.copyWith(color: AppColors.danger, fontSize: 10)),
                             ],
                           ),
                         ),

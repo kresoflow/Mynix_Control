@@ -50,10 +50,13 @@ class CategoryListItem extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: (effectiveIcon == null || effectiveIcon.isEmpty)
-                ? buildCategoryIcon(category.name, size: 24, color: AppColors.brandPrimary)
+                ? Text(
+                    category.name.isNotEmpty ? category.name[0].toUpperCase() : '?',
+                    style: TextStyle(color: AppColors.brandPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  )
                 : IconHelper.buildIcon(
                     effectiveIcon,
-                    fallback: PhosphorIconsRegular.list,
                     size: 24,
                     color: AppColors.brandPrimary,
                   ),
@@ -76,7 +79,7 @@ class CategoryListItem extends StatelessWidget {
                 itemBuilder: (ctx) => [
                   const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
                   PopupMenuItem(value: 'visibility', child: Text(category.isVisible ? 'Скрыть на кассе' : 'Показать на кассе')),
-                  const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
+                  PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
                 ],
               ),
         onTap: onTap,

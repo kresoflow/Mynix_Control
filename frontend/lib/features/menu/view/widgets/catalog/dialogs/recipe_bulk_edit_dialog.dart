@@ -5,6 +5,8 @@ import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class RecipeRowState {
   int? ingredientId;
@@ -49,7 +51,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
       for (var recipe in widget.currentRecipes) {
         _rows.add(RecipeRowState(
           ingredientId: recipe['ingredient_id'],
-          quantity: (recipe['quantity_required'] as num).toDouble(),
+          quantity: (recipe['quantity_required'] as num?)?.toDouble() ?? 0.0,
         ));
       }
     }
@@ -147,23 +149,78 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
               ),
               const Divider(),
               Expanded(
-                child: ListView.builder(
-                  itemCount: sortedKeys.length,
-                  itemBuilder: (context, index) {
-                    final catName = sortedKeys[index];
-                    final items = grouped[catName]!;
-                    return ExpansionTile(
-                      title: Text(catName, style: AppTextStyles.h3),
-                      initiallyExpanded: false,
-                      shape: const Border(),
-                      children: items.map((ing) => ListTile(
-                        title: Text(ing.name),
-                        subtitle: Text('Алерт: ${ing.minStockAlert.toInt()} ${ing.unit} | Остаток: ${ing.currentStock.toInt()} ${ing.unit}'),
-                        trailing: Text(ing.unit, style: const TextStyle(color: Colors.grey)),
-                        onTap: () {
-                          Navigator.of(ctx).pop(ing.id);
-                        },
-                      )).toList(),
+                child: StatefulBuilder(
+                  builder: (context, setDialogState) {
+                    final Map<String, bool> expandedCats = {};
+                    
+                    // Create a flat list dynamically whenever state changes inside the dialog
+                    List<dynamic> buildFlatList() {
+                      final list = <dynamic>[];
+                      for (final catName in sortedKeys) {
+                        final items = grouped[catName]!;
+                        final isExpanded = expandedCats[catName] ?? false;
+                        
+                        list.add({
+                          'type': 'header',
+                          'categoryName': catName,
+                          'isExpanded': isExpanded,
+                        });
+                        
+                        if (isExpanded) {
+                          list.addAll(items.map((item) => {'type': 'item', 'item': item}));
+                        }
+                      }
+                      return list;
+                    }
+
+                    var flatList = buildFlatList();
+
+                    return ListView.builder(
+                      itemCount: flatList.length,
+                      itemBuilder: (context, index) {
+                        final data = flatList[index];
+                        if (data['type'] == 'header') {
+                          final catName = data['categoryName'] as String;
+                          final isExpanded = data['isExpanded'] as bool;
+                          
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                setDialogState(() {
+                                  expandedCats[catName] = !isExpanded;
+                                  flatList = buildFlatList();
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(catName, style: AppTextStyles.h3),
+                                    ),
+                                    AnimatedRotation(
+                                      turns: isExpanded ? 0.5 : 0.0,
+                                      duration: const Duration(milliseconds: 200),
+                                      child: const Icon(PhosphorIconsRegular.caretDown, color: Colors.grey, size: 16),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          final ing = data['item'];
+                          return ListTile(
+                            title: Text(ing.name),
+                            subtitle: Text('Алерт: ${ing.minStockAlert.toInt()} ${ing.unit} | Остаток: ${ing.currentStock.toInt()} ${ing.unit}'),
+                            trailing: Text(ing.unit, style: const TextStyle(color: Colors.grey)),
+                            onTap: () {
+                              Navigator.of(ctx).pop(ing.id);
+                            },
+                          );
+                        }
+                      },
                     );
                   },
                 ),
@@ -312,12 +369,12 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(PhosphorIconsRegular.copy, color: Colors.blue),
+                            icon: Icon(PhosphorIconsRegular.copy, color: AppColors.info),
                             onPressed: () => _duplicateRow(index),
                             tooltip: 'Дублировать',
                           ),
                           IconButton(
-                            icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                            icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                             onPressed: () => _removeRow(index),
                             tooltip: 'Удалить',
                           ),
@@ -333,7 +390,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
                 ),
                 onPressed: _save,

@@ -3,6 +3,8 @@ import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.da
 import 'catalog_enums.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class CatalogHeader extends StatelessWidget {
   final CategoryManageMode manageMode;
@@ -21,6 +23,9 @@ class CatalogHeader extends StatelessWidget {
   final VoidCallback onAddPressed;
   final Widget Function(BuildContext, int?)? addMenuBuilder;
   final int? currentCategoryId;
+  final bool showArchived;
+  final VoidCallback onShowArchivedToggle;
+  final String rootTitle;
 
   const CatalogHeader({
     super.key,
@@ -40,6 +45,9 @@ class CatalogHeader extends StatelessWidget {
     required this.onAddPressed,
     this.addMenuBuilder,
     this.currentCategoryId,
+    this.showArchived = false,
+    required this.onShowArchivedToggle,
+    this.rootTitle = 'Все категории',
   });
 
   @override
@@ -80,17 +88,17 @@ class CatalogHeader extends StatelessWidget {
                   ElevatedButton.icon(
                     icon: const Icon(PhosphorIconsRegular.trash),
                     label: const Text('Удалить'),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
                     onPressed: selectedCount == 0 ? null : onDeleteSelected,
                   ),
                 ] else if (manageMode == CategoryManageMode.visibility) ...[
-                  const Icon(PhosphorIconsRegular.eye, color: Colors.green),
+                  Icon(PhosphorIconsRegular.eye, color: AppColors.success),
                   const SizedBox(width: 8),
-                  const Text('Настройка видимости на кассе', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green)),
+                  Text('Настройка видимости на кассе', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.success)),
                   const Spacer(),
                   ElevatedButton(
                     onPressed: onClearSelection,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.success, foregroundColor: Colors.white),
                     child: const Text('Готово'),
                   ),
                 ],
@@ -110,8 +118,8 @@ class CatalogHeader extends StatelessWidget {
                         InkWell(
                           onTap: onNavigateToRoot,
                           child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Все категории', style: AppTextStyles.h3),
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(rootTitle, style: AppTextStyles.h3),
                           ),
                         ),
                         ...List.generate(navigationHistory.length, (index) {
@@ -187,6 +195,7 @@ class CatalogHeader extends StatelessWidget {
                     } else if (value == 'view_list') onViewModeChanged(CategoryViewMode.list);
                     else if (value == 'manage_visibility') onManageModeChanged(CategoryManageMode.visibility);
                     else if (value == 'manage_delete') onManageModeChanged(CategoryManageMode.delete);
+                    else if (value == 'toggle_archived') onShowArchivedToggle();
                   },
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                     if (viewMode == CategoryViewMode.list)
@@ -194,8 +203,9 @@ class CatalogHeader extends StatelessWidget {
                     if (viewMode == CategoryViewMode.grid)
                       const PopupMenuItem<String>(value: 'view_list', child: ListTile(leading: Icon(PhosphorIconsRegular.list), title: Text('Вид: Список'), contentPadding: EdgeInsets.zero)),
                     const PopupMenuDivider(),
-                    const PopupMenuItem<String>(value: 'manage_visibility', child: ListTile(leading: Icon(PhosphorIconsRegular.eye), title: Text('Настроить видимость'), contentPadding: EdgeInsets.zero)),
-                    const PopupMenuItem<String>(value: 'manage_delete', child: ListTile(leading: Icon(PhosphorIconsRegular.trash, color: Colors.red), title: Text('Удалить элементы', style: TextStyle(color: Colors.red)), contentPadding: EdgeInsets.zero)),
+                    PopupMenuItem<String>(value: 'toggle_archived', child: ListTile(leading: Icon(showArchived ? PhosphorIconsRegular.eyeSlash : PhosphorIconsRegular.eye), title: Text(showArchived ? 'Скрыть архивные' : 'Показать архивные'), contentPadding: EdgeInsets.zero)),
+                    const PopupMenuItem<String>(value: 'manage_visibility', child: ListTile(leading: Icon(PhosphorIconsRegular.sliders), title: Text('Настроить видимость'), contentPadding: EdgeInsets.zero)),
+                    PopupMenuItem<String>(value: 'manage_delete', child: ListTile(leading: Icon(PhosphorIconsRegular.trash, color: AppColors.danger), title: Text('Удалить элементы', style: TextStyle(color: AppColors.danger)), contentPadding: EdgeInsets.zero)),
                   ],
                 ),
               ],

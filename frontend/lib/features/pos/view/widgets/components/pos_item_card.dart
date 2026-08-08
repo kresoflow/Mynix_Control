@@ -23,18 +23,32 @@ class PosItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String? effectiveIcon = item.icon;
-    Widget? customCategoryIcon;
-    if (effectiveIcon == null || effectiveIcon.isEmpty) {
+    
+    // Check if the item's own icon is valid
+    if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
+      final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
+      if (!IconHelper.availableIcons.contains(cleanName)) {
+        effectiveIcon = null; // Invalid icon, fall back to parent
+      }
+    }
+    
+    try {
       final categoryState = context.read<CategoryBloc>().state;
       if (categoryState is CategoryLoaded) {
-        try {
-          final category = categoryState.categories.firstWhere((c) => c.id.toString() == item.categoryId);
+        final category = categoryState.categories.firstWhere((c) => c.id.toString() == item.categoryId);
+        if (effectiveIcon == null || effectiveIcon.isEmpty) {
           effectiveIcon = category.getInheritedIcon(categoryState.categories);
-          if (effectiveIcon == null || effectiveIcon.isEmpty) {
-            customCategoryIcon = buildCategoryIcon(category.name, size: 28, color: AppColors.brandPrimary);
-          }
-        } catch (_) {}
+        }
       }
+    } catch (_) {}
+
+    Widget? finalIconWidget;
+    if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
+      finalIconWidget = IconHelper.buildIcon(
+        effectiveIcon,
+        size: 28,
+        color: AppColors.brandPrimary,
+      );
     }
 
     return AppCard(
@@ -45,22 +59,19 @@ class PosItemCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+            if (finalIconWidget != null) ...[
+              Container(
+                width: 56,
+                height: 56,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: finalIconWidget!,
               ),
-              child: customCategoryIcon ?? IconHelper.buildIcon(
-                effectiveIcon,
-                fallback: item.isRetail ? PhosphorIconsRegular.package : PhosphorIconsRegular.hamburger,
-                size: 28,
-                color: AppColors.brandPrimary,
-              ),
-            ),
-            SizedBox(height: 10),
+              const SizedBox(height: 12),
+            ],
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -72,6 +83,8 @@ class PosItemCard extends StatelessWidget {
                         color: Theme.of(context).brightness == Brightness.dark
                             ? AppColors.darkText
                             : AppColors.lightText,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 2,
@@ -79,16 +92,18 @@ class PosItemCard extends StatelessWidget {
                     ),
                   ),
                   if (item.attributesString != null) ...[
-                    SizedBox(height: 2),
+                    SizedBox(height: 4),
                     Flexible(
                       child: Text(
                         item.attributesString!,
                         style: AppTextStyles.caption.copyWith(
                           height: 1.2,
-                          color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkText.withValues(alpha: 0.7) : AppColors.lightText.withValues(alpha: 0.7),
+                          color: Theme.of(context).brightness == Brightness.dark 
+                              ? AppColors.darkText.withValues(alpha: 0.7) 
+                              : AppColors.lightText.withValues(alpha: 0.7),
                         ),
                         textAlign: TextAlign.center,
-                        maxLines: 3,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -96,28 +111,31 @@ class PosItemCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Align(
               alignment: Alignment.center,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark 
-                      ? AppColors.darkBg 
-                      : AppColors.lightBg,
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    item.variationPrices != null && item.variationPrices!.isNotEmpty
-                        ? item.variationPrices!.map((p) => (p as num).toCurrency(context)).join(' | ')
-                        : '${(item.price as num).toCurrency(context)}',
+                    () {
+                      if (item.variationPrices != null && item.variationPrices!.isNotEmpty) {
+                        final List<num> prices = (item.variationPrices as List).cast<num>();
+                        if (prices.length > 3) {
+                          final num minPrice = prices.reduce((num a, num b) => a < b ? a : b);
+                          return 'От ${CurrencyFormatter.format(context, minPrice)}';
+                        }
+                        return prices.map((dynamic p) => CurrencyFormatter.format(context, p as num)).join(' | ');
+                      }
+                      return CurrencyFormatter.format(context, item.price as num);
+                    }(),
                     style: GoogleFonts.jetBrainsMono(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: AppColors.brandPrimary,
                     ),

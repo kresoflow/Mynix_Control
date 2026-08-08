@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/models/supplier.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/bulk_add_category_selector.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class ReceiveDocumentMetaRow extends StatelessWidget {
   final List<Supplier> suppliers;
@@ -116,20 +118,20 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.05),
+              color: AppColors.info.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.withOpacity(0.2)),
+              border: Border.all(color: AppColors.info.withValues(alpha: 0.2)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(PhosphorIconsRegular.magicWand, color: Colors.blue),
+                    Icon(PhosphorIconsRegular.magicWand, color: AppColors.info),
                     const SizedBox(width: 8),
-                    const Text('Умное создание', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                    Text('Умное создание', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.info)),
                     const SizedBox(width: 16),
-                    const Expanded(child: Text('Новые названия будут автоматически созданы в указанной категории.', style: TextStyle(color: Colors.blue, fontSize: 13))),
+                    Expanded(child: Text('Новые названия будут автоматически созданы в указанной категории.', style: TextStyle(color: AppColors.info, fontSize: 13))),
                     SegmentedButton<int>(
                       showSelectedIcon: false,
                       segments: const [

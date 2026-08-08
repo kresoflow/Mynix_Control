@@ -54,7 +54,12 @@ class MenuCategory {
   }
 
   String? getInheritedIcon(List<MenuCategory> allCategories) {
-    if (icon != null && icon!.isNotEmpty) return icon;
+    if (icon != null && icon!.isNotEmpty) {
+      final cleanIcon = icon!.replaceAll('icon:', '').trim();
+      if (cleanIcon.isNotEmpty && cleanIcon != 'null' && cleanIcon != 'none' && cleanIcon != 'undefined') {
+        return icon;
+      }
+    }
     if (parentId != null) {
       try {
         final parent = allCategories.firstWhere((c) => c.id == parentId);

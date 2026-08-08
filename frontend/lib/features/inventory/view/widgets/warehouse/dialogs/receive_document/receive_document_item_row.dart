@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_data.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class ReceiveDocumentItemRow extends StatelessWidget {
   final ReceiptRowData item;
@@ -20,6 +22,10 @@ class ReceiveDocumentItemRow extends StatelessWidget {
   final ValueChanged<String?> onUnitChanged;
   final ValueChanged<String> onQtyChanged;
   final ValueChanged<String> onPriceChanged;
+  final VoidCallback onSellPriceSubmitted;
+  final ValueChanged<String> onSellPriceChanged;
+  final VoidCallback onMinStockAlertSubmitted;
+  final ValueChanged<String> onMinStockAlertChanged;
   final VoidCallback onRemove;
 
   const ReceiveDocumentItemRow({
@@ -39,6 +45,10 @@ class ReceiveDocumentItemRow extends StatelessWidget {
     required this.onUnitChanged,
     required this.onQtyChanged,
     required this.onPriceChanged,
+    required this.onSellPriceSubmitted,
+    required this.onSellPriceChanged,
+    required this.onMinStockAlertSubmitted,
+    required this.onMinStockAlertChanged,
     required this.onRemove,
   });
 
@@ -73,8 +83,8 @@ class ReceiveDocumentItemRow extends StatelessWidget {
                   border: const OutlineInputBorder(),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   suffixIcon: item.ingredient != null
-                      ? const Icon(PhosphorIconsRegular.checkCircle, color: Colors.green)
-                      : const Icon(PhosphorIconsRegular.magicWand, color: Colors.blue),
+                      ? Icon(PhosphorIconsRegular.checkCircle, color: AppColors.success)
+                      : Icon(PhosphorIconsRegular.magicWand, color: AppColors.info),
                 ),
                 onChanged: onNameChanged,
                 onFieldSubmitted: (_) => onNameSubmitted(),
@@ -107,7 +117,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
 
         // Flavor
         Expanded(
@@ -117,7 +127,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).dividerColor),
                     borderRadius: BorderRadius.circular(4),
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   ),
                   child: Text(item.ingredient!.attributes?['Вкус'] ?? '-'),
                 )
@@ -129,12 +139,12 @@ class ReceiveDocumentItemRow extends StatelessWidget {
                     border: const OutlineInputBorder(), 
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     filled: tabIndex == 2,
-                    fillColor: tabIndex == 2 ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3) : null,
+                    fillColor: tabIndex == 2 ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3) : null,
                   ),
                   onFieldSubmitted: (_) => onFlavorSubmitted(),
                 ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
 
         // Volume
         Expanded(
@@ -144,7 +154,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).dividerColor),
                     borderRadius: BorderRadius.circular(4),
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   ),
                   child: Text(item.ingredient!.attributes?['Объем'] ?? '-'),
                 )
@@ -156,12 +166,12 @@ class ReceiveDocumentItemRow extends StatelessWidget {
                     border: const OutlineInputBorder(), 
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     filled: tabIndex == 2,
-                    fillColor: tabIndex == 2 ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3) : null,
+                    fillColor: tabIndex == 2 ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3) : null,
                   ),
                   onFieldSubmitted: (_) => onVolumeSubmitted(),
                 ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         
         // Unit
         Expanded(
@@ -172,7 +182,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             onChanged: onUnitChanged,
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         
         // Quantity
         Expanded(
@@ -185,9 +195,22 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             onFieldSubmitted: (_) => onQtySubmitted(),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         
-        // Price
+        // Alert (Min Stock)
+        Expanded(
+          child: TextFormField(
+            controller: item.minStockAlertController,
+            focusNode: item.minStockAlertFocusNode,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
+            onChanged: onMinStockAlertChanged,
+            onFieldSubmitted: (_) => onMinStockAlertSubmitted(),
+          ),
+        ),
+        const SizedBox(width: 12),
+        
+        // Purchase Price
         Expanded(
           child: TextFormField(
             controller: item.priceController,
@@ -198,25 +221,38 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             onFieldSubmitted: (_) => onPriceSubmitted(),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
+
+        // Selling Price
+        Expanded(
+          child: TextFormField(
+            controller: item.sellPriceController,
+            focusNode: item.sellPriceFocusNode,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
+            onChanged: onSellPriceChanged,
+            onFieldSubmitted: (_) => onSellPriceSubmitted(),
+          ),
+        ),
+        const SizedBox(width: 12),
 
         // Total sum
         Expanded(
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.05),
-              border: Border.all(color: Colors.blue.withOpacity(0.2)),
+              color: AppColors.info.withValues(alpha: 0.05),
+              border: Border.all(color: AppColors.info.withValues(alpha: 0.2)),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Text(sum.toStringAsFixed(2), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+            child: Text(sum.toStringAsFixed(2), style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.info)),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 48),
 
         // Delete
         IconButton(
-          icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+          icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
           onPressed: onRemove,
         ),
       ],

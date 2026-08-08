@@ -12,6 +12,7 @@ import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs
 
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
 class DocumentsJournalTab extends StatefulWidget {
   const DocumentsJournalTab({super.key});
 
@@ -29,9 +30,9 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
   }
 
   Color _getStatusColor(String status) {
-    if (status == 'completed') return Colors.green;
-    if (status == 'draft') return Colors.orange;
-    if (status == 'cancelled') return Colors.red;
+    if (status == 'completed') return AppColors.success;
+    if (status == 'draft') return AppColors.warning;
+    if (status == 'cancelled') return AppColors.danger;
     return Colors.grey;
   }
 
@@ -50,7 +51,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
   }
 
   Color _getTypeColor(String type) {
-    if (type == 'receipt') return Colors.blue;
+    if (type == 'receipt') return AppColors.info;
     if (type == 'write_off') return Colors.deepOrange;
     if (type == 'inventory') return Colors.purple;
     return Colors.grey;
@@ -123,7 +124,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
           ),
           child: Row(
@@ -145,12 +146,12 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
             builder: (context, state) {
               if (state.status == DocumentStatus.initial ||
                   state.status == DocumentStatus.loading) {
-                return const Center(child: CircularProgressIndicator());
+                return const SkeletonList();
               }
               if (state.status == DocumentStatus.failure) {
                 return Center(
                   child: Text('Ошибка загрузки: ${state.errorMessage}',
-                      style: const TextStyle(color: Colors.red)),
+                      style: TextStyle(color: AppColors.danger)),
                 );
               }
               if (state.documents.isEmpty) {
@@ -182,7 +183,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: _getTypeColor(doc.type).withOpacity(0.1),
+                                  color: _getTypeColor(doc.type).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -219,7 +220,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(doc.status).withOpacity(0.1),
+                                  color: _getStatusColor(doc.status).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(

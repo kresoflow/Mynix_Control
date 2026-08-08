@@ -11,13 +11,68 @@ class MobileLayout extends StatelessWidget {
   final String location;
   const MobileLayout({super.key, required this.child, required this.location});
 
-  int _getSelectedIndex(String loc) {
-    if (loc.startsWith('/kitchen')) return 1;
-    if (loc.startsWith('/catalog')) return 2;
-    if (loc.startsWith('/warehouse')) return 3;
-    if (loc.startsWith('/analytics')) return 4;
-    if (loc.startsWith('/settings')) return 5;
-    return 0;
+  int _getSelectedIndex(String location) {
+    if (location.startsWith('/orders')) return 1;
+    if (location.startsWith('/kitchen')) return 2;
+    if (location.startsWith('/settings')) return 4;
+    return 0; // POS is 0. Base is 3 (doesn't correspond to a single route, but let's say warehouse/catalog map to 3)
+  }
+
+  void _onItemTapped(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        context.go('/pos');
+        break;
+      case 1:
+        context.go('/orders');
+        break;
+      case 2:
+        context.go('/kitchen');
+        break;
+      case 3:
+        _showBaseMenu(context);
+        break;
+      case 4:
+        context.go('/settings');
+        break;
+    }
+  }
+
+  void _showBaseMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(PhosphorIconsRegular.bookOpen),
+              title: const Text('Каталог'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/catalog');
+              },
+            ),
+            ListTile(
+              leading: Icon(PhosphorIconsRegular.warehouse),
+              title: const Text('Склад'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/warehouse');
+              },
+            ),
+            ListTile(
+              leading: Icon(PhosphorIconsRegular.chartLineUp),
+              title: const Text('Аналитика'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/analytics');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -25,50 +80,37 @@ class MobileLayout extends StatelessWidget {
     final selectedIndex = _getSelectedIndex(location);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Mynix Control', style: AppTextStyles.h2),
-        actions: [
-          IconButton(
-            icon: Icon(PhosphorIconsRegular.sun),
-            onPressed: () => context.read<ThemeBloc>().add(ThemeEvent.toggleTheme),
+      body: SafeArea(child: child),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: selectedIndex,
+        onTap: (index) => _onItemTapped(context, index),
+        selectedItemColor: AppColors.brandPrimary,
+        unselectedItemColor: AppColors.darkSubtext,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : AppColors.lightSurface,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(PhosphorIconsRegular.monitor),
+            label: 'Касса',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(PhosphorIconsRegular.listNumbers),
+            label: 'Заказы',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(PhosphorIconsRegular.cookingPot),
+            label: 'КДС',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(PhosphorIconsRegular.database),
+            label: 'База',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(PhosphorIconsRegular.gear),
+            label: 'Настройки',
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(gradient: AppColors.brandGradient),
-              child: Text(
-                'Mynix Control',
-                style: AppTextStyles.h1.copyWith(color: const Color(0xFF0E1016)),
-              ),
-            ),
-            _drawerTile(context, PhosphorIconsRegular.monitor, 'Касса', '/pos', selectedIndex == 0),
-            _drawerTile(context, PhosphorIconsRegular.cookingPot, 'Кухня', '/kitchen', selectedIndex == 1),
-            _drawerTile(context, PhosphorIconsRegular.bookOpen, 'Каталог', '/catalog', selectedIndex == 2),
-            _drawerTile(context, PhosphorIconsRegular.warehouse, 'Склад', '/warehouse', selectedIndex == 3),
-            _drawerTile(context, PhosphorIconsRegular.chartLineUp, 'Аналитика', '/analytics', selectedIndex == 4),
-            _drawerTile(context, PhosphorIconsRegular.gear, 'Настройки', '/settings', selectedIndex == 5),
-          ],
-        ),
-      ),
-      body: child,
-    );
-  }
-
-  Widget _drawerTile(BuildContext context, IconData icon, String label, String route, bool isSelected) {
-    return ListTile(
-      selected: isSelected,
-      leading: Icon(icon, color: isSelected ? AppColors.brandPrimary : AppColors.darkSubtext),
-      title: Text(label, style: AppTextStyles.body.copyWith(
-        color: isSelected ? AppColors.brandPrimary : null,
-      )),
-      onTap: () {
-        context.go(route);
-        Navigator.pop(context);
-      },
     );
   }
 }

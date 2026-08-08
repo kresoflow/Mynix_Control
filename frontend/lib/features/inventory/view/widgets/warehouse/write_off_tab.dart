@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/write_off_dialog.dart';
+import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
 
 class WriteOffTab extends StatefulWidget {
   const WriteOffTab({super.key});
@@ -42,7 +43,7 @@ class _WriteOffTabState extends State<WriteOffTab>
           child: BlocBuilder<IngredientBloc, IngredientState>(
             builder: (context, state) {
               if (state is IngredientLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return const SkeletonList();
               } else if (state is IngredientLoaded) {
                 final filtered = state.ingredients.where((item) {
                   final isRetail =

@@ -19,6 +19,7 @@ class CatalogContentView extends StatelessWidget {
   final void Function(MenuItem item, bool? val) onItemToggle;
   final void Function(MenuItem item) onItemEdit;
   final void Function(MenuItem item) onItemDelete;
+  final void Function(MenuItem item) onItemRestore;
   final String emptyMessage;
 
   const CatalogContentView({
@@ -38,6 +39,7 @@ class CatalogContentView extends StatelessWidget {
     required this.onItemToggle,
     required this.onItemEdit,
     required this.onItemDelete,
+    required this.onItemRestore,
     required this.emptyMessage,
   });
 
@@ -85,6 +87,7 @@ class CatalogContentView extends StatelessWidget {
                     onToggleSelect: (val) => onItemToggle(item, val),
                     onEdit: () => onItemEdit(item),
                     onDelete: () => onItemDelete(item),
+                    onRestore: () => onItemRestore(item),
                   );
                 }
               },
@@ -126,6 +129,7 @@ class CatalogContentView extends StatelessWidget {
             onToggleSelect: (val) => onItemToggle(item, val),
             onEdit: () => onItemEdit(item),
             onDelete: () => onItemDelete(item),
+            onRestore: () => onItemRestore(item),
           );
         }
       },

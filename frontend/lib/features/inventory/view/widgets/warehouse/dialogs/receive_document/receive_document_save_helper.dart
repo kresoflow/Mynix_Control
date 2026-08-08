@@ -6,6 +6,8 @@ import 'package:mynix_frontend/features/inventory/repository/inventory_repositor
 import 'package:mynix_frontend/features/pos/repository/menu_repository.dart';
 
 import 'receipt_row_data.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 Future<void> saveReceiveDocument({
   required BuildContext context,
@@ -63,7 +65,7 @@ Future<void> saveReceiveDocument({
         if (categoryId == null) {
           throw Exception('Не выбрана категория для новых товаров ("${item.newName}"). Укажите категорию сверху.');
         }
-        if (item.isNew) {
+        if (true) {
           final isRetail = tabIndex == 1;
           if (isRetail) {
             final attributes = <String, String>{};
@@ -77,7 +79,7 @@ Future<void> saveReceiveDocument({
               categoryId: categoryId,
               unit: item.selectedUnit,
               purchasePrice: item.price,
-              sellingPrice: item.price,
+              sellingPrice: item.sellPrice,
               attributes: attributes.isNotEmpty ? attributes : null,
               initialStock: 0,
             );
@@ -86,7 +88,7 @@ Future<void> saveReceiveDocument({
             await repo.createIngredient(
               name: item.newName.trim(),
               unit: item.selectedUnit,
-              minStockAlert: 0,
+              minStockAlert: item.minStockAlert,
               costPerUnit: item.price,
               categoryId: categoryId,
               initialStock: 0,
@@ -112,6 +114,8 @@ Future<void> saveReceiveDocument({
         'quantity': dbQuantity,
         'price_per_unit': dbPricePerUnit,
         'total_price': dbQuantity * dbPricePerUnit,
+        'sell_price': item.sellPrice,
+        'min_stock_alert': item.minStockAlert,
       });
     }
 
@@ -134,7 +138,7 @@ Future<void> saveReceiveDocument({
     }
   } catch (e) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger));
       setSavingState(false);
     }
   }

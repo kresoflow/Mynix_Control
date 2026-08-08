@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
+
 
 class MenuManagerItemsGrid extends StatelessWidget {
   final int? currentParentId;
@@ -30,7 +33,7 @@ class MenuManagerItemsGrid extends StatelessWidget {
     return BlocBuilder<MenuBloc, MenuState>(
       builder: (context, state) {
         if (state is MenuLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const SkeletonGrid(gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 220, crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 1.1));
         } else if (state is MenuLoaded) {
           final items = state.items
               .where((item) => item.categoryId == currentParentId.toString())
@@ -86,7 +89,7 @@ class MenuManagerItemsGrid extends StatelessWidget {
                     style: AppTextStyles.h3,
                   ),
                   trailing: IconButton(
-                    icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red, size: 20),
+                    icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger, size: 20),
                     onPressed: () => onDelete(item.id),
                   ),
                 ),

@@ -28,6 +28,7 @@ class MynixDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
@@ -46,7 +47,7 @@ class MynixDialog extends StatelessWidget {
           children: [
             // ── Шапка ──────────────────────────────────────────────────
             Container(
-              padding: const EdgeInsets.fromLTRB(28, 20, 20, 0),
+              padding: EdgeInsets.fromLTRB(isMobile ? 16 : 28, 20, 20, 0),
               child: Row(
                 children: [
                   Container(
@@ -66,6 +67,7 @@ class MynixDialog extends StatelessWidget {
                       title,
                       style: AppTextStyles.h2.copyWith(
                         color: isDark ? AppColors.darkText : AppColors.lightText,
+                        fontSize: isMobile ? 18 : null,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -82,25 +84,26 @@ class MynixDialog extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // ── Контент ────────────────────────────────────────────────
             Flexible(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 28),
                 child: content,
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
 
             // ── Футер (Кнопки) ─────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 0, 28, 28),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: actions,
+            if (actions.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.fromLTRB(isMobile ? 16 : 28, 0, isMobile ? 16 : 28, 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: actions,
+                ),
               ),
-            ),
           ],
         ),
       ),

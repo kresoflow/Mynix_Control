@@ -7,6 +7,9 @@ import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_category_dialog.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
+
 
 class MenuManagerCategoriesList extends StatelessWidget {
   final int? currentParentId;
@@ -25,7 +28,7 @@ class MenuManagerCategoriesList extends StatelessWidget {
     return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, state) {
         if (state is CategoryLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const SkeletonList();
         } else if (state is CategoryLoaded) {
           final subCategories = state.categories
               .where((c) => c.parentId == currentParentId)
@@ -73,7 +76,7 @@ class MenuManagerCategoriesList extends StatelessWidget {
                                     activeThumbColor: Theme.of(context).colorScheme.primary,
                                   ),
                                   IconButton(
-                                    icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                                    icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                                     onPressed: () => onDelete(cat.id),
                                   ),
                                 ],

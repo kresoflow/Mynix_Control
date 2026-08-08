@@ -34,4 +34,13 @@ class LoginRequested extends AuthEvent {
   List<Object?> get props => [username, password];
 }
 
+class LoginByPinRequested extends AuthEvent {
+  final String pinCode;
+  
+  const LoginByPinRequested(this.pinCode);
+  
+  @override
+  List<Object?> get props => [pinCode];
+}
+
 class LoggedOut extends AuthEvent {}

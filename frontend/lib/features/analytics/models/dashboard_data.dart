@@ -72,6 +72,9 @@ class DashboardData {
   final int totalOrders;
   final double dishesRevenue;
   final double retailRevenue;
+  final double totalCogs;
+  final double netProfit;
+  final double marginPercentage;
   final List<LowStockAlert> lowStockAlerts;
   final List<TopItem> topItems;
   final List<RecentOrder> recentOrders;
@@ -81,6 +84,9 @@ class DashboardData {
     required this.totalOrders,
     required this.dishesRevenue,
     required this.retailRevenue,
+    required this.totalCogs,
+    required this.netProfit,
+    required this.marginPercentage,
     required this.lowStockAlerts,
     required this.topItems,
     required this.recentOrders,
@@ -92,6 +98,9 @@ class DashboardData {
       totalOrders: json['total_orders'] ?? 0,
       dishesRevenue: (json['dishes_revenue'] as num?)?.toDouble() ?? 0.0,
       retailRevenue: (json['retail_revenue'] as num?)?.toDouble() ?? 0.0,
+      totalCogs: (json['total_cogs'] as num?)?.toDouble() ?? 0.0,
+      netProfit: (json['net_profit'] as num?)?.toDouble() ?? 0.0,
+      marginPercentage: (json['margin_percentage'] as num?)?.toDouble() ?? 0.0,
       lowStockAlerts:
           (json['low_stock_alerts'] as List?)
               ?.map((e) => LowStockAlert.fromJson(e))

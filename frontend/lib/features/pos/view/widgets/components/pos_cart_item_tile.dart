@@ -21,7 +21,16 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
     try {
       final map = jsonDecode(jsonStr);
       final List<String> parts = [];
-      if (map['variation'] != null) parts.add(map['variation']);
+      if (map['variation'] != null) {
+        String varName = map['variation'].toString();
+        varName = varName.replaceAll(widget.cartItem.menuItem.cleanName, '').trim();
+        if (widget.cartItem.menuItem.attributesString != null) {
+          varName = varName.replaceAll(widget.cartItem.menuItem.attributesString!, '').trim();
+        }
+        if (varName.isNotEmpty) {
+          parts.add(varName);
+        }
+      }
       if (map['modifiers'] != null) {
         for (var m in map['modifiers']) {
           parts.add(m['name']);
@@ -64,8 +73,6 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
                   Text(
                     item.menuItem.cleanName,
                     style: AppTextStyles.bodyMedium,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   if (item.menuItem.attributesString != null)
                     Text(
@@ -76,8 +83,6 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
                     Text(
                       _parseSelectedOptions(item.selectedOptionsJson!),
                       style: AppTextStyles.caption.copyWith(color: AppColors.brandPrimary),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                 ],
               ),
@@ -108,10 +113,10 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
               opacity: _hovered ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 150),
               child: IconButton(
-                icon: const Icon(PhosphorIconsRegular.x, size: 16),
+                icon: const Icon(PhosphorIconsRegular.x, size: 20),
                 color: AppColors.danger,
-                padding: const EdgeInsets.all(6),
-                constraints: const BoxConstraints(),
+                padding: const EdgeInsets.all(12),
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                 tooltip: 'Удалить',
                 onPressed: () =>
                     context.read<CartBloc>().add(RemoveItemFromCart(item.id)),
@@ -134,9 +139,9 @@ class _QtyControl extends StatelessWidget {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     return Container(
-      height: 30,
+      height: 48,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: borderColor),
       ),
       child: Row(
@@ -153,12 +158,12 @@ class _QtyControl extends StatelessWidget {
                     .add(RemoveItemFromCart(cartItem.id)),
           ),
           Container(
-            width: 28,
+            width: 48,
             alignment: Alignment.center,
             child: Text(
               '${cartItem.quantity}',
               style: GoogleFonts.jetBrainsMono(
-                fontSize: 13,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: isDark ? AppColors.darkText : AppColors.lightText,
               ),
@@ -183,12 +188,13 @@ class _QtyBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
       child: SizedBox(
-        width: 28,
-        height: 30,
-        child: Icon(icon, size: 14, color: AppColors.darkSubtext),
+        width: 48,
+        height: 48,
+        child: Icon(icon, size: 18, color: AppColors.darkSubtext),
       ),
     );
   }

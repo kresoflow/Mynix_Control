@@ -25,13 +25,16 @@ class MenuItemAdapter extends TypeAdapter<MenuItem> {
       shortName: fields[5] as String?,
       tags: (fields[6] as List?)?.cast<String>(),
       attributesJson: fields[7] as String?,
+      isAvailable: fields[8] == null ? true : fields[8] as bool,
+      barcode: fields[9] as String?,
+      parentId: fields[10] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MenuItem obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +50,13 @@ class MenuItemAdapter extends TypeAdapter<MenuItem> {
       ..writeByte(6)
       ..write(obj.tags)
       ..writeByte(7)
-      ..write(obj.attributesJson);
+      ..write(obj.attributesJson)
+      ..writeByte(8)
+      ..write(obj.isAvailable)
+      ..writeByte(9)
+      ..write(obj.barcode)
+      ..writeByte(10)
+      ..write(obj.parentId);
   }
 
   @override

@@ -42,7 +42,7 @@ class DishRowWidget extends StatelessWidget {
           child: TextField(
             controller: row.optionsController,
             textInputAction: TextInputAction.next,
-            decoration: buildBulkInputDecoration(context, 'Размеры (S, M, L)'),
+            decoration: buildBulkInputDecoration(context, 'Опции (оставьте пустым, если нет)'),
           ),
         ),
         const SizedBox(width: 8),

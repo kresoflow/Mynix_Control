@@ -18,6 +18,7 @@ class CreateMenuItem extends MenuEvent {
   final String category;
   final int sortOrder;
   final Map<String, dynamic>? attributes;
+  final String? barcode;
 
   const CreateMenuItem({
     required this.name,
@@ -25,10 +26,11 @@ class CreateMenuItem extends MenuEvent {
     required this.category,
     this.sortOrder = 0,
     this.attributes,
+    this.barcode,
   });
 
   @override
-  List<Object?> get props => [name, price, category, sortOrder];
+  List<Object?> get props => [name, price, category, sortOrder, barcode];
 }
 
 class DeleteMenuItem extends MenuEvent {
@@ -67,9 +69,11 @@ class CreateRetailProduct extends MenuEvent {
   final double purchasePrice;
   final double sellingPrice;
   final Map<String, dynamic>? attributes;
-
   final double initialStock;
+  final double minStockAlert;
   final int sortOrder;
+  final String? barcode;
+  final int? parentId;
 
   const CreateRetailProduct({
     required this.name,
@@ -79,11 +83,31 @@ class CreateRetailProduct extends MenuEvent {
     required this.sellingPrice,
     this.attributes,
     this.initialStock = 0.0,
+    this.minStockAlert = 0.0,
     this.sortOrder = 0,
+    this.barcode,
+    this.parentId,
   });
 
   @override
-  List<Object?> get props => [name, categoryId, unit, purchasePrice, sellingPrice, attributes, initialStock, sortOrder];
+  List<Object?> get props => [name, categoryId, unit, purchasePrice, sellingPrice, attributes, initialStock, minStockAlert, sortOrder, barcode, parentId];
+}
+
+class CreateRetailProductGroup extends MenuEvent {
+  final String name;
+  final int categoryId;
+  final String? flavor;
+  final List<Map<String, dynamic>> variations;
+
+  const CreateRetailProductGroup({
+    required this.name,
+    required this.categoryId,
+    this.flavor,
+    required this.variations,
+  });
+
+  @override
+  List<Object?> get props => [name, categoryId, flavor, variations];
 }
 
 // --- States ---
@@ -120,6 +144,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     on<CreateMenuItem>(_onCreateMenuItem);
     on<DeleteMenuItem>(_onDeleteMenuItem);
     on<CreateRetailProduct>(_onCreateRetailProduct);
+    on<CreateRetailProductGroup>(_onCreateRetailProductGroup);
     on<UpdateMenuItem>(_onUpdateMenuItem);
     on<UpdateRetailProduct>(_onUpdateRetailProduct);
   }
@@ -142,6 +167,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
         category: event.category,
         sortOrder: event.sortOrder,
         attributes: event.attributes,
+        barcode: event.barcode,
       );
       // Reload menu after creation
       add(LoadMenu());
@@ -162,7 +188,46 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
         attributes: event.attributes,
         initialStock: event.initialStock,
         sortOrder: event.sortOrder,
+        barcode: event.barcode,
+        parentId: event.parentId,
       );
+      add(LoadMenu());
+    } catch (e) {
+      emit(MenuError(message: e.toString().replaceFirst('Exception: ', '')));
+      add(LoadMenu());
+    }
+  }
+
+  Future<void> _onCreateRetailProductGroup(CreateRetailProductGroup event, Emitter<MenuState> emit) async {
+    try {
+      final double basePrice = event.variations.isNotEmpty 
+          ? (event.variations.first['price'] as num).toDouble() 
+          : 0.0;
+          
+      final parentId = await menuRepository.createMenuItem(
+        name: event.name,
+        category: event.categoryId.toString(),
+        price: basePrice,
+        type: 'retail',
+        attributes: {
+          'icon': 'package',
+          if (event.flavor != null && event.flavor!.isNotEmpty) 'flavor': event.flavor,
+          'variations': event.variations,
+        },
+      );
+
+      for (var v in event.variations) {
+        await menuRepository.createRetailProduct(
+          name: v['name'] as String,
+          categoryId: event.categoryId,
+          unit: v['unit'] as String? ?? 'pcs',
+          purchasePrice: (v['purchasePrice'] as num?)?.toDouble() ?? 0.0,
+          sellingPrice: (v['price'] as num?)?.toDouble() ?? 0.0,
+          initialStock: (v['stock'] as num?)?.toDouble() ?? 0.0,
+          barcode: v['barcode'] as String?,
+          parentId: parentId,
+        );
+      }
       add(LoadMenu());
     } catch (e) {
       emit(MenuError(message: e.toString().replaceFirst('Exception: ', '')));

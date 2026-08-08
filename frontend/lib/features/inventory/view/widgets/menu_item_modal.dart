@@ -21,6 +21,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
 
   late TextEditingController _nameController;
   late TextEditingController _priceController;
+  late TextEditingController _barcodeController;
 
   bool _hasModifiers = false;
   
@@ -35,6 +36,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
     super.initState();
     _nameController = TextEditingController(text: widget.existingItem?.cleanName ?? '');
     _priceController = TextEditingController(text: widget.existingItem?.price.toString() ?? '');
+    _barcodeController = TextEditingController(text: widget.existingItem?.barcode ?? '');
     
     if (widget.existingItem?.attributesJson != null && widget.existingItem!.attributesJson!.isNotEmpty) {
       try {
@@ -60,6 +62,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _barcodeController.dispose();
     super.dispose();
   }
 
@@ -98,6 +101,8 @@ class _MenuItemModalState extends State<MenuItemModal> {
         }
       }
 
+      final barcode = _barcodeController.text.trim().isEmpty ? null : _barcodeController.text.trim();
+
       if (widget.existingItem != null) {
          context.read<MenuBloc>().add(UpdateMenuItem(
              widget.existingItem!.id,
@@ -105,6 +110,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
                 'name': name,
                 'price': price,
                 'attributes': attributes,
+                'barcode': barcode,
              }
          ));
       } else {
@@ -114,6 +120,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
                category: categoryId,
                price: price,
                attributes: attributes,
+               barcode: barcode,
             ),
          );
       }
@@ -174,10 +181,19 @@ class _MenuItemModalState extends State<MenuItemModal> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _barcodeController,
+                        decoration: InputDecoration(
+                          labelText: 'Штрихкод (опционально)',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: Icon(PhosphorIconsRegular.barcode, color: AppColors.brandPrimary),
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       Container(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.surfaceVariant.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                         ),
@@ -229,7 +245,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
                                   ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                                  icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                                   onPressed: () => setState(() => _variations.removeAt(i)),
                                 )
                               ],
@@ -276,7 +292,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                                        icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                                         onPressed: () => setState(() => _modifierGroups.removeAt(gIndex)),
                                       )
                                     ],

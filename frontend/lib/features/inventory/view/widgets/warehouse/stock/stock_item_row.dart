@@ -5,8 +5,9 @@ import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class StockItemRow extends StatelessWidget {
   final Ingredient item;
+  final bool isLast;
 
-  const StockItemRow({super.key, required this.item});
+  const StockItemRow({super.key, required this.item, this.isLast = false});
 
   @override
   Widget build(BuildContext context) {
@@ -15,20 +16,40 @@ class StockItemRow extends StatelessWidget {
     final isCritical = item.currentStock <= 0;
 
     // Индикатор цвета
-    Color stockColor = Colors.green;
+    Color stockColor = AppColors.success;
     if (isCritical) {
-      stockColor = Colors.red;
+      stockColor = AppColors.danger;
     } else if (isLowStock) {
-      stockColor = Colors.orange;
+      stockColor = AppColors.warning;
     }
 
+    String getTranslatedUnit(String u) {
+      switch (u) {
+        case 'pcs': return 'шт';
+        case 'l': return 'л';
+        case 'ml': return 'мл';
+        case 'kg': return 'кг';
+        case 'g': return 'г';
+        default: return u;
+      }
+    }
+    final translatedUnit = getTranslatedUnit(item.unit);
+
+    final borderSide = BorderSide(
+      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    );
+
     return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 12 : 0),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        borderRadius: isLast 
+            ? const BorderRadius.vertical(bottom: Radius.circular(12))
+            : BorderRadius.zero,
         border: Border(
-          bottom: BorderSide(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          ),
+          left: borderSide,
+          right: borderSide,
+          bottom: borderSide,
         ),
       ),
       child: Material(
@@ -55,7 +76,7 @@ class StockItemRow extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    item.unit,
+                    translatedUnit,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
@@ -78,14 +99,6 @@ class StockItemRow extends StatelessWidget {
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: isDark ? AppColors.darkText : AppColors.lightText,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.categoryName ?? 'Без категории',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                         ),
                       ),
                     ],
@@ -111,7 +124,7 @@ class StockItemRow extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${item.currentStock.toStringAsFixed(1)} ${item.unit}',
+                            '${item.currentStock.toStringAsFixed(1)} $translatedUnit',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
@@ -142,17 +155,28 @@ class StockItemRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (item.price != null && item.price! > 0) ...[
+                        Text(
+                          'Розница: ${(item.currentStock * item.price!).toCurrency(context)}',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.success,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                      ],
                       Text(
-                        'Σ ${(item.currentStock * item.costPerUnit).toCurrency(context)}',
+                        'Закуп: ${(item.currentStock * item.costPerUnit).toCurrency(context)}',
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                          fontSize: item.price != null && item.price! > 0 ? 13 : 15,
+                          fontWeight: item.price != null && item.price! > 0 ? FontWeight.normal : FontWeight.bold,
+                          color: isDark ? AppColors.darkSubtext : AppColors.lightText,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${item.costPerUnit.toStringAsFixed(2)} с / ${item.unit}',
+                        '${item.costPerUnit.toStringAsFixed(2)} с / $translatedUnit',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,

@@ -30,10 +30,10 @@ class _HoverableMetricCardState extends State<HoverableMetricCard> {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Theme.of(context).dividerColor.withOpacity(_isHovering ? 0.0 : 0.1)),
+            border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: _isHovering ? 0.0 : 0.1)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(_isHovering ? 0.08 : 0.03),
+                color: Colors.black.withValues(alpha: _isHovering ? 0.08 : 0.03),
                 blurRadius: _isHovering ? 24 : 12,
                 offset: Offset(0, _isHovering ? 8 : 4),
               ),
@@ -44,7 +44,7 @@ class _HoverableMetricCardState extends State<HoverableMetricCard> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: widget.color.withOpacity(0.1),
+                  color: widget.color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(widget.icon, color: widget.color, size: 28),

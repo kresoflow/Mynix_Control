@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
+import 'bulk_input_decoration.dart';
 
 class IngredientRowData {
   final TextEditingController nameController;
-  final TextEditingController costController;
-  final TextEditingController alertController;
   final TextEditingController stockController;
+  final TextEditingController alertController;
+  final TextEditingController costController;
   final FocusNode firstFocusNode = FocusNode();
   String selectedUnit;
 
   IngredientRowData({
     String name = '',
-    String cost = '0',
-    String alert = '0',
     String stock = '0',
+    String alert = '0',
+    String cost = '0',
     this.selectedUnit = 'g',
   }) : nameController = TextEditingController(text: name),
-       costController = TextEditingController(text: cost),
+       stockController = TextEditingController(text: stock),
        alertController = TextEditingController(text: alert),
-       stockController = TextEditingController(text: stock);
+       costController = TextEditingController(text: cost);
 
   IngredientRowData clone() {
     return IngredientRowData(
       name: nameController.text,
-      cost: costController.text,
-      alert: alertController.text,
       stock: stockController.text,
+      alert: alertController.text,
+      cost: costController.text,
       selectedUnit: selectedUnit,
     );
   }
@@ -49,6 +50,7 @@ class _IngredientRowWidgetState extends State<IngredientRowWidget> {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        // 1. Название
         Expanded(
           flex: 3,
           child: TextField(
@@ -59,6 +61,8 @@ class _IngredientRowWidgetState extends State<IngredientRowWidget> {
           ),
         ),
         const SizedBox(width: 8),
+
+        // 4. Ед. изм. (skip flavor/volume for ingredients, so it matches position)
         Expanded(
           flex: 2,
           child: DropdownButtonFormField<String>(
@@ -75,34 +79,40 @@ class _IngredientRowWidgetState extends State<IngredientRowWidget> {
           ),
         ),
         const SizedBox(width: 8),
+
+        // 5. Начальный остаток
         Expanded(
           flex: 2,
           child: TextField(
-            controller: widget.row.costController,
+            controller: widget.row.stockController,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Себест. (с)'),
+            keyboardType: TextInputType.number,
+            decoration: buildBulkInputDecoration(context, 'Остаток'),
           ),
         ),
         const SizedBox(width: 8),
-        Expanded(
-          flex: 2,
-          child: Tooltip(
-            message: 'Позволяет сразу задать количество на складе без создания документа прихода',
-            child: TextField(
-              controller: widget.row.stockController,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Нач. остаток'),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
+
+        // 6. Алерт
         Expanded(
           flex: 2,
           child: TextField(
             controller: widget.row.alertController,
+            textInputAction: TextInputAction.next,
+            keyboardType: TextInputType.number,
+            decoration: buildBulkInputDecoration(context, 'Алерт'),
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // 7. Закупка (Себестоимость)
+        Expanded(
+          flex: 2,
+          child: TextField(
+            controller: widget.row.costController,
             textInputAction: TextInputAction.done,
+            keyboardType: TextInputType.number,
             onSubmitted: (_) => widget.onAddRow(),
-            decoration: const InputDecoration(labelText: 'Мин. остаток'),
+            decoration: buildBulkInputDecoration(context, 'Закупка'),
           ),
         ),
       ],

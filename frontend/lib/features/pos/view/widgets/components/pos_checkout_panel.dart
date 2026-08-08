@@ -28,13 +28,27 @@ class PosCheckoutPanel extends StatelessWidget {
         listener: (context, state) {
           if (state.submitSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('✓ Заказ успешно создан')),
+              SnackBar(
+                content: const Text('✓ Заказ успешно создан'),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
+                  left: 16,
+                  right: 16,
+                ),
+              ),
             );
           } else if (state.submitError != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Ошибка: ${state.submitError}'),
                 backgroundColor: AppColors.danger,
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
+                  left: 16,
+                  right: 16,
+                ),
               ),
             );
           }

@@ -10,7 +10,12 @@ import 'package:mynix_frontend/features/menu/view/catalog_screen.dart';
 import 'package:mynix_frontend/features/inventory/view/warehouse_screen.dart';
 import 'package:mynix_frontend/features/analytics/view/analytics_dashboard_screen.dart';
 import 'package:mynix_frontend/features/settings/view/settings_screen.dart';
+import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
+import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
+import 'package:mynix_frontend/features/orders/repository/orders_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/widgets/main_layout.dart';
+import 'package:mynix_frontend/core/network/api_client.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
@@ -41,6 +46,24 @@ class AppRouter {
         return '/pos';
       }
 
+      // Role-based access control
+      if (authState is AuthAuthenticated) {
+        final role = authState.role.toLowerCase();
+        final path = state.uri.path;
+        
+        if (role.contains('cashier') && path != '/pos') {
+          return '/pos';
+        }
+        
+        if ((role.contains('cook') || role.contains('kitchen')) && path != '/kitchen') {
+          return '/kitchen';
+        }
+
+        if ((role.contains('manager') || role.contains('admin')) && path == '/settings') {
+          return '/pos'; // Manager shouldn't access settings for now
+        }
+      }
+
       return null;
     },
     routes: [
@@ -57,6 +80,10 @@ class AppRouter {
           GoRoute(
             path: '/pos',
             builder: (context, state) => const PosScreen(),
+          ),
+          GoRoute(
+            path: '/orders',
+            builder: (context, state) => const OrdersScreen(),
           ),
           GoRoute(
             path: '/kitchen',

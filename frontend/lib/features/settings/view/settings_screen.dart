@@ -1,3 +1,7 @@
+
+import 'package:mynix_frontend/features/settings/models/user_model.dart';
+import 'package:mynix_frontend/features/settings/bloc/user_bloc.dart';
+import 'package:mynix_frontend/features/settings/repository/user_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
@@ -5,6 +9,14 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/core/theme/theme_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
+
+import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
+
+import 'package:mynix_frontend/core/network/api_client.dart';
+import 'package:dio/dio.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -30,60 +42,119 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-      body: Row(
-        children: [
-          // Левая панель - список категорий
-          Container(
-            width: 320,
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              border: Border(
-                right: BorderSide(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
-              ),
-            ),
-            child: Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 768) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text(
-                    'Настройки',
-                    style: AppTextStyles.h1.copyWith(
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
+                Container(
+                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Настройки', style: AppTextStyles.h1.copyWith(color: isDark ? AppColors.darkText : AppColors.lightText)),
+                          _buildProfileMenu(context, isDark),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(_categories.length, (index) {
+                        final category = _categories[index];
+                        final isSelected = index == _selectedIndex;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: ChoiceChip(
+                            label: Text(category.title),
+                            avatar: Icon(category.icon, size: 18, color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText)),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() => _selectedIndex = index);
+                              }
+                            },
+                            selectedColor: AppColors.brandPrimary,
+                            backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                            labelStyle: AppTextStyles.bodyMedium.copyWith(
+                              color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+                            ),
+                          ),
+                        );
+                      }),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      final category = _categories[index];
-                      final isSelected = index == _selectedIndex;
-
-                      return _CategoryTile(
-                        category: category,
-                        isSelected: isSelected,
-                        isDark: isDark,
-                        onTap: () {
-                          setState(() {
-                            _selectedIndex = index;
-                          });
-                        },
-                      );
-                    },
-                  ),
+                  child: _buildCategoryContent(isDark),
                 ),
               ],
-            ),
-          ),
-          // Правая панель - контент выбранной категории
-          Expanded(
-            child: _buildCategoryContent(isDark),
-          ),
-        ],
+            );
+          }
+
+          // Desktop/Tablet layout
+          return Row(
+            children: [
+              // Левая панель - список категорий
+              Container(
+                width: 320,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  border: Border(
+                    right: BorderSide(
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    ),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(
+                        'Настройки',
+                        style: AppTextStyles.h1.copyWith(
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final category = _categories[index];
+                          final isSelected = index == _selectedIndex;
+
+                          return _CategoryTile(
+                            category: category,
+                            isSelected: isSelected,
+                            isDark: isDark,
+                            onTap: () {
+                              setState(() {
+                                _selectedIndex = index;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Правая панель - контент выбранной категории
+              Expanded(
+                child: _buildCategoryContent(isDark),
+              ),
+            ],
+          );
+        }
       ),
     );
   }
@@ -104,6 +175,111 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return const SizedBox.shrink();
     }
   }
+
+  Widget _buildProfileMenu(BuildContext context, bool isDark) {
+    return PopupMenuButton<String>(
+      tooltip: 'Профиль пользователя',
+      offset: const Offset(0, 48),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      elevation: 8,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.brandPrimary.withValues(alpha: 0.15),
+          border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+        ),
+        child: Center(
+          child: Icon(PhosphorIconsRegular.user, size: 24, color: AppColors.brandPrimary),
+        ),
+      ),
+      onSelected: (value) {
+        if (value == 'close_shift') {
+          _showCloseShiftDialog(context);
+        } else if (value == 'logout') {
+          context.read<AuthBloc>().add(LoggedOut());
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          enabled: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Владелец платформы', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText)),
+              Text('Полный доступ', style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext)),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'close_shift',
+          child: Row(
+            children: [
+              Icon(PhosphorIconsRegular.lockKey, color: AppColors.danger, size: 20),
+              const SizedBox(width: 12),
+              Text('Закрыть смену', style: AppTextStyles.body.copyWith(color: AppColors.danger)),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'logout',
+          child: Row(
+            children: [
+              Icon(PhosphorIconsRegular.signOut, color: AppColors.darkSubtext, size: 20),
+              const SizedBox(width: 12),
+              Text('Выйти из аккаунта', style: AppTextStyles.body),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showCloseShiftDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Закрытие смены'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Введите фактическую сумму наличных в кассе (Z-отчет):'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Сумма (с)',
+                prefixIcon: Icon(PhosphorIconsRegular.money),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Отмена'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final amount = double.tryParse(controller.text) ?? 0.0;
+              context.read<ShiftBloc>().add(CloseShiftRequested(amount));
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
+            child: const Text('ЗАКРЫТЬ'),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
 
 class _SettingsCategory {
@@ -169,17 +345,98 @@ class _CategoryTile extends StatelessWidget {
 // Вкладки настроек (Заглушки UI)
 // -----------------------------------------------------------------------------
 
-class _GeneralSettings extends StatelessWidget {
+class _GeneralSettings extends StatefulWidget {
   final bool isDark;
   const _GeneralSettings({required this.isDark});
 
   @override
+  State<_GeneralSettings> createState() => _GeneralSettingsState();
+}
+
+class _GeneralSettingsState extends State<_GeneralSettings> {
+  bool _isLoading = true;
+  bool _useKds = true;
+  bool _enableInventory = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSettings();
+  }
+
+  Future<void> _fetchSettings() async {
+    try {
+      final dio = apiClient.dio;
+      final response = await dio.get('/settings/');
+      setState(() {
+        _useKds = response.data['use_kds'];
+        _enableInventory = response.data['enable_inventory_deduction'];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      print("Error fetching settings: $e");
+    }
+  }
+
+  Future<void> _updateSettings(bool useKds, bool enableInv) async {
+    try {
+      final dio = apiClient.dio;
+      await dio.put('/settings/', data: {
+        'use_kds': useKds,
+        'enable_inventory_deduction': enableInv,
+      });
+      setState(() {
+        _useKds = useKds;
+        _enableInventory = enableInv;
+      });
+    } catch (e) {
+      print("Error updating settings: $e");
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ошибка сохранения настроек')));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    
     return BlocBuilder<SettingsBloc, SettingsState>(
       builder: (context, state) {
+        if (_isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         return ListView(
           padding: const EdgeInsets.all(40),
           children: [
+            _buildHeader('Функции заведения', isDark),
+            const SizedBox(height: 32),
+            _SettingsCard(
+              isDark: isDark,
+              children: [
+                _SettingsRow(
+                  isDark: isDark,
+                  title: 'Использовать экран повара (KDS)',
+                  subtitle: 'Если выключено, заказы пропускают кухню и сразу готовы',
+                  trailing: Switch(
+                    value: _useKds,
+                    activeColor: AppColors.brandPrimary,
+                    onChanged: (val) => _updateSettings(val, _enableInventory),
+                  ),
+                ),
+                _SettingsRow(
+                  isDark: isDark,
+                  title: 'Списание ингредиентов',
+                  subtitle: 'Минусовать сырье по тех. картам при продаже',
+                  trailing: Switch(
+                    value: _enableInventory,
+                    activeColor: AppColors.brandPrimary,
+                    onChanged: (val) => _updateSettings(_useKds, val),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 48),
             _buildHeader('Внешний вид', isDark),
             const SizedBox(height: 32),
             _SettingsCard(
@@ -433,34 +690,208 @@ class _PersonnelSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(40),
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return BlocProvider(
+      create: (context) => UserBloc(repository: UserRepository())..add(LoadUsers()),
+      child: _PersonnelSettingsView(isDark: isDark),
+    );
+  }
+}
+
+class _PersonnelSettingsView extends StatelessWidget {
+  final bool isDark;
+  const _PersonnelSettingsView({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(40),
           children: [
-            _buildHeader('Управление персоналом', isDark),
-            _ButtonStub(isDark: isDark, label: '+ Добавить сотрудника', isPrimary: true),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Управление персоналом',
+                  style: AppTextStyles.h2.copyWith(
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                  ),
+                ),
+                InkWell(
+                  onTap: () => _showAddUserDialog(context, isDark, state.roles),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandPrimary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '+ Добавить сотрудника',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            if (state.users.isEmpty)
+              const Center(child: Text("Нет сотрудников"))
+            else
+              _SettingsCard(
+                isDark: isDark,
+                children: [
+                  for (int i = 0; i < state.users.length; i++) ...[
+                    _SettingsRow(
+                      isDark: isDark,
+                      title: '${state.users[i].fullName} (${state.users[i].roles.join(", ")})',
+                      subtitle: 'Логин: ${state.users[i].username}',
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(PhosphorIconsRegular.pencilSimple, color: AppColors.brandPrimary),
+                            onPressed: () => _showEditUserDialog(context, isDark, state.roles, state.users[i]),
+                          ),
+                          IconButton(
+                            icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                            onPressed: () {
+                              context.read<UserBloc>().add(DeleteUser(state.users[i].id));
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (i < state.users.length - 1)
+                      _SettingsDivider(isDark: isDark),
+                  ],
+                ],
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  void _showEditUserDialog(BuildContext parentContext, bool isDark, List<Role> availableRoles, StaffUser user) {
+    showDialog(
+      context: parentContext,
+      builder: (dialogContext) {
+        return BlocProvider.value(
+          value: parentContext.read<UserBloc>(),
+          child: _EditUserDialog(isDark: isDark, roles: availableRoles, user: user),
+        );
+      },
+    );
+  }
+  void _showAddUserDialog(BuildContext parentContext, bool isDark, List<Role> availableRoles) {
+    showDialog(
+      context: parentContext,
+      builder: (dialogContext) {
+        return BlocProvider.value(
+          value: parentContext.read<UserBloc>(),
+          child: _AddUserDialog(isDark: isDark, roles: availableRoles),
+        );
+      },
+    );
+  }
+}
+
+class _AddUserDialog extends StatefulWidget {
+  final bool isDark;
+  final List<Role> roles;
+  const _AddUserDialog({required this.isDark, required this.roles});
+
+  @override
+  State<_AddUserDialog> createState() => _AddUserDialogState();
+}
+
+class _AddUserDialogState extends State<_AddUserDialog> {
+  final _usernameCtrl = TextEditingController();
+  final _fullNameCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _pinCtrl = TextEditingController();
+  int? _selectedRoleId;
+
+  @override
+  void dispose() {
+    _usernameCtrl.dispose();
+    _fullNameCtrl.dispose();
+    _passwordCtrl.dispose();
+    _pinCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: widget.isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      title: Text("Новый сотрудник", style: TextStyle(color: widget.isDark ? AppColors.darkText : AppColors.lightText)),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _fullNameCtrl,
+              decoration: InputDecoration(labelText: "ФИО (например: Анна Кассир)"),
+            ),
+            TextField(
+              controller: _usernameCtrl,
+              decoration: InputDecoration(labelText: "Логин (например: anna_cash)"),
+            ),
+            TextField(
+              controller: _passwordCtrl,
+              obscureText: true,
+              decoration: InputDecoration(labelText: "Пароль"),
+            ),
+            TextField(
+              controller: _pinCtrl,
+              decoration: InputDecoration(labelText: "Пин-код (Опционально)"),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<int>(
+              value: _selectedRoleId,
+              decoration: const InputDecoration(labelText: "Роль"),
+              items: widget.roles.map((r) {
+                return DropdownMenuItem(value: r.id, child: Text(r.name));
+              }).toList(),
+              onChanged: (val) {
+                setState(() {
+                  _selectedRoleId = val;
+                });
+              },
+            ),
           ],
         ),
-        const SizedBox(height: 32),
-        _SettingsCard(
-          isDark: isDark,
-          children: [
-            _SettingsRow(
-              isDark: isDark,
-              title: 'Иван Иванов (Администратор)',
-              subtitle: 'Полный доступ • PIN: ****',
-              trailing: Icon(PhosphorIconsRegular.pencilSimple, color: AppColors.brandPrimary),
-            ),
-            _SettingsDivider(isDark: isDark),
-            _SettingsRow(
-              isDark: isDark,
-              title: 'Анна Смирнова (Кассир)',
-              subtitle: 'Касса, Возвраты • PIN: ****',
-              trailing: Icon(PhosphorIconsRegular.pencilSimple, color: AppColors.brandPrimary),
-            ),
-          ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Отмена"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_usernameCtrl.text.isEmpty || _fullNameCtrl.text.isEmpty || _passwordCtrl.text.isEmpty || _selectedRoleId == null) {
+              return;
+            }
+            context.read<UserBloc>().add(CreateUser(
+              username: _usernameCtrl.text,
+              fullName: _fullNameCtrl.text,
+              password: _passwordCtrl.text,
+              pinCode: _pinCtrl.text.isNotEmpty ? _pinCtrl.text : null,
+              roleIds: [_selectedRoleId!],
+            ));
+            Navigator.pop(context);
+          },
+          child: const Text("Создать"),
         ),
       ],
     );
@@ -723,4 +1154,120 @@ class _ButtonStub extends StatelessWidget {
       ),
     );
   }
+}
+
+
+class _EditUserDialog extends StatefulWidget {
+  final bool isDark;
+  final List<Role> roles;
+  final StaffUser user;
+  const _EditUserDialog({required this.isDark, required this.roles, required this.user});
+
+  @override
+  State<_EditUserDialog> createState() => _EditUserDialogState();
+}
+
+class _EditUserDialogState extends State<_EditUserDialog> {
+  late TextEditingController _usernameCtrl;
+  late TextEditingController _fullNameCtrl;
+  late TextEditingController _passwordCtrl;
+  late TextEditingController _pinCtrl;
+  int? _selectedRoleId;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameCtrl = TextEditingController(text: widget.user.username);
+    _fullNameCtrl = TextEditingController(text: widget.user.fullName);
+    _passwordCtrl = TextEditingController();
+    _pinCtrl = TextEditingController();
+    
+    // Attempt to match the existing role
+    if (widget.user.roles.isNotEmpty) {
+      final roleName = widget.user.roles.first;
+      try {
+        final role = widget.roles.firstWhere((r) => r.name == roleName);
+        _selectedRoleId = role.id;
+      } catch (_) {}
+    }
+  }
+
+  @override
+  void dispose() {
+    _usernameCtrl.dispose();
+    _fullNameCtrl.dispose();
+    _passwordCtrl.dispose();
+    _pinCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: widget.isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      title: Text("Редактировать сотрудника", style: TextStyle(color: widget.isDark ? AppColors.darkText : AppColors.lightText)),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _fullNameCtrl,
+              decoration: InputDecoration(labelText: "ФИО"),
+            ),
+            TextField(
+              controller: _usernameCtrl,
+              decoration: InputDecoration(labelText: "Логин"),
+            ),
+            TextField(
+              controller: _passwordCtrl,
+              obscureText: true,
+              decoration: InputDecoration(labelText: "Новый пароль (оставьте пустым, если не меняете)"),
+            ),
+            TextField(
+              controller: _pinCtrl,
+              decoration: InputDecoration(labelText: "Новый Пин-код (оставьте пустым, если не меняете)"),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<int>(
+              value: _selectedRoleId,
+              decoration: const InputDecoration(labelText: "Роль"),
+              items: widget.roles.map((r) {
+                return DropdownMenuItem(value: r.id, child: Text(r.name));
+              }).toList(),
+              onChanged: (val) {
+                setState(() {
+                  _selectedRoleId = val;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Отмена"),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_usernameCtrl.text.isEmpty || _fullNameCtrl.text.isEmpty) {
+              return;
+            }
+            context.read<UserBloc>().add(UpdateUser(
+              userId: widget.user.id,
+              username: _usernameCtrl.text,
+              fullName: _fullNameCtrl.text,
+              password: _passwordCtrl.text.isNotEmpty ? _passwordCtrl.text : null,
+              pinCode: _pinCtrl.text.isNotEmpty ? _pinCtrl.text : null,
+              roleIds: _selectedRoleId != null ? [_selectedRoleId!] : null,
+            ));
+            Navigator.pop(context);
+          },
+          child: const Text("Сохранить"),
+        ),
+      ],
+    );
+  }
+
+
 }

@@ -33,11 +33,11 @@ class IngredientItemRow extends StatelessWidget {
     final isCritical = item.currentStock <= 0;
 
     // Индикатор остатка
-    Color stockColor = Colors.green;
+    Color stockColor = AppColors.success;
     if (isCritical) {
-      stockColor = Colors.red;
+      stockColor = AppColors.danger;
     } else if (isLowStock) {
-      stockColor = Colors.orange;
+      stockColor = AppColors.warning;
     }
 
     return Container(
@@ -81,12 +81,12 @@ class IngredientItemRow extends StatelessWidget {
                     height: 40,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: (isLowStock ? Colors.red : AppColors.brandPrimary).withValues(alpha: 0.1),
+                      color: (isLowStock ? AppColors.danger : AppColors.brandPrimary).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconHelper.buildIcon(
                       categoryIcon,
-                      color: isLowStock ? Colors.red : AppColors.brandPrimary,
+                      color: isLowStock ? AppColors.danger : AppColors.brandPrimary,
                       size: 24,
                     ),
                   ),
@@ -199,7 +199,7 @@ class IngredientItemRow extends StatelessWidget {
                           },
                           itemBuilder: (ctx) => [
                             const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                            const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
+                            PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
                           ],
                         ),
                       ],

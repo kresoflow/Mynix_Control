@@ -11,6 +11,8 @@ import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class IngredientTab extends StatefulWidget {
   const IngredientTab({super.key});
@@ -67,7 +69,7 @@ class _IngredientTabState extends State<IngredientTab> {
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
                             onPressed: () {
                               showDialog(
                                 context: context,
@@ -77,7 +79,7 @@ class _IngredientTabState extends State<IngredientTab> {
                                   actions: [
                                     TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
                                     ElevatedButton(
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
                                       onPressed: () {
                                         for (var itemId in _selectedIngredients) {
                                           context.read<IngredientBloc>().add(DeleteIngredient(itemId));
@@ -155,7 +157,7 @@ class _IngredientTabState extends State<IngredientTab> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(state.message.replaceAll('Exception: ', '')),
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.danger,
                     ),
                   );
                 }

@@ -18,6 +18,7 @@ class CreateIngredient extends IngredientEvent {
 
   final double initialStock;
   final int sortOrder;
+  final String? barcode;
 
   const CreateIngredient({
     required this.name,
@@ -27,6 +28,7 @@ class CreateIngredient extends IngredientEvent {
     this.categoryId,
     this.initialStock = 0.0,
     this.sortOrder = 0,
+    this.barcode,
   });
 
   @override
@@ -38,6 +40,7 @@ class CreateIngredient extends IngredientEvent {
     categoryId,
     initialStock,
     sortOrder,
+    barcode,
   ];
 }
 

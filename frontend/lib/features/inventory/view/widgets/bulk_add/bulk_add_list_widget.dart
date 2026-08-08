@@ -4,12 +4,14 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
+import 'category_row.dart';
 
 class BulkAddListWidget extends StatelessWidget {
   final int tabIndex;
   final List<DishRowData> dishRows;
   final List<RetailRowData> retailRows;
   final List<IngredientRowData> ingredientRows;
+  final List<CategoryRowData> categoryRows;
   final VoidCallback onAddRow;
   final void Function(int) onDuplicateRow;
   final void Function(int) onRemoveRow;
@@ -20,6 +22,7 @@ class BulkAddListWidget extends StatelessWidget {
     required this.dishRows,
     required this.retailRows,
     required this.ingredientRows,
+    required this.categoryRows,
     required this.onAddRow,
     required this.onDuplicateRow,
     required this.onRemoveRow,
@@ -29,20 +32,46 @@ class BulkAddListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final itemCount = tabIndex == 0
         ? dishRows.length
-        : (tabIndex == 1 ? retailRows.length : ingredientRows.length);
+        : (tabIndex == 1
+            ? retailRows.length
+            : (tabIndex == 2 ? ingredientRows.length : categoryRows.length));
 
-    return ListView.builder(
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        return _BulkRow(
-          index: index,
-          tabIndex: tabIndex,
-          dishRows: dishRows,
-          retailRows: retailRows,
-          ingredientRows: ingredientRows,
-          onAddRow: onAddRow,
-          onDuplicate: () => onDuplicateRow(index),
-          onRemove: () => onRemoveRow(index),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double minWidth = constraints.maxWidth;
+        if (tabIndex == 1) {
+          minWidth = 1000.0;
+        } else if (tabIndex == 0) {
+          minWidth = 800.0;
+        } else if (tabIndex == 2) {
+          minWidth = 1000.0;
+        }
+
+        final targetWidth = constraints.maxWidth > minWidth ? constraints.maxWidth : minWidth;
+
+        return Scrollbar(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: targetWidth,
+              child: ListView.builder(
+                itemCount: itemCount,
+                itemBuilder: (context, index) {
+                  return _BulkRow(
+                    index: index,
+                    tabIndex: tabIndex,
+                    dishRows: dishRows,
+                    retailRows: retailRows,
+                    ingredientRows: ingredientRows,
+                    categoryRows: categoryRows,
+                    onAddRow: onAddRow,
+                    onDuplicate: () => onDuplicateRow(index),
+                    onRemove: () => onRemoveRow(index),
+                  );
+                },
+              ),
+            ),
+          ),
         );
       },
     );
@@ -55,6 +84,7 @@ class _BulkRow extends StatefulWidget {
   final List<DishRowData> dishRows;
   final List<RetailRowData> retailRows;
   final List<IngredientRowData> ingredientRows;
+  final List<CategoryRowData> categoryRows;
   final VoidCallback onAddRow;
   final VoidCallback onDuplicate;
   final VoidCallback onRemove;
@@ -65,6 +95,7 @@ class _BulkRow extends StatefulWidget {
     required this.dishRows,
     required this.retailRows,
     required this.ingredientRows,
+    required this.categoryRows,
     required this.onAddRow,
     required this.onDuplicate,
     required this.onRemove,
@@ -128,10 +159,15 @@ class _BulkRowState extends State<_BulkRow> {
                           row: widget.retailRows[widget.index],
                           onAddRow: widget.onAddRow,
                         )
-                      : IngredientRowWidget(
-                          row: widget.ingredientRows[widget.index],
-                          onAddRow: widget.onAddRow,
-                        )),
+                      : (widget.tabIndex == 2
+                          ? IngredientRowWidget(
+                              row: widget.ingredientRows[widget.index],
+                              onAddRow: widget.onAddRow,
+                            )
+                          : CategoryRowWidget(
+                              row: widget.categoryRows[widget.index],
+                              onAddRow: widget.onAddRow,
+                            ))),
             ),
             // Иконки — всегда видны, но ярче при hover
             AnimatedOpacity(
@@ -151,8 +187,8 @@ class _BulkRowState extends State<_BulkRow> {
                   ),
                   const SizedBox(width: 4),
                   IconButton(
-                    icon: const Icon(PhosphorIconsRegular.trash,
-                        color: Colors.redAccent, size: 18),
+                    icon: Icon(PhosphorIconsRegular.trash,
+                        color: AppColors.danger, size: 18),
                     onPressed: widget.onRemove,
                     tooltip: 'Удалить',
                     splashRadius: 18,

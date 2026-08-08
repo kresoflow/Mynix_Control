@@ -53,6 +53,7 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
             children: [
               CatalogBrowserTab(
                 categoryType: 'all',
+                rootTitle: 'Все категории',
                 itemFilter: (item) => true,
                 emptyMessage: 'Категорий пока нет.',
                 addMenuBuilder: (context, currentCategoryId) => PopupMenuButton<String>(
@@ -76,6 +77,7 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
               ),
               CatalogBrowserTab(
                 categoryType: 'dish',
+                rootTitle: 'Все блюда',
                 itemFilter: (item) => !item.isRetail,
                 emptyMessage: 'В меню пока пусто. Добавьте блюда или категории.',
                 addMenuBuilder: (context, currentCategoryId) => PopupMenuButton<String>(
@@ -103,6 +105,7 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
               ),
               CatalogBrowserTab(
                 categoryType: 'retail',
+                rootTitle: 'Вся витрина',
                 itemFilter: (item) => item.isRetail,
                 emptyMessage: 'На витрине пока пусто. Добавьте товары или категории.',
                 addMenuBuilder: (context, currentCategoryId) => PopupMenuButton<String>(

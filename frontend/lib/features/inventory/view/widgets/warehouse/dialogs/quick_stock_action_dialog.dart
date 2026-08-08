@@ -4,6 +4,8 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class QuickStockActionDialog extends StatefulWidget {
   final Ingredient item;
@@ -84,14 +86,14 @@ class _QuickStockActionDialogState extends State<QuickStockActionDialog> {
                   ? 'Успешно оприходовано!'
                   : 'Успешно списано!',
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: ${e.toString()}'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Ошибка: ${e.toString()}'), backgroundColor: AppColors.danger),
         );
       }
     } finally {
@@ -105,7 +107,7 @@ class _QuickStockActionDialogState extends State<QuickStockActionDialog> {
   Widget build(BuildContext context) {
     final isReceipt = widget.actionType == 'receipt';
     final actionName = isReceipt ? 'Приход' : 'Списание';
-    final actionColor = isReceipt ? Colors.green : Colors.red;
+    final actionColor = isReceipt ? AppColors.success : AppColors.danger;
 
     return AlertDialog(
       title: Row(

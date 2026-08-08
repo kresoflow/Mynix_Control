@@ -3,11 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_pill_filters.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_accordion.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
 
 class StockTab extends StatefulWidget {
   final String filter;
@@ -73,7 +76,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
           child: BlocBuilder<IngredientBloc, IngredientState>(
             builder: (context, state) {
               if (state is IngredientLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return const SkeletonList();
               } else if (state is IngredientLoaded) {
                 // Применяем фильтр
                 final filtered = state.ingredients.where((item) {
@@ -89,15 +92,18 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
 
                 // Подсчет метрик
                 double totalCapital = 0;
+                double potentialRevenue = 0;
                 int lowStockCount = 0;
                 for (var item in filtered) {
                   if (item.currentStock > 0) {
                     totalCapital += item.currentStock * item.costPerUnit;
+                    potentialRevenue += item.currentStock * (item.price ?? item.costPerUnit);
                   }
                   if (item.isLowStock || item.currentStock <= 0) {
                     lowStockCount++;
                   }
                 }
+                double expectedProfit = potentialRevenue - totalCapital;
 
                 final catState = context.watch<CategoryBloc>().state;
                 List<MenuCategory> allCategories = [];
@@ -106,7 +112,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                 }
 
                 String getRootCategoryName(Ingredient item) {
-                  if (item.categoryId == null) return 'Без категории';
+                  if (item.categoryId == null) return item.categoryName ?? 'Без категории';
                   var currentCat = allCategories.where((c) => c.id == item.categoryId).firstOrNull;
                   if (currentCat == null) return item.categoryName ?? 'Без категории';
                   
@@ -139,9 +145,35 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                   return a.compareTo(b);
                 });
 
+                // Создаем плоский список элементов для ленивой загрузки (Flattening)
+                final List<dynamic> flatList = [];
+                for (final category in sortedCategories) {
+                  final items = grouped[category]!;
+                  final isExpanded = _expandedCategories[category] ?? false;
+                  
+                  // Добавляем заголовок
+                  flatList.add({
+                    'type': 'header',
+                    'categoryName': category,
+                    'items': items,
+                    'isExpanded': isExpanded,
+                  });
+                  
+                  // Добавляем элементы если развернуто
+                  if (isExpanded) {
+                    for (int i = 0; i < items.length; i++) {
+                      flatList.add({
+                        'type': 'item',
+                        'item': items[i],
+                        'isLast': i == items.length - 1,
+                      });
+                    }
+                  }
+                }
+
                 return Column(
                   children: [
-                    // Metrics Header
+                    // Metrics Header Row 1
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                       child: Row(
@@ -149,10 +181,10 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                           Expanded(
                             child: _buildMetricCard(
                               context,
-                              title: 'Складской капитал',
-                              value: '${totalCapital.toCurrency(context)}',
-                              icon: PhosphorIconsRegular.wallet,
-                              color: Colors.green,
+                              title: 'Всего позиций',
+                              value: filtered.length.toString(),
+                              icon: PhosphorIconsRegular.package,
+                              color: AppColors.info,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -162,17 +194,44 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                               title: 'Позиций на исходе',
                               value: lowStockCount.toString(),
                               icon: PhosphorIconsRegular.warningCircle,
-                              color: lowStockCount > 0 ? Colors.red : Colors.grey,
+                              color: lowStockCount > 0 ? AppColors.danger : Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Metrics Header Row 2 (Financials)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricCard(
+                              context,
+                              title: 'Вложено (Опт)',
+                              value: totalCapital.toCurrency(context),
+                              icon: PhosphorIconsRegular.wallet,
+                              color: AppColors.warning,
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: _buildMetricCard(
                               context,
-                              title: 'Всего позиций',
-                              value: filtered.length.toString(),
-                              icon: PhosphorIconsRegular.package,
-                              color: Colors.blue,
+                              title: 'Потенциал (Розница)',
+                              value: potentialRevenue.toCurrency(context),
+                              icon: PhosphorIconsRegular.trendUp,
+                              color: AppColors.info,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildMetricCard(
+                              context,
+                              title: 'Ожид. Прибыль',
+                              value: expectedProfit.toCurrency(context),
+                              icon: PhosphorIconsRegular.money,
+                              color: AppColors.success,
                             ),
                           ),
                         ],
@@ -180,21 +239,27 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                     ),
                     const SizedBox(height: 8),
                     
-                    // Grouped List
+                    // Flat Lazy List
                     Expanded(
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                        itemCount: sortedCategories.length,
+                        itemCount: flatList.length,
                         itemBuilder: (context, index) {
-                          final category = sortedCategories[index];
-                          final items = grouped[category]!;
+                          final data = flatList[index];
                           
-                          return StockCategoryAccordion(
-                            categoryName: category,
-                            items: items,
-                            isExpanded: _expandedCategories[category] ?? false,
-                            onExpansionChanged: (val) => _onCategoryExpansionChanged(category, val),
-                          );
+                          if (data['type'] == 'header') {
+                            return StockCategoryHeader(
+                              categoryName: data['categoryName'],
+                              items: data['items'],
+                              isExpanded: data['isExpanded'],
+                              onTap: () => _onCategoryExpansionChanged(data['categoryName'], !data['isExpanded']),
+                            );
+                          } else {
+                            return StockItemRow(
+                              item: data['item'],
+                              isLast: data['isLast'],
+                            );
+                          }
                         },
                       ),
                     ),

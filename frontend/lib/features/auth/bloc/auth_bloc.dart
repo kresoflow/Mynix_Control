@@ -10,6 +10,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AppStarted>(_onAppStarted);
     on<LoggedIn>(_onLoggedIn);
     on<LoginRequested>(_onLoginRequested);
+    on<LoginByPinRequested>(_onLoginByPinRequested);
     on<LoggedOut>(_onLoggedOut);
   }
 
@@ -57,6 +58,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       role: event.role,
       permissions: event.permissions,
     ));
+  }
+
+  Future<void> _onLoginByPinRequested(LoginByPinRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    try {
+      final token = await authRepository.loginByPin(event.pinCode);
+      if (token != null) {
+        final profile = await authRepository.getMe();
+        emit(AuthAuthenticated(
+          tenantId: profile['tenant_id']?.toString() ?? 'unknown',
+          role: (profile['roles'] is List) ? (profile['roles'] as List).firstOrNull?.toString() ?? 'unknown' : 'unknown',
+          permissions: List<String>.from(profile['permissions'] ?? []),
+        ));
+      } else {
+        emit(const AuthError("PIN Login failed"));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
   }
 
   Future<void> _onLoggedOut(LoggedOut event, Emitter<AuthState> emit) async {

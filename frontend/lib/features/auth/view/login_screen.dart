@@ -6,6 +6,10 @@ import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:dio/dio.dart';
+import 'package:mynix_frontend/features/superadmin/domain/superadmin_repository.dart';
+import 'package:mynix_frontend/features/superadmin/presentation/bloc/superadmin_bloc.dart';
+import 'package:mynix_frontend/features/superadmin/presentation/superadmin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,20 +22,72 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController(text: 'owner');
   final _passwordController = TextEditingController(text: 'mynix2025');
   bool _obscurePassword = true;
+  bool _isPinMode = false;
+  final _pinController = TextEditingController();
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
+    _pinController.dispose();
     super.dispose();
   }
 
+
   void _login() {
-    final username = _usernameController.text;
-    final password = _passwordController.text;
-    if (username.isNotEmpty && password.isNotEmpty) {
-      context.read<AuthBloc>().add(LoginRequested(username, password));
+    if (_isPinMode) {
+      final pin = _pinController.text;
+      if (pin.isNotEmpty) {
+        context.read<AuthBloc>().add(LoginByPinRequested(pin));
+      }
+    } else {
+      final username = _usernameController.text;
+      final password = _passwordController.text;
+      if (username.isNotEmpty && password.isNotEmpty) {
+        context.read<AuthBloc>().add(LoginRequested(username, password));
+      }
     }
+  }
+
+  void _showSuperadminDialog(BuildContext context) {
+    String token = '';
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('System Admin Access'),
+        content: TextField(
+          obscureText: true,
+          decoration: const InputDecoration(labelText: 'Admin Token'),
+          onChanged: (val) => token = val,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (token.isNotEmpty) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BlocProvider(
+                      create: (_) => SuperadminBloc(
+                        repository: SuperadminRepository(
+                          dio: Dio(BaseOptions(
+                            baseUrl: 'http://127.0.0.1:8000/api/v1',
+                          )),
+                        ),
+                      ),
+                      child: SuperadminScreen(systemToken: token),
+                    ),
+                  ),
+                );
+              }
+            },
+            child: const Text('Enter'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -49,21 +105,29 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         },
         child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Card(
-              elevation: 8,
+          child: SingleChildScrollView(
+            child: Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(maxWidth: 400),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Card(
+                elevation: 8,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Mynix Control',
-                      style: AppTextStyles.h1.copyWith(
-                        fontSize: 32,
-                        color: AppColors.brandPrimary,
+                    GestureDetector(
+                      onLongPress: () {
+                        _showSuperadminDialog(context);
+                      },
+                      child: Text(
+                        'Mynix Control',
+                        style: AppTextStyles.h1.copyWith(
+                          fontSize: 32,
+                          color: AppColors.brandPrimary,
+                        ),
                       ),
                     ),
                     SizedBox(height: 8),
@@ -156,6 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+              ),
               ),
             ),
           ),

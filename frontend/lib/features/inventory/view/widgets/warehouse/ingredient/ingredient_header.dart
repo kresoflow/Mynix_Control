@@ -7,6 +7,8 @@ import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_ingredient_dialog.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class IngredientHeader extends StatelessWidget {
   final bool isManageMode;
@@ -63,7 +65,7 @@ class IngredientHeader extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
               onPressed: () {
                 showDialog(
                   context: context,
@@ -73,7 +75,7 @@ class IngredientHeader extends StatelessWidget {
                     actions: [
                       TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
                         onPressed: () {
                           for (var itemId in selectedIngredients) {
                             context.read<IngredientBloc>().add(DeleteIngredient(itemId));

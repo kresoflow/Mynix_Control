@@ -60,10 +60,12 @@ class CategoryGridItem extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: (effectiveIcon == null || effectiveIcon.isEmpty)
-                        ? buildCategoryIcon(category.name, size: 32, color: AppColors.brandPrimary)
+                        ? Text(
+                            category.name.isNotEmpty ? category.name[0].toUpperCase() : '?',
+                            style: AppTextStyles.h2.copyWith(color: AppColors.brandPrimary, fontWeight: FontWeight.bold),
+                          )
                         : IconHelper.buildIcon(
                             effectiveIcon,
-                            fallback: PhosphorIconsRegular.list,
                             size: 32,
                             color: AppColors.brandPrimary,
                           ),
@@ -89,7 +91,7 @@ class CategoryGridItem extends StatelessWidget {
               top: 4,
               right: 4,
               child: IconButton(
-                icon: Icon(category.isVisible ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash, color: category.isVisible ? Colors.green : Colors.grey),
+                icon: Icon(category.isVisible ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash, color: category.isVisible ? AppColors.success : Colors.grey),
                 tooltip: category.isVisible ? 'Отображается на кассе' : 'Скрыто на кассе',
                 onPressed: onVisibilityToggle,
               ),
@@ -109,7 +111,7 @@ class CategoryGridItem extends StatelessWidget {
                 itemBuilder: (ctx) => [
                   const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
                   PopupMenuItem(value: 'visibility', child: Text(category.isVisible ? 'Скрыть на кассе' : 'Показать на кассе')),
-                  const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
+                  PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
                 ],
               ),
             ),

@@ -26,12 +26,14 @@ class MiniCartItem {
 
 class MenuModifiersDialog extends StatefulWidget {
   final MenuItem item;
+  final List<MenuItem>? childrenItems;
   final bool isReadOnly;
   final Function(Map<String, dynamic>)? onAdd;
 
   const MenuModifiersDialog({
     super.key, 
     required this.item, 
+    this.childrenItems,
     this.isReadOnly = false,
     this.onAdd,
   });
@@ -61,15 +63,28 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
 
   void _parseAttributes() {
     try {
+      if (widget.childrenItems != null && widget.childrenItems!.isNotEmpty) {
+        _variations = widget.childrenItems!.map((child) => {
+          'id': child.id,
+          'name': child.name.split('|TYPE|')[0],
+          'price': child.price,
+          'barcode': child.barcode,
+          'retail_product_id': child.attributesJson != null ? jsonDecode(child.attributesJson!)['retail_product_id'] : null,
+        }).toList();
+      }
+
       if (widget.item.attributesJson != null && widget.item.attributesJson!.isNotEmpty) {
         _attributes = jsonDecode(widget.item.attributesJson!);
         
-        if (_attributes['variations'] != null) {
+        if (_variations.isEmpty && _attributes['variations'] != null) {
           _variations = _attributes['variations'] as List<dynamic>;
         }
         
         if (_attributes['modifier_groups'] != null) {
-          _modifierGroups = _attributes['modifier_groups'] as List<dynamic>;
+          final groups = _attributes['modifier_groups'] as List<dynamic>;
+          // Ignore the 'Вкус' modifier group for retail items since it's a fixed property of the parent product
+          _modifierGroups = groups.where((g) => !(widget.item.isRetail && g['name'] == 'Вкус')).toList();
+          
           for (int i = 0; i < _modifierGroups.length; i++) {
             _selectedModifiers[i] = {};
           }
@@ -85,7 +100,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
     for (int g = 0; g < _modifierGroups.length; g++) {
       final mods = _modifierGroups[g]['modifiers'] as List<dynamic>;
       for (int mIndex in _selectedModifiers[g]!) {
-        additional += (mods[mIndex]['price'] as num).toDouble();
+        additional += (mods[mIndex]['price'] as num?)?.toDouble() ?? 0.0;
       }
     }
     return additional;
@@ -95,7 +110,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
     double additional = _calculateModifiersPrice();
     if (variationIndex != null && _variations.isNotEmpty) {
       final basePrice = widget.item.price;
-      final varPrice = (_variations[variationIndex]['price'] as num).toDouble();
+      final varPrice = (_variations[variationIndex]['price'] as num?)?.toDouble() ?? 0.0;
       additional += (varPrice - basePrice);
     }
     return additional;
@@ -106,6 +121,9 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
     
     if (variationIndex != null && _variations.isNotEmpty) {
       selected['variation'] = _variations[variationIndex]['name'];
+      if (_variations[variationIndex]['id'] != null) {
+        selected['child_item_id'] = _variations[variationIndex]['id'];
+      }
     }
     
     final List<Map<String, dynamic>> modsList = [];
@@ -189,6 +207,12 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
           content: Text('Добавлено в заказ: ${_miniCart.fold(0, (sum, i) => sum + i.quantity)} поз.'),
           backgroundColor: AppColors.brandPrimary,
           duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
+            left: 16,
+            right: 16,
+          ),
         ),
       );
       Navigator.of(context).pop();
@@ -207,14 +231,12 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
       icon: PhosphorIconsRegular.hamburger,
       width: 850, // Made slightly wider for better desktop/tablet view
       content: Container(
-        constraints: const BoxConstraints(maxHeight: 550),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch, // Allow scrolling to work properly
-          children: [
-            // Left Column: Configuration
-            Expanded(
-              flex: 5,
-              child: SingleChildScrollView(
+        constraints: const BoxConstraints(maxHeight: 650),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 650;
+            
+            Widget leftContent = SingleChildScrollView(
                 padding: const EdgeInsets.only(right: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -231,7 +253,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                       Column(
                         children: List.generate(_variations.length, (index) {
                           final v = _variations[index];
-                          final varPrice = (v['price'] as num).toDouble();
+                          final varPrice = (v['price'] as num?)?.toDouble() ?? 0.0;
                           final finalPrice = varPrice + _calculateModifiersPrice();
                           final isLast = index == _variations.length - 1;
                           return Padding(
@@ -343,7 +365,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                             ),
                                           ),
                                           subtitle: Text(
-                                            '+${(mod['price'] as num).toCurrency(context)}',
+                                            mod['price'] != null && mod['price'] != 0 ? '+${(mod['price'] as num?)?.toDouble().toCurrency(context) ?? '0'}' : '',
                                             style: AppTextStyles.caption.copyWith(
                                               color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                                             ),
@@ -375,20 +397,9 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                       }),
                   ],
                 ),
-              ),
-            ),
+            );
 
-            // Vertical Divider
-            Container(
-              width: 1,
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-            ),
-
-            // Right Column: Mini Cart
-            Expanded(
-              flex: 4,
-              child: Column(
+            Widget rightContent = Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
@@ -496,7 +507,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
-                                          icon: Icon(PhosphorIconsRegular.minusCircle, size: 24),
+                                          icon: Icon(PhosphorIconsRegular.minusCircle, size: 22),
                                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
@@ -511,7 +522,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                           },
                                         ),
                                         Container(
-                                          width: 32,
+                                          width: 24,
                                           alignment: Alignment.center,
                                           child: Text(
                                             '${item.quantity}',
@@ -522,7 +533,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                           ),
                                         ),
                                         IconButton(
-                                          icon: Icon(PhosphorIconsRegular.plusCircle, size: 24),
+                                          icon: Icon(PhosphorIconsRegular.plusCircle, size: 22),
                                           color: AppColors.brandPrimary,
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
@@ -534,7 +545,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                         ),
                                         const SizedBox(width: 8),
                                         IconButton(
-                                          icon: Icon(PhosphorIconsRegular.trash, size: 24),
+                                          icon: Icon(PhosphorIconsRegular.trash, size: 20),
                                           color: AppColors.danger,
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
@@ -556,16 +567,43 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                     const SizedBox(height: 16),
                     AppPrimaryButton(
                       label: totalItems > 0 
-                          ? 'Отправить в кассу (${totalCartPrice.toCurrency(context)})' 
+                          ? 'В чек (${totalCartPrice.toCurrency(context)})' 
                           : 'Выберите опции',
                       onPressed: totalItems > 0 ? _submitCart : null,
                       icon: PhosphorIconsRegular.checkCircle,
                     ),
                   ],
                 ],
-              ),
-            ),
-          ],
+            );
+
+            if (isMobile) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(flex: 6, child: leftContent),
+                  Container(
+                    height: 1,
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    margin: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  Expanded(flex: 4, child: rightContent),
+                ],
+              );
+            } else {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(flex: 5, child: leftContent),
+                  Container(
+                    width: 1,
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  Expanded(flex: 4, child: rightContent),
+                ],
+              );
+            }
+          },
         ),
       ),
       actions: const [],

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class WriteOffDialog extends StatefulWidget {
   final Ingredient item;
@@ -79,7 +81,7 @@ class _WriteOffDialogState extends State<WriteOffDialog> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.danger,
             foregroundColor: Colors.white,
           ),
           onPressed: () {

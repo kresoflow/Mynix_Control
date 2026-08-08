@@ -82,6 +82,7 @@ class CatalogListView extends StatelessWidget {
                   onToggleSelect: (val) => onToggleItemSelection(item.id),
                   onEdit: () => showAddMenuItemDialog(context, itemToEdit: item),
                   onDelete: () => context.read<MenuBloc>().add(DeleteMenuItem(item.id)),
+                  onRestore: () => context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true})),
                 );
               }
             },

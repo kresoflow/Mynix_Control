@@ -16,6 +16,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
   final costController = TextEditingController(text: isEditing ? itemToEdit.costPerUnit.toInt().toString() : '0');
   final alertController = TextEditingController(text: isEditing ? itemToEdit.minStockAlert.toInt().toString() : '0');
   final initialStockController = TextEditingController(text: '0');
+  final barcodeController = TextEditingController(text: isEditing ? itemToEdit.barcode ?? '' : '');
   String selectedUnit = itemToEdit?.unit ?? 'g';
   int? selectedCategoryId = itemToEdit?.categoryId ?? initialCategoryId;
   final currency = context.read<SettingsBloc>().state.currency;
@@ -142,6 +143,20 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                       ),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: barcodeController,
+                    decoration: InputDecoration(
+                      labelText: 'Штрихкод (опционально)',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(PhosphorIconsRegular.barcode, color: AppColors.brandPrimary),
+                    ),
+                  ),
                   if (!isEditing) ...[
                     const SizedBox(height: 16),
                     TextFormField(
@@ -186,6 +201,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                                 'cost_per_unit': cost,
                                 'min_stock_alert': alert,
                                 'category_id': selectedCategoryId,
+                                'barcode': barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim(),
                               },
                             ),
                           );
@@ -198,6 +214,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                               minStockAlert: alert,
                               categoryId: selectedCategoryId,
                               initialStock: stock,
+                              barcode: barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim(),
                             ),
                           );
                     }

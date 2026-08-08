@@ -131,7 +131,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                 width: null,
                 onPressed: () {
                   final sortOrder = int.tryParse(sortOrderController.text) ?? 0;
-                  final finalIcon = (selectedIcon == '') ? null : selectedIcon;
+                  final finalIcon = selectedIcon;
                   
                   if (nameController.text.isNotEmpty) {
                     if (isEditing) {

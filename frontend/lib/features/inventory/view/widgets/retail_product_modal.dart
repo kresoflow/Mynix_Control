@@ -22,9 +22,13 @@ class _RetailProductModalState extends State<RetailProductModal> {
   late TextEditingController _purchasePriceController;
   late TextEditingController _sellingPriceController;
   late TextEditingController _initialStockController;
+  late TextEditingController _barcodeController;
 
   int? _selectedCategoryId;
   String _selectedUnit = 'pcs';
+  bool _hasVariations = false;
+  final TextEditingController _flavorController = TextEditingController();
+  final List<Map<String, dynamic>> _variations = [];
 
   final Map<String, String> _units = {
     'pcs': 'шт',
@@ -41,6 +45,7 @@ class _RetailProductModalState extends State<RetailProductModal> {
     _purchasePriceController = TextEditingController();
     _sellingPriceController = TextEditingController();
     _initialStockController = TextEditingController(text: '0');
+    _barcodeController = TextEditingController();
     _selectedCategoryId = widget.preselectedCategoryId;
   }
 
@@ -50,27 +55,51 @@ class _RetailProductModalState extends State<RetailProductModal> {
     _purchasePriceController.dispose();
     _sellingPriceController.dispose();
     _initialStockController.dispose();
+    _barcodeController.dispose();
+    _flavorController.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (_formKey.currentState!.validate() && _selectedCategoryId != null) {
       final name = _nameController.text.trim();
-      final purchasePrice =
-          double.tryParse(_purchasePriceController.text) ?? 0.0;
-      final sellingPrice = double.tryParse(_sellingPriceController.text) ?? 0.0;
-      final initialStock = double.tryParse(_initialStockController.text) ?? 0.0;
 
-      context.read<MenuBloc>().add(
-        CreateRetailProduct(
-          name: name,
-          categoryId: _selectedCategoryId!,
-          unit: _selectedUnit,
-          purchasePrice: purchasePrice,
-          sellingPrice: sellingPrice,
-          initialStock: initialStock,
-        ),
-      );
+      if (_hasVariations) {
+        if (_variations.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Добавьте хотя бы одну опцию')),
+          );
+          return;
+        }
+        final flavor = _flavorController.text.trim();
+        
+        context.read<MenuBloc>().add(
+          CreateRetailProductGroup(
+            name: name,
+            categoryId: _selectedCategoryId!,
+            flavor: flavor,
+            variations: _variations,
+          ),
+        );
+      } else {
+        final purchasePrice =
+            double.tryParse(_purchasePriceController.text) ?? 0.0;
+        final sellingPrice = double.tryParse(_sellingPriceController.text) ?? 0.0;
+        final initialStock = double.tryParse(_initialStockController.text) ?? 0.0;
+        final barcode = _barcodeController.text.trim().isEmpty ? null : _barcodeController.text.trim();
+
+        context.read<MenuBloc>().add(
+          CreateRetailProduct(
+            name: name,
+            categoryId: _selectedCategoryId!,
+            unit: _selectedUnit,
+            purchasePrice: purchasePrice,
+            sellingPrice: sellingPrice,
+            initialStock: initialStock,
+            barcode: barcode,
+          ),
+        );
+      }
 
       Navigator.of(context).pop();
     } else {
@@ -196,6 +225,27 @@ class _RetailProductModalState extends State<RetailProductModal> {
                 },
               ),
               const SizedBox(height: 16),
+              SwitchListTile(
+                title: const Text('Несколько опций/вкусов? (Опции товара)'),
+                value: _hasVariations,
+                onChanged: (v) {
+                  setState(() {
+                    _hasVariations = v;
+                    if (v && _variations.isEmpty) {
+                      _variations.add({
+                        'name': '',
+                        'price': 0,
+                        'purchasePrice': 0,
+                        'stock': 0,
+                        'barcode': '',
+                        'unit': 'pcs'
+                      });
+                    }
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              if (!_hasVariations) ...[
               Row(
                 children: [
                   Expanded(
@@ -265,6 +315,138 @@ class _RetailProductModalState extends State<RetailProductModal> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _barcodeController,
+                decoration: InputDecoration(
+                  labelText: 'Штрихкод',
+                  hintText: 'Отсканируйте или введите вручную',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(PhosphorIconsRegular.barcode, color: AppColors.brandPrimary),
+                ),
+                keyboardType: TextInputType.text,
+              ),
+              ] else ...[
+                TextFormField(
+                  controller: _flavorController,
+                  decoration: const InputDecoration(
+                    labelText: 'Вкус / Описание группы (необязательно)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Опции (Объемы / Вариации)', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 300,
+                  child: ListView.builder(
+                    itemCount: _variations.length,
+                    itemBuilder: (context, i) {
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: TextFormField(
+                                      initialValue: _variations[i]['name'],
+                                      decoration: const InputDecoration(labelText: 'Опция (напр. 0.5л)', isDense: true),
+                                      onChanged: (v) => _variations[i]['name'] = v,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    flex: 1,
+                                    child: DropdownButtonFormField<String>(
+                                      decoration: const InputDecoration(isDense: true),
+                                      value: _variations[i]['unit'],
+                                      items: _units.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
+                                      onChanged: (val) => setState(() => _variations[i]['unit'] = val),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                                    onPressed: () => setState(() => _variations.removeAt(i)),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      initialValue: _variations[i]['purchasePrice'].toString(),
+                                      decoration: const InputDecoration(labelText: 'Закупка', prefixText: 'TJS ', isDense: true),
+                                      keyboardType: TextInputType.number,
+                                      onChanged: (v) => _variations[i]['purchasePrice'] = double.tryParse(v) ?? 0,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: TextFormField(
+                                      initialValue: _variations[i]['price'].toString(),
+                                      decoration: const InputDecoration(labelText: 'Продажа', prefixText: 'TJS ', isDense: true),
+                                      keyboardType: TextInputType.number,
+                                      onChanged: (v) => _variations[i]['price'] = double.tryParse(v) ?? 0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      initialValue: _variations[i]['stock'].toString(),
+                                      decoration: const InputDecoration(labelText: 'Нач. остаток', isDense: true),
+                                      keyboardType: TextInputType.number,
+                                      onChanged: (v) => _variations[i]['stock'] = double.tryParse(v) ?? 0,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    flex: 2,
+                                    child: TextFormField(
+                                      initialValue: _variations[i]['barcode'],
+                                      decoration: InputDecoration(
+                                        labelText: 'Штрихкод',
+                                        isDense: true,
+                                        prefixIcon: Icon(PhosphorIconsRegular.barcode, color: AppColors.brandPrimary),
+                                      ),
+                                      onChanged: (v) => _variations[i]['barcode'] = v,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                TextButton.icon(
+                  icon: const Icon(PhosphorIconsRegular.plus),
+                  label: const Text('Добавить опцию'),
+                  onPressed: () {
+                    setState(() {
+                      _variations.add({
+                        'name': '',
+                        'price': 0,
+                        'purchasePrice': 0,
+                        'stock': 0,
+                        'barcode': '',
+                        'unit': 'pcs'
+                      });
+                    });
+                  },
+                ),
+              ],
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class BulkReceiptRowWidget extends StatelessWidget {
   final ReceiptRowModel row;
@@ -126,7 +128,7 @@ class BulkReceiptRowWidget extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(PhosphorIconsRegular.trash, color: Colors.grey),
-            hoverColor: Colors.red.withValues(alpha: 0.1),
+            hoverColor: AppColors.danger.withValues(alpha: 0.1),
             onPressed: onRemove,
           ),
         ],

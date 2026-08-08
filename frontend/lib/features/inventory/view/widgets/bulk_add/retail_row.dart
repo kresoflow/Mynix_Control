@@ -8,6 +8,8 @@ class RetailRowData {
   final TextEditingController purchaseController;
   final TextEditingController sellController;
   final TextEditingController stockController;
+  final TextEditingController alertController;
+  final TextEditingController barcodeController;
   final FocusNode firstFocusNode = FocusNode();
   String selectedUnit;
 
@@ -18,13 +20,17 @@ class RetailRowData {
     String purchase = '0',
     String sell = '0',
     String stock = '0',
+    String alert = '0',
+    String barcode = '',
     this.selectedUnit = 'pcs',
   }) : nameController = TextEditingController(text: name),
        flavorController = TextEditingController(text: flavor),
        volumeController = TextEditingController(text: volume),
        purchaseController = TextEditingController(text: purchase),
        sellController = TextEditingController(text: sell),
-       stockController = TextEditingController(text: stock);
+       stockController = TextEditingController(text: stock),
+       alertController = TextEditingController(text: alert),
+       barcodeController = TextEditingController(text: barcode);
 
   RetailRowData clone() {
     return RetailRowData(
@@ -34,6 +40,8 @@ class RetailRowData {
       purchase: purchaseController.text,
       sell: sellController.text,
       stock: stockController.text,
+      alert: alertController.text,
+      barcode: barcodeController.text,
       selectedUnit: selectedUnit,
     );
   }
@@ -54,21 +62,49 @@ class _RetailRowWidgetState extends State<RetailRowWidget> {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        // 1. Название
         Expanded(
           flex: 3,
           child: TextField(
             controller: widget.row.nameController,
             focusNode: widget.row.firstFocusNode,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Название'),
+            decoration: buildBulkInputDecoration(context, 'Название'),
           ),
         ),
         const SizedBox(width: 8),
+        
+        // 2. Вкус
         Expanded(
           flex: 2,
+          child: TextField(
+            controller: widget.row.flavorController,
+            textInputAction: TextInputAction.next,
+            decoration: buildBulkInputDecoration(context, 'Вкус (или пусто)'),
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // 3. Объем
+        Expanded(
+          flex: 1,
+          child: TextField(
+            controller: widget.row.volumeController,
+            textInputAction: TextInputAction.next,
+            decoration: buildBulkInputDecoration(context, 'Объем (или пусто)'),
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // 4. Ед. изм.
+        SizedBox(
+          width: 85,
           child: DropdownButtonFormField<String>(
             initialValue: widget.row.selectedUnit,
-            decoration: const InputDecoration(labelText: 'Ед. изм.'),
+            decoration: buildBulkInputDecoration(context, 'Ед. изм.'),
+            isExpanded: true,
+            icon: const Icon(Icons.arrow_drop_down, size: 20),
+            padding: EdgeInsets.zero,
             items: const [
               DropdownMenuItem(value: 'pcs', child: Text('шт')),
               DropdownMenuItem(value: 'l', child: Text('л')),
@@ -80,54 +116,63 @@ class _RetailRowWidgetState extends State<RetailRowWidget> {
           ),
         ),
         const SizedBox(width: 8),
+
+        // 4.5 Barcode
         Expanded(
           flex: 2,
           child: TextField(
-            controller: widget.row.flavorController,
+            controller: widget.row.barcodeController,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Вкус (через ,)'),
+            decoration: buildBulkInputDecoration(context, 'Штрихкоды (через ,)'),
           ),
         ),
         const SizedBox(width: 8),
+
+        // 5. Количество / Нач. остаток
         Expanded(
-          flex: 2,
+          flex: 1,
           child: TextField(
-            controller: widget.row.volumeController,
+            controller: widget.row.stockController,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Объем (через ,)'),
+            keyboardType: TextInputType.text,
+            decoration: buildBulkInputDecoration(context, 'Остаток (через ,)'),
           ),
         ),
         const SizedBox(width: 8),
+
+        // 6. Алерт
         Expanded(
-          flex: 2,
+          flex: 1,
+          child: TextField(
+            controller: widget.row.alertController,
+            textInputAction: TextInputAction.next,
+            keyboardType: TextInputType.text,
+            decoration: buildBulkInputDecoration(context, 'Алерт (через ,)'),
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // 7. Закупка
+        Expanded(
+          flex: 1,
           child: TextField(
             controller: widget.row.purchaseController,
             textInputAction: TextInputAction.next,
-            keyboardType: TextInputType.number,
-            decoration: buildBulkInputDecoration(context, 'Себестоимость'),
+            keyboardType: TextInputType.text,
+            decoration: buildBulkInputDecoration(context, 'Закупка (через ,)'),
           ),
         ),
         const SizedBox(width: 8),
+
+        // 8. Продажа
         Expanded(
-          flex: 2,
+          flex: 1,
           child: TextField(
             controller: widget.row.sellController,
-            textInputAction: TextInputAction.next,
-            keyboardType: TextInputType.text, // Text because of comma separated values
-            decoration: buildBulkInputDecoration(context, 'Цена (через запятую)'),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          flex: 2,
-          child: Tooltip(
-            message: 'Позволяет сразу задать количество на складе без создания документа прихода',
-            child: TextField(
-              controller: widget.row.stockController,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => widget.onAddRow(),
-              decoration: const InputDecoration(labelText: 'Нач. остаток'),
-            ),
+            textInputAction: TextInputAction.done,
+            keyboardType: TextInputType.text,
+            onSubmitted: (_) => widget.onAddRow(),
+            decoration: buildBulkInputDecoration(context, 'Продажа (через ,)'),
           ),
         ),
       ],

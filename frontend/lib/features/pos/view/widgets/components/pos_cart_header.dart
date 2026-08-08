@@ -62,9 +62,7 @@ class PosCartHeader extends StatelessWidget {
                       color: AppColors.brandSecondary,
                       tooltip: 'Отложить заказ',
                       onPressed: () {
-                        final now = DateTime.now();
-                        final name = 'Чек ${now.hour}:${now.minute.toString().padLeft(2, '0')}';
-                        context.read<CartBloc>().add(HoldCurrentCart(name));
+                        context.read<CartBloc>().add(const HoldCurrentCart());
                       },
                     ),
                     IconButton(
@@ -72,6 +70,19 @@ class PosCartHeader extends StatelessWidget {
                       color: AppColors.darkSubtext,
                       tooltip: 'Очистить заказ',
                       onPressed: () => context.read<CartBloc>().add(ClearCart()),
+                    ),
+                  ],
+                  if (MediaQuery.of(context).size.width < 768) ...[
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(PhosphorIconsRegular.x, size: 24),
+                      color: AppColors.darkSubtext,
+                      tooltip: 'Закрыть',
+                      onPressed: () {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        }
+                      },
                     ),
                   ],
                 ],

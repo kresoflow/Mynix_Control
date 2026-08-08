@@ -28,12 +28,15 @@ class AuthRepository {
     }
   }
 
-  Future<String?> loginByPin(String tenantId, String pinCode) async {
+  Future<String?> loginByPin(String pinCode) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final tenantId = prefs.getInt('last_tenant_id') ?? 0;
+      
       final response = await _dio.post(
         '/auth/pin',
         data: {
-          'tenant_id': int.tryParse(tenantId) ?? 0,
+          'tenant_id': tenantId,
           'pin_code': pinCode,
         },
       );
@@ -53,7 +56,12 @@ class AuthRepository {
   Future<Map<String, dynamic>> getMe() async {
     try {
       final response = await _dio.get('/auth/me');
-      return response.data;
+      final data = response.data;
+      if (data['tenant_id'] != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('last_tenant_id', data['tenant_id']);
+      }
+      return data;
     } catch (e) {
       throw Exception('Failed to get user profile: ${e.toString()}');
     }

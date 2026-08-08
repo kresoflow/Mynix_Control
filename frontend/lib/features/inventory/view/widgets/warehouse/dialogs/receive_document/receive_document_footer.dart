@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class ReceiveDocumentFooter extends StatelessWidget {
   final double totalSum;
@@ -27,7 +29,7 @@ class ReceiveDocumentFooter extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))
         ],
       ),
       child: Row(
@@ -59,7 +61,7 @@ class ReceiveDocumentFooter extends StatelessWidget {
             icon: const Icon(PhosphorIconsRegular.checkCircle),
             label: const Text('Провести документ (Ctrl+S)'),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             ),
           ),

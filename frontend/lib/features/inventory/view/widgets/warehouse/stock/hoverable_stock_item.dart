@@ -3,6 +3,8 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/quick_stock_action_dialog.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+
 
 class HoverableStockItem extends StatefulWidget {
   final Ingredient item;
@@ -27,8 +29,8 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
           color: widget.isLowStock
-              ? Colors.red.withOpacity(_isHovering ? 0.08 : 0.04)
-              : (_isHovering ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5) : Colors.transparent),
+              ? AppColors.danger.withValues(alpha: _isHovering ? 0.08 : 0.04)
+              : (_isHovering ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5) : Colors.transparent),
           borderRadius: BorderRadius.circular(12),
         ),
         child: ListTile(
@@ -39,7 +41,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+              border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
             ),
             child: Text(
               widget.item.unit,
@@ -59,13 +61,13 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: widget.isLowStock ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+                      color: widget.isLowStock ? AppColors.danger.withValues(alpha: 0.1) : AppColors.success.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       'Остаток: ${widget.item.currentStock.toInt()} ${widget.item.unit}',
                       style: TextStyle(
-                        color: widget.isLowStock ? Colors.red : Colors.green.shade700,
+                        color: widget.isLowStock ? AppColors.danger : AppColors.success,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
@@ -116,18 +118,18 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                   );
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'receipt',
                     child: ListTile(
-                      leading: Icon(PhosphorIconsRegular.download, color: Colors.green),
+                      leading: Icon(PhosphorIconsRegular.download, color: AppColors.success),
                       title: Text('Быстрый приход', style: TextStyle(fontWeight: FontWeight.w500)),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'write_off',
                     child: ListTile(
-                      leading: Icon(PhosphorIconsRegular.upload, color: Colors.red),
+                      leading: Icon(PhosphorIconsRegular.upload, color: AppColors.danger),
                       title: Text('Быстрое списание', style: TextStyle(fontWeight: FontWeight.w500)),
                       contentPadding: EdgeInsets.zero,
                     ),

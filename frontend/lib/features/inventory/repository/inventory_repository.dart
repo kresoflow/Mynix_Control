@@ -4,6 +4,12 @@ import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/features/inventory/models/document.dart';
 import 'package:mynix_frontend/features/inventory/models/supplier.dart';
 
+part 'parts/suppliers_part.dart';
+part 'parts/recipes_part.dart';
+part 'parts/ingredients_part.dart';
+part 'parts/documents_part.dart';
+part 'parts/categories_part.dart';
+
 class InventoryRepository {
   final Dio _dio;
 
@@ -217,12 +223,15 @@ class InventoryRepository {
           id: json['id'],
           name: json['name'],
           unit: json['unit'],
-          currentStock: (json['current_stock'] as num).toDouble(),
-          minStockAlert: (json['min_stock_alert'] as num).toDouble(),
-          costPerUnit: (json['cost'] as num).toDouble(),
+          currentStock: (json['current_stock'] as num?)?.toDouble() ?? 0.0,
+          minStockAlert: (json['min_stock_alert'] as num?)?.toDouble() ?? 0.0,
+          costPerUnit: (json['cost'] as num?)?.toDouble() ?? 0.0,
           isLowStock: json['is_low_stock'] ?? false,
           price: (json['price'] as num?)?.toDouble(),
           attributes: {...?json['attributes'], 'is_retail': true},
+          categoryId: json['category_id'],
+          categoryName: json['category_name'],
+          barcode: json['barcode'],
         );
       }).toList();
     } catch (e) {
