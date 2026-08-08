@@ -1,0 +1,102 @@
+"""
+Mynix Control Backend
+FastAPI application entry point.
+
+Registers all module routers, runs seed on startup, connects to DB.
+"""
+
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.config import settings
+from app.database import init_db, async_session_factory
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Application lifecycle:
+      - Startup: create tables, run seed data
+      - Shutdown: cleanup
+    """
+    # ── Startup ──────────────────────────────────────────────────
+    print(f"Starting {settings.app_name}...")
+
+    # Create all tables (dev convenience; use Alembic in production)
+    await init_db()
+    print("  Database tables ready")
+
+    # Run seed data
+    async with async_session_factory() as session:
+        from app.users.seed import seed_database
+        from app.inventory.seed import seed_inventory
+
+        await seed_database(session)
+        await seed_inventory(session)
+
+    print(f"{settings.app_name} is running!")
+    print(f"Docs: http://localhost:8000/docs")
+
+    yield
+
+    # ── Shutdown ─────────────────────────────────────────────────
+    print("Shutting down...")
+
+
+# ── Create FastAPI App ───────────────────────────────────────────
+
+app = FastAPI(
+    title=settings.app_name,
+    description=(
+        "REST Omni-System for hybrid café with street booth. "
+        "Multi-tenant modular monolith with PBAC access control."
+    ),
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+# ── CORS (allow Flutter apps from any origin in development) ─────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # restrict in production
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ── Register Module Routers ─────────────────────────────────────
+
+from app.users.router import router as users_router
+from app.pos.router import router as pos_router
+from app.pos.ws import router as ws_router
+from app.inventory.router import router as inventory_router
+from app.kitchen.router import router as kitchen_router
+from app.analytics.router import router as analytics_router
+from app.system.router import router as system_router
+
+app.include_router(users_router, prefix="/api/v1")
+app.include_router(pos_router, prefix="/api/v1")
+app.include_router(inventory_router, prefix="/api/v1")
+app.include_router(kitchen_router, prefix="/api/v1")
+app.include_router(analytics_router, prefix="/api/v1", tags=["Analytics"])
+app.include_router(system_router, prefix="/api/v1/system")
+app.include_router(ws_router)  # WebSocket at root /ws/kitchen/{tenant_id}
+
+
+# ── Health Check ─────────────────────────────────────────────────
+
+@app.get("/health", tags=["System"])
+async def health_check():
+    return {"status": "ok", "service": settings.app_name}
+
+
+@app.get("/", tags=["System"])
+async def root():
+    return {
+        "service": settings.app_name,
+        "version": "0.1.0",
+        "docs": "/docs",
+        "health": "/health",
+    }

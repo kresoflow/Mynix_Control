@@ -1,0 +1,406 @@
+[
+  {
+    "id": 100,
+    "name": "Кола 0.5л",
+    "category_id": 221,
+    "category_name": "Напитки",
+    "price": 10.0,
+    "cost": 5.0,
+    "unit": "pcs",
+    "current_stock": 50.0,
+    "min_stock_alert": 5.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": {},
+    "is_low_stock": false
+  },
+  {
+    "id": 101,
+    "name": "Вода без газа 0.5л",
+    "category_id": 221,
+    "category_name": "Напитки",
+    "price": 5.0,
+    "cost": 2.0,
+    "unit": "pcs",
+    "current_stock": 30.0,
+    "min_stock_alert": 5.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": {},
+    "is_low_stock": false
+  },
+  {
+    "id": 102,
+    "name": "Кола",
+    "category_id": 231,
+    "category_name": "Газировки",
+    "price": 0.0,
+    "cost": 0.0,
+    "unit": "l",
+    "current_stock": 10.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": {
+      "variations": [
+        {
+          "name": "1 л",
+          "price": 15
+        },
+        {
+          "name": "1.5 л",
+          "price": 20
+        },
+        {
+          "name": "2 л",
+          "price": 30
+        }
+      ],
+      "modifier_groups": [
+        {
+          "name": "Вкус",
+          "required": true,
+          "modifiers": [
+            {
+              "name": "Классик",
+              "price": 0
+            },
+            {
+              "name": "Зеро",
+              "price": 0
+            }
+          ],
+          "max_selections": 1
+        }
+      ]
+    },
+    "is_low_stock": false
+  },
+  {
+    "id": 104,
+    "name": "Добрый",
+    "category_id": 231,
+    "category_name": "Газировки",
+    "price": 0.0,
+    "cost": 0.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": {
+      "variations": [
+        {
+          "name": "1 л",
+          "price": 20
+        },
+        {
+          "name": "1.5 л",
+          "price": 30
+        },
+        {
+          "name": "2 л",
+          "price": 40
+        }
+      ],
+      "modifier_groups": [
+        {
+          "name": "Вкус",
+          "required": true,
+          "modifiers": [
+            {
+              "name": "Лимонад",
+              "price": 0
+            }
+          ],
+          "max_selections": 1
+        }
+      ]
+    },
+    "is_low_stock": false
+  },
+  {
+    "id": 135,
+    "name": "Оби Нукра",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 5.0,
+    "cost": 0.0,
+    "unit": "pcs",
+    "current_stock": -3.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": true
+  },
+  {
+    "id": 136,
+    "name": "Фанта",
+    "category_id": 231,
+    "category_name": "Газировки",
+    "price": 10.0,
+    "cost": 0.0,
+    "unit": "l",
+    "current_stock": -3.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": {
+      "variations": [
+        {
+          "name": "0.5 л",
+          "price": 10
+        },
+        {
+          "name": "1 л",
+          "price": 15
+        },
+        {
+          "name": "1.5 л",
+          "price": 20
+        }
+      ],
+      "modifier_groups": [
+        {
+          "name": "Вкус",
+          "required": true,
+          "modifiers": [
+            {
+              "name": "Апельсин",
+              "price": 0
+            }
+          ],
+          "max_selections": 1
+        }
+      ]
+    },
+    "is_low_stock": true
+  },
+  {
+    "id": 137,
+    "name": "СПРИНГ",
+    "category_id": 231,
+    "category_name": "Газировки",
+    "price": 20.0,
+    "cost": 0.0,
+    "unit": "pcs",
+    "current_stock": 0.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": true
+  },
+  {
+    "id": 170,
+    "name": "Оби Кулоб Столовая Вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 10.0,
+    "cost": 5.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 171,
+    "name": "Оби Кулоб Столовая Вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 10.0,
+    "cost": 5.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 172,
+    "name": "Оби Кулоб Столовая вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 10.0,
+    "cost": 5.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 173,
+    "name": "Оби Кулоб 22 Столовая Вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 20.0,
+    "cost": 10.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 174,
+    "name": "Оби Кулоб Столовая Вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 20.0,
+    "cost": 10.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 175,
+    "name": "Соник Столовая Вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 20.0,
+    "cost": 10.0,
+    "unit": "l",
+    "current_stock": 10.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 176,
+    "name": "Оби Кулоб Столовая Вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 20.0,
+    "cost": 10.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 177,
+    "name": "Боржоми СТОЛОВКА 1 л",
+    "category_id": 231,
+    "category_name": "Газировки",
+    "price": 20.0,
+    "cost": 10.0,
+    "unit": "l",
+    "current_stock": 10.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 178,
+    "name": "Оби Кулоб Столовая Вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 20.0,
+    "cost": 10.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 206,
+    "name": "Оби Кулоб Столовая Вода 1 л",
+    "category_id": 232,
+    "category_name": "Вода",
+    "price": 20.0,
+    "cost": 10.0,
+    "unit": "l",
+    "current_stock": 10.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": null,
+    "is_low_stock": false
+  },
+  {
+    "id": 103,
+    "name": "Добрый",
+    "category_id": 231,
+    "category_name": "Газировки",
+    "price": 0.0,
+    "cost": 0.0,
+    "unit": "l",
+    "current_stock": 12.0,
+    "min_stock_alert": 0.0,
+    "barcode": null,
+    "is_available": true,
+    "sort_order": 0,
+    "attributes": {
+      "variations": [
+        {
+          "name": "1 л",
+          "price": 20
+        },
+        {
+          "name": "1.5 л",
+          "price": 30
+        },
+        {
+          "name": "2 л",
+          "price": 40
+        }
+      ],
+      "modifier_groups": [
+        {
+          "name": "Вкус",
+          "required": true,
+          "modifiers": [
+            {
+              "name": "Кола",
+              "price": 0
+            }
+          ],
+          "max_selections": 1
+        }
+      ]
+    },
+    "is_low_stock": false
+  }
+]

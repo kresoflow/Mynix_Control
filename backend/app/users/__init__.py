@@ -1,0 +1,1 @@
+# Users module — Authentication & PBAC

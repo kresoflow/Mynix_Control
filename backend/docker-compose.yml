@@ -1,0 +1,45 @@
+# ══════════════════════════════════════════════════════════
+# Mynix Control
+# Docker Compose: PostgreSQL + Redis (development)
+# ══════════════════════════════════════════════════════════
+
+name: scafe
+
+services:
+  # ── PostgreSQL ───────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: mynix_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mynix
+      POSTGRES_PASSWORD: mynix_secret
+      POSTGRES_DB: mynix_control
+    ports:
+      - "5444:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mynix -d mynix_control"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: mynix_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
