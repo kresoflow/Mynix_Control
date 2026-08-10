@@ -1,6 +1,6 @@
 {
-    "name": "mynix_frontend",
-    "short_name": "mynix_frontend",
+    "name": "Kreso Flow",
+    "short_name": "Kreso Flow",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

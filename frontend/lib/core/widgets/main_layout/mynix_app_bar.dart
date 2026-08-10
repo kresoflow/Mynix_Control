@@ -66,7 +66,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Mynix Control',
+                    'Kreso Flow',
                     style: AppTextStyles.h2.copyWith(
                       color: isDark ? AppColors.darkText : AppColors.lightText,
                     ),

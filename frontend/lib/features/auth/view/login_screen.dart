@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         _showSuperadminDialog(context);
                       },
                       child: Text(
-                        'Mynix Control',
+                        'Kreso Flow',
                         style: AppTextStyles.h1.copyWith(
                           fontSize: 32,
                           color: AppColors.brandPrimary,

@@ -185,7 +185,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
               return BlocBuilder<ThemeBloc, ThemeMode>(
                 builder: (context, themeMode) {
                   return MaterialApp.router(
-                    title: 'Mynix Control',
+                    title: 'Kreso Flow',
                     debugShowCheckedModeBanner: false,
                     themeMode: themeMode,
                     theme: AppTheme.light,

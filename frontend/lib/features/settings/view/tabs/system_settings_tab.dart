@@ -18,7 +18,7 @@ class SystemSettingsTab extends StatelessWidget {
           children: [
             SettingsRow(
               isDark: isDark,
-              title: 'Версия Mynix Control',
+              title: 'Версия Kreso Flow',
               subtitle: 'v1.0.0 (Сборка 42) — Последняя версия',
               trailing: ButtonStub(isDark: isDark, label: 'Проверить обновления', isPrimary: false),
             ),
