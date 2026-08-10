@@ -125,12 +125,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       onLongPress: () {
                         _showSuperadminDialog(context);
                       },
-                      child: Text(
-                        'Kreso Flow',
-                        style: AppTextStyles.h1.copyWith(
-                          fontSize: 32,
-                          color: AppColors.brandPrimary,
-                        ),
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Kreso Flow',
+                            style: AppTextStyles.h1.copyWith(
+                              fontSize: 32,
+                              color: AppColors.brandPrimary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(height: 8),
