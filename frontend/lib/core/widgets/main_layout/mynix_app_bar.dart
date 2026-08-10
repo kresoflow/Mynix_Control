@@ -52,13 +52,16 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                     size: 24,
                   ),
                   const SizedBox(width: 16),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 28,
-                      height: 28,
-                      fit: BoxFit.cover,
+                  ShaderMask(
+                    shaderCallback: (bounds) => AppColors.logoGradient.createShader(bounds),
+                    child: Text(
+                      'KF',
+                      style: GoogleFonts.spaceGrotesk(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        height: 1.0,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
