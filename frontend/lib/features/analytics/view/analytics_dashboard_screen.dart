@@ -56,6 +56,7 @@ class _AnalyticsDashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return Column(
       children: [
@@ -70,49 +71,97 @@ class _AnalyticsDashboardView extends StatelessWidget {
               ),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Аналитика',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                ),
-              ),
-              Row(
+          child: isDesktop 
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildFilterButton('today', 'Сегодня', context),
-                  const SizedBox(width: 8),
-                  _buildFilterButton('week', 'Неделя', context),
-                  const SizedBox(width: 8),
-                  _buildFilterButton('month', 'Месяц', context),
-                  const SizedBox(width: 8),
-                  _buildFilterButton('year', 'Год', context),
-                  const SizedBox(width: 8),
-                  _buildCalendarButton(context),
-                  const SizedBox(width: 16),
-                  IconButton(
-                    icon: Icon(
-                      PhosphorIconsRegular.arrowsClockwise,
+                  Text(
+                    'Аналитика',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
                       color: isDark ? AppColors.darkText : AppColors.lightText,
                     ),
-                    tooltip: 'Обновить',
-                    onPressed: () {
-                      context.read<AnalyticsBloc>().add(
-                        LoadAnalytics(
-                          period: selectedPeriod, 
-                          startDate: (context.findAncestorStateOfType<_AnalyticsDashboardScreenState>() as _AnalyticsDashboardScreenState)._startDate,
-                          endDate: (context.findAncestorStateOfType<_AnalyticsDashboardScreenState>() as _AnalyticsDashboardScreenState)._endDate,
-                        )
-                      );
-                    },
+                  ),
+                  Row(
+                    children: [
+                      _buildFilterButton('today', 'Сегодня', context),
+                      const SizedBox(width: 8),
+                      _buildFilterButton('week', 'Неделя', context),
+                      const SizedBox(width: 8),
+                      _buildFilterButton('month', 'Месяц', context),
+                      const SizedBox(width: 8),
+                      _buildFilterButton('year', 'Год', context),
+                      const SizedBox(width: 8),
+                      _buildCalendarButton(context),
+                      const SizedBox(width: 16),
+                      IconButton(
+                        icon: Icon(
+                          PhosphorIconsRegular.arrowsClockwise,
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                        ),
+                        tooltip: 'Обновить',
+                        onPressed: () {
+                          context.read<AnalyticsBloc>().add(
+                            LoadAnalytics(
+                              period: selectedPeriod, 
+                              startDate: (context.findAncestorStateOfType<_AnalyticsDashboardScreenState>() as _AnalyticsDashboardScreenState)._startDate,
+                              endDate: (context.findAncestorStateOfType<_AnalyticsDashboardScreenState>() as _AnalyticsDashboardScreenState)._endDate,
+                            )
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Аналитика',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterButton('today', 'Сегодня', context),
+                        const SizedBox(width: 8),
+                        _buildFilterButton('week', 'Неделя', context),
+                        const SizedBox(width: 8),
+                        _buildFilterButton('month', 'Месяц', context),
+                        const SizedBox(width: 8),
+                        _buildFilterButton('year', 'Год', context),
+                        const SizedBox(width: 8),
+                        _buildCalendarButton(context),
+                        const SizedBox(width: 16),
+                        IconButton(
+                          icon: Icon(
+                            PhosphorIconsRegular.arrowsClockwise,
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                          ),
+                          tooltip: 'Обновить',
+                          onPressed: () {
+                            context.read<AnalyticsBloc>().add(
+                              LoadAnalytics(
+                                period: selectedPeriod, 
+                                startDate: (context.findAncestorStateOfType<_AnalyticsDashboardScreenState>() as _AnalyticsDashboardScreenState)._startDate,
+                                endDate: (context.findAncestorStateOfType<_AnalyticsDashboardScreenState>() as _AnalyticsDashboardScreenState)._endDate,
+                              )
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
         ),
         
         // Content
@@ -135,7 +184,6 @@ class _AnalyticsDashboardView extends StatelessWidget {
               if (state is AnalyticsLoaded) {
                 final metrics = state.metrics;
                 final xray = state.xray;
-                final isDesktop = MediaQuery.of(context).size.width > 800;
 
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -155,62 +203,121 @@ class _AnalyticsDashboardView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // KPI Cards
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DashboardMetricCard(
-                                title: 'Выручка',
-                                value: '${metrics.totalRevenue.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency}',
-                                icon: PhosphorIconsRegular.wallet,
-                                gradientColors: [AppColors.brandPrimary, AppColors.brandSecondary],
+                        if (isDesktop)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DashboardMetricCard(
+                                  title: 'Выручка',
+                                  value: '${metrics.totalRevenue.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency}',
+                                  icon: PhosphorIconsRegular.wallet,
+                                  gradientColors: [AppColors.brandPrimary, AppColors.brandSecondary],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: DashboardMetricCard(
-                                title: 'Чистая прибыль',
-                                value: '${metrics.netProfit.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency}',
-                                icon: PhosphorIconsRegular.money,
-                                gradientColors: [AppColors.success, const Color(0xFF34D399)],
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: DashboardMetricCard(
+                                  title: 'Чистая прибыль',
+                                  value: '${metrics.netProfit.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency}',
+                                  icon: PhosphorIconsRegular.money,
+                                  gradientColors: [AppColors.success, const Color(0xFF34D399)],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: DashboardMetricCard(
-                                title: 'Маржинальность',
-                                value: '${metrics.marginPercentage.toStringAsFixed(1)}%',
-                                icon: PhosphorIconsRegular.chartLineUp,
-                                gradientColors: const [Color(0xFF8B5CF6), Color(0xFFC084FC)],
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: DashboardMetricCard(
+                                  title: 'Маржинальность',
+                                  value: '${metrics.marginPercentage.toStringAsFixed(1)}%',
+                                  icon: PhosphorIconsRegular.chartLineUp,
+                                  gradientColors: const [Color(0xFF8B5CF6), Color(0xFFC084FC)],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: DashboardMetricCard(
-                                title: 'Количество чеков',
-                                value: '${metrics.totalOrders}',
-                                icon: PhosphorIconsRegular.receipt,
-                                gradientColors: const [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: DashboardMetricCard(
+                                  title: 'Количество чеков',
+                                  value: '${metrics.totalOrders}',
+                                  icon: PhosphorIconsRegular.receipt,
+                                  gradientColors: const [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          )
+                        else
+                          Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: DashboardMetricCard(
+                                      title: 'Выручка',
+                                      value: '${metrics.totalRevenue.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency}',
+                                      icon: PhosphorIconsRegular.wallet,
+                                      gradientColors: [AppColors.brandPrimary, AppColors.brandSecondary],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: DashboardMetricCard(
+                                      title: 'Чистая прибыль',
+                                      value: '${metrics.netProfit.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency}',
+                                      icon: PhosphorIconsRegular.money,
+                                      gradientColors: [AppColors.success, const Color(0xFF34D399)],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: DashboardMetricCard(
+                                      title: 'Маржинальность',
+                                      value: '${metrics.marginPercentage.toStringAsFixed(1)}%',
+                                      icon: PhosphorIconsRegular.chartLineUp,
+                                      gradientColors: const [Color(0xFF8B5CF6), Color(0xFFC084FC)],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: DashboardMetricCard(
+                                      title: 'Количество чеков',
+                                      value: '${metrics.totalOrders}',
+                                      icon: PhosphorIconsRegular.receipt,
+                                      gradientColors: const [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         const SizedBox(height: 24),
                         
                         // Charts Row
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: _buildRevenueChart(context, metrics.timeSeries),
-                            ),
-                            const SizedBox(width: 24),
-                            Expanded(
-                              flex: 1,
-                              child: _buildCategoryPieChart(context, xray.categories),
-                            ),
-                          ],
-                        ),
+                        if (isDesktop)
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: _buildRevenueChart(context, metrics.timeSeries),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                flex: 1,
+                                child: _buildCategoryPieChart(context, xray.categories),
+                              ),
+                            ],
+                          )
+                        else
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _buildRevenueChart(context, metrics.timeSeries),
+                              const SizedBox(height: 24),
+                              _buildCategoryPieChart(context, xray.categories),
+                            ],
+                          ),
                         const SizedBox(height: 24),
 
                         // XRay Table
@@ -329,9 +436,11 @@ class _AnalyticsDashboardView extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
     return Container(
-      height: 400,
-      padding: const EdgeInsets.all(24),
+      height: isDesktop ? 400 : 320,
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(24),
@@ -485,9 +594,11 @@ class _AnalyticsDashboardView extends StatelessWidget {
       const Color(0xFF3B82F6),
     ];
 
+    final isDesktop = MediaQuery.of(context).size.width > 800;
+
     return Container(
-      height: 400,
-      padding: const EdgeInsets.all(24),
+      height: isDesktop ? 400 : null,
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(24),
@@ -505,39 +616,118 @@ class _AnalyticsDashboardView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Expanded(
-            child: categories.isEmpty
-                ? Center(child: Text('Нет данных', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)))
-                : Row(
-                    children: [
-                      Expanded(
-                        child: PieChart(
-                          PieChartData(
-                            sectionsSpace: 2,
-                            centerSpaceRadius: 40,
-                            sections: categories.asMap().entries.map((e) {
-                              final index = e.key;
-                              final item = e.value;
-                              return PieChartSectionData(
-                                color: colors[index % colors.length],
-                                value: item.percentage,
-                                title: '${item.percentage.toStringAsFixed(0)}%',
-                                radius: 50,
-                                titleStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              );
-                            }).toList(),
+          if (isDesktop)
+            Expanded(
+              child: categories.isEmpty
+                  ? Center(child: Text('Нет данных', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)))
+                  : Row(
+                        children: [
+                          Expanded(
+                            child: PieChart(
+                              PieChartData(
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 40,
+                                sections: categories.asMap().entries.map((e) {
+                                  final index = e.key;
+                                  final item = e.value;
+                                  return PieChartSectionData(
+                                    color: colors[index % colors.length],
+                                    value: item.percentage,
+                                    title: '${item.percentage.toStringAsFixed(0)}%',
+                                    radius: 50,
+                                    titleStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 16),
+                          // Legend
+                          Expanded(
+                            child: Center(
+                              child: ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: categories.length,
+                                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                itemBuilder: (context, index) {
+                                  final item = categories[index];
+                                  return Row(
+                                    children: [
+                                      Container(
+                                        width: 16,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: colors[index % colors.length],
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          item.categoryName,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${item.percentage.toStringAsFixed(1)}%',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: isDark ? Colors.white54 : Colors.black54,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      // Legend
-                      Expanded(
-                        child: Center(
-                          child: ListView.separated(
+            )
+          else
+            categories.isEmpty
+                ? Center(child: Text('Нет данных', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)))
+                : Column(
+                    children: [
+                          SizedBox(
+                            height: 200,
+                            child: PieChart(
+                              PieChartData(
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 40,
+                                sections: categories.asMap().entries.map((e) {
+                                  final index = e.key;
+                                  final item = e.value;
+                                  return PieChartSectionData(
+                                    color: colors[index % colors.length],
+                                    value: item.percentage,
+                                    title: '${item.percentage.toStringAsFixed(0)}%',
+                                    radius: 50,
+                                    titleStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          // Legend
+                          ListView.separated(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: categories.length,
@@ -579,11 +769,8 @@ class _AnalyticsDashboardView extends StatelessWidget {
                               );
                             },
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
-          ),
         ],
       ),
     );
@@ -592,9 +779,10 @@ class _AnalyticsDashboardView extends StatelessWidget {
   Widget _buildXRayTable(BuildContext context, List<XRayItem> items) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(24),
@@ -623,7 +811,7 @@ class _AnalyticsDashboardView extends StatelessWidget {
               padding: const EdgeInsets.all(24.0),
               child: Text('Нет продаж за выбранный период', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
             ))
-          else
+          else if (isDesktop)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: ConstrainedBox(
@@ -634,21 +822,44 @@ class _AnalyticsDashboardView extends StatelessWidget {
                     color: isDark ? Colors.white54 : Colors.black54,
                   ),
                   columns: const [
-                    DataColumn(label: Text('НАЗВАНИЕ')),
+                    DataColumn(label: Text('#')),
+                    DataColumn(label: Text('НАЗВАНИЕ И ЦЕНА')),
                     DataColumn(label: Text('ОПЦИИ')),
                     DataColumn(label: Text('КАТЕГОРИЯ')),
                     DataColumn(label: Text('КОЛИЧЕСТВО'), numeric: true),
                     DataColumn(label: Text('ВЫРУЧКА'), numeric: true),
                   ],
-                  rows: items.map((item) {
+                  rows: items.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
+                    final price = item.quantity > 0 ? (item.revenue / item.quantity).toStringAsFixed(0) : '0';
+                    final currency = context.read<SettingsBloc>().state.currency;
+
                     return DataRow(
                       cells: [
                         DataCell(Text(
-                          item.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? AppColors.darkText : AppColors.lightText,
-                          ),
+                          '${index + 1}',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
+                        )),
+                        DataCell(Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              item.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? AppColors.darkText : AppColors.lightText,
+                              ),
+                            ),
+                            Text(
+                              '$price $currency',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark ? Colors.white54 : Colors.black54,
+                              ),
+                            ),
+                          ],
                         )),
                         DataCell(Text(
                           item.options ?? '-',
@@ -666,7 +877,7 @@ class _AnalyticsDashboardView extends StatelessWidget {
                         )),
                         DataCell(Text('${item.quantity} шт.')),
                         DataCell(Text(
-                          '${item.revenue.toStringAsFixed(0)} ${context.read<SettingsBloc>().state.currency}',
+                          '${item.revenue.toStringAsFixed(0)} $currency',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         )),
                       ],
@@ -674,6 +885,79 @@ class _AnalyticsDashboardView extends StatelessWidget {
                   }).toList(),
                 ),
               ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              separatorBuilder: (context, index) => Divider(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+              itemBuilder: (context, index) {
+                final item = items[index];
+                final price = item.quantity > 0 ? (item.revenue / item.quantity).toStringAsFixed(0) : '0';
+                final currency = context.read<SettingsBloc>().state.currency;
+                
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      // Rank
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: AppColors.brandPrimary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Details
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.name,
+                              style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText),
+                            ),
+                            if (item.options != null && item.options!.isNotEmpty && item.options != '-')
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2.0),
+                                child: Text(item.options!, style: TextStyle(fontSize: 12, color: isDark ? Colors.white54 : Colors.black54)),
+                              ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '$price $currency',
+                              style: TextStyle(fontSize: 12, color: AppColors.brandPrimary),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Sales
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '${item.revenue.toStringAsFixed(0)} $currency',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${item.quantity} шт.',
+                            style: TextStyle(fontSize: 12, color: isDark ? Colors.white54 : Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
         ],
       ),

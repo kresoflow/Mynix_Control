@@ -60,7 +60,7 @@ void main() async {
 
       runApp(
         DevicePreview(
-          enabled: false, // Отключено для работы с полноэкранным вебом/десктопом
+          enabled: true, // Отключено для работы с полноэкранным вебом/десктопом
           builder: (context) => const RetailOSApp(),
         ),
       );

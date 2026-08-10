@@ -14,8 +14,9 @@ class MobileLayout extends StatelessWidget {
   int _getSelectedIndex(String location) {
     if (location.startsWith('/orders')) return 1;
     if (location.startsWith('/kitchen')) return 2;
+    if (location.startsWith('/catalog') || location.startsWith('/warehouse') || location.startsWith('/analytics')) return 3;
     if (location.startsWith('/settings')) return 4;
-    return 0; // POS is 0. Base is 3 (doesn't correspond to a single route, but let's say warehouse/catalog map to 3)
+    return 0; 
   }
 
   void _onItemTapped(BuildContext context, int index) {

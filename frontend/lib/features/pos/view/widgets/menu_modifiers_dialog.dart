@@ -401,6 +401,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
 
             Widget rightContent = Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: isMobile ? MainAxisSize.min : MainAxisSize.max,
                 children: [
                   Row(
                     children: [
@@ -434,9 +435,10 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Expanded(
+                  Flexible(
+                    fit: isMobile ? FlexFit.loose : FlexFit.tight,
                     child: _miniCart.isEmpty
-                        ? Center(
+                        ? (isMobile ? const SizedBox.shrink() : Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -455,7 +457,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                 ),
                               ],
                             ),
-                          )
+                          ))
                         : ListView.separated(
                             itemCount: _miniCart.length,
                             separatorBuilder: (context, index) => const SizedBox(height: 8),
@@ -463,10 +465,10 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                               final item = _miniCart[index];
                               final itemPrice = widget.item.price + item.price;
                               return Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: EdgeInsets.all(isMobile ? 8 : 12),
                                 decoration: BoxDecoration(
                                   color: isDark ? AppColors.darkCard : AppColors.brandPrimary.withValues(alpha: 0.05),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,6 +481,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                             item.variationName,
                                             style: AppTextStyles.body.copyWith(
                                               fontWeight: FontWeight.bold,
+                                              fontSize: isMobile ? 12 : null,
                                               color: isDark ? AppColors.darkText : AppColors.lightText,
                                             ),
                                           ),
@@ -491,12 +494,13 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                               ),
                                             ),
                                           ],
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: 2),
                                           Text(
                                             itemPrice.toCurrency(context),
                                             style: AppTextStyles.caption.copyWith(
                                               color: AppColors.brandPrimary,
                                               fontWeight: FontWeight.bold,
+                                              fontSize: isMobile ? 12 : null,
                                             ),
                                           ),
                                         ],
@@ -507,7 +511,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
-                                          icon: Icon(PhosphorIconsRegular.minusCircle, size: 22),
+                                          icon: Icon(PhosphorIconsRegular.minusCircle, size: isMobile ? 18 : 22),
                                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
@@ -522,18 +526,19 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                           },
                                         ),
                                         Container(
-                                          width: 24,
+                                          width: isMobile ? 18 : 24,
                                           alignment: Alignment.center,
                                           child: Text(
                                             '${item.quantity}',
                                             style: AppTextStyles.body.copyWith(
                                               color: isDark ? AppColors.darkText : AppColors.lightText,
                                               fontWeight: FontWeight.bold,
+                                              fontSize: isMobile ? 12 : null,
                                             ),
                                           ),
                                         ),
                                         IconButton(
-                                          icon: Icon(PhosphorIconsRegular.plusCircle, size: 22),
+                                          icon: Icon(PhosphorIconsRegular.plusCircle, size: isMobile ? 18 : 22),
                                           color: AppColors.brandPrimary,
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
@@ -543,9 +548,9 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
                                             });
                                           },
                                         ),
-                                        const SizedBox(width: 8),
+                                        SizedBox(width: isMobile ? 4 : 8),
                                         IconButton(
-                                          icon: Icon(PhosphorIconsRegular.trash, size: 20),
+                                          icon: Icon(PhosphorIconsRegular.trash, size: isMobile ? 16 : 20),
                                           color: AppColors.danger,
                                           padding: EdgeInsets.zero,
                                           constraints: const BoxConstraints(),
@@ -580,13 +585,18 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(flex: 6, child: leftContent),
+                  Expanded(child: leftContent),
                   Container(
                     height: 1,
                     color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                    margin: const EdgeInsets.symmetric(vertical: 16),
+                    margin: const EdgeInsets.only(top: 16, bottom: 8),
                   ),
-                  Expanded(flex: 4, child: rightContent),
+                  Container(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.3,
+                    ),
+                    child: rightContent,
+                  ),
                 ],
               );
             } else {

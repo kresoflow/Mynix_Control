@@ -4,6 +4,7 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/theme_bloc.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/pos_settings_modal.dart';
 
 class PosBreadcrumbBar extends StatelessWidget {
   final List<dynamic> history;
@@ -81,6 +82,12 @@ class PosBreadcrumbBar extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+          IconButton(
+            icon: const Icon(PhosphorIconsRegular.slidersHorizontal),
+            color: AppColors.darkSubtext,
+            onPressed: () => PosSettingsModal.show(context),
+            tooltip: 'Настройки кассы',
           ),
           if (MediaQuery.of(context).size.width < 768)
             IconButton(

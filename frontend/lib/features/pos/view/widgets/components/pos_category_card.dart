@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/app_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_icons.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class PosCategoryCard extends StatelessWidget {
+class PosCategoryCard extends StatefulWidget {
   final dynamic cat;
   final Color accent;
   final VoidCallback onTap;
@@ -21,51 +18,96 @@ class PosCategoryCard extends StatelessWidget {
   });
 
   @override
+  State<PosCategoryCard> createState() => _PosCategoryCardState();
+}
+
+class _PosCategoryCardState extends State<PosCategoryCard> {
+  bool _isPressed = false;
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    String? effectiveIcon = cat.icon;
+    String? effectiveIcon = widget.cat.icon;
     final catState = context.read<CategoryBloc>().state;
     if (catState is CategoryLoaded) {
-      effectiveIcon = cat.getInheritedIcon(catState.categories);
+      effectiveIcon = widget.cat.getInheritedIcon(catState.categories);
     }
 
-    return AppCard(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+          widget.onTap();
+        },
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedScale(
+          scale: _isPressed ? 0.95 : (_isHovered ? 1.02 : 1.0),
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.all(isMobile ? 12 : 20),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E2128) : Colors.white,
+              borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
+              border: Border.all(
+                color: widget.accent.withValues(alpha: _isHovered ? 0.3 : 0.05),
+                width: 1.5,
               ),
-              child: (effectiveIcon == null || effectiveIcon.isEmpty)
-                  ? Text(
-                      cat.name.isNotEmpty ? cat.name[0].toUpperCase() : '?',
-                      style: AppTextStyles.h2.copyWith(color: accent, fontWeight: FontWeight.bold),
-                    )
-                  : IconHelper.buildIcon(
-                      effectiveIcon,
-                      size: 32,
-                      color: accent,
-                    ),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.accent.withValues(alpha: _isHovered ? 0.15 : 0.05),
+                  blurRadius: _isHovered ? 24 : 12,
+                  offset: Offset(0, _isHovered ? 8 : 4),
+                ),
+              ],
             ),
-            Text(
-              cat.name,
-              style: AppTextStyles.h3.copyWith(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkText
-                    : AppColors.lightText,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: isMobile ? 48 : 64,
+                  height: isMobile ? 48 : 64,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: widget.accent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: (effectiveIcon == null || effectiveIcon.isEmpty)
+                      ? Text(
+                          widget.cat.name.isNotEmpty ? widget.cat.name[0].toUpperCase() : '?',
+                          style: AppTextStyles.h2.copyWith(color: widget.accent, fontWeight: FontWeight.bold, fontSize: isMobile ? 22 : 28),
+                        )
+                      : IconHelper.buildIcon(
+                          effectiveIcon,
+                          size: isMobile ? 24 : 36,
+                          color: widget.accent,
+                        ),
+                ),
+                SizedBox(height: isMobile ? 8 : 16),
+                Text(
+                  widget.cat.name,
+                  style: AppTextStyles.h3.copyWith(
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                    fontWeight: FontWeight.w600,
+                    fontSize: isMobile ? 14 : null,
+                    letterSpacing: 0.3,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

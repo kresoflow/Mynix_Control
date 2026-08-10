@@ -12,6 +12,7 @@ import 'catalog_dialogs.dart';
 import 'catalog_header.dart';
 import 'catalog_content_view.dart';
 import 'catalog_enums.dart';
+import 'catalog_skeleton.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
@@ -274,7 +275,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                     Expanded(
                       child: Builder(
                         builder: (context) {
-                          if (isLoading) return const Center(child: CircularProgressIndicator());
+                          if (isLoading) return CatalogSkeleton(isList: _viewMode == CategoryViewMode.list);
                           
                           return CatalogContentView(
                             currentCategories: currentCategories,
