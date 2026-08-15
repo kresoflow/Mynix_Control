@@ -1,0 +1,43 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend_ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend_ci.yml'
+
+jobs:
+  test:
+    name: Backend Test & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: uv sync --frozen
+
+      - name: Run Pytest Suite
+        working-directory: ./backend
+        run: uv run pytest -v
+
+      - name: Verify Docker Build
+        working-directory: ./backend
+        run: docker build -t mynix-backend:ci .

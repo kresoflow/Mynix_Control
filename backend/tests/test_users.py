@@ -7,7 +7,7 @@ from app.users import services as svc
 @pytest.mark.asyncio
 async def test_user_creation_and_login(async_client: AsyncClient, db_session):
     # 1. Setup Tenant and Superuser Role directly in DB
-    tenant = Tenant(name="Test Cafe", is_active=True)
+    tenant = Tenant(name="Test Cafe", schema_name="tenant_test_1", is_active=True)
     db_session.add(tenant)
     await db_session.commit()
     await db_session.refresh(tenant)
@@ -63,7 +63,7 @@ async def test_user_creation_and_login(async_client: AsyncClient, db_session):
 
 @pytest.mark.asyncio
 async def test_pin_login(async_client: AsyncClient, db_session):
-    tenant = Tenant(name="Test Cafe")
+    tenant = Tenant(name="Test Cafe", schema_name="tenant_test_2", is_active=True)
     db_session.add(tenant)
     await db_session.commit()
 

@@ -1,0 +1,40 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend_ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend_ci.yml'
+
+jobs:
+  analyze-and-build:
+    name: Frontend Analyze & Build Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: flutter pub get
+
+      - name: Run Flutter Analyze
+        working-directory: ./frontend
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test Build Web (Release)
+        working-directory: ./frontend
+        run: flutter build web --release --dart-define=API_URL=https://api.kresoflow.com/api/v1 --dart-define=WS_URL=wss://api.kresoflow.com/ws

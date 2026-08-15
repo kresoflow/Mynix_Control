@@ -1,7 +1,7 @@
 [project]
 name = "mynix-control"
 version = "0.1.0"
-description = "Add your description here"
+description = "Mynix Control POS & Restaurant Management Backend"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -25,4 +25,13 @@ dev = [
     "httpx>=0.28.1",
     "pytest>=9.0.3",
     "pytest-asyncio>=1.4.0",
+    "ruff>=0.9.0",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
