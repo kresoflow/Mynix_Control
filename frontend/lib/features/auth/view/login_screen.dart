@@ -6,7 +6,7 @@ import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:dio/dio.dart';
+import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/features/superadmin/domain/superadmin_repository.dart';
 import 'package:mynix_frontend/features/superadmin/presentation/bloc/superadmin_bloc.dart';
 import 'package:mynix_frontend/features/superadmin/presentation/superadmin_screen.dart';
@@ -72,12 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     builder: (context) => BlocProvider(
                       create: (_) => SuperadminBloc(
                         repository: SuperadminRepository(
-                          dio: Dio(BaseOptions(
-                            baseUrl: const String.fromEnvironment(
-                              'API_URL', 
-                              defaultValue: 'http://127.0.0.1:8000/api/v1'
-                            ),
-                          )),
+                          dio: apiClient.dio,
                         ),
                       ),
                       child: SuperadminScreen(systemToken: token),
