@@ -14,6 +14,7 @@ class AppButton extends StatefulWidget {
   final bool isLoading;
   final bool isFullWidth;
   final Color? customColor;
+  final double borderRadius;
 
   const AppButton({
     super.key,
@@ -21,11 +22,12 @@ class AppButton extends StatefulWidget {
     this.onPressed,
     this.icon,
     this.variant = AppButtonVariant.primary,
-    this.height = 44,
+    this.height = 48,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
+    this.borderRadius = 16,
   });
 
   const AppButton.primary({
@@ -33,11 +35,12 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 44,
+    this.height = 48,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
+    this.borderRadius = 16,
   }) : variant = AppButtonVariant.primary;
 
   const AppButton.secondary({
@@ -45,11 +48,12 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 44,
+    this.height = 48,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
+    this.borderRadius = 16,
   }) : variant = AppButtonVariant.secondary;
 
   const AppButton.outline({
@@ -57,11 +61,12 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 44,
+    this.height = 48,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
+    this.borderRadius = 16,
   }) : variant = AppButtonVariant.outline;
 
   const AppButton.danger({
@@ -69,11 +74,12 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 44,
+    this.height = 48,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
+    this.borderRadius = 16,
   }) : variant = AppButtonVariant.danger;
 
   const AppButton.ghost({
@@ -81,11 +87,12 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 44,
+    this.height = 48,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
+    this.borderRadius = 16,
   }) : variant = AppButtonVariant.ghost;
 
   @override
@@ -113,11 +120,11 @@ class _AppButtonState extends State<AppButton> {
       case AppButtonVariant.primary:
         bg = enabled ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
         fg = Colors.white;
-        if (enabled && _isHovered) {
+        if (enabled) {
           shadow = [
             BoxShadow(
-              color: primary.withValues(alpha: 0.35),
-              blurRadius: 12,
+              color: primary.withValues(alpha: _isHovered ? 0.45 : 0.25),
+              blurRadius: _isHovered ? 20 : 12,
               offset: const Offset(0, 4),
             ),
           ];
@@ -205,10 +212,10 @@ class _AppButtonState extends State<AppButton> {
             duration: const Duration(milliseconds: 150),
             height: widget.height,
             width: widget.isFullWidth ? double.infinity : widget.width,
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(widget.borderRadius),
               border: border,
               boxShadow: shadow,
             ),
@@ -227,11 +234,12 @@ class AppPrimaryButton extends AppButton {
     required super.label,
     super.onPressed,
     super.icon,
-    super.height = 48,
+    super.height = 52,
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
+    super.borderRadius = 16,
   }) : super.primary();
 }
 
@@ -246,6 +254,7 @@ class AppSecondaryButton extends AppButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
+    super.borderRadius = 16,
   }) : super.secondary();
 }
 
@@ -260,6 +269,7 @@ class AppGhostButton extends AppButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
+    super.borderRadius = 16,
   }) : super.ghost();
 }
 
@@ -274,5 +284,6 @@ class AppDangerButton extends AppButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
+    super.borderRadius = 16,
   }) : super.danger();
 }

@@ -110,11 +110,15 @@ class BulkAddTabsBar extends StatelessWidget {
             ),
             const SizedBox(width: 16),
           ],
-          AppButton.outline(
+          TextButton.icon(
             onPressed: onAddRow,
-            icon: PhosphorIconsRegular.plus,
-            label: 'Строка',
-            height: 36,
+            icon: const Icon(PhosphorIconsRegular.plus, size: 16),
+            label: const Text('Строка'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.brandPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
           ),
         ],
       ),

@@ -16,17 +16,17 @@ InputDecoration buildBulkInputDecoration(BuildContext context, String label) {
     filled: true,
     fillColor: bg,
     isDense: true,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(color: borderColor),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(color: borderColor),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
     ),
   );
