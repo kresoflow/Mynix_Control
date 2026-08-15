@@ -122,7 +122,7 @@ class _NavSidebarItemState extends State<_NavSidebarItem> {
 
   @override
   Widget build(BuildContext context) {
-    final brand = widget.isDark ? AppColors.brandPrimary : AppColors.lightPrimary;
+    final brand = AppColors.brandPrimary;
     final color = widget.isSelected
         ? brand
         : _hovered

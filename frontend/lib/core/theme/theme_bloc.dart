@@ -4,11 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
 
-enum ThemePalette {
-  ocean,    // 🌊 Deep Ocean (Морской неон / Лазурный лед)
-  contrast, // ⚡ High Contrast (Контрастный серый / Классический янтарь)
-}
-
 abstract class ThemeEvent extends Equatable {
   const ThemeEvent();
   @override
@@ -24,22 +19,30 @@ class SetThemeMode extends ThemeEvent {
   List<Object?> get props => [mode];
 }
 
-class SetThemePalette extends ThemeEvent {
-  final ThemePalette palette;
-  const SetThemePalette(this.palette);
+class SetThemeVariant extends ThemeEvent {
+  final String variant;
+  const SetThemeVariant(this.variant);
   @override
-  List<Object?> get props => [palette];
+  List<Object?> get props => [variant];
+}
+
+class SelectTheme extends ThemeEvent {
+  final ThemeMode mode;
+  final String variant;
+  const SelectTheme({required this.mode, required this.variant});
+  @override
+  List<Object?> get props => [mode, variant];
 }
 
 class LoadSavedTheme extends ThemeEvent {}
 
 class ThemeState extends Equatable {
   final ThemeMode mode;
-  final ThemePalette palette;
+  final String variant;
 
   const ThemeState({
     this.mode = ThemeMode.dark,
-    this.palette = ThemePalette.ocean,
+    this.variant = 'deep_ocean',
   });
 
   bool isDark(BuildContext context) {
@@ -51,75 +54,93 @@ class ThemeState extends Equatable {
 
   ThemeState copyWith({
     ThemeMode? mode,
-    ThemePalette? palette,
+    String? variant,
   }) {
     return ThemeState(
       mode: mode ?? this.mode,
-      palette: palette ?? this.palette,
+      variant: variant ?? this.variant,
     );
   }
 
   @override
-  List<Object?> get props => [mode, palette];
+  List<Object?> get props => [mode, variant];
 }
 
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   static const _kThemeModeKey = 'mynix_theme_mode';
-  static const _kThemePaletteKey = 'mynix_theme_palette';
+  static const _kThemeVariantKey = 'mynix_theme_variant';
 
-  ThemeBloc() : super(const ThemeState(mode: ThemeMode.dark, palette: ThemePalette.ocean)) {
+  ThemeBloc() : super(const ThemeState(mode: ThemeMode.dark, variant: 'deep_ocean')) {
     on<LoadSavedTheme>(_onLoadSavedTheme);
     on<ToggleThemeMode>(_onToggleThemeMode);
     on<SetThemeMode>(_onSetThemeMode);
-    on<SetThemePalette>(_onSetThemePalette);
+    on<SetThemeVariant>(_onSetThemeVariant);
+    on<SelectTheme>(_onSelectTheme);
 
-    // Apply default palette
-    AppColors.applyPalette(state.palette);
+    // Apply initial variant
+    AppColors.applyThemeVariant(state.variant);
   }
 
   Future<void> _onLoadSavedTheme(LoadSavedTheme event, Emitter<ThemeState> emit) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final modeIndex = prefs.getInt(_kThemeModeKey);
-      final paletteIndex = prefs.getInt(_kThemePaletteKey);
+      final savedVariant = prefs.getString(_kThemeVariantKey);
 
       ThemeMode mode = state.mode;
       if (modeIndex != null && modeIndex >= 0 && modeIndex < ThemeMode.values.length) {
         mode = ThemeMode.values[modeIndex];
       }
 
-      ThemePalette palette = state.palette;
-      if (paletteIndex != null && paletteIndex >= 0 && paletteIndex < ThemePalette.values.length) {
-        palette = ThemePalette.values[paletteIndex];
-      }
-
-      AppColors.applyPalette(palette);
-      emit(ThemeState(mode: mode, palette: palette));
+      String variant = savedVariant ?? state.variant;
+      AppColors.applyThemeVariant(variant);
+      emit(ThemeState(mode: mode, variant: variant));
     } catch (_) {}
   }
 
   Future<void> _onToggleThemeMode(ToggleThemeMode event, Emitter<ThemeState> emit) async {
-    final nextMode = state.mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    emit(state.copyWith(mode: nextMode));
-    _saveState(nextMode, state.palette);
+    ThemeMode nextMode;
+    String nextVariant = state.variant;
+
+    if (state.mode == ThemeMode.dark) {
+      nextMode = ThemeMode.light;
+      if (state.variant == 'deep_ocean') {
+        nextVariant = 'high_contrast_light';
+      }
+    } else {
+      nextMode = ThemeMode.dark;
+      if (state.variant == 'high_contrast_light') {
+        nextVariant = 'deep_ocean';
+      }
+    }
+
+    AppColors.applyThemeVariant(nextVariant);
+    emit(state.copyWith(mode: nextMode, variant: nextVariant));
+    _saveState(nextMode, nextVariant);
   }
 
   Future<void> _onSetThemeMode(SetThemeMode event, Emitter<ThemeState> emit) async {
     emit(state.copyWith(mode: event.mode));
-    _saveState(event.mode, state.palette);
+    _saveState(event.mode, state.variant);
   }
 
-  Future<void> _onSetThemePalette(SetThemePalette event, Emitter<ThemeState> emit) async {
-    AppColors.applyPalette(event.palette);
-    emit(state.copyWith(palette: event.palette));
-    _saveState(state.mode, event.palette);
+  Future<void> _onSetThemeVariant(SetThemeVariant event, Emitter<ThemeState> emit) async {
+    AppColors.applyThemeVariant(event.variant);
+    emit(state.copyWith(variant: event.variant));
+    _saveState(state.mode, event.variant);
   }
 
-  Future<void> _saveState(ThemeMode mode, ThemePalette palette) async {
+  Future<void> _onSelectTheme(SelectTheme event, Emitter<ThemeState> emit) async {
+    AppColors.applyThemeVariant(event.variant);
+    emit(ThemeState(mode: event.mode, variant: event.variant));
+    _saveState(event.mode, event.variant);
+  }
+
+  Future<void> _saveState(ThemeMode mode, String variant) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_kThemeModeKey, mode.index);
-      await prefs.setInt(_kThemePaletteKey, palette.index);
+      await prefs.setString(_kThemeVariantKey, variant);
     } catch (_) {}
   }
 }
