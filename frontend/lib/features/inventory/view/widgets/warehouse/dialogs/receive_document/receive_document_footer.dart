@@ -27,12 +27,13 @@ class ReceiveDocumentFooter extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
         border: Border(
           top: BorderSide(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder,
           ),
         ),
       ),
@@ -43,8 +44,10 @@ class ReceiveDocumentFooter extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Итого к оплате:',
+                'ИТОГО К ОПЛАТЕ:',
                 style: AppTextStyles.caption.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
                   color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                 ),
               ),
@@ -60,16 +63,16 @@ class ReceiveDocumentFooter extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          AppButton.outline(
+          AppButton.ghost(
             label: 'Отмена',
-            height: 44,
+            height: 46,
             onPressed: onCancel,
           ),
           const SizedBox(width: 12),
           AppButton.secondary(
             label: 'Сохранить черновик',
             icon: PhosphorIconsRegular.floppyDisk,
-            height: 44,
+            height: 46,
             isLoading: isSaving,
             onPressed: isSaving ? null : onSaveDraft,
           ),
@@ -78,7 +81,7 @@ class ReceiveDocumentFooter extends StatelessWidget {
             label: 'Провести документ (Ctrl+S)',
             icon: PhosphorIconsRegular.checkCircle,
             customColor: AppColors.success,
-            height: 44,
+            height: 46,
             isLoading: isSaving,
             onPressed: isSaving ? null : onSaveComplete,
           ),

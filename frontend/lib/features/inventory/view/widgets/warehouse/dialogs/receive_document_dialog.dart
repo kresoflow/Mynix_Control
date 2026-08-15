@@ -244,7 +244,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       child: Focus(
         autofocus: true,
         child: Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           insetPadding: const EdgeInsets.all(20),
           child: Container(
             width: width,
@@ -252,7 +252,14 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 40,
+                  offset: const Offset(0, 12),
+                ),
+              ],
             ),
             child: Stack(
               children: [
@@ -289,15 +296,15 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                       }
                     ),
                     
-                    ReceiveDocumentTableHeader(currency: currency),
+                    ReceiveDocumentTableHeader(currency: currency, tabIndex: _tabIndex),
 
                     Expanded(
                       child: _isLoadingIngredients
                           ? const Center(child: CircularProgressIndicator())
                           : ListView.separated(
-                              padding: const EdgeInsets.all(24),
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                               itemCount: _items.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 16),
+                              separatorBuilder: (_, _) => const SizedBox(height: 6),
                               itemBuilder: (context, index) {
                                 final item = _items[index];
                                 return ReceiveDocumentItemRow(
