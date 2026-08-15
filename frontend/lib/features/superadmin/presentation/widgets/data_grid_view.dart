@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../bloc/tenant_explorer_bloc.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DataGridView extends StatelessWidget {
   final List<Map<String, dynamic>> columns;

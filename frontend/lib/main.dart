@@ -37,8 +37,6 @@ import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 
 import 'package:device_preview/device_preview.dart';
 
-import 'package:flutter/foundation.dart'; // Added for kReleaseMode
-
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
 
 import 'package:sentry_flutter/sentry_flutter.dart';
