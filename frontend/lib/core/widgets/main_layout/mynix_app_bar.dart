@@ -138,10 +138,15 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
             },
           ),
           const SizedBox(width: 8),
-          IconBtn(
-            icon: PhosphorIconsRegular.sun,
-            tooltip: 'Переключить тему',
-            onPressed: () => context.read<ThemeBloc>().add(ThemeEvent.toggleTheme),
+          BlocBuilder<ThemeBloc, ThemeState>(
+            builder: (context, themeState) {
+              final isCurrentDark = themeState.isDark(context);
+              return IconBtn(
+                icon: isCurrentDark ? PhosphorIconsRegular.sun : PhosphorIconsRegular.moon,
+                tooltip: isCurrentDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему',
+                onPressed: () => context.read<ThemeBloc>().add(ToggleThemeMode()),
+              );
+            },
           ),
           const SizedBox(width: 8),
           _buildProfileMenu(context, isDark),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/theme_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
 
@@ -43,7 +45,6 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      print("Error fetching settings: $e");
     }
   }
 
@@ -66,8 +67,9 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
         );
       }
     } catch (e) {
-      print("Error updating settings: $e");
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ошибка сохранения настроек')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ошибка сохранения настроек')));
+      }
     }
   }
 
@@ -95,7 +97,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   subtitle: 'Если выключено, скрывает вкладку КДС и заказы сразу готовы',
                   trailing: Switch(
                     value: _useKds,
-                    activeColor: AppColors.brandPrimary,
+                    activeThumbColor: AppColors.brandPrimary,
                     onChanged: (val) => _updateSettings(val, _useOrders, _enableInventory),
                   ),
                 ),
@@ -106,7 +108,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   subtitle: 'Отображать вкладку с активными заказами на экране кассы',
                   trailing: Switch(
                     value: _useOrders,
-                    activeColor: AppColors.brandPrimary,
+                    activeThumbColor: AppColors.brandPrimary,
                     onChanged: (val) => _updateSettings(_useKds, val, _enableInventory),
                   ),
                 ),
@@ -117,7 +119,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   subtitle: 'Минусовать сырье по тех. картам при продаже',
                   trailing: Switch(
                     value: _enableInventory,
-                    activeColor: AppColors.brandPrimary,
+                    activeThumbColor: AppColors.brandPrimary,
                     onChanged: (val) => _updateSettings(_useKds, _useOrders, val),
                   ),
                 ),
@@ -126,46 +128,85 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
             const SizedBox(height: 48),
             buildSettingsHeader('Внешний вид', isDark),
             const SizedBox(height: 32),
-            SettingsCard(
-              isDark: isDark,
-              children: [
-                SettingsRow(
+            BlocBuilder<ThemeBloc, ThemeState>(
+              builder: (context, themeState) {
+                return SettingsCard(
                   isDark: isDark,
-                  title: 'Цветовая схема (Тема)',
-                  subtitle: 'Выбор светлой или темной темы',
-                  trailing: BlocBuilder<ThemeBloc, ThemeMode>(
-                    builder: (context, themeMode) {
-                      final themes = [
-                        {'label': 'Светлая (Basic)', 'mode': ThemeMode.light, 'variant': 'basic'},
-                        {'label': 'Светлая (Cream)', 'mode': ThemeMode.light, 'variant': 'soft_cream'},
-                        {'label': 'Светлая (Contrast)', 'mode': ThemeMode.light, 'variant': 'high_contrast_light'},
-                        {'label': 'Темная (Ember)', 'mode': ThemeMode.dark, 'variant': 'basic'},
-                        {'label': 'Темная (Deep Ocean)', 'mode': ThemeMode.dark, 'variant': 'deep_ocean'},
-                      ];
-                      
-                      return Wrap(
+                  children: [
+                    SettingsRow(
+                      isDark: isDark,
+                      title: 'Режим отображения',
+                      subtitle: 'Переключение между светлым и тёмным интерфейсом',
+                      trailing: Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: themes.map((t) {
-                          final isSelected = themeMode == t['mode'] && state.themeVariant == t['variant'];
-                          return _buildThemeVariantBtn(
+                        children: [
+                          _buildModeBtn(
                             context,
                             isDark: isDark,
-                            label: t['label'] as String,
-                            isSelected: isSelected,
-                            onTap: () {
-                              context.read<SettingsBloc>().add(UpdateThemeVariant(t['variant'] as String));
-                              if (themeMode != t['mode']) {
-                                context.read<ThemeBloc>().add(ThemeEvent.toggleTheme);
-                              }
-                            },
-                          );
-                        }).toList(),
-                      );
-                    },
-                  ),
-                ),
-              ],
+                            label: 'Светлый',
+                            icon: PhosphorIconsRegular.sun,
+                            isSelected: themeState.mode == ThemeMode.light,
+                            onTap: () => context.read<ThemeBloc>().add(const SetThemeMode(ThemeMode.light)),
+                          ),
+                          _buildModeBtn(
+                            context,
+                            isDark: isDark,
+                            label: 'Тёмный',
+                            icon: PhosphorIconsRegular.moon,
+                            isSelected: themeState.mode == ThemeMode.dark,
+                            onTap: () => context.read<ThemeBloc>().add(const SetThemeMode(ThemeMode.dark)),
+                          ),
+                          _buildModeBtn(
+                            context,
+                            isDark: isDark,
+                            label: 'Системный',
+                            icon: PhosphorIconsRegular.desktop,
+                            isSelected: themeState.mode == ThemeMode.system,
+                            onTap: () => context.read<ThemeBloc>().add(const SetThemeMode(ThemeMode.system)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SettingsDivider(isDark: isDark),
+                    SettingsRow(
+                      isDark: isDark,
+                      title: 'Цветовой стиль бренда',
+                      subtitle: 'Гармоничная палитра акцентов и поверхностей',
+                      trailing: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildPaletteBtn(
+                            context,
+                            isDark: isDark,
+                            label: 'Ember (Янтарь)',
+                            accentColor: const Color(0xFFE8A020),
+                            isSelected: themeState.palette == ThemePalette.ember,
+                            onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.ember)),
+                          ),
+                          _buildPaletteBtn(
+                            context,
+                            isDark: isDark,
+                            label: 'Deep Ocean (Океан)',
+                            accentColor: const Color(0xFF00F0FF),
+                            isSelected: themeState.palette == ThemePalette.ocean,
+                            onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.ocean)),
+                          ),
+                          _buildPaletteBtn(
+                            context,
+                            isDark: isDark,
+                            label: 'Soft Cream (Крем)',
+                            accentColor: const Color(0xFFD97706),
+                            isSelected: themeState.palette == ThemePalette.cream,
+                            onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.cream)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 40),
             buildSettingsHeader('Региональные настройки', isDark),
@@ -216,31 +257,91 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
     );
   }
 
-  Widget _buildThemeVariantBtn(
+  Widget _buildModeBtn(
     BuildContext context, {
     required bool isDark,
     required String label,
+    required IconData icon,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary.withOpacity(0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            width: isSelected ? 1.5 : 1.0,
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaletteBtn(
+    BuildContext context, {
+    required bool isDark,
+    required String label,
+    required Color accentColor,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            width: isSelected ? 1.5 : 1.0,
           ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: accentColor,
+                shape: BoxShape.circle,
+                boxShadow: isSelected ? [BoxShadow(color: accentColor.withValues(alpha: 0.4), blurRadius: 6)] : null,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -252,12 +353,12 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
       onTap: () {
         context.read<SettingsBloc>().add(UpdateCurrency(code));
       },
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary.withOpacity(0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
@@ -267,15 +368,15 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
           children: [
             Text(
               code,
-              style: TextStyle(
+              style: AppTextStyles.caption.copyWith(
                 color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
                 fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               name,
-              style: TextStyle(
+              style: AppTextStyles.caption.copyWith(
                 color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               ),
             ),

@@ -70,61 +70,49 @@ abstract class AppColors {
     colors: [Color(0xFF1C2130), Color(0xFF161B22)],
   );
 
-  // ── Dynamic Theming ────────────────────────────────────────────────────────
-  static void applyThemeVariant(String variant) {
-    if (variant == 'deep_ocean') {
+  // ── Unified Palette Application ──────────────────────────────────────────
+  static void applyPalette(dynamic palette) {
+    final paletteName = palette.toString();
+    if (paletteName.contains('ocean') || paletteName == 'deep_ocean') {
       brandPrimary = const Color(0xFF00F0FF); // Neon Cyan
       brandSecondary = const Color(0xFFFF007A); // Neon Pink
-      brandTertiary = const Color(0xFF7000FF); // Deep Purple
+      brandTertiary = const Color(0xFF0284C7); // Sky Blue
       
       darkBg = const Color(0xFF050B14);
       darkSurface = const Color(0xFF0A1220);
       darkCard = const Color(0xFF0E1A2D);
       darkCardHover = const Color(0xFF15243C);
       darkBorder = const Color(0xFF1E3250);
+      darkText = const Color(0xFFE0F2FE);
+      darkSubtext = const Color(0xFF7DD3FC);
       
-      lightBg = const Color(0xFFE6F0FA);
+      lightBg = const Color(0xFFF0F9FF);
       lightSurface = const Color(0xFFFFFFFF);
       lightCard = const Color(0xFFFFFFFF);
-      lightBorder = const Color(0xFFCDE0F5);
-    } else if (variant == 'soft_cream') {
-      brandPrimary = const Color(0xFFD97706);
-      brandSecondary = const Color(0xFFB45309);
-      brandTertiary = const Color(0xFF047857);
+      lightBorder = const Color(0xFFBAE6FD);
+      lightText = const Color(0xFF0C4A6E);
+      lightSubtext = const Color(0xFF0369A1);
+    } else if (paletteName.contains('cream') || paletteName == 'soft_cream') {
+      brandPrimary = const Color(0xFFD97706); // Warm Amber
+      brandSecondary = const Color(0xFFB45309); // Roast Coffee
+      brandTertiary = const Color(0xFF047857); // Sage Green
       
-      // We don't change dark theme here as user requested Light Themes, 
-      // but we should set them to default just in case.
-      darkBg = const Color(0xFF0E1016);
-      darkSurface = const Color(0xFF161B22);
-      darkCard = const Color(0xFF1C2130);
-      darkCardHover = const Color(0xFF212840);
-      darkBorder = const Color(0xFF2A3245);
+      darkBg = const Color(0xFF141210);
+      darkSurface = const Color(0xFF1C1917);
+      darkCard = const Color(0xFF292524);
+      darkCardHover = const Color(0xFF383330);
+      darkBorder = const Color(0xFF44403C);
+      darkText = const Color(0xFFF5F5F4);
+      darkSubtext = const Color(0xFFA8A29E);
       
-      lightBg = const Color(0xFFF9F6F0);
+      lightBg = const Color(0xFFFDFBF7);
       lightSurface = const Color(0xFFFCFAF5);
-      lightCard = const Color(0xFFFCFAF5);
-      lightBorder = const Color(0xFFE5E0D8);
-      lightText = const Color(0xFF2C2724);
-      lightSubtext = const Color(0xFF78716C);
-    } else if (variant == 'high_contrast_light') {
-      brandPrimary = const Color(0xFF0284C7);
-      brandSecondary = const Color(0xFF0369A1);
-      brandTertiary = const Color(0xFF0F766E);
-      
-      darkBg = const Color(0xFF0E1016);
-      darkSurface = const Color(0xFF161B22);
-      darkCard = const Color(0xFF1C2130);
-      darkCardHover = const Color(0xFF212840);
-      darkBorder = const Color(0xFF2A3245);
-      
-      lightBg = const Color(0xFFEAECEF);
-      lightSurface = const Color(0xFFFFFFFF);
       lightCard = const Color(0xFFFFFFFF);
-      lightBorder = const Color(0xFF9CA3AF);
-      lightText = const Color(0xFF000000);
-      lightSubtext = const Color(0xFF4B5563);
+      lightBorder = const Color(0xFFE5E0D8);
+      lightText = const Color(0xFF292524);
+      lightSubtext = const Color(0xFF78716C);
     } else {
-      // Basic Ember
+      // Ember
       brandPrimary = const Color(0xFFE8A020);
       brandSecondary = const Color(0xFFFF6B35);
       brandTertiary = const Color(0xFF2DD4BF);
@@ -134,6 +122,8 @@ abstract class AppColors {
       darkCard = const Color(0xFF1C2130);
       darkCardHover = const Color(0xFF212840);
       darkBorder = const Color(0xFF2A3245);
+      darkText = const Color(0xFFE8ECF5);
+      darkSubtext = const Color(0xFF7A889B);
       
       lightBg = const Color(0xFFF3F4F8);
       lightSurface = const Color(0xFFFFFFFF);
@@ -142,5 +132,10 @@ abstract class AppColors {
       lightText = const Color(0xFF0E1016);
       lightSubtext = const Color(0xFF6B7280);
     }
+  }
+
+  // Backward compatibility alias
+  static void applyThemeVariant(String variant) {
+    applyPalette(variant);
   }
 }

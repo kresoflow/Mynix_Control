@@ -90,11 +90,16 @@ class PosBreadcrumbBar extends StatelessWidget {
             tooltip: 'Настройки кассы',
           ),
           if (MediaQuery.of(context).size.width < 768)
-            IconButton(
-              icon: Icon(PhosphorIconsRegular.sun),
-              color: AppColors.darkSubtext,
-              onPressed: () => context.read<ThemeBloc>().add(ThemeEvent.toggleTheme),
-              tooltip: 'Сменить тему',
+            BlocBuilder<ThemeBloc, ThemeState>(
+              builder: (context, themeState) {
+                final isCurrentDark = themeState.isDark(context);
+                return IconButton(
+                  icon: Icon(isCurrentDark ? PhosphorIconsRegular.sun : PhosphorIconsRegular.moon),
+                  color: isCurrentDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  onPressed: () => context.read<ThemeBloc>().add(ToggleThemeMode()),
+                  tooltip: isCurrentDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему',
+                );
+              },
             ),
         ],
       ),

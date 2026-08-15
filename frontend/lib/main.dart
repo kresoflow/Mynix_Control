@@ -107,7 +107,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _shiftRepository = ShiftRepository(apiClient.dio);
     _inventoryRepository = InventoryRepository(apiClient.dio);
     _authBloc = AuthBloc(_authRepository)..add(AppStarted());
-    _themeBloc = ThemeBloc();
+    _themeBloc = ThemeBloc()..add(LoadSavedTheme());
     _settingsBloc = SettingsBloc();
     _menuBloc = MenuBloc(_menuRepository);
     _cartBloc = CartBloc(_orderRepository);
@@ -185,12 +185,12 @@ class _RetailOSAppState extends State<RetailOSApp> {
           },
           child: BlocBuilder<SettingsBloc, SettingsState>(
             builder: (context, settingsState) {
-              return BlocBuilder<ThemeBloc, ThemeMode>(
-                builder: (context, themeMode) {
+              return BlocBuilder<ThemeBloc, ThemeState>(
+                builder: (context, themeState) {
                   return MaterialApp.router(
                     title: 'Kreso Flow',
                     debugShowCheckedModeBanner: false,
-                    themeMode: themeMode,
+                    themeMode: themeState.mode,
                     theme: AppTheme.light,
                     darkTheme: AppTheme.dark,
                     routerConfig: _appRouter.router,
