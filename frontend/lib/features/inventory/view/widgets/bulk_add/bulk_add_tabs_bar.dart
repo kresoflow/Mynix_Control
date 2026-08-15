@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/theme/app_radii.dart';
+import 'package:mynix_frontend/core/theme/app_shadows.dart';
 
 class BulkAddTabsBar extends StatelessWidget {
   final int tabIndex;
@@ -38,8 +39,9 @@ class BulkAddTabsBar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkBg : AppColors.lightBg,
-              borderRadius: BorderRadius.circular(14),
+              color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -48,20 +50,12 @@ class BulkAddTabsBar extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => onTabSelected(i),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                    duration: const Duration(milliseconds: 150),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: selected ? AppColors.brandPrimary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: selected
-                          ? [
-                              BoxShadow(
-                                color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              )
-                            ]
-                          : null,
+                      borderRadius: AppRadii.tabRadius,
+                      boxShadow: selected ? AppShadows.tabGlow(AppColors.brandPrimary) : null,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -96,8 +90,9 @@ class BulkAddTabsBar extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                borderRadius: BorderRadius.circular(14),
+                color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -131,21 +126,13 @@ class BulkAddTabsBar extends StatelessWidget {
     return GestureDetector(
       onTap: () => onCategoryTypeChanged(value),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         margin: const EdgeInsets.only(right: 4),
         decoration: BoxDecoration(
           color: selected ? AppColors.brandPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  )
-                ]
-              : null,
+          borderRadius: AppRadii.tabRadius,
+          boxShadow: selected ? AppShadows.tabGlow(AppColors.brandPrimary) : null,
         ),
         child: Text(
           label,

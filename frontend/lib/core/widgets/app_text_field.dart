@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class AppTextField extends StatelessWidget {
@@ -39,8 +40,8 @@ class AppTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkCard : AppColors.lightCard;
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final bg = isDark ? const Color(0xFF10141D) : AppColors.lightCard;
+    final borderColor = isDark ? const Color(0xFF242C3D) : AppColors.lightBorder;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,19 +87,19 @@ class AppTextField extends StatelessWidget {
                 vertical: isCompact ? 8 : 12,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(color: borderColor),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(color: borderColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
               ),
               errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(color: AppColors.danger),
               ),
             ),

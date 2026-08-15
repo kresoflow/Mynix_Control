@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'bulk_input_decoration.dart';
 
 
 class BulkAddCategorySelector extends StatelessWidget {
@@ -153,10 +154,7 @@ class BulkAddCategorySelector extends StatelessWidget {
                   Expanded(
                     child: DropdownButtonFormField<int?>(
                       initialValue: safeParentId,
-                      decoration: const InputDecoration(
-                        labelText: 'Главная категория',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: buildBulkInputDecoration(context, 'Главная категория'),
                       items: [
                         const DropdownMenuItem<int?>(
                           value: null,
@@ -176,10 +174,7 @@ class BulkAddCategorySelector extends StatelessWidget {
                   Expanded(
                     child: DropdownButtonFormField<int?>(
                       initialValue: safeChildId,
-                      decoration: const InputDecoration(
-                        labelText: 'Подкатегория',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: buildBulkInputDecoration(context, 'Подкатегория'),
                       items: [
                         const DropdownMenuItem<int?>(
                           value: null,
@@ -204,10 +199,16 @@ class BulkAddCategorySelector extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF10141D) : AppColors.lightCard,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.5)),
+                    ),
                     child: IconButton(
-                      icon: Icon(PhosphorIconsRegular.plusSquare, size: 40, color: AppColors.info),
+                      icon: Icon(PhosphorIconsRegular.plus, size: 20, color: AppColors.brandPrimary),
                       onPressed: () => _showCreateCategoryDialog(
                         context,
                         allowedType,

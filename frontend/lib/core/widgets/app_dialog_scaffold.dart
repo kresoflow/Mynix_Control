@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_radii.dart';
+import 'package:mynix_frontend/core/theme/app_shadows.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class AppDialogScaffold extends StatelessWidget {
@@ -46,17 +48,11 @@ class AppDialogScaffold extends StatelessWidget {
         height: isMobile ? size.height * 0.95 : maxHeight,
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadii.dialogRadius,
           border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.12),
-              blurRadius: 32,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: AppShadows.deep,
         ),
         child: Column(
           children: [
@@ -69,7 +65,7 @@ class AppDialogScaffold extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder,
                   ),
                 ),
               ),
@@ -80,7 +76,7 @@ class AppDialogScaffold extends StatelessWidget {
                     height: 38,
                     decoration: BoxDecoration(
                       color: primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(icon, color: primary, size: 20),
                   ),
@@ -135,11 +131,11 @@ class AppDialogScaffold extends StatelessWidget {
                 vertical: 14,
               ),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppRadii.dialog)),
                 border: Border(
                   top: BorderSide(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder,
                   ),
                 ),
               ),

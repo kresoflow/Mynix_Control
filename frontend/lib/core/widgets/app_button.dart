@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_radii.dart';
+import 'package:mynix_frontend/core/theme/app_shadows.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 enum AppButtonVariant { primary, secondary, outline, ghost, danger }
@@ -14,7 +16,7 @@ class AppButton extends StatefulWidget {
   final bool isLoading;
   final bool isFullWidth;
   final Color? customColor;
-  final double borderRadius;
+  final double? borderRadius;
 
   const AppButton({
     super.key,
@@ -27,7 +29,7 @@ class AppButton extends StatefulWidget {
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
-    this.borderRadius = 16,
+    this.borderRadius,
   });
 
   const AppButton.primary({
@@ -40,7 +42,7 @@ class AppButton extends StatefulWidget {
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
-    this.borderRadius = 16,
+    this.borderRadius,
   }) : variant = AppButtonVariant.primary;
 
   const AppButton.secondary({
@@ -53,7 +55,7 @@ class AppButton extends StatefulWidget {
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
-    this.borderRadius = 16,
+    this.borderRadius,
   }) : variant = AppButtonVariant.secondary;
 
   const AppButton.outline({
@@ -66,7 +68,7 @@ class AppButton extends StatefulWidget {
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
-    this.borderRadius = 16,
+    this.borderRadius,
   }) : variant = AppButtonVariant.outline;
 
   const AppButton.danger({
@@ -79,7 +81,7 @@ class AppButton extends StatefulWidget {
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
-    this.borderRadius = 16,
+    this.borderRadius,
   }) : variant = AppButtonVariant.danger;
 
   const AppButton.ghost({
@@ -92,7 +94,7 @@ class AppButton extends StatefulWidget {
     this.isLoading = false,
     this.isFullWidth = false,
     this.customColor,
-    this.borderRadius = 16,
+    this.borderRadius,
   }) : variant = AppButtonVariant.ghost;
 
   @override
@@ -115,19 +117,14 @@ class _AppButtonState extends State<AppButton> {
     List<BoxShadow>? shadow;
 
     final primary = widget.customColor ?? AppColors.brandPrimary;
+    final radius = widget.borderRadius ?? AppRadii.button;
 
     switch (widget.variant) {
       case AppButtonVariant.primary:
         bg = enabled ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
         fg = Colors.white;
         if (enabled) {
-          shadow = [
-            BoxShadow(
-              color: primary.withValues(alpha: _isHovered ? 0.45 : 0.25),
-              blurRadius: _isHovered ? 20 : 12,
-              offset: const Offset(0, 4),
-            ),
-          ];
+          shadow = AppShadows.buttonGlow(primary);
         }
         break;
 
@@ -215,7 +212,7 @@ class _AppButtonState extends State<AppButton> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(widget.borderRadius),
+              borderRadius: BorderRadius.circular(radius),
               border: border,
               boxShadow: shadow,
             ),
@@ -234,12 +231,12 @@ class AppPrimaryButton extends AppButton {
     required super.label,
     super.onPressed,
     super.icon,
-    super.height = 52,
+    super.height = 50,
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
-    super.borderRadius = 16,
+    super.borderRadius = 12,
   }) : super.primary();
 }
 
@@ -254,7 +251,7 @@ class AppSecondaryButton extends AppButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
-    super.borderRadius = 16,
+    super.borderRadius = 12,
   }) : super.secondary();
 }
 
@@ -269,7 +266,7 @@ class AppGhostButton extends AppButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
-    super.borderRadius = 16,
+    super.borderRadius = 12,
   }) : super.ghost();
 }
 
@@ -284,6 +281,6 @@ class AppDangerButton extends AppButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
-    super.borderRadius = 16,
+    super.borderRadius = 12,
   }) : super.danger();
 }
