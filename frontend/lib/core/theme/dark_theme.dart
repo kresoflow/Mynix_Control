@@ -166,7 +166,7 @@ ThemeData getDarkTheme() {
       backgroundColor: AppColors.darkSurface,
       selectedIconTheme: IconThemeData(color: AppColors.brandPrimary, size: 24),
       unselectedIconTheme: IconThemeData(color: AppColors.darkSubtext, size: 24),
-      indicatorColor: Color(0x1AE8A020), // brandPrimary 10% opacity
+      indicatorColor: AppColors.brandPrimary.withValues(alpha: 0.15),
       elevation: 0,
     ),
 

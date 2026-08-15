@@ -40,7 +40,7 @@ class ThemeState extends Equatable {
 
   const ThemeState({
     this.mode = ThemeMode.dark,
-    this.palette = ThemePalette.ember,
+    this.palette = ThemePalette.ocean,
   });
 
   bool isDark(BuildContext context) {
@@ -68,7 +68,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   static const _kThemeModeKey = 'mynix_theme_mode';
   static const _kThemePaletteKey = 'mynix_theme_palette';
 
-  ThemeBloc() : super(const ThemeState(mode: ThemeMode.dark, palette: ThemePalette.ember)) {
+  ThemeBloc() : super(const ThemeState(mode: ThemeMode.dark, palette: ThemePalette.ocean)) {
     on<LoadSavedTheme>(_onLoadSavedTheme);
     on<ToggleThemeMode>(_onToggleThemeMode);
     on<SetThemeMode>(_onSetThemeMode);

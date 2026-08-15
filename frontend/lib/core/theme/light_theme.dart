@@ -105,7 +105,7 @@ ThemeData getLightTheme() {
       backgroundColor: AppColors.lightSurface,
       selectedIconTheme: IconThemeData(color: AppColors.brandPrimary, size: 24),
       unselectedIconTheme: IconThemeData(color: AppColors.lightSubtext, size: 24),
-      indicatorColor: Color(0x1AE8A020),
+      indicatorColor: AppColors.brandPrimary.withValues(alpha: 0.15),
       elevation: 0,
     ),
 

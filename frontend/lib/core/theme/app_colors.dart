@@ -73,25 +73,25 @@ abstract class AppColors {
   // ── Unified Palette Application ──────────────────────────────────────────
   static void applyPalette(dynamic palette) {
     final paletteName = palette.toString();
-    if (paletteName.contains('ocean') || paletteName == 'deep_ocean') {
-      brandPrimary = const Color(0xFF00F0FF); // Neon Cyan
-      brandSecondary = const Color(0xFFFF007A); // Neon Pink
-      brandTertiary = const Color(0xFF0284C7); // Sky Blue
+    if (paletteName.contains('ocean') || paletteName == 'deep_ocean' || paletteName == 'high_contrast_light') {
+      brandPrimary = const Color(0xFF0284C7); // Sky Blue for Light, overridden to Neon Cyan in Dark
+      brandSecondary = const Color(0xFF0369A1);
+      brandTertiary = const Color(0xFF00F0FF); // Neon Cyan
       
       darkBg = const Color(0xFF050B14);
       darkSurface = const Color(0xFF0A1220);
       darkCard = const Color(0xFF0E1A2D);
-      darkCardHover = const Color(0xFF15243C);
+      darkCardHover = const Color(0xFF16253D);
       darkBorder = const Color(0xFF1E3250);
-      darkText = const Color(0xFFE0F2FE);
+      darkText = const Color(0xFFF0F9FF);
       darkSubtext = const Color(0xFF7DD3FC);
       
-      lightBg = const Color(0xFFF0F9FF);
+      lightBg = const Color(0xFFF0F4F8);
       lightSurface = const Color(0xFFFFFFFF);
       lightCard = const Color(0xFFFFFFFF);
-      lightBorder = const Color(0xFFBAE6FD);
-      lightText = const Color(0xFF0C4A6E);
-      lightSubtext = const Color(0xFF0369A1);
+      lightBorder = const Color(0xFFCBD5E1);
+      lightText = const Color(0xFF0F172A);
+      lightSubtext = const Color(0xFF64748B);
     } else if (paletteName.contains('cream') || paletteName == 'soft_cream') {
       brandPrimary = const Color(0xFFD97706); // Warm Amber
       brandSecondary = const Color(0xFFB45309); // Roast Coffee
