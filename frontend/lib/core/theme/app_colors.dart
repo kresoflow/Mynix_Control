@@ -70,28 +70,38 @@ abstract class AppColors {
     colors: [Color(0xFF1C2130), Color(0xFF161B22)],
   );
 
+  static Color lightPrimary   = const Color(0xFF0284C7);
+  static Color lightSecondary = const Color(0xFF0369A1);
+  static Color lightTertiary  = const Color(0xFF0F766E);
+
   // ── Unified Palette Application ──────────────────────────────────────────
   static void applyPalette(dynamic palette) {
     final paletteName = palette.toString();
     if (paletteName.contains('ocean') || paletteName == 'deep_ocean' || paletteName == 'high_contrast_light') {
-      brandPrimary = const Color(0xFF0284C7); // Sky Blue for Light, overridden to Neon Cyan in Dark
-      brandSecondary = const Color(0xFF0369A1);
-      brandTertiary = const Color(0xFF00F0FF); // Neon Cyan
+      // Dark Mode (Deep Ocean)
+      brandPrimary = const Color(0xFF00F0FF); // Neon Cyan
+      brandSecondary = const Color(0xFFFF007A); // Neon Pink
+      brandTertiary = const Color(0xFF7000FF); // Deep Purple
       
       darkBg = const Color(0xFF050B14);
       darkSurface = const Color(0xFF0A1220);
       darkCard = const Color(0xFF0E1A2D);
-      darkCardHover = const Color(0xFF16253D);
+      darkCardHover = const Color(0xFF15243C);
       darkBorder = const Color(0xFF1E3250);
-      darkText = const Color(0xFFF0F9FF);
+      darkText = const Color(0xFFE0F2FE);
       darkSubtext = const Color(0xFF7DD3FC);
       
-      lightBg = const Color(0xFFF0F4F8);
-      lightSurface = const Color(0xFFFFFFFF);
-      lightCard = const Color(0xFFFFFFFF);
-      lightBorder = const Color(0xFFCBD5E1);
-      lightText = const Color(0xFF0F172A);
-      lightSubtext = const Color(0xFF64748B);
+      // Light Mode (High Contrast Light)
+      lightPrimary = const Color(0xFF0284C7); // Sky Blue 600
+      lightSecondary = const Color(0xFF0369A1); // Sky Blue 700
+      lightTertiary = const Color(0xFF0F766E); // Teal
+      
+      lightBg = const Color(0xFFEAECEF); // Cool Contrast Light Grey
+      lightSurface = const Color(0xFFFFFFFF); // Pure White Surface
+      lightCard = const Color(0xFFFFFFFF); // Pure White Card
+      lightBorder = const Color(0xFF9CA3AF); // High Contrast Grey Border
+      lightText = const Color(0xFF000000); // Pure Black Text
+      lightSubtext = const Color(0xFF4B5563); // Dark Grey Subtext
     } else if (paletteName.contains('cream') || paletteName == 'soft_cream') {
       brandPrimary = const Color(0xFFD97706); // Warm Amber
       brandSecondary = const Color(0xFFB45309); // Roast Coffee

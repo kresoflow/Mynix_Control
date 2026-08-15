@@ -122,18 +122,19 @@ class _NavSidebarItemState extends State<_NavSidebarItem> {
 
   @override
   Widget build(BuildContext context) {
+    final brand = widget.isDark ? AppColors.brandPrimary : AppColors.lightPrimary;
     final color = widget.isSelected
-        ? AppColors.brandPrimary
+        ? brand
         : _hovered
             ? (widget.isDark ? AppColors.darkText : AppColors.lightText)
-            : AppColors.darkSubtext;
+            : (widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
 
     final bgColor = widget.isSelected
-        ? AppColors.brandPrimary.withValues(alpha: 0.1)
+        ? brand.withValues(alpha: 0.12)
         : _hovered
             ? (widget.isDark
                 ? AppColors.darkBorder.withValues(alpha: 0.5)
-                : AppColors.lightBorder)
+                : AppColors.lightBorder.withValues(alpha: 0.5))
             : Colors.transparent;
 
     return MouseRegion(

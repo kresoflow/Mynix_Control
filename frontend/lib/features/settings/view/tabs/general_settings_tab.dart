@@ -265,16 +265,17 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final brand = isDark ? AppColors.brandPrimary : AppColors.lightPrimary;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
+          color: isSelected ? brand.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            color: isSelected ? brand : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -284,13 +285,13 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              color: isSelected ? brand : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: AppTextStyles.caption.copyWith(
-                color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
+                color: isSelected ? brand : (isDark ? AppColors.darkText : AppColors.lightText),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
@@ -308,16 +309,17 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final brand = isDark ? AppColors.brandPrimary : AppColors.lightPrimary;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
+          color: isSelected ? brand.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            color: isSelected ? brand : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -337,7 +339,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
             Text(
               label,
               style: AppTextStyles.caption.copyWith(
-                color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
+                color: isSelected ? brand : (isDark ? AppColors.darkText : AppColors.lightText),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
@@ -349,6 +351,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
 
   Widget _buildCurrencyBtn(BuildContext context, bool isDark, SettingsState state, String code, String name) {
     final isSelected = state.currency == code;
+    final brand = isDark ? AppColors.brandPrimary : AppColors.lightPrimary;
     return InkWell(
       onTap: () {
         context.read<SettingsBloc>().add(UpdateCurrency(code));
@@ -357,10 +360,10 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
+          color: isSelected ? brand.withValues(alpha: 0.15) : (isDark ? AppColors.darkBg : AppColors.lightBg),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            color: isSelected ? brand : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
         ),
         child: Row(
@@ -369,7 +372,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
             Text(
               code,
               style: AppTextStyles.caption.copyWith(
-                color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
+                color: isSelected ? brand : (isDark ? AppColors.darkText : AppColors.lightText),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -377,7 +380,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
             Text(
               name,
               style: AppTextStyles.caption.copyWith(
-                color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                color: isSelected ? brand : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               ),
             ),
           ],
