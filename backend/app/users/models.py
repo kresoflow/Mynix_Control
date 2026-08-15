@@ -151,8 +151,9 @@ class Tenant(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
     )
     
-    # Feature Flags
+    # Settings
     use_kds: bool = Field(default=True, description="Если False, заказы сразу получают статус completed минуя кухню")
+    use_orders: bool = Field(default=True, description="Показывать вкладку Заказы на кассе")
     enable_inventory_deduction: bool = Field(default=True, description="Если False, списание сырья со склада отключается")
 
 

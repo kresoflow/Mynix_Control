@@ -72,7 +72,7 @@ class _OrderCardState extends State<OrderCard> {
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
+              child: isMobile ? _buildMobileLayout(isDark) : _buildDesktopLayout(isDark),
             ),
           ),
         ),
@@ -80,135 +80,143 @@ class _OrderCardState extends State<OrderCard> {
     );
   }
 
-  Widget _buildDesktopLayout() {
-    return Row(
-      children: [
-        _buildOrderNumberBadge(),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                DateFormat('dd.MM.yyyy HH:mm').format(widget.order.createdAt),
-                style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext),
-              ),
-              const SizedBox(height: 4),
-              Text('${widget.order.items.length} позиций', style: AppTextStyles.body),
-            ],
-          ),
-        ),
-        _buildStatusBadge(widget.order.status),
-        const SizedBox(width: 24),
-        Text(widget.order.total.toCurrency(context), style: AppTextStyles.h3),
-        const SizedBox(width: 16),
-        Icon(PhosphorIconsRegular.caretRight, color: AppColors.darkSubtext),
-      ],
-    );
+  Widget _buildDesktopLayout(bool isDark) {
+    return _buildUnifiedLayout(isDark);
   }
 
-  Widget _buildMobileLayout() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildOrderNumberBadge(),
-            _buildStatusBadge(widget.order.status),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  DateFormat('dd.MM.yyyy HH:mm').format(widget.order.createdAt),
-                  style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${widget.order.items.length} позиций',
-                  style: AppTextStyles.bodyLarge,
-                ),
-              ],
-            ),
-            Text(
-              widget.order.total.toCurrency(context),
-              style: AppTextStyles.h2.copyWith(color: AppColors.brandPrimary),
-            ),
-          ],
-        ),
-      ],
-    );
+  Widget _buildMobileLayout(bool isDark) {
+    return _buildUnifiedLayout(isDark);
   }
 
-  Widget _buildOrderNumberBadge() {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppColors.brandPrimary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        '#${widget.order.orderNumber}',
-        style: AppTextStyles.body.copyWith(
-          color: AppColors.brandPrimary,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
+  Widget _buildUnifiedLayout(bool isDark) {
+    final textColor = isDark ? AppColors.darkText : AppColors.lightText;
+    final subtextColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
+    
+    final isCancelled = widget.order.status == 'cancelled';
+    Color statusColor;
+    String statusText;
 
-  Widget _buildStatusBadge(String status) {
-    Color color;
-    String label;
-    switch (status) {
-      case 'new':
-        color = AppColors.brandPrimary;
-        label = 'Новый';
-        break;
-      case 'cooking':
-        color = AppColors.warning;
-        label = 'Готовится';
-        break;
-      case 'ready':
-        color = AppColors.success;
-        label = 'Готов';
-        break;
+    switch (widget.order.status) {
       case 'completed':
-        color = AppColors.darkSubtext;
-        label = 'Завершен';
+        statusColor = AppColors.success;
+        statusText = 'Завершен';
         break;
       case 'cancelled':
-        color = AppColors.danger;
-        label = 'Отменен';
+        statusColor = AppColors.danger;
+        statusText = 'Отменен';
         break;
+      case 'new':
+      case 'cooking':
+      case 'ready':
       default:
-        color = AppColors.darkText;
-        label = status;
+        statusColor = AppColors.warning;
+        statusText = 'В процессе';
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.caption.copyWith(
-          color: color,
-          fontWeight: FontWeight.bold,
+    final dateStr = DateFormat('dd MMM yyyy, HH:mm').format(widget.order.createdAt);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isCancelled ? PhosphorIconsRegular.xCircle : PhosphorIconsRegular.receipt,
+                    color: statusColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Заказ #${widget.order.orderNumber}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                        decoration: isCancelled ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      dateStr,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: subtextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${isCancelled ? 0.0 : widget.order.total.toCurrency(context)}',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isCancelled ? subtextColor : textColor,
+                    decoration: isCancelled ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    statusText,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-      ),
+        
+        const SizedBox(height: 12),
+        Divider(color: isDark ? AppColors.darkBorder : AppColors.lightBorder, height: 1),
+        const SizedBox(height: 12),
+        
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                widget.order.items.map((e) => '${e.quantity}x ${e.menuItemName}').join(', '),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: subtextColor,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Icon(PhosphorIconsRegular.caretRight, color: subtextColor, size: 20),
+          ],
+        ),
+      ],
     );
   }
+
 }

@@ -12,11 +12,12 @@ class MobileLayout extends StatelessWidget {
   const MobileLayout({super.key, required this.child, required this.location});
 
   int _getSelectedIndex(String location) {
-    if (location.startsWith('/orders')) return 1;
-    if (location.startsWith('/kitchen')) return 2;
-    if (location.startsWith('/catalog') || location.startsWith('/warehouse') || location.startsWith('/analytics')) return 3;
+    if (location.startsWith('/pos')) return 0;
+    if (location.startsWith('/catalog')) return 1;
+    if (location.startsWith('/warehouse')) return 2;
+    if (location.startsWith('/analytics')) return 3;
     if (location.startsWith('/settings')) return 4;
-    return 0; 
+    return 0;
   }
 
   void _onItemTapped(BuildContext context, int index) {
@@ -25,13 +26,13 @@ class MobileLayout extends StatelessWidget {
         context.go('/pos');
         break;
       case 1:
-        context.go('/orders');
+        context.go('/catalog');
         break;
       case 2:
-        context.go('/kitchen');
+        context.go('/warehouse');
         break;
       case 3:
-        _showBaseMenu(context);
+        context.go('/analytics');
         break;
       case 4:
         context.go('/settings');
@@ -91,20 +92,20 @@ class MobileLayout extends StatelessWidget {
         backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : AppColors.lightSurface,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.monitor),
+            icon: Icon(PhosphorIconsRegular.receipt),
             label: 'Касса',
           ),
           BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.listNumbers),
-            label: 'Заказы',
+            icon: Icon(PhosphorIconsRegular.bookOpenText),
+            label: 'Каталог',
           ),
           BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.cookingPot),
-            label: 'КДС',
+            icon: Icon(PhosphorIconsRegular.package),
+            label: 'Склад',
           ),
           BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.database),
-            label: 'База',
+            icon: Icon(PhosphorIconsRegular.chartLineUp),
+            label: 'Аналитика',
           ),
           BottomNavigationBarItem(
             icon: Icon(PhosphorIconsRegular.gear),

@@ -247,10 +247,12 @@ from pydantic import BaseModel
 
 class TenantSettingsUpdate(BaseModel):
     use_kds: bool
+    use_orders: bool
     enable_inventory_deduction: bool
 
 class TenantSettingsRead(BaseModel):
     use_kds: bool
+    use_orders: bool
     enable_inventory_deduction: bool
 
 @router.get(
@@ -270,6 +272,7 @@ async def get_tenant_settings(
         raise HTTPException(status_code=404, detail="Tenant not found")
     return TenantSettingsRead(
         use_kds=tenant.use_kds,
+        use_orders=tenant.use_orders,
         enable_inventory_deduction=tenant.enable_inventory_deduction
     )
 
@@ -291,10 +294,12 @@ async def update_tenant_settings(
         raise HTTPException(status_code=404, detail="Tenant not found")
     
     tenant.use_kds = data.use_kds
+    tenant.use_orders = data.use_orders
     tenant.enable_inventory_deduction = data.enable_inventory_deduction
     await session.commit()
     
     return TenantSettingsRead(
         use_kds=tenant.use_kds,
+        use_orders=tenant.use_orders,
         enable_inventory_deduction=tenant.enable_inventory_deduction
     )

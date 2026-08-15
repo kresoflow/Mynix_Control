@@ -35,6 +35,7 @@ class OrderStatus(str, Enum):
 class PaymentMethod(str, Enum):
     CASH = "cash"
     CARD = "card"
+    TRANSFER = "transfer"
     MIXED = "mixed"
 
 

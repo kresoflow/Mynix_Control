@@ -23,6 +23,7 @@ import 'package:mynix_frontend/features/kitchen/bloc/kitchen_bloc.dart';
 import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/core/network/websocket_service.dart';
 
 import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
@@ -139,6 +140,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _documentBloc.close();
     _ordersBloc.close();
     _posSettingsCubit.close();
+    webSocketService.dispose();
     super.dispose();
   }
 
@@ -173,11 +175,14 @@ class _RetailOSAppState extends State<RetailOSApp> {
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthAuthenticated) {
+              webSocketService.connect(state.tenantId);
               context.read<MenuBloc>().add(LoadMenu());
               context.read<ShiftBloc>().add(CheckCurrentShift());
               context.read<IngredientBloc>().add(LoadIngredients());
               context.read<CategoryBloc>().add(LoadCategories());
               context.read<DocumentBloc>().add(const LoadDocuments());
+            } else if (state is AuthUnauthenticated) {
+              webSocketService.disconnect();
             }
           },
           child: BlocBuilder<SettingsBloc, SettingsState>(

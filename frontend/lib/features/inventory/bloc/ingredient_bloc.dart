@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:mynix_frontend/core/network/websocket_service.dart';
 import 'ingredient_event.dart';
 
 abstract class IngredientState extends Equatable {
@@ -30,6 +32,7 @@ class IngredientError extends IngredientState {
 
 class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
   final InventoryRepository repository;
+  StreamSubscription? _wsSubscription;
 
   IngredientBloc(this.repository) : super(IngredientLoading()) {
     on<LoadIngredients>(_onLoadIngredients);
@@ -37,6 +40,18 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
     on<ReceiveStock>(_onReceiveStock);
     on<UpdateIngredient>(_onUpdateIngredient);
     on<DeleteIngredient>(_onDeleteIngredient);
+
+    _wsSubscription = webSocketService.messages.listen((data) {
+      if (data['event'] == 'inventory_updated') {
+        add(LoadIngredients());
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _wsSubscription?.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadIngredients(

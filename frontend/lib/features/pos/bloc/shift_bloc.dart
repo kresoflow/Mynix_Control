@@ -29,8 +29,8 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
   Future<void> _onOpenShiftRequested(OpenShiftRequested event, Emitter<ShiftState> emit) async {
     emit(ShiftLoading());
     try {
-      final result = await repository.openShift(event.openingCash);
-      emit(ShiftOpen(result));
+      await repository.openShift(event.openingCash);
+      add(CheckCurrentShift());
     } catch (e) {
       emit(ShiftError(e.toString()));
       // Re-check to restore correct UI state

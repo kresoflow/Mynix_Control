@@ -17,6 +17,7 @@ class GeneralSettingsTab extends StatefulWidget {
 class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
   bool _isLoading = true;
   bool _useKds = true;
+  bool _useOrders = true;
   bool _enableInventory = true;
 
   @override
@@ -31,26 +32,39 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
       final response = await dio.get('/settings/');
       setState(() {
         _useKds = response.data['use_kds'];
+        _useOrders = response.data['use_orders'] ?? true;
         _enableInventory = response.data['enable_inventory_deduction'];
         _isLoading = false;
       });
+      if (mounted) {
+        context.read<SettingsBloc>().add(
+          UpdateFeatureFlags(useKds: _useKds, useOrders: _useOrders),
+        );
+      }
     } catch (e) {
       setState(() => _isLoading = false);
       print("Error fetching settings: $e");
     }
   }
 
-  Future<void> _updateSettings(bool useKds, bool enableInv) async {
+  Future<void> _updateSettings(bool useKds, bool useOrders, bool enableInv) async {
     try {
       final dio = apiClient.dio;
       await dio.put('/settings/', data: {
         'use_kds': useKds,
+        'use_orders': useOrders,
         'enable_inventory_deduction': enableInv,
       });
       setState(() {
         _useKds = useKds;
+        _useOrders = useOrders;
         _enableInventory = enableInv;
       });
+      if (mounted) {
+        context.read<SettingsBloc>().add(
+          UpdateFeatureFlags(useKds: _useKds, useOrders: _useOrders),
+        );
+      }
     } catch (e) {
       print("Error updating settings: $e");
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ошибка сохранения настроек')));
@@ -78,11 +92,22 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                 SettingsRow(
                   isDark: isDark,
                   title: 'Использовать экран повара (KDS)',
-                  subtitle: 'Если выключено, заказы пропускают кухню и сразу готовы',
+                  subtitle: 'Если выключено, скрывает вкладку КДС и заказы сразу готовы',
                   trailing: Switch(
                     value: _useKds,
                     activeColor: AppColors.brandPrimary,
-                    onChanged: (val) => _updateSettings(val, _enableInventory),
+                    onChanged: (val) => _updateSettings(val, _useOrders, _enableInventory),
+                  ),
+                ),
+                SettingsDivider(isDark: isDark),
+                SettingsRow(
+                  isDark: isDark,
+                  title: 'Показывать вкладку Заказы',
+                  subtitle: 'Отображать вкладку с активными заказами на экране кассы',
+                  trailing: Switch(
+                    value: _useOrders,
+                    activeColor: AppColors.brandPrimary,
+                    onChanged: (val) => _updateSettings(_useKds, val, _enableInventory),
                   ),
                 ),
                 SettingsDivider(isDark: isDark),
@@ -93,7 +118,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   trailing: Switch(
                     value: _enableInventory,
                     activeColor: AppColors.brandPrimary,
-                    onChanged: (val) => _updateSettings(_useKds, val),
+                    onChanged: (val) => _updateSettings(_useKds, _useOrders, val),
                   ),
                 ),
               ],

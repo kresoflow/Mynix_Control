@@ -16,10 +16,19 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
+  String get _todayStr {
+    final now = DateTime.now();
+    return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+  }
+
+  void _loadTodayOrders() {
+    context.read<OrdersBloc>().add(LoadOrders(startDate: _todayStr, endDate: _todayStr));
+  }
+
   @override
   void initState() {
     super.initState();
-    context.read<OrdersBloc>().add(LoadOrders());
+    _loadTodayOrders();
   }
 
   @override
@@ -38,10 +47,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Заказы', style: AppTextStyles.h1),
+                Text('Заказы (Сегодня)', style: AppTextStyles.h1),
                 IconButton(
                   icon: const Icon(PhosphorIconsRegular.arrowsClockwise),
-                  onPressed: () => context.read<OrdersBloc>().add(LoadOrders()),
+                  onPressed: _loadTodayOrders,
                   tooltip: 'Обновить',
                 )
               ],

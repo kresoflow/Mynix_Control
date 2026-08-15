@@ -11,6 +11,7 @@ import 'widgets/dashboard_metric_card.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:mynix_frontend/features/analytics/models/analytics_models.dart';
+import 'package:mynix_frontend/features/analytics/view/tabs/order_history_tab.dart';
 
 class AnalyticsDashboardScreen extends StatefulWidget {
   const AnalyticsDashboardScreen({super.key});
@@ -58,31 +59,50 @@ class _AnalyticsDashboardView extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
-    return Column(
-      children: [
-        // Filter Bar
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            border: Border(
-              bottom: BorderSide(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          // Filter Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkCard : AppColors.lightCard,
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                ),
               ),
             ),
-          ),
-          child: isDesktop 
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Аналитика',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
+            child: isDesktop 
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Аналитика',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                          ),
+                        ),
+                        const SizedBox(width: 32),
+                        SizedBox(
+                          width: 300,
+                          child: TabBar(
+                            labelColor: AppColors.brandPrimary,
+                            unselectedLabelColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                            indicatorColor: AppColors.brandPrimary,
+                            tabs: const [
+                              Tab(text: 'Дашборд'),
+                              Tab(text: 'История заказов'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
                   Row(
                     children: [
                       _buildFilterButton('today', 'Сегодня', context),
@@ -126,6 +146,17 @@ class _AnalyticsDashboardView extends StatelessWidget {
                       color: isDark ? AppColors.darkText : AppColors.lightText,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  TabBar(
+                    labelColor: AppColors.brandPrimary,
+                    unselectedLabelColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    indicatorColor: AppColors.brandPrimary,
+                    isScrollable: true,
+                    tabs: const [
+                      Tab(text: 'Дашборд'),
+                      Tab(text: 'История заказов'),
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -166,24 +197,28 @@ class _AnalyticsDashboardView extends StatelessWidget {
         
         // Content
         Expanded(
-          child: BlocBuilder<AnalyticsBloc, AnalyticsState>(
-            builder: (context, state) {
-              if (state is AnalyticsLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
+          child: TabBarView(
+            physics: const NeverScrollableScrollPhysics(), // Optional: disable swipe to avoid conflict with charts
+            children: [
+              // Tab 1: Dashboard
+              BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                builder: (context, state) {
+                  if (state is AnalyticsLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-              if (state is AnalyticsError) {
-                return Center(
-                  child: Text(
-                    state.message,
-                    style: TextStyle(color: AppColors.danger),
-                  ),
-                );
-              }
+                  if (state is AnalyticsError) {
+                    return Center(
+                      child: Text(
+                        state.message,
+                        style: TextStyle(color: AppColors.danger),
+                      ),
+                    );
+                  }
 
-              if (state is AnalyticsLoaded) {
-                final metrics = state.metrics;
-                final xray = state.xray;
+                  if (state is AnalyticsLoaded) {
+                    final metrics = state.metrics;
+                    final xray = state.xray;
 
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -332,8 +367,18 @@ class _AnalyticsDashboardView extends StatelessWidget {
               return const SizedBox.shrink();
             },
           ),
-        ),
-      ],
+          
+          // Tab 2: Order History
+          OrderHistoryTab(
+            period: selectedPeriod,
+            startDate: (context.findAncestorStateOfType<_AnalyticsDashboardScreenState>() as _AnalyticsDashboardScreenState)._startDate,
+            endDate: (context.findAncestorStateOfType<_AnalyticsDashboardScreenState>() as _AnalyticsDashboardScreenState)._endDate,
+          ),
+        ],
+      ),
+    ),
+  ],
+      ),
     );
   }
 

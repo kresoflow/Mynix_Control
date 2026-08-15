@@ -65,9 +65,119 @@
   <link rel="manifest" href="manifest.json">
 
   <script src='https://telegram.org/js/telegram-web-app.js'></script>
+  
+  <style>
+    body {
+      background-color: #FFFFFF;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .splash-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #FFFFFF;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out;
+    }
+    .splash-logo {
+      width: 140px;
+      height: 140px;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite ease-in-out;
+      /* Добавляем небольшое скругление, если у картинки есть белые углы */
+      border-radius: 20px; 
+    }
+    .splash-text {
+      color: #FF5A00;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
+    .splash-loader {
+      width: 160px;
+      height: 4px;
+      background: #F1F3F5;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .splash-loader-bar {
+      width: 40%;
+      height: 100%;
+      background: #FF5A00;
+      border-radius: 4px;
+      animation: loading 1.2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.97); opacity: 0.9; }
+      50% { transform: scale(1.03); opacity: 1; }
+      100% { transform: scale(0.97); opacity: 0.9; }
+    }
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
+    /* Update Notification Styles */
+    .update-overlay {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10000;
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .update-overlay.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .update-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #FF5A00;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .update-text {
+      color: #333;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
 </head>
 
 <body>
+  
+  <div id="splash-screen" class="splash-container">
+    <img src="icons/Icon-192.png" alt="Kreso Logo" class="splash-logo">
+    <div class="splash-text">KRESO FLOW</div>
+    <div class="splash-loader">
+      <div class="splash-loader-bar"></div>
+    </div>
+  </div>
+
+  <div id="update-overlay" class="update-overlay">
+    <div class="update-spinner"></div>
+    <div class="update-text">Доступно обновление. Перезагрузка...</div>
+  </div>
 
   <!--
 

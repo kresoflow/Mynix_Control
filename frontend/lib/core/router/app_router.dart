@@ -59,9 +59,6 @@ class AppRouter {
           return '/kitchen';
         }
 
-        if ((role.contains('manager') || role.contains('admin')) && path == '/settings') {
-          return '/pos'; // Manager shouldn't access settings for now
-        }
       }
 
       return null;

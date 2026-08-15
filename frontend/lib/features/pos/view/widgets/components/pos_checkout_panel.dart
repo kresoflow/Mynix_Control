@@ -15,6 +15,7 @@ class PosCheckoutPanel extends StatefulWidget {
 class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _scaleAnimation;
+  String _selectedPaymentMethod = 'CASH'; // 'CASH' or 'TRANSFER'
 
   @override
   void initState() {
@@ -93,6 +94,32 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
           
           return Column(
             children: [
+              // Payment Method Selector (Cash vs Transfer)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildPaymentOption(
+                      method: 'CASH',
+                      label: 'Наличные',
+                      icon: Icons.payments_outlined,
+                      isSelected: _selectedPaymentMethod == 'CASH',
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildPaymentOption(
+                      method: 'TRANSFER',
+                      label: 'Перевод',
+                      icon: Icons.qr_code_scanner_rounded,
+                      isSelected: _selectedPaymentMethod == 'TRANSFER',
+                      isDark: isDark,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
               // Subtotal row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -111,18 +138,20 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
                   ),
                 ],
               ),
-              SizedBox(height: isMobile ? 16 : 24),
+              SizedBox(height: isMobile ? 12 : 20),
               // Charge button with pulsing animation if not empty
               ScaleTransition(
                 scale: isEmpty ? const AlwaysStoppedAnimation(1.0) : _scaleAnimation,
                 child: SizedBox(
                   width: double.infinity,
-                  height: 64,
+                  height: 60,
                   child: ElevatedButton(
                     onPressed: isEmpty || state.isSubmitting
                         ? null
                         : () {
-                            context.read<CartBloc>().add(const CheckoutCart());
+                            context.read<CartBloc>().add(
+                              CheckoutCart(paymentMethod: _selectedPaymentMethod),
+                            );
                           },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isEmpty 
@@ -133,16 +162,16 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
                           : Colors.white,
                       elevation: isEmpty ? 0 : 12,
                       shadowColor: AppColors.brandPrimary.withValues(alpha: 0.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     child: Text(
                       state.isSubmitting 
                           ? 'ОБРАБОТКА...'
-                          : 'ОПЛАТИТЬ ЗАКАЗ',
+                          : 'ОПЛАТИТЬ (${_selectedPaymentMethod == 'CASH' ? 'НАЛИЧНЫЕ' : 'ПЕРЕВОД'})',
                       style: AppTextStyles.h3.copyWith(
                         fontWeight: FontWeight.bold, 
-                        letterSpacing: 1.5,
-                        fontSize: isMobile ? 14 : null,
+                        letterSpacing: 1.2,
+                        fontSize: isMobile ? 13 : null,
                       ),
                     ),
                   ),
@@ -151,6 +180,52 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildPaymentOption({
+    required String method,
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required bool isDark,
+  }) {
+    final activeColor = AppColors.brandPrimary;
+    final inactiveColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
+
+    return InkWell(
+      onTap: () => setState(() => _selectedPaymentMethod = method),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? activeColor.withValues(alpha: 0.15)
+              : (isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.03)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected 
+                ? activeColor 
+                : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: isSelected ? activeColor : inactiveColor),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? (isDark ? Colors.white : Colors.black) : inactiveColor,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

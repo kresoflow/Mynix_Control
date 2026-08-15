@@ -98,3 +98,11 @@ async def notify_kitchen_status_update(
         "order_id": order_id,
         "new_status": new_status,
     })
+
+
+async def notify_inventory_updated(tenant_id: int):
+    """Called when inventory stock levels change."""
+    await kitchen_manager.broadcast_to_tenant(tenant_id, {
+        "event": "inventory_updated",
+    })
+

@@ -47,4 +47,27 @@ class ShiftRepository {
       throw Exception('Failed to close shift: $e');
     }
   }
+
+  /// Fetch X-Report for current open shift
+  Future<Map<String, dynamic>> getXReport() async {
+    try {
+      final response = await _dio.get('/shifts/x-report');
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to load X-Report: $e');
+    }
+  }
+
+  /// Record cash expense/withdrawal
+  Future<Map<String, dynamic>> recordExpense(double amount, String description) async {
+    try {
+      final response = await _dio.post(
+        '/cash/expense',
+        data: {'amount': amount, 'description': description},
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to record cash expense: $e');
+    }
+  }
 }

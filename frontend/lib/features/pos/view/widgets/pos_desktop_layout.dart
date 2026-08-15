@@ -17,7 +17,7 @@ class PosDesktopLayout extends StatelessWidget {
         return Row(
           children: [
             Expanded(
-              flex: gridFlex, 
+              flex: gridFlex,
               child: const PosMenuGrid(),
             ),
             Container(
@@ -25,8 +25,13 @@ class PosDesktopLayout extends StatelessWidget {
               color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
             ),
             Expanded(
-              flex: cartFlex, 
-              child: const PosCart(),
+              flex: cartFlex,
+              child: ConstrainedBox(
+                // Ограничиваем максимальную ширину корзины, 
+                // чтобы при 50% на огромном мониторе она не была слишком гигантской
+                constraints: const BoxConstraints(maxWidth: 650),
+                child: const PosCart(),
+              ),
             ),
           ],
         );

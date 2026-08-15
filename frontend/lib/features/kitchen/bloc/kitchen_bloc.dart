@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'kitchen_event.dart';
 import 'kitchen_state.dart';
 import '../repository/kitchen_repository.dart';
+import 'package:mynix_frontend/core/network/websocket_service.dart';
+import 'package:mynix_frontend/core/utils/audio_helper.dart';
 
 class KitchenBloc extends Bloc<KitchenEvent, KitchenState> {
   final KitchenRepository repository;
@@ -41,12 +43,10 @@ class KitchenBloc extends Bloc<KitchenEvent, KitchenState> {
     
     final currentState = state as KitchenLoaded;
     
-    // Connect to WS
+    // Connect to WS messages
     try {
-      final stream = repository.connectToKitchenStream(event.tenantId);
-      
       _wsSubscription?.cancel();
-      _wsSubscription = stream.listen(
+      _wsSubscription = webSocketService.messages.listen(
         (data) {
           final eventType = data['event'];
           if (eventType == 'new_order') {
@@ -84,6 +84,9 @@ class KitchenBloc extends Bloc<KitchenEvent, KitchenState> {
       // Check if order already exists to prevent duplicates
       final exists = currentState.orders.any((o) => o['id'] == event.order['id']);
       if (exists) return;
+
+      // Play bell chime notification
+      AudioHelper.playNewOrderSound();
 
       final updatedOrders = List<Map<String, dynamic>>.from(currentState.orders)..add(event.order);
       // Sort so oldest is first

@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock_tab.dart';
@@ -22,6 +27,15 @@ class _WarehouseScreenState extends State<WarehouseScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    
+    // Auto-refresh data from database every time this screen is opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<IngredientBloc>().add(LoadIngredients());
+      context.read<CategoryBloc>().add(LoadCategories());
+      // context.read<RecipeBloc>().add(LoadRecipe()); // Not needed if RecipeBloc is loaded globally
+      // context.read<DocumentBloc>().add(LoadDocuments());
+      // context.read<DocumentBloc>().add(LoadSuppliers());
+    });
   }
 
   @override

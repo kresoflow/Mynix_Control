@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/core/network/websocket_service.dart';
 import '../repository/menu_repository.dart';
 
 // --- Events ---
@@ -138,6 +140,7 @@ class MenuError extends MenuState {
 // --- Bloc ---
 class MenuBloc extends Bloc<MenuEvent, MenuState> {
   final MenuRepository menuRepository;
+  StreamSubscription? _wsSubscription;
 
   MenuBloc(this.menuRepository) : super(MenuLoading()) {
     on<LoadMenu>(_onLoadMenu);
@@ -147,6 +150,18 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     on<CreateRetailProductGroup>(_onCreateRetailProductGroup);
     on<UpdateMenuItem>(_onUpdateMenuItem);
     on<UpdateRetailProduct>(_onUpdateRetailProduct);
+
+    _wsSubscription = webSocketService.messages.listen((data) {
+      if (data['event'] == 'inventory_updated') {
+        add(LoadMenu());
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _wsSubscription?.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadMenu(LoadMenu event, Emitter<MenuState> emit) async {

@@ -21,8 +21,6 @@ class MynixNavRail extends StatelessWidget {
 
   static const _allItems = [
     _NavItem(PhosphorIconsRegular.receipt, PhosphorIconsFill.receipt, 'Касса', '/pos'),
-    _NavItem(PhosphorIconsRegular.listNumbers, PhosphorIconsFill.listNumbers, 'Заказы', '/orders'),
-    _NavItem(PhosphorIconsRegular.cookingPot, PhosphorIconsFill.cookingPot, 'Кухня', '/kitchen'),
     _NavItem(PhosphorIconsRegular.bookOpenText, PhosphorIconsFill.bookOpenText, 'Каталог', '/catalog'),
     _NavItem(PhosphorIconsRegular.package, PhosphorIconsFill.package, 'Склад', '/warehouse'),
     _NavItem(PhosphorIconsRegular.chartLineUp, PhosphorIconsFill.chartLineUp, 'Аналитика', '/analytics'),
@@ -42,22 +40,16 @@ class MynixNavRail extends StatelessWidget {
         }
 
         final visibleItems = _allItems.where((item) {
-          if (role.contains('owner') || role.contains('superadmin')) return true;
+          if (role.contains('owner') || role.contains('superadmin') || role.contains('admin') || role.contains('manager')) return true;
           
-          if (role.contains('manager') || role.contains('admin')) {
+          if (role.contains('universal')) {
             return item.route != '/settings';
           }
-          if (role.contains('universal')) {
-            return item.route != '/analytics' && item.route != '/settings';
-          }
           if (role.contains('warehouse')) {
-            return item.route == '/warehouse' || item.route == '/catalog';
+            return item.route == '/catalog';
           }
-          if (role.contains('cashier')) {
-            return item.route == '/pos' || item.route == '/orders';
-          }
-          if (role.contains('cook') || role.contains('kitchen')) {
-            return item.route == '/kitchen';
+          if (role.contains('cashier') || role.contains('cook') || role.contains('kitchen')) {
+            return item.route == '/pos';
           }
           
           return false; // Unknown role

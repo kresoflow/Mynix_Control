@@ -9,7 +9,7 @@ from app.pos.models import (
 )
 from app.pos.services.shift_service import (
     open_shift, close_shift, get_open_shift,
-    calculate_expected_cash, record_expense
+    calculate_expected_cash, record_expense, get_x_report
 )
 
 router = APIRouter(tags=["POS — Shifts, Cash"])
@@ -120,3 +120,20 @@ async def api_record_expense(
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get(
+    "/shifts/x-report",
+    dependencies=[Depends(require_permission("shifts:view"))],
+)
+async def api_x_report(
+    current_user: CurrentUser,
+    session: TenantSession,
+):
+    """Get real-time intermediate X-Report for current open shift."""
+    shift = await get_open_shift(session)
+    if not shift:
+        raise HTTPException(status_code=404, detail="No active open shift found.")
+    
+    report = await get_x_report(session, shift.id)
+    return report

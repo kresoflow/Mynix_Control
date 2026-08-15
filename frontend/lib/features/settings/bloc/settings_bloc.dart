@@ -27,28 +27,45 @@ class UpdateThemeVariant extends SettingsEvent {
   List<Object?> get props => [themeVariant];
 }
 
+class UpdateFeatureFlags extends SettingsEvent {
+  final bool useKds;
+  final bool useOrders;
+  const UpdateFeatureFlags({required this.useKds, required this.useOrders});
+
+  @override
+  List<Object?> get props => [useKds, useOrders];
+}
+
 // --- States ---
 class SettingsState extends Equatable {
   final String currency;
   final String themeVariant;
+  final bool useKds;
+  final bool useOrders;
 
   const SettingsState({
     this.currency = 'с',
     this.themeVariant = 'basic',
+    this.useKds = true,
+    this.useOrders = true,
   });
 
   SettingsState copyWith({
     String? currency,
     String? themeVariant,
+    bool? useKds,
+    bool? useOrders,
   }) {
     return SettingsState(
       currency: currency ?? this.currency,
       themeVariant: themeVariant ?? this.themeVariant,
+      useKds: useKds ?? this.useKds,
+      useOrders: useOrders ?? this.useOrders,
     );
   }
 
   @override
-  List<Object?> get props => [currency, themeVariant];
+  List<Object?> get props => [currency, themeVariant, useKds, useOrders];
 }
 
 // --- Bloc ---
@@ -61,6 +78,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<UpdateThemeVariant>((event, emit) {
       AppColors.applyThemeVariant(event.themeVariant);
       emit(state.copyWith(themeVariant: event.themeVariant));
+    });
+
+    on<UpdateFeatureFlags>((event, emit) {
+      emit(state.copyWith(useKds: event.useKds, useOrders: event.useOrders));
     });
   }
 }

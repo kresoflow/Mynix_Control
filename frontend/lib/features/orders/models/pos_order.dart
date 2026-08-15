@@ -20,6 +20,28 @@ class PosOrder {
     required this.items,
   });
 
+  PosOrder copyWith({
+    int? id,
+    int? orderNumber,
+    String? status,
+    String? paymentMethod,
+    double? total,
+    String? note,
+    DateTime? createdAt,
+    List<PosOrderItem>? items,
+  }) {
+    return PosOrder(
+      id: id ?? this.id,
+      orderNumber: orderNumber ?? this.orderNumber,
+      status: status ?? this.status,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      total: total ?? this.total,
+      note: note ?? this.note,
+      createdAt: createdAt ?? this.createdAt,
+      items: items ?? this.items,
+    );
+  }
+
   factory PosOrder.fromJson(Map<String, dynamic> json) {
     return PosOrder(
       id: json['id'] as int,

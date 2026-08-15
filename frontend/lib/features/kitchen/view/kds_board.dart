@@ -22,7 +22,7 @@ class _KdsBoardState extends State<KdsBoard> {
     super.initState();
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
-      context.read<KitchenBloc>().add(FetchActiveOrders());
+      context.read<KitchenBloc>().add(ConnectKitchen(authState.tenantId));
     }
   }
 

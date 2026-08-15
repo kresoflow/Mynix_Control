@@ -7,7 +7,11 @@ from app.pos.models import CreateOrderRequest, OrderStatus
 from app.pos.services.checkout_service import (
     create_order, list_orders, get_order_by_id, update_order_status
 )
-from app.pos.ws import notify_kitchen_new_order, notify_kitchen_status_update
+from app.pos.ws import (
+    notify_kitchen_new_order, 
+    notify_kitchen_status_update,
+    notify_inventory_updated
+)
 
 router = APIRouter(tags=["POS — Orders & Checkout"])
 
@@ -58,6 +62,9 @@ async def api_create_order(
         if has_dishes:
             await notify_kitchen_new_order(current_user.tenant_id, order_data)
 
+        # Notify active clients that inventory stock has been deducted
+        await notify_inventory_updated(current_user.tenant_id)
+
         return order_data
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -72,9 +79,11 @@ async def api_list_orders(
     session: TenantSession,
     shift_id: Optional[int] = Query(None),
     status_filter: Optional[OrderStatus] = Query(None, alias="status"),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
 ):
     """List orders, optionally filtered by shift and/or status."""
-    orders = await list_orders(session, shift_id, status_filter)
+    orders = await list_orders(session, shift_id, status_filter, start_date, end_date)
     return [
         {
             "id": o.id,

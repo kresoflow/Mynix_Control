@@ -7,8 +7,12 @@ class OrdersRepository {
 
   OrdersRepository({required this.dio});
 
-  Future<List<PosOrder>> fetchOrders() async {
-    final response = await dio.get('/orders/');
+  Future<List<PosOrder>> fetchOrders({String? startDate, String? endDate}) async {
+    final Map<String, dynamic> params = {};
+    if (startDate != null) params['start_date'] = startDate;
+    if (endDate != null) params['end_date'] = endDate;
+
+    final response = await dio.get('/orders/', queryParameters: params);
     final List<dynamic> data = response.data;
     return data.map((e) => PosOrder.fromJson(e as Map<String, dynamic>)).toList();
   }

@@ -181,6 +181,8 @@ async def list_orders(
     session: AsyncSession,
     shift_id: Optional[int] = None,
     status_filter: Optional[OrderStatus] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
 ) -> list[Order]:
     """List orders, optionally filtered by shift and/or status."""
     stmt = (
@@ -192,6 +194,13 @@ async def list_orders(
         stmt = stmt.where(Order.shift_id == shift_id)
     if status_filter:
         stmt = stmt.where(Order.status == status_filter)
+    from datetime import datetime
+    if start_date:
+        start_dt = datetime.strptime(f"{start_date} 00:00:00", "%Y-%m-%d %H:%M:%S")
+        stmt = stmt.where(Order.created_at >= start_dt)
+    if end_date:
+        end_dt = datetime.strptime(f"{end_date} 23:59:59", "%Y-%m-%d %H:%M:%S")
+        stmt = stmt.where(Order.created_at <= end_dt)
 
     result = await session.execute(stmt)
     return list(result.scalars().all())

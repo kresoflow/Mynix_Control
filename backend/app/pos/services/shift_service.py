@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select, func
 
 from app.pos.models import (
-    Shift, CashTransaction, CashTransactionType
+    Shift, CashTransaction, CashTransactionType, Order, PaymentMethod, OrderStatus
 )
 
 
@@ -28,7 +28,7 @@ async def calculate_expected_cash(
         func.coalesce(func.sum(CashTransaction.amount), 0)
     ).where(
         CashTransaction.shift_id == shift_id,
-        CashTransaction.type == CashTransactionType.INCOME,
+        CashTransaction.type == CashTransactionType.INCOME.value,
     )
     res_inc = await session.execute(stmt_income)
     total_income = res_inc.scalar() or 0.0
@@ -38,14 +38,25 @@ async def calculate_expected_cash(
     ).where(
         CashTransaction.shift_id == shift_id,
         CashTransaction.type.in_([
-            CashTransactionType.EXPENSE,
-            CashTransactionType.WITHDRAWAL,
+            CashTransactionType.EXPENSE.value,
+            CashTransactionType.WITHDRAWAL.value,
         ]),
     )
     res_exp = await session.execute(stmt_expenses)
     total_expenses = res_exp.scalar() or 0.0
 
-    return opening_cash + total_income - total_expenses
+    # Calculate Cash Sales from Orders
+    stmt_sales = select(
+        func.coalesce(func.sum(Order.total), 0)
+    ).where(
+        Order.shift_id == shift_id,
+        Order.payment_method == PaymentMethod.CASH.value,
+        Order.status != OrderStatus.CANCELLED.value,
+    )
+    res_sales = await session.execute(stmt_sales)
+    total_cash_sales = res_sales.scalar() or 0.0
+
+    return opening_cash + total_income + total_cash_sales - total_expenses
 
 
 async def open_shift(
@@ -90,7 +101,7 @@ async def close_shift(
     expected = await calculate_expected_cash(session, shift.id, shift.opening_cash)
 
     shift.closed_by = user_id
-    shift.closed_at = datetime.now(timezone.utc)
+    shift.closed_at = datetime.now(timezone.utc).replace(tzinfo=None)
     shift.closing_cash_expected = round(expected, 2)
     shift.closing_cash_actual = closing_cash_actual
     shift.discrepancy = round(closing_cash_actual - expected, 2)
@@ -120,3 +131,81 @@ async def record_expense(
     )
     session.add(txn)
     return txn
+
+
+async def get_x_report(
+    session: AsyncSession,
+    shift_id: int,
+) -> dict:
+    """
+    Generate X-Report statistics for a shift.
+    Includes revenue by payment method (cash vs transfer), expected cash, orders count, average check.
+    """
+    stmt_shift = select(Shift).where(Shift.id == shift_id)
+    res_shift = await session.execute(stmt_shift)
+    shift = res_shift.scalar_one_or_none()
+    if not shift:
+        raise ValueError(f"Shift #{shift_id} not found.")
+
+    # Calculate Cash Sales
+    stmt_cash = select(func.coalesce(func.sum(Order.total), 0)).where(
+        Order.shift_id == shift_id,
+        Order.payment_method == PaymentMethod.CASH.value,
+        Order.status != OrderStatus.CANCELLED.value,
+    )
+    res_cash = await session.execute(stmt_cash)
+    cash_sales = float(res_cash.scalar() or 0.0)
+
+    # Calculate Transfer Sales
+    stmt_transfer = select(func.coalesce(func.sum(Order.total), 0)).where(
+        Order.shift_id == shift_id,
+        Order.payment_method.in_([PaymentMethod.TRANSFER.value, PaymentMethod.CARD.value]),
+        Order.status != OrderStatus.CANCELLED.value,
+    )
+    res_transfer = await session.execute(stmt_transfer)
+    transfer_sales = float(res_transfer.scalar() or 0.0)
+
+    # Total Orders Count
+    stmt_count = select(func.count(Order.id)).where(
+        Order.shift_id == shift_id,
+        Order.status != OrderStatus.CANCELLED.value,
+    )
+    res_count = await session.execute(stmt_count)
+    orders_count = int(res_count.scalar() or 0)
+
+    # Cancelled Orders Count
+    stmt_cancelled = select(func.count(Order.id)).where(
+        Order.shift_id == shift_id,
+        Order.status == OrderStatus.CANCELLED.value,
+    )
+    res_cancelled = await session.execute(stmt_cancelled)
+    cancelled_count = int(res_cancelled.scalar() or 0)
+
+    total_revenue = cash_sales + transfer_sales
+    avg_check = round(total_revenue / orders_count, 2) if orders_count > 0 else 0.0
+
+    # Expenses / Withdrawals
+    stmt_exp = select(func.coalesce(func.sum(CashTransaction.amount), 0)).where(
+        CashTransaction.shift_id == shift_id,
+        CashTransaction.type.in_([CashTransactionType.EXPENSE.value, CashTransactionType.WITHDRAWAL.value]),
+    )
+    res_exp = await session.execute(stmt_exp)
+    cash_expenses = float(res_exp.scalar() or 0.0)
+
+    # Expected Cash in drawer
+    expected_cash = round(shift.opening_cash + cash_sales - cash_expenses, 2)
+
+    return {
+        "shift_id": shift.id,
+        "is_open": shift.is_open,
+        "opened_at": shift.opened_at.isoformat() if shift.opened_at else None,
+        "opening_cash": shift.opening_cash,
+        "cash_sales": cash_sales,
+        "transfer_sales": transfer_sales,
+        "total_revenue": round(total_revenue, 2),
+        "orders_count": orders_count,
+        "cancelled_count": cancelled_count,
+        "average_check": avg_check,
+        "cash_expenses": cash_expenses,
+        "expected_cash": expected_cash,
+    }
