@@ -58,9 +58,7 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         decoration: BoxDecoration(
           color: _hovered
-              ? (isDark
-                  ? AppColors.darkCardHover
-                  : const Color(0xFFF8F9FC))
+              ? (isDark ? AppColors.darkCardHover : AppColors.lightBg)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),

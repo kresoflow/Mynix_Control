@@ -65,7 +65,7 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
                 width: 420,
                 padding: const EdgeInsets.all(40),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E2128) : Colors.white,
+                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
@@ -80,7 +80,7 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
                     )
                   ],
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: isDark ? 0.05 : 0.5),
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     width: 1.5,
                   ),
                 ),

@@ -79,7 +79,7 @@ class _PosItemCardState extends State<PosItemCard> {
             duration: const Duration(milliseconds: 200),
             padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12, vertical: isMobile ? 8 : 12),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E2128) : Colors.white,
+              color: isDark ? AppColors.darkCard : AppColors.lightCard,
               borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
               border: Border.all(
                 color: AppColors.brandPrimary.withValues(alpha: _isHovered ? 0.3 : 0.05),

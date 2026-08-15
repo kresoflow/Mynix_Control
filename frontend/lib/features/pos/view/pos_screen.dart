@@ -247,7 +247,7 @@ class _PosScreenState extends State<PosScreen> {
       context.read<CartBloc>().add(AddItemToCart(item));
       _showSnackbar(context, '${item.cleanName} добавлен', AppColors.success);
     } else {
-      _showSnackbar(context, 'Товар со штрихкодом не найден', const Color(0xFFF59E0B));
+      _showSnackbar(context, 'Товар со штрихкодом не найден', AppColors.warning);
     }
   }
 }

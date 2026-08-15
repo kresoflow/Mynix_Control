@@ -55,7 +55,7 @@ class OrderDetailsDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1F222A) : const Color(0xFFF8F9FA),
+                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Column(
@@ -67,7 +67,7 @@ class OrderDetailsDialog extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.brandPrimary.withOpacity(0.1),
+                            color: AppColors.brandPrimary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(PhosphorIconsFill.receipt, color: AppColors.brandPrimary, size: 28),

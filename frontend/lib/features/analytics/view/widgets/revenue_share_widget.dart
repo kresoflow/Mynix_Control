@@ -24,9 +24,8 @@ class RevenueShareWidget extends StatelessWidget {
     final dishesShare = totalRevenue > 0 ? (dishesRevenue / totalRevenue) : 0.5;
     final retailShare = totalRevenue > 0 ? (retailRevenue / totalRevenue) : 0.5;
 
-    // Neon glow colors
-    final dishesColor = const Color(0xFF00F0FF); // Neon Cyan
-    final retailColor = const Color(0xFFFF007A); // Neon Pink
+    final dishesColor = AppColors.brandPrimary;
+    final retailColor = AppColors.brandSecondary;
 
     return Container(
       padding: const EdgeInsets.all(20),

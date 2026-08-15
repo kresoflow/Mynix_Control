@@ -16,18 +16,6 @@ import 'components/pos_item_card.dart';
 import 'components/pos_empty_state.dart';
 import 'menu_modifiers_dialog.dart';
 
-// Premium vibrant colors for category cards
-const _kCategoryColors = [
-  Color(0xFFF59E0B), // Amber
-  Color(0xFF3B82F6), // Blue
-  Color(0xFF10B981), // Emerald
-  Color(0xFF8B5CF6), // Violet
-  Color(0xFFEC4899), // Pink
-  Color(0xFFF97316), // Orange
-  Color(0xFF06B6D4), // Cyan
-  Color(0xFFEAB308), // Yellow
-];
-
 class PosMenuGrid extends StatelessWidget {
   const PosMenuGrid({super.key});
 
@@ -129,7 +117,7 @@ class PosMenuGrid extends StatelessWidget {
                                 if (index < categories.length) {
                                   final cat = categories[index];
                                   final accent = posSettings.enableRainbowColors 
-                                      ? _kCategoryColors[index % _kCategoryColors.length]
+                                      ? AppColors.categoryRainbowPalette[index % AppColors.categoryRainbowPalette.length]
                                       : AppColors.brandPrimary;
                                   return PosCategoryCard(
                                     cat: cat,

@@ -56,7 +56,7 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
             duration: const Duration(milliseconds: 200),
             padding: EdgeInsets.all(isMobile ? 12 : 20),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E2128) : Colors.white,
+              color: isDark ? AppColors.darkCard : AppColors.lightCard,
               borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
               border: Border.all(
                 color: widget.accent.withValues(alpha: _isHovered ? 0.3 : 0.05),

@@ -39,8 +39,8 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF1E2128) : Colors.white;
-    final border = isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05);
+    final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
+    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
     final isMobile = MediaQuery.of(context).size.width < 600;
 
     return Container(

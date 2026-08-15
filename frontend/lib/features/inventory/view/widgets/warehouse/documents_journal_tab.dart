@@ -101,8 +101,8 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
                     SnackBar(
                       content: const Text('Раздел массового списания находится в разработке.'),
                       backgroundColor: Theme.of(context).brightness == Brightness.dark 
-                          ? const Color(0xFF161B22) 
-                          : Colors.black87,
+                          ? AppColors.darkCard 
+                          : AppColors.darkBg,
                       behavior: SnackBarBehavior.floating,
                       margin: const EdgeInsets.all(16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

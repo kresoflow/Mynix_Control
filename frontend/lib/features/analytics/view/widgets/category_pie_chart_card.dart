@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/analytics/models/analytics_models.dart';
 
 class CategoryPieChartCard extends StatelessWidget {
@@ -10,15 +11,6 @@ class CategoryPieChartCard extends StatelessWidget {
     super.key,
     required this.categories,
   });
-
-  static final List<Color> chartColors = [
-    AppColors.brandPrimary,
-    const Color(0xFF34D399),
-    const Color(0xFF8B5CF6),
-    const Color(0xFFF59E0B),
-    const Color(0xFFEC4899),
-    const Color(0xFF3B82F6),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +31,7 @@ class CategoryPieChartCard extends StatelessWidget {
         children: [
           Text(
             'Продажи по категориям',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            style: AppTextStyles.h3.copyWith(
               color: isDark ? AppColors.darkText : AppColors.lightText,
             ),
           ),
@@ -50,7 +40,9 @@ class CategoryPieChartCard extends StatelessWidget {
             Center(
               child: Text(
                 'Нет данных',
-                style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
+                style: AppTextStyles.body.copyWith(
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
               ),
             )
           else if (isDesktop)
@@ -77,6 +69,7 @@ class CategoryPieChartCard extends StatelessWidget {
   }
 
   Widget _buildPieChart() {
+    final colors = AppColors.chartPalette;
     return PieChart(
       PieChartData(
         sectionsSpace: 2,
@@ -85,7 +78,7 @@ class CategoryPieChartCard extends StatelessWidget {
           final index = e.key;
           final item = e.value;
           return PieChartSectionData(
-            color: chartColors[index % chartColors.length],
+            color: colors[index % colors.length],
             value: item.percentage,
             title: '${item.percentage.toStringAsFixed(0)}%',
             radius: 50,
@@ -101,6 +94,7 @@ class CategoryPieChartCard extends StatelessWidget {
   }
 
   Widget _buildLegend(bool isDark) {
+    final colors = AppColors.chartPalette;
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -114,7 +108,7 @@ class CategoryPieChartCard extends StatelessWidget {
               width: 16,
               height: 16,
               decoration: BoxDecoration(
-                color: chartColors[index % chartColors.length],
+                color: colors[index % colors.length],
                 shape: BoxShape.circle,
               ),
             ),
@@ -122,9 +116,7 @@ class CategoryPieChartCard extends StatelessWidget {
             Expanded(
               child: Text(
                 item.categoryName,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                style: AppTextStyles.bodyMedium.copyWith(
                   color: isDark ? AppColors.darkText : AppColors.lightText,
                 ),
                 maxLines: 1,
@@ -133,10 +125,9 @@ class CategoryPieChartCard extends StatelessWidget {
             ),
             Text(
               '${item.percentage.toStringAsFixed(1)}%',
-              style: TextStyle(
-                fontSize: 14,
+              style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white54 : Colors.black54,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
               ),
             ),
           ],

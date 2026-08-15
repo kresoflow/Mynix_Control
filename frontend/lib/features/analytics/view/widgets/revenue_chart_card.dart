@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/analytics/models/analytics_models.dart';
 
 class RevenueChartCard extends StatelessWidget {
@@ -30,9 +31,7 @@ class RevenueChartCard extends StatelessWidget {
         children: [
           Text(
             'Динамика выручки',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            style: AppTextStyles.h3.copyWith(
               color: isDark ? AppColors.darkText : AppColors.lightText,
             ),
           ),
@@ -42,7 +41,9 @@ class RevenueChartCard extends StatelessWidget {
                 ? Center(
                     child: Text(
                       'Нет данных за период',
-                      style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
+                      style: AppTextStyles.body.copyWith(
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
                     ),
                   )
                 : LineChart(
@@ -52,7 +53,7 @@ class RevenueChartCard extends StatelessWidget {
                         drawVerticalLine: false,
                         getDrawingHorizontalLine: (value) {
                           return FlLine(
-                            color: isDark ? Colors.white10 : Colors.black12,
+                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                             strokeWidth: 1,
                             dashArray: [5, 5],
                           );
@@ -92,7 +93,7 @@ class RevenueChartCard extends StatelessWidget {
                           dotData: const FlDotData(show: false),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: AppColors.brandPrimary.withOpacity(0.1),
+                            color: AppColors.brandPrimary.withValues(alpha: 0.1),
                           ),
                         ),
                       ],
@@ -124,8 +125,8 @@ class RevenueChartCard extends StatelessWidget {
         padding: const EdgeInsets.only(top: 8.0),
         child: Text(
           label,
-          style: TextStyle(
-            color: isDark ? Colors.white54 : Colors.black54,
+          style: AppTextStyles.caption.copyWith(
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
             fontSize: 10,
           ),
         ),
@@ -140,9 +141,8 @@ class RevenueChartCard extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8.0),
       child: Text(
         _formatCompact(value),
-        style: TextStyle(
-          color: isDark ? Colors.white54 : Colors.black54,
-          fontSize: 12,
+        style: AppTextStyles.caption.copyWith(
+          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
         ),
       ),
     );

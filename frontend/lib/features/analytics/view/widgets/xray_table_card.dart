@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/features/analytics/models/analytics_models.dart';
 
@@ -15,8 +16,7 @@ class XRayTableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return Container(
@@ -34,9 +34,7 @@ class XRayTableCard extends StatelessWidget {
             children: [
               Text(
                 'Рентген продаж (Позиции)',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                style: AppTextStyles.h3.copyWith(
                   color: isDark ? AppColors.darkText : AppColors.lightText,
                 ),
               ),
@@ -50,7 +48,9 @@ class XRayTableCard extends StatelessWidget {
                 padding: const EdgeInsets.all(24.0),
                 child: Text(
                   'Нет продаж за выбранный период',
-                  style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
+                  style: AppTextStyles.body.copyWith(
+                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  ),
                 ),
               ),
             )
@@ -71,9 +71,9 @@ class XRayTableCard extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 100),
         child: DataTable(
-          headingTextStyle: TextStyle(
+          headingTextStyle: AppTextStyles.caption.copyWith(
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white54 : Colors.black54,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
           columns: const [
             DataColumn(label: Text('#')),
@@ -92,7 +92,7 @@ class XRayTableCard extends StatelessWidget {
               cells: [
                 DataCell(Text(
                   '${index + 1}',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
+                  style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
                 )),
                 DataCell(Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,24 +100,23 @@ class XRayTableCard extends StatelessWidget {
                   children: [
                     Text(
                       item.name,
-                      style: TextStyle(
+                      style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w600,
                         color: isDark ? AppColors.darkText : AppColors.lightText,
                       ),
                     ),
                     Text(
                       '$price $currency',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white54 : Colors.black54,
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       ),
                     ),
                   ],
                 )),
                 DataCell(Text(
                   item.options ?? '-',
-                  style: TextStyle(
-                    color: isDark ? Colors.white54 : Colors.black54,
+                  style: AppTextStyles.caption.copyWith(
+                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                   ),
                 )),
                 DataCell(Container(
@@ -126,12 +125,12 @@ class XRayTableCard extends StatelessWidget {
                     color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(item.category),
+                  child: Text(item.category, style: AppTextStyles.caption),
                 )),
-                DataCell(Text('${item.quantity} шт.')),
+                DataCell(Text('${item.quantity} шт.', style: AppTextStyles.bodyMedium)),
                 DataCell(Text(
                   '${item.revenue.toStringAsFixed(0)} $currency',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
                 )),
               ],
             );
@@ -161,13 +160,13 @@ class XRayTableCard extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.brandPrimary.withOpacity(0.1),
+                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(
                     '${index + 1}',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
+                    style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
                   ),
                 ),
               ),
@@ -178,17 +177,17 @@ class XRayTableCard extends StatelessWidget {
                   children: [
                     Text(
                       item.name,
-                      style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText),
+                      style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText),
                     ),
                     if (item.options != null && item.options!.isNotEmpty && item.options != '-')
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
-                        child: Text(item.options!, style: TextStyle(fontSize: 12, color: isDark ? Colors.white54 : Colors.black54)),
+                        child: Text(item.options!, style: AppTextStyles.caption.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
                       ),
                     const SizedBox(height: 4),
                     Text(
                       '$price $currency',
-                      style: TextStyle(fontSize: 12, color: AppColors.brandPrimary),
+                      style: AppTextStyles.caption.copyWith(color: AppColors.brandPrimary),
                     ),
                   ],
                 ),
@@ -198,12 +197,12 @@ class XRayTableCard extends StatelessWidget {
                 children: [
                   Text(
                     '${item.revenue.toStringAsFixed(0)} $currency',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '${item.quantity} шт.',
-                    style: TextStyle(fontSize: 12, color: isDark ? Colors.white54 : Colors.black54),
+                    style: AppTextStyles.caption.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                   ),
                 ],
               ),

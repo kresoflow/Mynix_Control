@@ -16,8 +16,8 @@ class DashboardKpiGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 800;
-    final currency = context.watch<SettingsBloc>().state.currency;
+    final currency = context.read<SettingsBloc>().state.currency;
+    final isDesktop = MediaQuery.of(context).size.width > 1100;
 
     if (isDesktop) {
       return Row(
@@ -36,7 +36,7 @@ class DashboardKpiGrid extends StatelessWidget {
               title: 'Чистая прибыль',
               value: '${metrics.netProfit.toStringAsFixed(0)} $currency',
               icon: PhosphorIconsRegular.money,
-              gradientColors: [AppColors.success, const Color(0xFF34D399)],
+              gradientColors: [AppColors.success, AppColors.brandTertiary],
             ),
           ),
           const SizedBox(width: 16),
@@ -45,7 +45,7 @@ class DashboardKpiGrid extends StatelessWidget {
               title: 'Маржинальность',
               value: '${metrics.marginPercentage.toStringAsFixed(1)}%',
               icon: PhosphorIconsRegular.chartLineUp,
-              gradientColors: const [Color(0xFF8B5CF6), Color(0xFFC084FC)],
+              gradientColors: [AppColors.brandSecondary, AppColors.brandPrimary],
             ),
           ),
           const SizedBox(width: 16),
@@ -54,7 +54,7 @@ class DashboardKpiGrid extends StatelessWidget {
               title: 'Количество чеков',
               value: '${metrics.totalOrders}',
               icon: PhosphorIconsRegular.receipt,
-              gradientColors: const [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+              gradientColors: [AppColors.info, AppColors.brandTertiary],
             ),
           ),
         ],
@@ -79,7 +79,7 @@ class DashboardKpiGrid extends StatelessWidget {
                 title: 'Чистая прибыль',
                 value: '${metrics.netProfit.toStringAsFixed(0)} $currency',
                 icon: PhosphorIconsRegular.money,
-                gradientColors: [AppColors.success, const Color(0xFF34D399)],
+                gradientColors: [AppColors.success, AppColors.brandTertiary],
               ),
             ),
           ],
@@ -92,7 +92,7 @@ class DashboardKpiGrid extends StatelessWidget {
                 title: 'Маржинальность',
                 value: '${metrics.marginPercentage.toStringAsFixed(1)}%',
                 icon: PhosphorIconsRegular.chartLineUp,
-                gradientColors: const [Color(0xFF8B5CF6), Color(0xFFC084FC)],
+                gradientColors: [AppColors.brandSecondary, AppColors.brandPrimary],
               ),
             ),
             const SizedBox(width: 12),
@@ -101,7 +101,7 @@ class DashboardKpiGrid extends StatelessWidget {
                 title: 'Количество чеков',
                 value: '${metrics.totalOrders}',
                 icon: PhosphorIconsRegular.receipt,
-                gradientColors: const [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                gradientColors: [AppColors.info, AppColors.brandTertiary],
               ),
             ),
           ],

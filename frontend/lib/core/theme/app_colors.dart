@@ -30,6 +30,27 @@ abstract class AppColors {
   static Color danger  = const Color(0xFFDC2626);
   static Color info    = const Color(0xFF2563EB);
 
+  // ── Palettes for Cards and Charts ──────────────────────────────────────────
+  static final List<Color> categoryRainbowPalette = [
+    const Color(0xFFF59E0B), // Amber
+    const Color(0xFF3B82F6), // Blue
+    const Color(0xFF10B981), // Emerald
+    const Color(0xFF8B5CF6), // Violet
+    const Color(0xFFEC4899), // Pink
+    const Color(0xFFF97316), // Orange
+    const Color(0xFF06B6D4), // Cyan
+    const Color(0xFFEAB308), // Yellow
+  ];
+
+  static List<Color> get chartPalette => [
+    brandPrimary,
+    const Color(0xFF34D399),
+    const Color(0xFF8B5CF6),
+    const Color(0xFFF59E0B),
+    const Color(0xFFEC4899),
+    const Color(0xFF3B82F6),
+  ];
+
   // ── Gradients ─────────────────────────────────────────────────────────────
   static LinearGradient get brandGradient => LinearGradient(
     begin: Alignment.topLeft,
