@@ -59,14 +59,11 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
         ],
       ),
       child: BlocConsumer<CartBloc, CartState>(
-        listenWhen: (previous, current) =>
-            previous.lastCheckoutSuccess != current.lastCheckoutSuccess &&
-            current.lastCheckoutSuccess != null,
+        listenWhen: (previous, current) => !previous.submitSuccess && current.submitSuccess,
         listener: (context, state) {
-          final checkout = state.lastCheckoutSuccess!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Заказ #${checkout.orderId} успешно оплачен (${checkout.total.toCurrency(context)})'),
+              content: const Text('Заказ успешно оплачен!'),
               backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
             ),
