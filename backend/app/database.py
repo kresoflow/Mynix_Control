@@ -44,9 +44,21 @@ get_session = get_public_session
 async def init_db() -> None:
     """Run Alembic upgrade to create public schema tables."""
     import asyncio
-    import os
+    from pathlib import Path
+    from alembic.config import Config
+    from alembic import command
+
     def run_alembic():
-        os.system("cd D:\\Mynix_Control\\SCafe && .\\.venv\\Scripts\\alembic upgrade head")
+        base_dir = Path(__file__).resolve().parent.parent
+        ini_path = base_dir / "alembic.ini"
+        if ini_path.exists():
+            alembic_cfg = Config(str(ini_path))
+            alembic_cfg.set_main_option("script_location", str(base_dir / "alembic"))
+            try:
+                command.upgrade(alembic_cfg, "head")
+            except Exception as e:
+                print(f"Alembic upgrade notice: {e}")
+
     await asyncio.to_thread(run_alembic)
 
 async def init_tenant_schema(schema_name: str) -> None:
