@@ -205,8 +205,8 @@ class AnalyticsFilterBar extends StatelessWidget {
             return Theme(
               data: theme.copyWith(
                 colorScheme: isDark
-                    ? const ColorScheme.dark(primary: AppColors.brandPrimary)
-                    : const ColorScheme.light(primary: AppColors.brandPrimary),
+                    ? ColorScheme.dark(primary: AppColors.brandPrimary)
+                    : ColorScheme.light(primary: AppColors.brandPrimary),
               ),
               child: child!,
             );

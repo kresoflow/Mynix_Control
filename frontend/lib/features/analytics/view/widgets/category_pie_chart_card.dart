@@ -11,13 +11,13 @@ class CategoryPieChartCard extends StatelessWidget {
     required this.categories,
   });
 
-  static const List<Color> chartColors = [
+  static final List<Color> chartColors = [
     AppColors.brandPrimary,
-    Color(0xFF34D399),
-    Color(0xFF8B5CF6),
-    Color(0xFFF59E0B),
-    Color(0xFFEC4899),
-    Color(0xFF3B82F6),
+    const Color(0xFF34D399),
+    const Color(0xFF8B5CF6),
+    const Color(0xFFF59E0B),
+    const Color(0xFFEC4899),
+    const Color(0xFF3B82F6),
   ];
 
   @override
