@@ -122,7 +122,13 @@ class _PosScreenState extends State<PosScreen> {
                             );
                           },
                           icon: Icon(PhosphorIconsRegular.lockKey, size: 16, color: AppColors.danger),
-                          label: Text('Закрыть смену', style: TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.bold)),
+                          label: Text(
+                            'Закрыть смену',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.danger,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: AppColors.danger),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
