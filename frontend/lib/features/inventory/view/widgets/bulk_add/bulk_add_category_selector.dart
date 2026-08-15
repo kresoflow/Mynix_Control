@@ -105,6 +105,7 @@ class BulkAddCategorySelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (tabIndex < 0 || tabIndex > 3) return const SizedBox.shrink();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, catState) {
