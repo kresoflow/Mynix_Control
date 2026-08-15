@@ -77,70 +77,58 @@ abstract class AppColors {
   // ── Unified Palette Application ──────────────────────────────────────────
   static void applyPalette(dynamic palette) {
     final paletteName = palette.toString();
-    if (paletteName.contains('ocean') || paletteName == 'deep_ocean' || paletteName == 'high_contrast_light') {
-      // Dark Mode (Deep Ocean)
-      brandPrimary = const Color(0xFF00F0FF); // Neon Cyan
-      brandSecondary = const Color(0xFFFF007A); // Neon Pink
-      brandTertiary = const Color(0xFF7000FF); // Deep Purple
+    if (paletteName.contains('contrast') || paletteName == 'high_contrast_light' || paletteName == 'basic') {
+      // ⚡ High Contrast / Classic Theme
+      // Dark Mode (Classic Ember Dark)
+      brandPrimary   = const Color(0xFFE8A020); // Amber Gold
+      brandSecondary = const Color(0xFFFF6B35); // Warm Coral
+      brandTertiary  = const Color(0xFF2DD4BF); // Teal Mint
       
-      darkBg = const Color(0xFF050B14);
-      darkSurface = const Color(0xFF0A1220);
-      darkCard = const Color(0xFF0E1A2D);
-      darkCardHover = const Color(0xFF15243C);
-      darkBorder = const Color(0xFF1E3250);
-      darkText = const Color(0xFFE0F2FE);
-      darkSubtext = const Color(0xFF7DD3FC);
+      darkBg         = const Color(0xFF0E1016);
+      darkSurface    = const Color(0xFF161B22);
+      darkCard       = const Color(0xFF1C2130);
+      darkCardHover  = const Color(0xFF212840);
+      darkBorder     = const Color(0xFF2A3245);
+      darkText       = const Color(0xFFE8EDF5);
+      darkSubtext    = const Color(0xFF8B95A9);
       
-      // Light Mode (High Contrast Light)
-      lightPrimary = const Color(0xFF0284C7); // Sky Blue 600
+      // Light Mode (High Contrast Light - Screenshot 1 & 4)
+      lightPrimary   = const Color(0xFF0284C7); // Sky Blue 600
       lightSecondary = const Color(0xFF0369A1); // Sky Blue 700
-      lightTertiary = const Color(0xFF0F766E); // Teal
+      lightTertiary  = const Color(0xFF0F766E); // Teal
       
-      lightBg = const Color(0xFFEAECEF); // Cool Contrast Light Grey
-      lightSurface = const Color(0xFFFFFFFF); // Pure White Surface
-      lightCard = const Color(0xFFFFFFFF); // Pure White Card
-      lightBorder = const Color(0xFF9CA3AF); // High Contrast Grey Border
-      lightText = const Color(0xFF000000); // Pure Black Text
-      lightSubtext = const Color(0xFF4B5563); // Dark Grey Subtext
-    } else if (paletteName.contains('cream') || paletteName == 'soft_cream') {
-      brandPrimary = const Color(0xFFD97706); // Warm Amber
-      brandSecondary = const Color(0xFFB45309); // Roast Coffee
-      brandTertiary = const Color(0xFF047857); // Sage Green
-      
-      darkBg = const Color(0xFF141210);
-      darkSurface = const Color(0xFF1C1917);
-      darkCard = const Color(0xFF292524);
-      darkCardHover = const Color(0xFF383330);
-      darkBorder = const Color(0xFF44403C);
-      darkText = const Color(0xFFF5F5F4);
-      darkSubtext = const Color(0xFFA8A29E);
-      
-      lightBg = const Color(0xFFFDFBF7);
-      lightSurface = const Color(0xFFFCFAF5);
-      lightCard = const Color(0xFFFFFFFF);
-      lightBorder = const Color(0xFFE5E0D8);
-      lightText = const Color(0xFF292524);
-      lightSubtext = const Color(0xFF78716C);
+      lightBg        = const Color(0xFFEAECEF); // Cool Contrast Light Grey
+      lightSurface   = const Color(0xFFFFFFFF); // Pure White Surface
+      lightCard      = const Color(0xFFFFFFFF); // Pure White Card
+      lightBorder    = const Color(0xFF9CA3AF); // High Contrast Grey Border
+      lightText      = const Color(0xFF000000); // Pure Black Text
+      lightSubtext   = const Color(0xFF4B5563); // Dark Grey Subtext
     } else {
-      // Ember
-      brandPrimary = const Color(0xFFE8A020);
-      brandSecondary = const Color(0xFFFF6B35);
-      brandTertiary = const Color(0xFF2DD4BF);
+      // 🌊 Deep Ocean Theme
+      // Dark Mode (Deep Ocean - Screenshot 2 & 3)
+      brandPrimary   = const Color(0xFF00F0FF); // Neon Cyan
+      brandSecondary = const Color(0xFFFF007A); // Neon Pink
+      brandTertiary  = const Color(0xFF7000FF); // Deep Purple
       
-      darkBg = const Color(0xFF0E1016);
-      darkSurface = const Color(0xFF161B22);
-      darkCard = const Color(0xFF1C2130);
-      darkCardHover = const Color(0xFF212840);
-      darkBorder = const Color(0xFF2A3245);
-      darkText = const Color(0xFFE8ECF5);
-      darkSubtext = const Color(0xFF7A889B);
+      darkBg         = const Color(0xFF050B14); // Ultra Deep Midnight Navy
+      darkSurface    = const Color(0xFF0A1220); // Navy Surface
+      darkCard       = const Color(0xFF0E1A2D); // Dark Card Surface
+      darkCardHover  = const Color(0xFF15243C); // Hover state
+      darkBorder     = const Color(0xFF1E3250); // Navy Border
+      darkText       = const Color(0xFFE0F2FE); // Ice Blue Text
+      darkSubtext    = const Color(0xFF7DD3FC); // Cyan Subtext
       
-      lightBg = const Color(0xFFF3F4F8);
-      lightSurface = const Color(0xFFFFFFFF);
-      lightCard = const Color(0xFFFFFFFF);
-      lightBorder = const Color(0xFFE2E6ED);
-      lightText = const Color(0xFF0E1016);
-      lightSubtext = const Color(0xFF6B7280);
+      // Light Mode (Ocean Light)
+      lightPrimary   = const Color(0xFF0284C7); // Sky Blue 600
+      lightSecondary = const Color(0xFF0369A1); // Sky Blue 700
+      lightTertiary  = const Color(0xFF00F0FF); // Neon Cyan
+      
+      lightBg        = const Color(0xFFF0F8FF); // Soft Ice Light Blue
+      lightSurface   = const Color(0xFFFFFFFF); // Pure White
+      lightCard      = const Color(0xFFFFFFFF); // Pure White
+      lightBorder    = const Color(0xFFBAE6FD); // Sky Blue Border
+      lightText      = const Color(0xFF0C4A6E); // Navy Dark Text
+      lightSubtext   = const Color(0xFF0284C7); // Sky Blue Subtext
     }
   }
 

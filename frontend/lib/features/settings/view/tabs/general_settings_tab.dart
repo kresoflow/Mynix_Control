@@ -171,20 +171,12 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                     SettingsDivider(isDark: isDark),
                     SettingsRow(
                       isDark: isDark,
-                      title: 'Цветовой стиль бренда',
-                      subtitle: 'Гармоничная палитра акцентов и поверхностей',
+                      title: 'Цветовой стиль темы',
+                      subtitle: 'Выбор между неоновым океаном и высокой контрастностью',
                       trailing: Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _buildPaletteBtn(
-                            context,
-                            isDark: isDark,
-                            label: 'Ember (Янтарь)',
-                            accentColor: const Color(0xFFE8A020),
-                            isSelected: themeState.palette == ThemePalette.ember,
-                            onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.ember)),
-                          ),
                           _buildPaletteBtn(
                             context,
                             isDark: isDark,
@@ -196,10 +188,10 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                           _buildPaletteBtn(
                             context,
                             isDark: isDark,
-                            label: 'Soft Cream (Крем)',
-                            accentColor: const Color(0xFFD97706),
-                            isSelected: themeState.palette == ThemePalette.cream,
-                            onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.cream)),
+                            label: 'High Contrast (Контраст)',
+                            accentColor: const Color(0xFF0284C7),
+                            isSelected: themeState.palette == ThemePalette.contrast,
+                            onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.contrast)),
                           ),
                         ],
                       ),

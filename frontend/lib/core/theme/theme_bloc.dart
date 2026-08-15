@@ -5,9 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
 
 enum ThemePalette {
-  ember, // Классический Mynix (Янтарь + Графит)
-  ocean, // Глубокий Океан (Лазурь / Неоновый Циан)
-  cream, // Теплый Крем (Молочный / Эспрессо)
+  ocean,    // 🌊 Deep Ocean (Морской неон / Лазурный лед)
+  contrast, // ⚡ High Contrast (Контрастный серый / Классический янтарь)
 }
 
 abstract class ThemeEvent extends Equatable {
