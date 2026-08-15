@@ -1,10 +1,13 @@
 from collections import defaultdict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from sqlalchemy import func
 from app.pos.models import Shift, Order, OrderItem, OrderStatus
 from app.inventory.models import RetailProduct, Ingredient
-from app.analytics.models import DashboardTodayRead, LowStockAlert, TopItem, RecentOrder
+from app.analytics.models import (
+    DashboardTodayRead, LowStockAlert, TopItem, 
+    RecentOrder, RecentOrderItem
+)
+from app.analytics.utils import format_selected_options
 
 async def get_today_dashboard(session: AsyncSession) -> DashboardTodayRead:
     # Find open shift
@@ -48,29 +51,20 @@ async def get_today_dashboard(session: AsyncSession) -> DashboardTodayRead:
         items_result = await session.execute(items_query)
         items = items_result.scalars().all()
         
-        from app.analytics.models import RecentOrderItem
         item_counts = defaultdict(int)
         item_options_map = {}
         order_items_map = defaultdict(list)
         
         for item in items:
-            total_cogs += getattr(item, 'unit_cost', 0.0) * item.quantity
+            total_cogs += (item.unit_cost or 0.0) * item.quantity
             if item.item_type == "dish":
                 dishes_revenue += item.subtotal
             elif item.item_type == "retail":
                 retail_revenue += item.subtotal
             
-            # Format options separately
+            # Format options via helper
             display_name = item.menu_item_name
-            options_text = None
-            if item.selected_options:
-                parts = []
-                if "variation" in item.selected_options:
-                    parts.append(str(item.selected_options['variation']))
-                if "modifiers" in item.selected_options and item.selected_options["modifiers"]:
-                    parts.append(", ".join(str(m["name"]) for m in item.selected_options["modifiers"]))
-                if parts:
-                    options_text = ", ".join(parts)
+            options_text = format_selected_options(item.selected_options)
 
             # Aggregate for top items
             group_key = display_name if not options_text else f"{display_name}|{options_text}"

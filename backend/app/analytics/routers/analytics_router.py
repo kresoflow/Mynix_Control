@@ -54,7 +54,7 @@ async def get_metrics(
     start: Optional[date] = None,
     end: Optional[date] = None,
     session: AsyncSession = Depends(get_tenant_session),
-    _=Depends(require_permission("analytics:read"))
+    _=Depends(require_permission("analytics:view"))
 ):
     start_date, end_date, group_by = get_start_end(period, start, end)
     return await get_analytics_metrics(session, start_date, end_date, group_by)
@@ -65,7 +65,7 @@ async def get_xray(
     start: Optional[date] = None,
     end: Optional[date] = None,
     session: AsyncSession = Depends(get_tenant_session),
-    _=Depends(require_permission("analytics:read"))
+    _=Depends(require_permission("analytics:view"))
 ):
     start_date, end_date, _ = get_start_end(period, start, end)
     return await get_analytics_xray(session, start_date, end_date)

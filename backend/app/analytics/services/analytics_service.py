@@ -4,14 +4,14 @@ from collections import defaultdict
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from sqlalchemy import func
 
 from app.pos.models import Order, OrderItem, OrderStatus
 from app.analytics.models import (
     AnalyticsMetrics, TimeSeriesPoint, AnalyticsXRay, 
     CategorySales, XRayItem
 )
-from app.inventory.models import RetailProduct, Ingredient, MenuItem
+from app.inventory.models import RetailProduct, MenuItem, MenuCategory
+from app.analytics.utils import format_selected_options
 
 async def get_analytics_metrics(
     session: AsyncSession, 
@@ -41,7 +41,7 @@ async def get_analytics_metrics(
         items = items_result.scalars().all()
         
         for item in items:
-            total_cogs += getattr(item, 'unit_cost', 0.0) * item.quantity
+            total_cogs += (item.unit_cost or 0.0) * item.quantity
 
     net_profit = total_revenue - total_cogs
     margin_percentage = (net_profit / total_revenue * 100) if total_revenue > 0 else 0.0
@@ -121,12 +121,11 @@ async def get_analytics_xray(
     items_result = await session.execute(items_query)
     order_items = items_result.scalars().all()
 
-    menu_item_ids = list(set(item.menu_item_id for item in order_items if item.item_type == "dish"))
-    retail_ids = list(set(item.menu_item_id for item in order_items if item.item_type == "retail"))
+    menu_item_ids = list({item.menu_item_id for item in order_items if item.item_type == "dish" and item.menu_item_id is not None})
+    retail_ids = list({item.menu_item_id for item in order_items if item.item_type == "retail" and item.menu_item_id is not None})
 
     menu_categories = {}
     if menu_item_ids:
-        from app.inventory.models import MenuCategory
         cat_query = select(MenuItem.id, MenuCategory.name).join(MenuCategory, MenuItem.category_id == MenuCategory.id).where(MenuItem.id.in_(menu_item_ids))
         cat_res = await session.execute(cat_query)
         for row in cat_res.all():
@@ -134,8 +133,7 @@ async def get_analytics_xray(
             
     retail_categories = {}
     if retail_ids:
-        from app.inventory.models import MenuCategory as InvCategory
-        ret_query = select(RetailProduct.id, InvCategory.name).join(InvCategory, RetailProduct.category_id == InvCategory.id, isouter=True).where(RetailProduct.id.in_(retail_ids))
+        ret_query = select(RetailProduct.id, MenuCategory.name).join(MenuCategory, RetailProduct.category_id == MenuCategory.id, isouter=True).where(RetailProduct.id.in_(retail_ids))
         ret_res = await session.execute(ret_query)
         for row in ret_res.all():
             retail_categories[row[0]] = row[1] or "Витрина"
@@ -155,15 +153,7 @@ async def get_analytics_xray(
         total_revenue += item.subtotal
         
         display_name = item.menu_item_name
-        options_text = None
-        if item.selected_options:
-            parts = []
-            if "variation" in item.selected_options:
-                parts.append(str(item.selected_options['variation']))
-            if "modifiers" in item.selected_options and item.selected_options["modifiers"]:
-                parts.append(", ".join(str(m["name"]) for m in item.selected_options["modifiers"]))
-            if parts:
-                options_text = ", ".join(parts)
+        options_text = format_selected_options(item.selected_options)
                 
         group_key = f"{display_name}|{options_text or ''}"
         
