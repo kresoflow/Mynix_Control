@@ -3,7 +3,8 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/models/supplier.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/bulk_add_category_selector.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_segmented_tab.dart';
 
 class ReceiveDocumentMetaRow extends StatelessWidget {
   final List<Supplier> suppliers;
@@ -37,6 +38,10 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppColors.darkCard : AppColors.lightCard;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -47,41 +52,60 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: DropdownButtonFormField<int?>(
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Поставщик (необязательно)',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(PhosphorIconsRegular.buildings),
-                        ),
-                        initialValue: selectedSupplierId,
-                        items: [
-                          const DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text('Без поставщика'),
+                      child: SizedBox(
+                        height: 46,
+                        child: DropdownButtonFormField<int?>(
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: 'Поставщик (необязательно)',
+                            labelStyle: AppTextStyles.caption.copyWith(
+                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                            ),
+                            filled: true,
+                            fillColor: bg,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: borderColor),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: borderColor),
+                            ),
+                            prefixIcon: const Icon(PhosphorIconsRegular.buildings, size: 18),
                           ),
-                          ...suppliers.map((s) {
-                            return DropdownMenuItem(
-                              value: s.id,
-                              child: Text(s.name),
-                            );
-                          }),
-                        ],
-                        onChanged: onSupplierChanged,
+                          initialValue: selectedSupplierId,
+                          items: [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text('Без поставщика'),
+                            ),
+                            ...suppliers.map((s) {
+                              return DropdownMenuItem(
+                                value: s.id,
+                                child: Text(s.name),
+                              );
+                            }),
+                          ],
+                          onChanged: onSupplierChanged,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Tooltip(
                       message: 'Добавить поставщика',
                       child: Container(
-                        height: 56, // Match the height of TextField
-                        width: 56,
+                        height: 46,
+                        width: 46,
                         decoration: BoxDecoration(
-                          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-                          borderRadius: BorderRadius.circular(4),
+                          color: bg,
+                          border: Border.all(color: borderColor),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: IconButton(
-                          icon: const Icon(PhosphorIconsRegular.plus),
+                          icon: const Icon(PhosphorIconsRegular.plus, size: 18),
+                          color: AppColors.brandPrimary,
                           onPressed: onAddSupplier,
                         ),
                       ),
@@ -91,23 +115,63 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: TextField(
-                  controller: invoiceController,
-                  decoration: const InputDecoration(
-                    labelText: 'Номер накладной',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(PhosphorIconsRegular.hash),
+                child: SizedBox(
+                  height: 46,
+                  child: TextField(
+                    controller: invoiceController,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Номер накладной',
+                      labelStyle: AppTextStyles.caption.copyWith(
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
+                      filled: true,
+                      fillColor: bg,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                      prefixIcon: const Icon(PhosphorIconsRegular.hash, size: 18),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: TextField(
-                  controller: reasonController,
-                  decoration: const InputDecoration(
-                    labelText: 'Комментарий',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(PhosphorIconsRegular.textAa),
+                child: SizedBox(
+                  height: 46,
+                  child: TextField(
+                    controller: reasonController,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Комментарий',
+                      labelStyle: AppTextStyles.caption.copyWith(
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
+                      filled: true,
+                      fillColor: bg,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: borderColor),
+                      ),
+                      prefixIcon: const Icon(PhosphorIconsRegular.textAa, size: 18),
+                    ),
                   ),
                 ),
               ),
@@ -127,19 +191,28 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(PhosphorIconsRegular.magicWand, color: AppColors.info),
+                    Icon(PhosphorIconsRegular.magicWand, color: AppColors.info, size: 20),
                     const SizedBox(width: 8),
-                    Text('Умное создание', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.info)),
+                    Text(
+                      'Умное создание',
+                      style: AppTextStyles.h3.copyWith(color: AppColors.info, fontSize: 14),
+                    ),
                     const SizedBox(width: 16),
-                    Expanded(child: Text('Новые названия будут автоматически созданы в указанной категории.', style: TextStyle(color: AppColors.info, fontSize: 13))),
-                    SegmentedButton<int>(
-                      showSelectedIcon: false,
-                      segments: const [
-                        ButtonSegment(value: 1, label: Text('Витрина')),
-                        ButtonSegment(value: 2, label: Text('Сырье')),
+                    Expanded(
+                      child: Text(
+                        'Новые названия будут автоматически созданы в указанной категории.',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.info),
+                      ),
+                    ),
+                    AppSegmentedTab<int>(
+                      items: const [
+                        AppSegmentedTabItem(value: 1, label: 'Витрина'),
+                        AppSegmentedTabItem(value: 2, label: 'Сырье'),
                       ],
-                      selected: {tabIndex},
-                      onSelectionChanged: (val) => onTabChanged(val.first),
+                      selectedValue: tabIndex,
+                      onValueChanged: onTabChanged,
+                      height: 36,
+                      isCompact: true,
                     ),
                   ],
                 ),

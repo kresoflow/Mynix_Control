@@ -3,7 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_data.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class ReceiveDocumentItemRow extends StatelessWidget {
   final ReceiptRowData item;
@@ -54,208 +54,287 @@ class ReceiveDocumentItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? AppColors.darkCard : AppColors.lightCard;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
     final sum = item.quantity * item.price;
 
-    return Row(
-      children: [
-        // Ingredient Autocomplete
-        Expanded(
-          flex: 2,
-          child: RawAutocomplete<Ingredient>(
-            textEditingController: item.nameController,
-            focusNode: item.nameFocusNode,
-            displayStringForOption: (option) => option.name,
-            optionsBuilder: (textEditingValue) {
-              if (textEditingValue.text.isEmpty) {
-                return const Iterable<Ingredient>.empty();
-              }
-              return availableIngredients.where((option) {
-                return option.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
-              });
-            },
-            onSelected: onIngredientSelected,
-            fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-              return TextFormField(
-                controller: controller,
-                focusNode: focusNode,
-                decoration: InputDecoration(
-                  hintText: 'Поиск или новое название...',
-                  border: const OutlineInputBorder(),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  suffixIcon: item.ingredient != null
-                      ? Icon(PhosphorIconsRegular.checkCircle, color: AppColors.success)
-                      : Icon(PhosphorIconsRegular.magicWand, color: AppColors.info),
-                ),
-                onChanged: onNameChanged,
-                onFieldSubmitted: (_) => onNameSubmitted(),
-              );
-            },
-            optionsViewBuilder: (context, onSelected, options) {
-              return Align(
-                alignment: Alignment.topLeft,
-                child: Material(
-                  elevation: 4,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      itemCount: options.length,
-                      itemBuilder: (BuildContext context, int i) {
-                        final option = options.elementAt(i);
-                        final isRetail = option.attributes?['is_retail'] == true;
-                        return ListTile(
-                          title: Text(option.name),
-                          subtitle: Text(isRetail ? "Витрина" : "Сырье", style: const TextStyle(fontSize: 12)),
-                          onTap: () => onSelected(option),
-                        );
-                      },
+    InputDecoration cellDecoration(String hint) {
+      return InputDecoration(
+        hintText: hint,
+        hintStyle: AppTextStyles.caption.copyWith(
+          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+        ),
+        filled: true,
+        fillColor: bg,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: borderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          // Ingredient Autocomplete
+          Expanded(
+            flex: 2,
+            child: SizedBox(
+              height: 38,
+              child: RawAutocomplete<Ingredient>(
+                textEditingController: item.nameController,
+                focusNode: item.nameFocusNode,
+                displayStringForOption: (option) => option.name,
+                optionsBuilder: (textEditingValue) {
+                  if (textEditingValue.text.isEmpty) {
+                    return const Iterable<Ingredient>.empty();
+                  }
+                  return availableIngredients.where((option) {
+                    return option.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                  });
+                },
+                onSelected: onIngredientSelected,
+                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                  return TextFormField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                      fontSize: 13,
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(width: 12),
-
-        // Flavor
-        Expanded(
-          child: item.ingredient != null 
-              ? Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                    borderRadius: BorderRadius.circular(4),
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  ),
-                  child: Text(item.ingredient!.attributes?['Вкус'] ?? '-'),
-                )
-              : TextFormField(
-                  controller: item.flavorController,
-                  focusNode: item.flavorFocusNode,
-                  enabled: tabIndex == 1,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(), 
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    filled: tabIndex == 2,
-                    fillColor: tabIndex == 2 ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3) : null,
-                  ),
-                  onFieldSubmitted: (_) => onFlavorSubmitted(),
-                ),
-        ),
-        const SizedBox(width: 12),
-
-        // Volume
-        Expanded(
-          child: item.ingredient != null 
-              ? Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                    borderRadius: BorderRadius.circular(4),
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  ),
-                  child: Text(item.ingredient!.attributes?['Объем'] ?? '-'),
-                )
-              : TextFormField(
-                  controller: item.volumeController,
-                  focusNode: item.volumeFocusNode,
-                  enabled: tabIndex == 1,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(), 
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    filled: tabIndex == 2,
-                    fillColor: tabIndex == 2 ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3) : null,
-                  ),
-                  onFieldSubmitted: (_) => onVolumeSubmitted(),
-                ),
-        ),
-        const SizedBox(width: 12),
-        
-        // Unit
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            initialValue: item.selectedUnit,
-            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
-            items: ['шт', 'л', 'мл', 'кг', 'г', 'порц'].map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
-            onChanged: onUnitChanged,
-          ),
-        ),
-        const SizedBox(width: 12),
-        
-        // Quantity
-        Expanded(
-          child: TextFormField(
-            controller: item.qtyController,
-            focusNode: item.qtyFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
-            onChanged: onQtyChanged,
-            onFieldSubmitted: (_) => onQtySubmitted(),
-          ),
-        ),
-        const SizedBox(width: 12),
-        
-        // Alert (Min Stock)
-        Expanded(
-          child: TextFormField(
-            controller: item.minStockAlertController,
-            focusNode: item.minStockAlertFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
-            onChanged: onMinStockAlertChanged,
-            onFieldSubmitted: (_) => onMinStockAlertSubmitted(),
-          ),
-        ),
-        const SizedBox(width: 12),
-        
-        // Purchase Price
-        Expanded(
-          child: TextFormField(
-            controller: item.priceController,
-            focusNode: item.priceFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
-            onChanged: onPriceChanged,
-            onFieldSubmitted: (_) => onPriceSubmitted(),
-          ),
-        ),
-        const SizedBox(width: 12),
-
-        // Selling Price
-        Expanded(
-          child: TextFormField(
-            controller: item.sellPriceController,
-            focusNode: item.sellPriceFocusNode,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
-            onChanged: onSellPriceChanged,
-            onFieldSubmitted: (_) => onSellPriceSubmitted(),
-          ),
-        ),
-        const SizedBox(width: 12),
-
-        // Total sum
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-            decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.05),
-              border: Border.all(color: AppColors.info.withValues(alpha: 0.2)),
-              borderRadius: BorderRadius.circular(4),
+                    decoration: cellDecoration('Поиск или название...').copyWith(
+                      suffixIcon: item.ingredient != null
+                          ? Icon(PhosphorIconsRegular.checkCircle, color: AppColors.success, size: 16)
+                          : Icon(PhosphorIconsRegular.magicWand, color: AppColors.info, size: 16),
+                    ),
+                    onChanged: onNameChanged,
+                    onFieldSubmitted: (_) => onNameSubmitted(),
+                  );
+                },
+                optionsViewBuilder: (context, onSelected, options) {
+                  return Align(
+                    alignment: Alignment.topLeft,
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(8),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 200, maxWidth: 300),
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          itemCount: options.length,
+                          itemBuilder: (context, i) {
+                            final option = options.elementAt(i);
+                            final isRetail = option.attributes?['is_retail'] == true;
+                            return ListTile(
+                              dense: true,
+                              title: Text(option.name, style: AppTextStyles.bodyMedium),
+                              subtitle: Text(isRetail ? 'Витрина' : 'Сырье', style: AppTextStyles.caption),
+                              onTap: () => onSelected(option),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-            child: Text(sum.toStringAsFixed(2), style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.info)),
           ),
-        ),
-        const SizedBox(width: 48),
+          const SizedBox(width: 8),
 
-        // Delete
-        IconButton(
-          icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
-          onPressed: onRemove,
-        ),
-      ],
+          // Flavor
+          Expanded(
+            child: SizedBox(
+              height: 38,
+              child: item.ingredient != null 
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                        color: bg,
+                      ),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        item.ingredient!.attributes?['Вкус'] ?? '-',
+                        style: AppTextStyles.caption.copyWith(
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                        ),
+                      ),
+                    )
+                  : TextFormField(
+                      controller: item.flavorController,
+                      focusNode: item.flavorFocusNode,
+                      enabled: tabIndex == 1,
+                      style: AppTextStyles.bodyMedium.copyWith(fontSize: 13),
+                      decoration: cellDecoration('Вкус'),
+                      onFieldSubmitted: (_) => onFlavorSubmitted(),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Volume
+          Expanded(
+            child: SizedBox(
+              height: 38,
+              child: item.ingredient != null 
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: borderColor),
+                        borderRadius: BorderRadius.circular(8),
+                        color: bg,
+                      ),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        item.ingredient!.attributes?['Объем'] ?? '-',
+                        style: AppTextStyles.caption.copyWith(
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                        ),
+                      ),
+                    )
+                  : TextFormField(
+                      controller: item.volumeController,
+                      focusNode: item.volumeFocusNode,
+                      enabled: tabIndex == 1,
+                      style: AppTextStyles.bodyMedium.copyWith(fontSize: 13),
+                      decoration: cellDecoration('Объем'),
+                      onFieldSubmitted: (_) => onVolumeSubmitted(),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          
+          // Unit
+          Expanded(
+            child: SizedBox(
+              height: 38,
+              child: DropdownButtonFormField<String>(
+                initialValue: item.selectedUnit,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                  fontSize: 13,
+                ),
+                decoration: cellDecoration('Ед. изм.'),
+                items: ['шт', 'л', 'мл', 'кг', 'г', 'порц'].map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                onChanged: onUnitChanged,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          
+          // Quantity
+          Expanded(
+            child: SizedBox(
+              height: 38,
+              child: TextFormField(
+                controller: item.qtyController,
+                focusNode: item.qtyFocusNode,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: AppTextStyles.bodyMedium.copyWith(fontSize: 13),
+                decoration: cellDecoration('1'),
+                onChanged: onQtyChanged,
+                onFieldSubmitted: (_) => onQtySubmitted(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          
+          // Alert (Min Stock)
+          Expanded(
+            child: SizedBox(
+              height: 38,
+              child: TextFormField(
+                controller: item.minStockAlertController,
+                focusNode: item.minStockAlertFocusNode,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: AppTextStyles.bodyMedium.copyWith(fontSize: 13),
+                decoration: cellDecoration('0'),
+                onChanged: onMinStockAlertChanged,
+                onFieldSubmitted: (_) => onMinStockAlertSubmitted(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          
+          // Purchase Price
+          Expanded(
+            child: SizedBox(
+              height: 38,
+              child: TextFormField(
+                controller: item.priceController,
+                focusNode: item.priceFocusNode,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: AppTextStyles.bodyMedium.copyWith(fontSize: 13),
+                decoration: cellDecoration('0.00'),
+                onChanged: onPriceChanged,
+                onFieldSubmitted: (_) => onPriceSubmitted(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Selling Price
+          Expanded(
+            child: SizedBox(
+              height: 38,
+              child: TextFormField(
+                controller: item.sellPriceController,
+                focusNode: item.sellPriceFocusNode,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: AppTextStyles.bodyMedium.copyWith(fontSize: 13),
+                decoration: cellDecoration('0.00'),
+                onChanged: onSellPriceChanged,
+                onFieldSubmitted: (_) => onSellPriceSubmitted(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Total sum
+          Expanded(
+            child: Container(
+              height: 38,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: AppColors.info.withValues(alpha: 0.08),
+                border: Border.all(color: AppColors.info.withValues(alpha: 0.25)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                sum.toStringAsFixed(2),
+                style: AppTextStyles.caption.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.info,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Delete
+          IconButton(
+            icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger, size: 18),
+            onPressed: onRemove,
+            tooltip: 'Удалить строку',
+          ),
+        ],
+      ),
     );
   }
 }

@@ -169,18 +169,27 @@ class AnalyticsFilterBar extends StatelessWidget {
         onPeriodChanged(period);
         context.read<AnalyticsBloc>().add(LoadAnalytics(period: period));
       },
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected
+              ? AppColors.brandPrimary
+              : (isDark ? AppColors.darkCard : AppColors.lightCard),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.brandPrimary
+                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          ),
         ),
         child: Text(
           label,
           style: TextStyle(
             color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 13,
           ),
         ),
       ),
@@ -226,12 +235,20 @@ class AnalyticsFilterBar extends StatelessWidget {
           }
         }
       },
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected
+              ? AppColors.brandPrimary
+              : (isDark ? AppColors.darkCard : AppColors.lightCard),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.brandPrimary
+                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          ),
         ),
         child: Row(
           children: [
@@ -240,12 +257,13 @@ class AnalyticsFilterBar extends StatelessWidget {
               size: 16,
               color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 6),
             Text(
               'Период',
               style: TextStyle(
                 color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 13,
               ),
             ),
           ],

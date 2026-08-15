@@ -7,6 +7,8 @@ import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
 import 'bulk_receipt_row_widget.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 
 class BulkReceiptView extends StatefulWidget {
   const BulkReceiptView({super.key});
@@ -239,35 +241,26 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                OutlinedButton.icon(
+                AppButton.outline(
                   onPressed: _addRow,
-                  icon: const Icon(PhosphorIconsRegular.plus),
-                  label: const Text('Добавить строку'),
+                  icon: PhosphorIconsRegular.plus,
+                  label: 'Добавить строку',
+                  height: 42,
                 ),
                 Row(
                   children: [
-                    TextButton(
+                    AppButton.ghost(
                       onPressed: _clearForm,
-                      child: const Text(
-                        'Отмена',
-                        style: TextStyle(color: Colors.grey),
-                      ),
+                      label: 'Отмена',
+                      height: 42,
                     ),
-                    const SizedBox(width: 16),
-                    ElevatedButton.icon(
+                    const SizedBox(width: 12),
+                    AppButton.primary(
                       onPressed: _saveAll,
-                      icon: const Icon(PhosphorIconsRegular.check),
-                      label: const Text('Провести документ'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onPrimary,
-                      ),
+                      icon: PhosphorIconsRegular.check,
+                      label: 'Провести документ',
+                      customColor: AppColors.success,
+                      height: 42,
                     ),
                   ],
                 ),

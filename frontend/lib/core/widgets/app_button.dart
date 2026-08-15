@@ -2,94 +2,217 @@ import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
-/// Primary gradient button (Checkout, Save etc.)
-class AppPrimaryButton extends StatefulWidget {
-  const AppPrimaryButton({
+enum AppButtonVariant { primary, secondary, outline, ghost, danger }
+
+class AppButton extends StatefulWidget {
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  final AppButtonVariant variant;
+  final double height;
+  final double? width;
+  final bool isLoading;
+  final bool isFullWidth;
+  final Color? customColor;
+
+  const AppButton({
     super.key,
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 52,
+    this.variant = AppButtonVariant.primary,
+    this.height = 44,
     this.width,
     this.isLoading = false,
+    this.isFullWidth = false,
+    this.customColor,
   });
 
-  final String label;
-  final VoidCallback? onPressed;
-  final IconData? icon;
-  final double height;
-  final double? width;
-  final bool isLoading;
+  const AppButton.primary({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.height = 44,
+    this.width,
+    this.isLoading = false,
+    this.isFullWidth = false,
+    this.customColor,
+  }) : variant = AppButtonVariant.primary;
+
+  const AppButton.secondary({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.height = 44,
+    this.width,
+    this.isLoading = false,
+    this.isFullWidth = false,
+    this.customColor,
+  }) : variant = AppButtonVariant.secondary;
+
+  const AppButton.outline({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.height = 44,
+    this.width,
+    this.isLoading = false,
+    this.isFullWidth = false,
+    this.customColor,
+  }) : variant = AppButtonVariant.outline;
+
+  const AppButton.danger({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.height = 44,
+    this.width,
+    this.isLoading = false,
+    this.isFullWidth = false,
+    this.customColor,
+  }) : variant = AppButtonVariant.danger;
+
+  const AppButton.ghost({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.icon,
+    this.height = 44,
+    this.width,
+    this.isLoading = false,
+    this.isFullWidth = false,
+    this.customColor,
+  }) : variant = AppButtonVariant.ghost;
 
   @override
-  State<AppPrimaryButton> createState() => _AppPrimaryButtonState();
+  State<AppButton> createState() => _AppButtonState();
 }
 
-class _AppPrimaryButtonState extends State<AppPrimaryButton> {
-  bool _pressed = false;
+class _AppButtonState extends State<AppButton> {
+  bool _isHovered = false;
+  bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final enabled = widget.onPressed != null && !widget.isLoading;
 
-    return GestureDetector(
-      onTapDown: enabled ? (_) => setState(() => _pressed = true) : null,
-      onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
-      onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
-      onTap: enabled ? widget.onPressed : null,
-      child: AnimatedScale(
-        scale: _pressed ? 0.97 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        child: AnimatedOpacity(
-          opacity: enabled ? 1.0 : 0.45,
-          duration: const Duration(milliseconds: 200),
-          child: Container(
-            width: widget.width,
-            height: widget.height,
-            decoration: BoxDecoration(
-              gradient: enabled
-                  ? AppColors.brandGradient
-                  : const LinearGradient(colors: [Colors.grey, Colors.grey]),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: enabled
-                  ? [
-                      BoxShadow(
-                        color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      )
-                    ]
-                  : null,
+    Color bg;
+    Color fg;
+    Border? border;
+    List<BoxShadow>? shadow;
+
+    final primary = widget.customColor ?? AppColors.brandPrimary;
+
+    switch (widget.variant) {
+      case AppButtonVariant.primary:
+        bg = enabled ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
+        fg = Colors.white;
+        if (enabled && _isHovered) {
+          shadow = [
+            BoxShadow(
+              color: primary.withValues(alpha: 0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Center(
-                child: widget.isLoading
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (widget.icon != null) ...[
-                          Icon(widget.icon, size: 20, color: const Color(0xFF0E1016)),
-                          const SizedBox(width: 8),
-                        ],
-                        Text(
-                          widget.label,
-                          style: AppTextStyles.button.copyWith(
-                            color: const Color(0xFF0E1016),
-                          ),
-                        ),
-                      ],
-                    ),
+          ];
+        }
+        break;
+
+      case AppButtonVariant.secondary:
+        bg = isDark
+            ? (_isHovered ? AppColors.darkCardHover : AppColors.darkCard)
+            : (_isHovered ? AppColors.lightBorder : AppColors.lightSurface);
+        fg = isDark ? AppColors.darkText : AppColors.lightText;
+        border = Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder);
+        break;
+
+      case AppButtonVariant.outline:
+        bg = _isHovered ? primary.withValues(alpha: 0.08) : Colors.transparent;
+        fg = enabled ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+        border = Border.all(
+          color: enabled
+              ? (_isHovered ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder))
+              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+        );
+        break;
+
+      case AppButtonVariant.danger:
+        bg = enabled
+            ? (_isHovered ? AppColors.danger : AppColors.danger.withValues(alpha: 0.12))
+            : Colors.transparent;
+        fg = enabled
+            ? (_isHovered ? Colors.white : AppColors.danger)
+            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+        border = Border.all(color: AppColors.danger.withValues(alpha: _isHovered ? 1.0 : 0.4));
+        break;
+
+      case AppButtonVariant.ghost:
+        bg = _isHovered
+            ? (isDark ? AppColors.darkBorder.withValues(alpha: 0.4) : AppColors.lightBorder.withValues(alpha: 0.4))
+            : Colors.transparent;
+        fg = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
+        break;
+    }
+
+    Widget content = widget.isLoading
+        ? SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.2,
+              valueColor: AlwaysStoppedAnimation<Color>(fg),
+            ),
+          )
+        : Row(
+            mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (widget.icon != null) ...[
+                Icon(widget.icon, size: 18, color: fg),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                widget.label,
+                style: AppTextStyles.button.copyWith(
+                  color: fg,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
               ),
+            ],
+          );
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: GestureDetector(
+        onTapDown: enabled ? (_) => setState(() => _isPressed = true) : null,
+        onTapUp: enabled ? (_) => setState(() => _isPressed = false) : null,
+        onTapCancel: enabled ? () => setState(() => _isPressed = false) : null,
+        onTap: enabled ? widget.onPressed : null,
+        child: AnimatedScale(
+          scale: _isPressed ? 0.97 : (_isHovered ? 1.01 : 1.0),
+          duration: const Duration(milliseconds: 100),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            height: widget.height,
+            width: widget.isFullWidth ? double.infinity : widget.width,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(10),
+              border: border,
+              boxShadow: shadow,
             ),
+            child: Center(child: content),
           ),
         ),
       ),
@@ -97,86 +220,59 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton> {
   }
 }
 
-/// Danger button (Delete actions)
-class AppDangerButton extends StatelessWidget {
-  const AppDangerButton({
+// ── Legacy Aliases ───────────────────────────────────────────────────────────
+class AppPrimaryButton extends AppButton {
+  const AppPrimaryButton({
     super.key,
-    required this.label,
-    this.onPressed,
-    this.icon,
-    this.compact = false,
-  });
-
-  final String label;
-  final VoidCallback? onPressed;
-  final IconData? icon;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.danger,
-        foregroundColor: Colors.white,
-        padding: compact
-            ? const EdgeInsets.symmetric(horizontal: 14, vertical: 10)
-            : const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: AppTextStyles.button,
-        elevation: 0,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 18),
-            const SizedBox(width: 6),
-          ],
-          Text(label),
-        ],
-      ),
-    );
-  }
+    required super.label,
+    super.onPressed,
+    super.icon,
+    super.height = 48,
+    super.width,
+    super.isLoading = false,
+    super.isFullWidth = false,
+    super.customColor,
+  }) : super.primary();
 }
 
-/// Ghost / outlined button
-class AppGhostButton extends StatelessWidget {
+class AppSecondaryButton extends AppButton {
+  const AppSecondaryButton({
+    super.key,
+    required super.label,
+    super.onPressed,
+    super.icon,
+    super.height = 48,
+    super.width,
+    super.isLoading = false,
+    super.isFullWidth = false,
+    super.customColor,
+  }) : super.secondary();
+}
+
+class AppGhostButton extends AppButton {
   const AppGhostButton({
     super.key,
-    required this.label,
-    this.onPressed,
-    this.icon,
-  });
+    required super.label,
+    super.onPressed,
+    super.icon,
+    super.height = 48,
+    super.width,
+    super.isLoading = false,
+    super.isFullWidth = false,
+    super.customColor,
+  }) : super.ghost();
+}
 
-  final String label;
-  final VoidCallback? onPressed;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: isDark ? AppColors.darkText : AppColors.lightText,
-        side: BorderSide(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: AppTextStyles.button,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 18),
-            const SizedBox(width: 6),
-          ],
-          Text(label),
-        ],
-      ),
-    );
-  }
+class AppDangerButton extends AppButton {
+  const AppDangerButton({
+    super.key,
+    required super.label,
+    super.onPressed,
+    super.icon,
+    super.height = 48,
+    super.width,
+    super.isLoading = false,
+    super.isFullWidth = false,
+    super.customColor,
+  }) : super.danger();
 }

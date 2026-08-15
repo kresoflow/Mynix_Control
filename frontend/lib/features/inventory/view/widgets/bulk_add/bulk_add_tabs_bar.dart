@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 
 class BulkAddTabsBar extends StatelessWidget {
   final int tabIndex;
@@ -109,14 +110,11 @@ class BulkAddTabsBar extends StatelessWidget {
             ),
             const SizedBox(width: 16),
           ],
-          TextButton.icon(
+          AppButton.outline(
             onPressed: onAddRow,
-            icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-            label: const Text('Строка'),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.brandPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
+            icon: PhosphorIconsRegular.plus,
+            label: 'Строка',
+            height: 36,
           ),
         ],
       ),

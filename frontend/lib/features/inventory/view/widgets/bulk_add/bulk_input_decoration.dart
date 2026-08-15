@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 InputDecoration buildBulkInputDecoration(BuildContext context, String label) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final bg = isDark ? AppColors.darkCard : AppColors.lightCard;
+  final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+
   return InputDecoration(
     labelText: label,
-    labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7), fontSize: 13),
-    filled: true,
-    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5), width: 1),
+    labelStyle: AppTextStyles.caption.copyWith(
+      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+      fontSize: 13,
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    filled: true,
+    fillColor: bg,
+    isDense: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: borderColor),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: borderColor),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
+    ),
   );
 }

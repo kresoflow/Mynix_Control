@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 
 class ReceiveDocumentFooter extends StatelessWidget {
   final double totalSum;
@@ -24,46 +24,63 @@ class ReceiveDocumentFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))
-        ],
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+        ),
       ),
       child: Row(
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Итого к оплате:', style: TextStyle(color: Colors.grey, fontSize: 14)),
-              Text('${totalSum.toStringAsFixed(2)} $currency', style: AppTextStyles.h1),
+              Text(
+                'Итого к оплате:',
+                style: AppTextStyles.caption.copyWith(
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${totalSum.toStringAsFixed(2)} $currency',
+                style: AppTextStyles.h1.copyWith(
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ],
           ),
           const Spacer(),
-          OutlinedButton(
+          AppButton.outline(
+            label: 'Отмена',
+            height: 44,
             onPressed: onCancel,
-            child: const Text('Отмена'),
           ),
-          const SizedBox(width: 16),
-          ElevatedButton.icon(
+          const SizedBox(width: 12),
+          AppButton.secondary(
+            label: 'Сохранить черновик',
+            icon: PhosphorIconsRegular.floppyDisk,
+            height: 44,
+            isLoading: isSaving,
             onPressed: isSaving ? null : onSaveDraft,
-            icon: const Icon(PhosphorIconsRegular.floppyDisk),
-            label: const Text('Сохранить черновик'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
           ),
-          const SizedBox(width: 16),
-          FilledButton.icon(
+          const SizedBox(width: 12),
+          AppButton.primary(
+            label: 'Провести документ (Ctrl+S)',
+            icon: PhosphorIconsRegular.checkCircle,
+            customColor: AppColors.success,
+            height: 44,
+            isLoading: isSaving,
             onPressed: isSaving ? null : onSaveComplete,
-            icon: const Icon(PhosphorIconsRegular.checkCircle),
-            label: const Text('Провести документ (Ctrl+S)'),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.success,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
           ),
         ],
       ),

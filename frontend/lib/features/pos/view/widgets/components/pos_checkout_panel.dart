@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
@@ -58,50 +60,32 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
       ),
       child: BlocConsumer<CartBloc, CartState>(
         listenWhen: (previous, current) =>
-            previous.submitSuccess != current.submitSuccess ||
-            previous.submitError != current.submitError,
+            previous.lastCheckoutSuccess != current.lastCheckoutSuccess &&
+            current.lastCheckoutSuccess != null,
         listener: (context, state) {
-          if (state.submitSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('✓ Заказ успешно создан'),
-                backgroundColor: AppColors.success,
-                behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
-                  left: 16,
-                  right: 16,
-                ),
-              ),
-            );
-          } else if (state.submitError != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Ошибка: ${state.submitError}'),
-                backgroundColor: AppColors.danger,
-                behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
-                  left: 16,
-                  right: 16,
-                ),
-              ),
-            );
-          }
+          final checkout = state.lastCheckoutSuccess!;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Заказ #${checkout.orderId} успешно оплачен (${checkout.total.toCurrency(context)})'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         },
         builder: (context, state) {
           final isEmpty = state.items.isEmpty;
-          
+
           return Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Payment Method Selector (Cash vs Transfer)
+              // Payment method selector
               Row(
                 children: [
                   Expanded(
                     child: _buildPaymentOption(
                       method: 'CASH',
                       label: 'Наличные',
-                      icon: Icons.payments_outlined,
+                      icon: PhosphorIconsRegular.money,
                       isSelected: _selectedPaymentMethod == 'CASH',
                       isDark: isDark,
                     ),
@@ -111,7 +95,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
                     child: _buildPaymentOption(
                       method: 'TRANSFER',
                       label: 'Перевод',
-                      icon: Icons.qr_code_scanner_rounded,
+                      icon: PhosphorIconsRegular.qrCode,
                       isSelected: _selectedPaymentMethod == 'TRANSFER',
                       isDark: isDark,
                     ),
@@ -124,10 +108,13 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('К оплате',
-                      style: AppTextStyles.h2.copyWith(
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          fontWeight: FontWeight.w600)),
+                  Text(
+                    'К оплате',
+                    style: AppTextStyles.h2.copyWith(
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   Text(
                     state.total.toCurrency(context),
                     style: AppTextStyles.h1.copyWith(
@@ -139,42 +126,25 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
                 ],
               ),
               SizedBox(height: isMobile ? 12 : 20),
-              // Charge button with pulsing animation if not empty
+              
+              // Standardized checkout button
               ScaleTransition(
                 scale: isEmpty ? const AlwaysStoppedAnimation(1.0) : _scaleAnimation,
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    onPressed: isEmpty || state.isSubmitting
-                        ? null
-                        : () {
-                            context.read<CartBloc>().add(
-                              CheckoutCart(paymentMethod: _selectedPaymentMethod),
-                            );
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isEmpty 
-                          ? (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05))
-                          : AppColors.brandPrimary,
-                      foregroundColor: isEmpty 
-                          ? (isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.3))
-                          : Colors.white,
-                      elevation: isEmpty ? 0 : 12,
-                      shadowColor: AppColors.brandPrimary.withValues(alpha: 0.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: Text(
-                      state.isSubmitting 
-                          ? 'ОБРАБОТКА...'
-                          : 'ОПЛАТИТЬ (${_selectedPaymentMethod == 'CASH' ? 'НАЛИЧНЫЕ' : 'ПЕРЕВОД'})',
-                      style: AppTextStyles.h3.copyWith(
-                        fontWeight: FontWeight.bold, 
-                        letterSpacing: 1.2,
-                        fontSize: isMobile ? 13 : null,
-                      ),
-                    ),
-                  ),
+                child: AppButton.primary(
+                  label: state.isSubmitting
+                      ? 'Обработка...'
+                      : 'Оплатить (${_selectedPaymentMethod == 'CASH' ? 'Наличные' : 'Перевод'})',
+                  icon: _selectedPaymentMethod == 'CASH' ? PhosphorIconsRegular.money : PhosphorIconsRegular.qrCode,
+                  isFullWidth: true,
+                  height: 48,
+                  isLoading: state.isSubmitting,
+                  onPressed: isEmpty || state.isSubmitting
+                      ? null
+                      : () {
+                          context.read<CartBloc>().add(
+                            CheckoutCart(paymentMethod: _selectedPaymentMethod),
+                          );
+                        },
                 ),
               ),
             ],
@@ -196,18 +166,18 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
 
     return InkWell(
       onTap: () => setState(() => _selectedPaymentMethod = method),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
         decoration: BoxDecoration(
           color: isSelected 
               ? activeColor.withValues(alpha: 0.15)
-              : (isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.03)),
-          borderRadius: BorderRadius.circular(12),
+              : (isDark ? AppColors.darkCard : AppColors.lightCard),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected 
                 ? activeColor 
-                : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
+                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -218,10 +188,9 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
             const SizedBox(width: 8),
             Text(
               label,
-              style: TextStyle(
-                color: isSelected ? (isDark ? Colors.white : Colors.black) : inactiveColor,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 13,
+              style: AppTextStyles.caption.copyWith(
+                color: isSelected ? activeColor : inactiveColor,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ],
