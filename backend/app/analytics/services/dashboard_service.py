@@ -1,6 +1,7 @@
 from collections import defaultdict
+from typing import List, Type
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import select, SQLModel
 from app.pos.models import Shift, Order, OrderItem, OrderStatus
 from app.inventory.models import RetailProduct, Ingredient
 from app.analytics.models import (
@@ -8,6 +9,16 @@ from app.analytics.models import (
     RecentOrder, RecentOrderItem
 )
 from app.analytics.utils import format_selected_options
+
+async def _fetch_low_stock_alerts(session: AsyncSession, model_classes: List[Type[SQLModel]]) -> List[LowStockAlert]:
+    """Fetch low-stock alerts across multiple inventory models (RetailProduct, Ingredient)."""
+    alerts = []
+    for cls in model_classes:
+        query = select(cls).where(cls.current_stock <= cls.min_stock_alert)
+        result = await session.execute(query)
+        for item in result.scalars().all():
+            alerts.append(LowStockAlert(name=item.name, current_stock=item.current_stock))
+    return alerts
 
 async def get_today_dashboard(session: AsyncSession) -> DashboardTodayRead:
     # Find open shift
@@ -99,23 +110,9 @@ async def get_today_dashboard(session: AsyncSession) -> DashboardTodayRead:
             for o in sorted_orders
         ]
 
-    # Get low stock alerts for RetailProduct
-    stock_query = select(RetailProduct).where(RetailProduct.current_stock <= RetailProduct.min_stock_alert)
-    stock_result = await session.execute(stock_query)
-    low_stock_products = stock_result.scalars().all()
-    
-    # Get low stock alerts for Ingredient
-    ingredient_query = select(Ingredient).where(Ingredient.current_stock <= Ingredient.min_stock_alert)
-    ingredient_result = await session.execute(ingredient_query)
-    low_stock_ingredients = ingredient_result.scalars().all()
-    
-    low_stock_alerts = [
-        LowStockAlert(name=p.name, current_stock=p.current_stock)
-        for p in low_stock_products
-    ] + [
-        LowStockAlert(name=i.name, current_stock=i.current_stock)
-        for i in low_stock_ingredients
-    ]
+    # Get low stock alerts for RetailProduct and Ingredient via DRY helper
+    low_stock_alerts = await _fetch_low_stock_alerts(session, [RetailProduct, Ingredient])
+
     net_profit = total_revenue - total_cogs
     margin_percentage = (net_profit / total_revenue * 100) if total_revenue > 0 else 0.0
 
