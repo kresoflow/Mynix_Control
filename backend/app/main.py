@@ -66,10 +66,28 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ── Exception Handlers ───────────────────────────────────────────
+from fastapi.responses import JSONResponse
+from app.exceptions import AppException
+
+@app.exception_handler(AppException)
+async def app_exception_handler(request, exc: AppException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail, "extra": exc.extra},
+    )
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
 # ── CORS (allow Flutter apps from any origin in development) ─────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # restrict in production
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

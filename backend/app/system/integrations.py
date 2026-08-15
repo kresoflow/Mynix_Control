@@ -1,6 +1,4 @@
-import urllib.request
-import urllib.parse
-import json
+import httpx
 from fastapi import APIRouter, Request, BackgroundTasks
 
 router = APIRouter(tags=["Integrations"])
@@ -8,19 +6,20 @@ router = APIRouter(tags=["Integrations"])
 TELEGRAM_BOT_TOKEN = "8811624266:AAEKba2stMRaRTLGKrlHo1BjaO1A8SyejZA"
 TELEGRAM_CHAT_ID = "6968300145"
 
-def send_telegram_message(text: str):
+
+async def send_telegram_message(text: str):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    data = json.dumps({
+    payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": text,
         "parse_mode": "HTML"
-    }).encode('utf-8')
-    
-    req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'})
+    }
     try:
-        urllib.request.urlopen(req, timeout=5)
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            await client.post(url, json=payload)
     except Exception as e:
         print(f"Failed to send telegram message: {e}")
+
 
 @router.post("/webhook/sentry")
 async def sentry_webhook(request: Request, background_tasks: BackgroundTasks):
@@ -33,12 +32,10 @@ async def sentry_webhook(request: Request, background_tasks: BackgroundTasks):
         level = payload.get("level", "error")
         url = payload.get("url", "")
         
-        # Sentry sometimes sends the main issue title in 'message', but sometimes in 'event.title'
         event = payload.get("event", {})
         title = event.get("title") or message or "New Issue"
         
-        # Formatting text in HTML
-        icon = "🚨" if level == "error" or level == "fatal" else "⚠️"
+        icon = "🚨" if level in ("error", "fatal") else "⚠️"
         
         text = f"{icon} <b>Sentry Alert | {project_name}</b>\n\n"
         text += f"<b>Message:</b> {title}\n"

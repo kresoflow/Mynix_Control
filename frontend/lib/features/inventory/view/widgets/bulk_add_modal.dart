@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'bulk_add/dish_row.dart';
 import 'bulk_add/ingredient_row.dart';
 import 'bulk_add/retail_row.dart';
 import 'bulk_add/category_row.dart';
+import 'bulk_add/bulk_add_header.dart';
+import 'bulk_add/bulk_add_tabs_bar.dart';
 import 'bulk_add/bulk_add_category_selector.dart';
 import 'bulk_add/bulk_add_list_widget.dart';
 import 'bulk_add/bulk_add_footer.dart';
@@ -28,8 +29,7 @@ class BulkAddModal extends StatefulWidget {
 }
 
 class _BulkAddModalState extends State<BulkAddModal> {
-  int _tabIndex = 0; // 0 = Блюда, 1 = Товары витрины, 2 = Сырье
-
+  int _tabIndex = 0; // 0 = Блюда, 1 = Товары витрины, 2 = Сырье, 3 = Папки
   int? _selectedParentId;
   int? _selectedChildId;
 
@@ -72,10 +72,10 @@ class _BulkAddModalState extends State<BulkAddModal> {
       _tabIndex == 0
           ? _dishRows.last.firstFocusNode
           : (_tabIndex == 1
-                ? _retailRows.last.firstFocusNode
-                : (_tabIndex == 2 
-                    ? _ingredientRows.last.firstFocusNode 
-                    : _categoryRows.last.firstFocusNode)),
+              ? _retailRows.last.firstFocusNode
+              : (_tabIndex == 2
+                  ? _ingredientRows.last.firstFocusNode
+                  : _categoryRows.last.firstFocusNode)),
     );
   }
 
@@ -103,10 +103,10 @@ class _BulkAddModalState extends State<BulkAddModal> {
       _tabIndex == 0
           ? _dishRows[index + 1].firstFocusNode
           : (_tabIndex == 1
-                ? _retailRows[index + 1].firstFocusNode
-                : (_tabIndex == 2 
-                    ? _ingredientRows[index + 1].firstFocusNode 
-                    : _categoryRows[index + 1].firstFocusNode)),
+              ? _retailRows[index + 1].firstFocusNode
+              : (_tabIndex == 2
+                  ? _ingredientRows[index + 1].firstFocusNode
+                  : _categoryRows[index + 1].firstFocusNode)),
     );
   }
 
@@ -140,13 +140,6 @@ class _BulkAddModalState extends State<BulkAddModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final tabLabels = ['Блюда', 'Товары витрины', 'Сырьё', 'Папки'];
-    final tabIcons = [
-      PhosphorIconsRegular.cookingPot,
-      PhosphorIconsRegular.storefront,
-      PhosphorIconsRegular.leaf,
-      PhosphorIconsRegular.folderPlus,
-    ];
 
     return CallbackShortcuts(
       bindings: {
@@ -176,145 +169,24 @@ class _BulkAddModalState extends State<BulkAddModal> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── Шапка ──────────────────────────────────────────────────
-                Container(
-                  padding: const EdgeInsets.fromLTRB(28, 20, 20, 0),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.brandGradient,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(PhosphorIconsRegular.listBullets, color: Colors.white, size: 18),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Массовое добавление',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? AppColors.darkText : AppColors.lightText,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: Icon(PhosphorIconsRegular.x,
-                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                        onPressed: () => Navigator.pop(context),
-                        tooltip: 'Закрыть',
-                      ),
-                    ],
-                  ),
-                ),
+                const BulkAddHeader(),
                 const SizedBox(height: 16),
-
-                // ── Pill-tabs + кнопка добавить ───────────────────────────
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
-                  child: Row(
-                    children: [
-                      // Pill tabs
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(tabLabels.length, (i) {
-                            final selected = _tabIndex == i;
-                            return GestureDetector(
-                              onTap: () => setState(() {
-                                _tabIndex = i;
-                                if ((i == 0 && _dishRows.isEmpty) ||
-                                    (i == 1 && _retailRows.isEmpty) ||
-                                    (i == 2 && _ingredientRows.isEmpty) ||
-                                    (i == 3 && _categoryRows.isEmpty)) {
-                                  _addRow();
-                                }
-                              }),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: selected
-                                      ? AppColors.brandPrimary
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: selected
-                                      ? [BoxShadow(
-                                          color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        )]
-                                      : null,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      tabIcons[i],
-                                      size: 16,
-                                      color: selected
-                                          ? Colors.white
-                                          : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      tabLabels[i],
-                                      style: TextStyle(
-                                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                                        fontSize: 13,
-                                        color: selected
-                                            ? Colors.white
-                                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                      const Spacer(),
-                      if (_tabIndex == 3) ...[
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildPillTab('Для блюд', 'dish', isDark),
-                              _buildPillTab('Для витрины', 'retail', isDark),
-                              _buildPillTab('Для сырья', 'ingredient', isDark),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                      ],
-                      TextButton.icon(
-                        onPressed: _addRow,
-                        icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-                        label: const Text('Строка'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.brandPrimary,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        ),
-                      ),
-                    ],
-                  ),
+                BulkAddTabsBar(
+                  tabIndex: _tabIndex,
+                  categoryType: _categoryType,
+                  onTabSelected: (i) => setState(() {
+                    _tabIndex = i;
+                    if ((i == 0 && _dishRows.isEmpty) ||
+                        (i == 1 && _retailRows.isEmpty) ||
+                        (i == 2 && _ingredientRows.isEmpty) ||
+                        (i == 3 && _categoryRows.isEmpty)) {
+                      _addRow();
+                    }
+                  }),
+                  onCategoryTypeChanged: (val) => setState(() => _categoryType = val),
+                  onAddRow: _addRow,
                 ),
                 const SizedBox(height: 12),
-
-                // ── Выбор категорий ───────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: Container(
@@ -338,8 +210,6 @@ class _BulkAddModalState extends State<BulkAddModal> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // ── Список строк ──────────────────────────────────────────
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -355,8 +225,6 @@ class _BulkAddModalState extends State<BulkAddModal> {
                     ),
                   ),
                 ),
-
-                // ── Footer ────────────────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(28, 8, 28, 20),
                   child: BulkAddFooter(onSaveAll: _saveAll),
@@ -368,43 +236,6 @@ class _BulkAddModalState extends State<BulkAddModal> {
       ),
     );
   }
-
-  Widget _buildPillTab(String label, String value, bool isDark) {
-    final selected = _categoryType == value;
-
-    return GestureDetector(
-      onTap: () => setState(() => _categoryType = value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        margin: const EdgeInsets.only(right: 4),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.brandPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  )
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-            fontSize: 13,
-            color: selected
-                ? Colors.white
-                : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-          ),
-        ),
-      ),
-    );
-  }
-
 
   @override
   void dispose() {

@@ -5,13 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.dependencies import require_permission, CurrentUser, TenantSession
 from app.pos.models import CreateOrderRequest, OrderStatus
 from app.pos.services.checkout_service import (
-    create_order, list_orders, get_order_by_id, update_order_status
+    create_order, list_orders, get_order_by_id, update_order_status, process_new_order
 )
-from app.pos.ws import (
-    notify_kitchen_new_order, 
-    notify_kitchen_status_update,
-    notify_inventory_updated
-)
+from app.pos.ws import notify_kitchen_status_update
 
 router = APIRouter(tags=["POS — Orders & Checkout"])
 
@@ -28,46 +24,9 @@ async def api_create_order(
 ):
     """
     Create a new order.
-    Triggers: inventory deduction, cash recording, kitchen notification.
+    Triggers: inventory deduction, cash recording, kitchen notification via checkout service.
     """
-    try:
-        order = await create_order(session, current_user.id, current_user.tenant_id, data)
-        # Fetch the complete order to eagerly load the relationships (items)
-        full_order = await get_order_by_id(session, order.id)
-        if not full_order:
-            raise ValueError("Failed to fetch newly created order")
-
-        order_data = {
-            "id": full_order.id,
-            "order_number": full_order.order_number,
-            "status": full_order.status,
-            "payment_method": full_order.payment_method,
-            "total": full_order.total,
-            "note": full_order.note,
-            "created_by": current_user.full_name,
-            "items": [
-                {
-                    "menu_item_name": oi.menu_item_name,
-                    "quantity": oi.quantity,
-                    "unit_price": oi.unit_price,
-                    "subtotal": oi.subtotal,
-                    "selected_options": oi.selected_options,
-                    "item_type": oi.item_type,
-                }
-                for oi in full_order.items
-            ]
-        }
-
-        has_dishes = any(oi.item_type == "dish" for oi in full_order.items)
-        if has_dishes:
-            await notify_kitchen_new_order(current_user.tenant_id, order_data)
-
-        # Notify active clients that inventory stock has been deducted
-        await notify_inventory_updated(current_user.tenant_id)
-
-        return order_data
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return await process_new_order(session, current_user, data)
 
 
 @router.get(

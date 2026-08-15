@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'menu_item/menu_item_variations_section.dart';
+import 'menu_item/menu_item_modifier_groups_section.dart';
 
 class MenuItemModal extends StatefulWidget {
   final int? preselectedCategoryId;
@@ -24,11 +26,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
   late TextEditingController _barcodeController;
 
   bool _hasModifiers = false;
-  
-  // Variations
   final List<Map<String, dynamic>> _variations = [];
-  
-  // Modifiers
   final List<Map<String, dynamic>> _modifierGroups = [];
 
   @override
@@ -37,7 +35,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
     _nameController = TextEditingController(text: widget.existingItem?.cleanName ?? '');
     _priceController = TextEditingController(text: widget.existingItem?.price.toString() ?? '');
     _barcodeController = TextEditingController(text: widget.existingItem?.barcode ?? '');
-    
+
     if (widget.existingItem?.attributesJson != null && widget.existingItem!.attributesJson!.isNotEmpty) {
       try {
         final Map<String, dynamic> attrs = jsonDecode(widget.existingItem!.attributesJson!);
@@ -78,7 +76,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
         'name': '',
         'required': false,
         'max_selections': 1,
-        'modifiers': []
+        'modifiers': [],
       });
     });
   }
@@ -90,7 +88,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
       final categoryId = widget.existingItem?.categoryId.toString() ?? widget.preselectedCategoryId.toString();
 
       Map<String, dynamic>? attributes;
-      
+
       if (_hasModifiers) {
         attributes = {};
         if (_variations.isNotEmpty) {
@@ -104,25 +102,25 @@ class _MenuItemModalState extends State<MenuItemModal> {
       final barcode = _barcodeController.text.trim().isEmpty ? null : _barcodeController.text.trim();
 
       if (widget.existingItem != null) {
-         context.read<MenuBloc>().add(UpdateMenuItem(
-             widget.existingItem!.id,
-             {
-                'name': name,
-                'price': price,
-                'attributes': attributes,
-                'barcode': barcode,
-             }
-         ));
+        context.read<MenuBloc>().add(UpdateMenuItem(
+          widget.existingItem!.id,
+          {
+            'name': name,
+            'price': price,
+            'attributes': attributes,
+            'barcode': barcode,
+          },
+        ));
       } else {
-         context.read<MenuBloc>().add(
-            CreateMenuItem(
-               name: name,
-               category: categoryId,
-               price: price,
-               attributes: attributes,
-               barcode: barcode,
-            ),
-         );
+        context.read<MenuBloc>().add(
+          CreateMenuItem(
+            name: name,
+            category: categoryId,
+            price: price,
+            attributes: attributes,
+            barcode: barcode,
+          ),
+        );
       }
 
       Navigator.of(context).pop();
@@ -149,7 +147,10 @@ class _MenuItemModalState extends State<MenuItemModal> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(widget.existingItem != null ? 'Редактировать блюдо' : 'Добавить блюдо', style: Theme.of(context).textTheme.headlineSmall),
+                  Text(
+                    widget.existingItem != null ? 'Редактировать блюдо' : 'Добавить блюдо',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                   IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
                 ],
               ),
@@ -207,165 +208,21 @@ class _MenuItemModalState extends State<MenuItemModal> {
                       ),
                       if (_hasModifiers) ...[
                         const SizedBox(height: 32),
-                        // Variations
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Вариации (Размеры)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            TextButton.icon(
-                              onPressed: _addVariation,
-                              icon: const Icon(PhosphorIconsRegular.plus),
-                              label: const Text('Добавить размер'),
-                            )
-                          ],
+                        MenuItemVariationsSection(
+                          variations: _variations,
+                          onAddVariation: _addVariation,
+                          onRemoveVariation: (i) => setState(() => _variations.removeAt(i)),
                         ),
-                        const SizedBox(height: 8),
-                        ..._variations.asMap().entries.map((e) {
-                          final i = e.key;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: TextFormField(
-                                    initialValue: _variations[i]['name'],
-                                    decoration: const InputDecoration(labelText: 'Название (напр. Стандарт)', isDense: true, border: OutlineInputBorder()),
-                                    onChanged: (v) => _variations[i]['name'] = v,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  flex: 1,
-                                  child: TextFormField(
-                                    initialValue: _variations[i]['price'].toString(),
-                                    decoration: const InputDecoration(labelText: 'Цена', isDense: true, border: OutlineInputBorder()),
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (v) => _variations[i]['price'] = double.tryParse(v) ?? 0,
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
-                                  onPressed: () => setState(() => _variations.removeAt(i)),
-                                )
-                              ],
-                            ),
-                          );
-                        }),
-
                         const SizedBox(height: 24),
-                        // Modifiers
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Группы модификаторов', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            TextButton.icon(
-                              onPressed: _addModifierGroup,
-                              icon: const Icon(PhosphorIconsRegular.plus),
-                              label: const Text('Добавить группу'),
-                            )
-                          ],
+                        MenuItemModifierGroupsSection(
+                          modifierGroups: _modifierGroups,
+                          onAddGroup: _addModifierGroup,
+                          onRemoveGroup: (gIndex) => setState(() => _modifierGroups.removeAt(gIndex)),
+                          onAddOption: (gIndex) => setState(() => (_modifierGroups[gIndex]['modifiers'] as List).add({'name': '', 'price': 0})),
+                          onRemoveOption: (gIndex, mIndex) => setState(() => (_modifierGroups[gIndex]['modifiers'] as List).removeAt(mIndex)),
+                          onToggleRequired: (gIndex, val) => setState(() => _modifierGroups[gIndex]['required'] = val),
                         ),
-                        const SizedBox(height: 8),
-                        ..._modifierGroups.asMap().entries.map((e) {
-                          final gIndex = e.key;
-                          final group = e.value;
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextFormField(
-                                          initialValue: group['name'],
-                                          decoration: const InputDecoration(labelText: 'Название группы (напр. Соусы)', isDense: true, border: OutlineInputBorder()),
-                                          onChanged: (v) => group['name'] = v,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
-                                        onPressed: () => setState(() => _modifierGroups.removeAt(gIndex)),
-                                      )
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: CheckboxListTile(
-                                          title: const Text('Обязательно к выбору', style: TextStyle(fontSize: 14)),
-                                          value: group['required'] ?? false,
-                                          onChanged: (v) => setState(() => group['required'] = v),
-                                          controlAffinity: ListTileControlAffinity.leading,
-                                          contentPadding: EdgeInsets.zero,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: TextFormField(
-                                          initialValue: (group['max_selections'] ?? 1).toString(),
-                                          decoration: const InputDecoration(labelText: 'Макс. кол-во опций', isDense: true, border: OutlineInputBorder()),
-                                          keyboardType: TextInputType.number,
-                                          onChanged: (v) => group['max_selections'] = int.tryParse(v) ?? 1,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const Text('Опции:', style: TextStyle(fontWeight: FontWeight.w600)),
-                                  const SizedBox(height: 8),
-                                  ...(group['modifiers'] as List).asMap().entries.map((me) {
-                                    final mIndex = me.key;
-                                    final mod = me.value;
-                                    return Padding(
-                                      padding: const EdgeInsets.only(bottom: 8.0, left: 16),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            flex: 2,
-                                            child: TextFormField(
-                                              initialValue: mod['name'],
-                                              decoration: const InputDecoration(labelText: 'Опция', isDense: true, border: OutlineInputBorder()),
-                                              onChanged: (v) => mod['name'] = v,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            flex: 1,
-                                            child: TextFormField(
-                                              initialValue: mod['price'].toString(),
-                                              decoration: const InputDecoration(labelText: 'Цена', isDense: true, border: OutlineInputBorder()),
-                                              keyboardType: TextInputType.number,
-                                              onChanged: (v) => mod['price'] = double.tryParse(v) ?? 0,
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(PhosphorIconsRegular.x, size: 18),
-                                            onPressed: () => setState(() => (group['modifiers'] as List).removeAt(mIndex)),
-                                          )
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                  TextButton.icon(
-                                    onPressed: () => setState(() => (group['modifiers'] as List).add({'name': '', 'price': 0})),
-                                    icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-                                    label: const Text('Добавить опцию'),
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      ]
+                      ],
                     ],
                   ),
                 ),
@@ -374,7 +231,10 @@ class _MenuItemModalState extends State<MenuItemModal> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Отмена', style: TextStyle(fontSize: 16))),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Отмена', style: TextStyle(fontSize: 16)),
+                  ),
                   const SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: _submit,

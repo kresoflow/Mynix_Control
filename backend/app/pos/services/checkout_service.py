@@ -218,3 +218,52 @@ async def get_order_by_id(
     )
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
+
+async def process_new_order(
+    session: AsyncSession,
+    current_user,
+    data: CreateOrderRequest,
+) -> dict:
+    """
+    Orchestrates full checkout workflow:
+    1. Validates and saves Order + items + cash ledger + inventory deductions
+    2. Eagerly loads full order
+    3. Triggers async WebSocket notifications for kitchen and inventory
+    4. Returns serialized order dictionary
+    """
+    from app.pos.ws import notify_kitchen_new_order, notify_inventory_updated
+    from app.exceptions import NotFoundError
+
+    order = await create_order(session, current_user.id, current_user.tenant_id, data)
+    full_order = await get_order_by_id(session, order.id)
+    if not full_order:
+        raise NotFoundError("Failed to fetch newly created order")
+
+    order_data = {
+        "id": full_order.id,
+        "order_number": full_order.order_number,
+        "status": full_order.status,
+        "payment_method": full_order.payment_method,
+        "total": full_order.total,
+        "note": full_order.note,
+        "created_by": current_user.full_name,
+        "items": [
+            {
+                "menu_item_name": oi.menu_item_name,
+                "quantity": oi.quantity,
+                "unit_price": oi.unit_price,
+                "subtotal": oi.subtotal,
+                "selected_options": oi.selected_options,
+                "item_type": oi.item_type,
+            }
+            for oi in full_order.items
+        ],
+    }
+
+    has_dishes = any(oi.item_type == "dish" for oi in full_order.items)
+    if has_dishes:
+        await notify_kitchen_new_order(current_user.tenant_id, order_data)
+
+    await notify_inventory_updated(current_user.tenant_id)
+    return order_data
