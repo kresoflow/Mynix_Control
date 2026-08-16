@@ -24,7 +24,19 @@ class AuthRepository {
       }
       return null;
     } catch (e) {
-      throw Exception('Login failed: ${e.toString()}');
+      if (e is DioException) {
+        final detail = e.response?.data?['detail'];
+        if (detail != null) {
+          if (detail == 'Incorrect username or password') {
+            throw Exception('Неверное имя пользователя или пароль');
+          }
+          throw Exception(detail.toString());
+        }
+        if (e.response?.statusCode == 401) {
+          throw Exception('Неверное имя пользователя или пароль');
+        }
+      }
+      throw Exception('Не удалось выполнить вход. Проверьте логин и пароль.');
     }
   }
 
@@ -49,7 +61,16 @@ class AuthRepository {
       }
       return null;
     } catch (e) {
-      throw Exception('PIN Login failed: ${e.toString()}');
+      if (e is DioException) {
+        final detail = e.response?.data?['detail'];
+        if (detail != null) {
+          if (detail == 'Invalid PIN code') {
+            throw Exception('Неверный PIN-код');
+          }
+          throw Exception(detail.toString());
+        }
+      }
+      throw Exception('Неверный PIN-код');
     }
   }
 

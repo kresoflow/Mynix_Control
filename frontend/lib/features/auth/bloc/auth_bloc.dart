@@ -45,10 +45,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           permissions: List<String>.from(profile['permissions'] ?? []),
         ));
       } else {
-        emit(const AuthError('Login failed'));
+        emit(const AuthError('Не удалось выполнить вход'));
       }
     } catch (e) {
-      emit(AuthError(e.toString()));
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      emit(AuthError(msg));
     }
   }
 
@@ -72,10 +73,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           permissions: List<String>.from(profile['permissions'] ?? []),
         ));
       } else {
-        emit(const AuthError('PIN Login failed'));
+        emit(const AuthError('Неверный PIN-код'));
       }
     } catch (e) {
-      emit(AuthError(e.toString()));
+      final msg = e.toString().replaceAll('Exception: ', '').trim();
+      emit(AuthError(msg));
     }
   }
 
