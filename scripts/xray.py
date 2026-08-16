@@ -368,6 +368,9 @@ class XRayEngine:
 
     def _scan_dead_models(self) -> List[Dict[str, Any]]:
         backend_app = os.path.join(self.root_dir, "backend", "app")
+        if not os.path.exists(backend_app):
+            return []
+
         models_declared = {}
         for root, _, files in os.walk(backend_app):
             for f in files:
@@ -381,21 +384,30 @@ class XRayEngine:
                                 cls_name = m.group(1)
                                 models_declared[cls_name] = {"file": rel_path, "line": line_idx}
 
-        all_code = []
-        for root, dirs, files in os.walk(self.root_dir):
-            dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS and not d.startswith('.git')]
-            for f in files:
-                if f.endswith(('.py', '.dart')):
-                    try:
-                        with open(os.path.join(root, f), "r", encoding="utf-8", errors="ignore") as fp:
-                            all_code.append(fp.read())
-                    except Exception:
-                        pass
-        joint_code = "\n".join(all_code)
+        # Single-pass fast token counter across active code only (backend/app + frontend/lib)
+        from collections import Counter
+        word_counter = Counter()
+        target_dirs = [
+            os.path.join(self.root_dir, "backend", "app"),
+            os.path.join(self.root_dir, "frontend", "lib")
+        ]
+
+        word_regex = re.compile(r'\b[A-Za-z0-9_]+\b')
+        for tdir in target_dirs:
+            if os.path.exists(tdir):
+                for root, _, files in os.walk(tdir):
+                    for f in files:
+                        if f.endswith(('.py', '.dart')):
+                            try:
+                                with open(os.path.join(root, f), "r", encoding="utf-8", errors="ignore") as fp:
+                                    words = word_regex.findall(fp.read())
+                                    word_counter.update(words)
+                            except Exception:
+                                pass
 
         dead_models = []
         for model_name, info in models_declared.items():
-            count = len(re.findall(r'\b' + re.escape(model_name) + r'\b', joint_code))
+            count = word_counter.get(model_name, 0)
             if count <= 1:
                 dead_models.append({
                     "name": model_name,
@@ -409,9 +421,7 @@ class XRayEngine:
 # HTML DASHBOARD EXPORTER
 # ─────────────────────────────────────────────────────────────────────────────
 def export_html(engine: XRayEngine, output_file: str = "xray_report.html"):
-    from xray import generate_html_dashboard  # or embed directly
     report_file = os.path.join(engine.root_dir, output_file)
-    # Generate standalone html
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(build_html_content(engine))
     return report_file
