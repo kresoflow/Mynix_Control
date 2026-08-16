@@ -1,14 +1,11 @@
-"""
-POS module — WebSocket for real-time kitchen order streaming.
+from typing import Dict, Set, Optional
 
-The cook's screen connects via WebSocket and receives new/updated orders
-in real-time as they are created or their status changes.
-"""
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, status
+from jose import jwt, JWTError
 
-import json
-from typing import Dict, Set
-
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from app.config import settings
+from app.database import async_session_factory
+from app.users import services as user_svc
 
 router = APIRouter()
 
@@ -58,15 +55,42 @@ kitchen_manager = KitchenConnectionManager()
 # ── WebSocket Endpoint ───────────────────────────────────────────
 
 @router.websocket("/ws/kitchen/{tenant_id}")
-async def kitchen_websocket(websocket: WebSocket, tenant_id: int):
+async def kitchen_websocket(
+    websocket: WebSocket,
+    tenant_id: int,
+    token: Optional[str] = Query(None),
+):
     """
     Kitchen screen connects here and stays open.
-    Receives JSON messages like:
-    {
-      "event": "new_order" | "status_update",
-      "order": { ... order data ... }
-    }
+    Requires valid JWT token belonging to the target tenant_id.
     """
+    # Fallback to query param from websocket if not parsed by Query
+    if not token:
+        token = websocket.query_params.get("token")
+
+    if not token:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Missing authentication token")
+        return
+
+    try:
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.jwt_algorithm]
+        )
+        user_id = payload.get("sub")
+        if not user_id:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token")
+            return
+    except JWTError:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token signature")
+        return
+
+    # Verify user is active and belongs to the requested tenant
+    async with async_session_factory() as session:
+        user = await user_svc.get_user_by_id(session, int(user_id))
+        if not user or not user.is_active or user.tenant_id != tenant_id:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized tenant access")
+            return
+
     await kitchen_manager.connect(websocket, tenant_id)
     try:
         while True:

@@ -158,7 +158,7 @@ class StockItemRow extends StatelessWidget {
                       if (item.price != null && item.price! > 0) ...[
                         Text(
                           'Розница: ${(item.currentStock * item.price!).toCurrency(context)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: AppColors.success,

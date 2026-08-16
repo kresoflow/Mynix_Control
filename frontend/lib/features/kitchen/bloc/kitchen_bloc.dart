@@ -128,7 +128,7 @@ class KitchenBloc extends Bloc<KitchenEvent, KitchenState> {
       }
     } catch (e) {
       // Could show error notification
-      print("Error marking order ready: $e");
+      print('Error marking order ready: $e');
     }
   }
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 Widget buildCategoryIcon(String name, {required double size, required Color color}) {
   final lower = name.toLowerCase();

@@ -70,7 +70,7 @@ class MenuItemModifierGroupsSection extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
+                        icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                         onPressed: () => onRemoveGroup(gIndex),
                       ),
                     ],

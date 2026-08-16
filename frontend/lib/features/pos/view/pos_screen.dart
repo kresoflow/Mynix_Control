@@ -23,6 +23,7 @@ import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
 import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 
 class PosScreen extends StatefulWidget {
   const PosScreen({super.key});
@@ -51,12 +52,13 @@ class _PosScreenState extends State<PosScreen> {
       listener: (context, state) {
         if (state is ShiftClosedSuccessfully) {
           final diff = state.report['discrepancy'] ?? 0;
-          final msg = diff == 0 
-              ? 'Смена закрыта успешно. Расхождений нет.' 
-              : 'Смена закрыта. Недостача/излишек: ${(diff as num).toCurrency(context)}';
-          _showSnackbar(context, msg, diff == 0 ? AppColors.success : AppColors.warning);
+          if (diff == 0) {
+            AppToast.showSuccess(context, 'Смена закрыта успешно', subtitle: 'Расхождений в кассе нет');
+          } else {
+            AppToast.showWarning(context, 'Смена закрыта', subtitle: 'Недостача/излишек: ${(diff as num).toCurrency(context)}');
+          }
         } else if (state is ShiftError) {
-          _showSnackbar(context, state.message, AppColors.danger);
+          AppToast.showError(context, 'Ошибка смены', subtitle: state.message);
         }
       },
       child: BlocBuilder<ShiftBloc, ShiftState>(
@@ -122,11 +124,11 @@ class _PosScreenState extends State<PosScreen> {
                               ),
                             );
                           },
-                          icon: Icon(PhosphorIconsRegular.lockKey, size: 16, color: AppColors.danger),
+                          icon: const Icon(PhosphorIconsRegular.lockKey, size: 16, color: AppColors.danger),
                           label: const Text('Закрыть смену'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.danger,
-                            side: BorderSide(color: AppColors.danger),
+                            side: const BorderSide(color: AppColors.danger),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             textStyle: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold),
@@ -200,23 +202,6 @@ class _PosScreenState extends State<PosScreen> {
     );
   }
 
-  void _showSnackbar(BuildContext context, String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.width < 768 ? 100 : 24,
-          left: 16,
-          right: 16,
-        ),
-      ),
-    );
-  }
-
   void _handleBarcode(BuildContext context, String barcode) {
     final menuState = context.read<MenuBloc>().state;
     if (menuState is! MenuLoaded) return;
@@ -233,7 +218,7 @@ class _PosScreenState extends State<PosScreen> {
           }),
           selectedOptionsPrice: child.price - parent.price,
         ));
-        _showSnackbar(context, '${parent.cleanName} (${child.cleanName}) добавлен', AppColors.success);
+        AppToast.showCart(context, '${parent.cleanName} (${child.cleanName})');
         return;
       }
     }
@@ -241,9 +226,9 @@ class _PosScreenState extends State<PosScreen> {
     final item = menuState.items.where((i) => i.barcode == barcode).firstOrNull;
     if (item != null) {
       context.read<CartBloc>().add(AddItemToCart(item));
-      _showSnackbar(context, '${item.cleanName} добавлен', AppColors.success);
+      AppToast.showCart(context, item.cleanName);
     } else {
-      _showSnackbar(context, 'Товар со штрихкодом не найден', AppColors.warning);
+      AppToast.showWarning(context, 'Товар не найден', subtitle: 'Штрихкод: $barcode отсутствует в базе');
     }
   }
 }

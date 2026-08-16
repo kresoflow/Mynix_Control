@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -162,7 +161,7 @@ class IngredientCategorySidebar extends StatelessWidget {
       final hasChildren = children.isNotEmpty;
       final isSelected = widget.selectedCategoryId == widget.category.id;
 
-      Widget trailingMenu = PopupMenuButton<String>(
+      final Widget trailingMenu = PopupMenuButton<String>(
         icon: Icon(PhosphorIconsRegular.dotsThreeVertical, size: 18, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
         onSelected: (val) {
           if (val == 'edit') {
@@ -173,7 +172,7 @@ class IngredientCategorySidebar extends StatelessWidget {
         },
         itemBuilder: (ctx) => [
           const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-          PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
+          const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
         ],
       );
 

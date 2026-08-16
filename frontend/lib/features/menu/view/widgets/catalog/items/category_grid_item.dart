@@ -6,7 +6,6 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/core/widgets/app_card.dart';
 import '../catalog_enums.dart';
-import '../catalog_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CategoryGridItem extends StatelessWidget {
@@ -18,6 +17,7 @@ class CategoryGridItem extends StatelessWidget {
   final VoidCallback onVisibilityToggle;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onRestore;
 
   const CategoryGridItem({
     super.key,
@@ -29,6 +29,7 @@ class CategoryGridItem extends StatelessWidget {
     required this.onVisibilityToggle,
     required this.onEdit,
     required this.onDelete,
+    this.onRestore,
   });
 
   @override
@@ -39,12 +40,14 @@ class CategoryGridItem extends StatelessWidget {
       effectiveIcon = category.getInheritedIcon(catState.categories);
     }
 
+    final isArchived = !category.isVisible;
+
     return AppCard(
       onTap: onTap,
       child: Stack(
         children: [
           Opacity(
-            opacity: category.isVisible ? 1.0 : 0.5,
+            opacity: isArchived ? 0.45 : 1.0,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -56,30 +59,42 @@ class CategoryGridItem extends StatelessWidget {
                     height: 56,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                      color: (isArchived ? Colors.grey : AppColors.brandPrimary).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: (effectiveIcon == null || effectiveIcon.isEmpty)
                         ? Text(
                             category.name.isNotEmpty ? category.name[0].toUpperCase() : '?',
-                            style: AppTextStyles.h2.copyWith(color: AppColors.brandPrimary, fontWeight: FontWeight.bold),
+                            style: AppTextStyles.h2.copyWith(
+                              color: isArchived ? Colors.grey : AppColors.brandPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           )
                         : IconHelper.buildIcon(
                             effectiveIcon,
                             size: 32,
-                            color: AppColors.brandPrimary,
+                            color: isArchived ? Colors.grey : AppColors.brandPrimary,
                           ),
                   ),
-                  SizedBox(height: 14),
+                  const SizedBox(height: 14),
                   Text(
                     category.name,
                     style: AppTextStyles.h3.copyWith(
                       color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkText : AppColors.lightText,
+                      decoration: isArchived ? TextDecoration.lineThrough : null,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (isArchived) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'В архиве',
+                      style: AppTextStyles.caption.copyWith(color: Colors.grey, fontSize: 11),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -105,18 +120,71 @@ class CategoryGridItem extends StatelessWidget {
                 onSelected: (val) {
                   if (val == 'edit') {
                     onEdit();
-                  } else if (val == 'visibility') onVisibilityToggle();
-                  else if (val == 'delete') onDelete();
+                  } else if (val == 'visibility') {
+                    onVisibilityToggle();
+                  } else if (val == 'restore') {
+                    if (onRestore != null) onRestore!();
+                  } else if (val == 'delete') {
+                    onDelete();
+                  }
                 },
-                itemBuilder: (ctx) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                  PopupMenuItem(value: 'visibility', child: Text(category.isVisible ? 'Скрыть на кассе' : 'Показать на кассе')),
-                  PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
-                ],
+                itemBuilder: (ctx) => isArchived
+                    ? [
+                        const PopupMenuItem(
+                          value: 'restore',
+                          child: Row(
+                            children: [
+                              Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 18, color: AppColors.success),
+                              SizedBox(width: 8),
+                              Text('Восстановить'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
+                              SizedBox(width: 8),
+                              Text('Удалить навсегда', style: TextStyle(color: AppColors.danger)),
+                            ],
+                          ),
+                        ),
+                      ]
+                    : [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(PhosphorIconsRegular.pencilSimple, size: 18),
+                              SizedBox(width: 8),
+                              Text('Редактировать'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'visibility',
+                          child: Row(
+                            children: [
+                              Icon(category.isVisible ? PhosphorIconsRegular.eyeSlash : PhosphorIconsRegular.eye, size: 18),
+                              const SizedBox(width: 8),
+                              Text(category.isVisible ? 'Скрыть на кассе' : 'Показать на кассе'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
+                              SizedBox(width: 8),
+                              Text('Удалить', style: TextStyle(color: AppColors.danger)),
+                            ],
+                          ),
+                        ),
+                      ],
               ),
             ),
-          if (!category.isVisible && manageMode == CategoryManageMode.none)
-            const Positioned(top: 8, left: 8, child: Icon(PhosphorIconsRegular.eyeSlash, color: Colors.grey, size: 20)),
         ],
       ),
     );

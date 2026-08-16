@@ -85,11 +85,11 @@ class MenuManagerItemsGrid extends StatelessWidget {
                   subtitle: Text(
                     item.attributesString != null
                         ? '${item.attributesString}\n${item.variationPrices != null && item.variationPrices!.isNotEmpty ? item.variationPrices!.map((p) => (p as num).toCurrency(context)).join(" | ") : "${item.price} с"}'
-                        : '${(item.price as num).toCurrency(context)}',
+                        : (item.price as num).toCurrency(context),
                     style: AppTextStyles.h3,
                   ),
                   trailing: IconButton(
-                    icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger, size: 20),
+                    icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger, size: 20),
                     onPressed: () => onDelete(item.id),
                   ),
                 ),

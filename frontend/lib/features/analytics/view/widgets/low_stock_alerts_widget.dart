@@ -22,8 +22,8 @@ class LowStockAlertsWidget extends StatelessWidget {
     
     Clipboard.setData(ClipboardData(text: sb.toString()));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Список скопирован в буфер обмена'),
+      const SnackBar(
+        content: Text('Список скопирован в буфер обмена'),
         backgroundColor: AppColors.success,
         duration: Duration(seconds: 2),
       ),
@@ -158,7 +158,7 @@ class LowStockAlertsWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(width: 14),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     alert.name,

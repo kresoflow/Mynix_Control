@@ -94,8 +94,7 @@ async def api_current_shift(
             }
         }
     except Exception as e:
-        import traceback
-        return {"error": str(e), "traceback": traceback.format_exc()}
+        raise HTTPException(status_code=500, detail=f"Failed to fetch current shift: {str(e)}")
 
 
 @router.post(

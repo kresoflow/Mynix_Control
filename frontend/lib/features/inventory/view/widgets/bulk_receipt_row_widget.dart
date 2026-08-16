@@ -170,7 +170,7 @@ class BulkReceiptRowWidget extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger, size: 20),
+            icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger, size: 20),
             hoverColor: AppColors.danger.withValues(alpha: 0.1),
             onPressed: onRemove,
             tooltip: 'Удалить',

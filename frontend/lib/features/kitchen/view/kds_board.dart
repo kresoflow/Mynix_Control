@@ -58,7 +58,7 @@ class _KdsBoardState extends State<KdsBoard> {
                 Expanded(
                   child: Center(
                     child: Text(
-                      "Нет активных заказов",
+                      'Нет активных заказов',
                       style: AppTextStyles.h2.copyWith(
                         color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       ),

@@ -21,7 +21,7 @@ class KitchenScreen extends StatelessWidget {
           ),
         ),
       ),
-      child: KdsBoard(),
+      child: const KdsBoard(),
     );
   }
 }

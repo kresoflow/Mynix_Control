@@ -48,7 +48,7 @@ Future<void> saveReceiveDocument({
     final repo = context.read<InventoryRepository>();
     final menuRepo = context.read<MenuRepository>();
 
-    List<Map<String, dynamic>> docItems = [];
+    final List<Map<String, dynamic>> docItems = [];
 
     for (var item in items) {
       int? finalIngredientId;

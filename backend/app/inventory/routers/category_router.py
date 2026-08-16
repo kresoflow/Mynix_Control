@@ -21,6 +21,10 @@ async def bulk_create_categories(data: list[MenuCategoryCreate], current_user: C
 async def update_category(category_id: int, current_user: CurrentUser, session: TenantSession, data: dict = Body(...)):
     return await svc.update_category(session, category_id, data)
 
+@router.post("/categories/{category_id}/restore", response_model=MenuCategoryRead, dependencies=[Depends(require_permission("menu:manage"))])
+async def restore_category(category_id: int, current_user: CurrentUser, session: TenantSession):
+    return await svc.restore_category(session, category_id)
+
 @router.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission("menu:manage"))])
-async def delete_category(category_id: int, current_user: CurrentUser, session: TenantSession, mode: str = "only"):
+async def delete_category(category_id: int, current_user: CurrentUser, session: TenantSession, mode: str = "all"):
     await svc.delete_category(session, category_id, mode=mode)

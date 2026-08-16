@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'bulk_input_decoration.dart';
 
@@ -140,7 +139,7 @@ class BulkAddCategorySelector extends StatelessWidget {
             WidgetsBinding.instance.addPostFrameCallback((_) => onParentChanged(safeParentId));
           }
 
-          String? parentName = parents
+          final String? parentName = parents
               .where((c) => c.id == safeParentId)
               .firstOrNull
               ?.name;

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketService {
@@ -26,10 +27,14 @@ class WebSocketService {
     _connectInternal();
   }
 
-  void _connectInternal() {
+  Future<void> _connectInternal() async {
     if (_currentTenantId == null) return;
 
-    final uri = Uri.parse('$_baseWsUrl/kitchen/$_currentTenantId');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('access_token');
+    final query = token != null ? '?token=$token' : '';
+
+    final uri = Uri.parse('$_baseWsUrl/kitchen/$_currentTenantId$query');
     if (kDebugMode) {
       print('--> [WebSocket] Connecting to $uri');
     }

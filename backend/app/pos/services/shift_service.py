@@ -23,7 +23,7 @@ async def calculate_expected_cash(
     shift_id: int,
     opening_cash: float,
 ) -> float:
-    """Calculate the current expected cash for a shift."""
+    """Calculate the current expected cash in drawer for a shift."""
     stmt_income = select(
         func.coalesce(func.sum(CashTransaction.amount), 0)
     ).where(
@@ -31,7 +31,7 @@ async def calculate_expected_cash(
         CashTransaction.type == CashTransactionType.INCOME.value,
     )
     res_inc = await session.execute(stmt_income)
-    total_income = res_inc.scalar() or 0.0
+    total_income = float(res_inc.scalar() or 0.0)
 
     stmt_expenses = select(
         func.coalesce(func.sum(CashTransaction.amount), 0)
@@ -43,20 +43,9 @@ async def calculate_expected_cash(
         ]),
     )
     res_exp = await session.execute(stmt_expenses)
-    total_expenses = res_exp.scalar() or 0.0
+    total_expenses = float(res_exp.scalar() or 0.0)
 
-    # Calculate Cash Sales from Orders
-    stmt_sales = select(
-        func.coalesce(func.sum(Order.total), 0)
-    ).where(
-        Order.shift_id == shift_id,
-        Order.payment_method == PaymentMethod.CASH.value,
-        Order.status != OrderStatus.CANCELLED.value,
-    )
-    res_sales = await session.execute(stmt_sales)
-    total_cash_sales = res_sales.scalar() or 0.0
-
-    return opening_cash + total_income + total_cash_sales - total_expenses
+    return round(opening_cash + total_income - total_expenses, 2)
 
 
 async def open_shift(
@@ -64,19 +53,15 @@ async def open_shift(
     user_id: int,
     opening_cash: float,
 ) -> Shift:
-    """
-    Open a new cash shift. Only one shift can be open per tenant.
-    Raises ValueError if a shift is already open.
-    """
+    """Open a new cash shift. Only one shift can be open at a time."""
     existing = await get_open_shift(session)
     if existing:
-        raise ValueError(
-            f"Shift #{existing.id} is already open. Close it before opening a new one."
-        )
+        raise ValueError(f"Shift #{existing.id} is already open. Close it first.")
 
     shift = Shift(
         opened_by=user_id,
         opening_cash=opening_cash,
+        is_open=True,
     )
     session.add(shift)
     await session.flush()
@@ -88,15 +73,10 @@ async def close_shift(
     user_id: int,
     closing_cash_actual: float,
 ) -> Shift:
-    """
-    Close the current shift.
-    Calculates expected cash and discrepancy.
-    Expected = opening_cash + cash_income - cash_expenses
-    Discrepancy = actual - expected (negative = shortage)
-    """
+    """Close the current open shift and calculate discrepancy."""
     shift = await get_open_shift(session)
     if not shift:
-        raise ValueError("No open shift to close.")
+        raise ValueError("Cannot close shift: no open shift found.")
 
     expected = await calculate_expected_cash(session, shift.id, shift.opening_cash)
 
@@ -107,6 +87,7 @@ async def close_shift(
     shift.discrepancy = round(closing_cash_actual - expected, 2)
     shift.is_open = False
     session.add(shift)
+    await session.flush()
 
     return shift
 
@@ -130,6 +111,7 @@ async def record_expense(
         description=description,
     )
     session.add(txn)
+    await session.flush()
     return txn
 
 
@@ -192,8 +174,8 @@ async def get_x_report(
     res_exp = await session.execute(stmt_exp)
     cash_expenses = float(res_exp.scalar() or 0.0)
 
-    # Expected Cash in drawer
-    expected_cash = round(shift.opening_cash + cash_sales - cash_expenses, 2)
+    # Expected Cash in drawer unified with calculate_expected_cash
+    expected_cash = await calculate_expected_cash(session, shift.id, shift.opening_cash)
 
     return {
         "shift_id": shift.id,

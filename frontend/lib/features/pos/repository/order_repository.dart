@@ -35,9 +35,15 @@ class OrderRepository {
       await _dio.post('/orders/', data: orderData);
     } on DioException catch (e) {
       final errorData = e.response?.data;
-      throw Exception('Failed to submit order (422):\nPayload: $orderData\nError: $errorData');
+      String errorMsg = 'Ошибка при создании заказа';
+      if (errorData is Map && errorData['detail'] != null) {
+        errorMsg = errorData['detail'].toString();
+      } else if (errorData != null) {
+        errorMsg = errorData.toString();
+      }
+      throw Exception(errorMsg);
     } catch (e) {
-      throw Exception('Failed to submit order: ${e.toString()}');
+      throw Exception('Ошибка при создании заказа: $e');
     }
   }
 }

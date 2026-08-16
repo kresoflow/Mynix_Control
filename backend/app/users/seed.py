@@ -45,6 +45,9 @@ PERMISSIONS = [
     # Menu
     ("menu:manage", "Create/edit menu items and prices"),
     ("menu:view", "View menu (all staff can)"),
+    # Settings & System
+    ("settings:manage", "Manage store and tenant settings"),
+    ("system:manage", "System admin and schema inspector"),
 ]
 
 # ── Role templates with their permission sets ────────────────────

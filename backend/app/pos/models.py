@@ -159,8 +159,8 @@ class CloseShiftRequest(SQLModel):
 
 class OrderItemCreate(SQLModel):
     menu_item_id: int
-    quantity: int = 1
-    unit_price_override: Optional[float] = None
+    quantity: int = Field(default=1, ge=1)
+    unit_price_override: Optional[float] = Field(default=None, ge=0.0)
     options_json: Optional[str] = None
     selected_options: Optional[dict] = None
 
@@ -172,7 +172,7 @@ class CreateOrderRequest(SQLModel):
 
 
 class RecordExpenseRequest(SQLModel):
-    amount: float
+    amount: float = Field(gt=0)
     description: str
 
 

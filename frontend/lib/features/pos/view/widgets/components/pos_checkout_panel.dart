@@ -6,6 +6,7 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 
 class PosCheckoutPanel extends StatefulWidget {
   const PosCheckoutPanel({super.key});
@@ -59,15 +60,23 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
         ],
       ),
       child: BlocConsumer<CartBloc, CartState>(
-        listenWhen: (previous, current) => !previous.submitSuccess && current.submitSuccess,
+        listenWhen: (previous, current) =>
+            (!previous.submitSuccess && current.submitSuccess) ||
+            (previous.submitError != current.submitError && current.submitError != null),
         listener: (context, state) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Заказ успешно оплачен!'),
-              backgroundColor: AppColors.success,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          if (state.submitSuccess) {
+            AppToast.showSuccess(
+              context,
+              'Заказ успешно оплачен',
+              subtitle: 'Чек сохранен в истории',
+            );
+          } else if (state.submitError != null) {
+            AppToast.showError(
+              context,
+              'Ошибка оформления заказа',
+              subtitle: state.submitError!.replaceAll('Exception: ', ''),
+            );
+          }
         },
         builder: (context, state) {
           final isEmpty = state.items.isEmpty;

@@ -150,7 +150,7 @@ class RevenueChartCard extends StatelessWidget {
 
   double _getInterval(List<TimeSeriesPoint> data) {
     if (data.isEmpty) return 1000;
-    double max = data.map((e) => e.revenue).reduce((a, b) => a > b ? a : b);
+    final double max = data.map((e) => e.revenue).reduce((a, b) => a > b ? a : b);
     if (max == 0) return 1000;
     return max / 4;
   }

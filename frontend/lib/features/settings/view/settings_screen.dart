@@ -213,7 +213,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           value: 'close_shift',
           child: Row(
             children: [
-              Icon(PhosphorIconsRegular.lockKey, color: AppColors.danger, size: 20),
+              const Icon(PhosphorIconsRegular.lockKey, color: AppColors.danger, size: 20),
               const SizedBox(width: 12),
               Text('Закрыть смену', style: AppTextStyles.body.copyWith(color: AppColors.danger)),
             ],

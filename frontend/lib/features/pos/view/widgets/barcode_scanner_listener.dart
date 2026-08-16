@@ -20,7 +20,7 @@ class BarcodeScannerListener extends StatefulWidget {
 
 class _BarcodeScannerListenerState extends State<BarcodeScannerListener> {
   final FocusNode _focusNode = FocusNode();
-  StringBuffer _buffer = StringBuffer();
+  final StringBuffer _buffer = StringBuffer();
   Timer? _timer;
 
   @override

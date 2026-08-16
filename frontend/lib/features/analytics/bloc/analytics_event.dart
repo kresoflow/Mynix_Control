@@ -12,7 +12,7 @@ class LoadAnalytics extends AnalyticsEvent {
   final DateTime? startDate;
   final DateTime? endDate;
 
-  LoadAnalytics({
+  const LoadAnalytics({
     required this.period,
     this.startDate,
     this.endDate,

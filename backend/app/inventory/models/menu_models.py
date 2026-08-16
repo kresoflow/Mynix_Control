@@ -33,6 +33,10 @@ class MenuItem(TenantModel, table=True):
     parent: Optional["MenuItem"] = Relationship(back_populates="children", sa_relationship_kwargs=dict(remote_side="MenuItem.id"))
     children: List["MenuItem"] = Relationship(back_populates="parent")
 
+    @property
+    def clean_name(self) -> str:
+        return self.name.split("|TYPE|")[0].split("|ATTR|")[0].split("|ICON|")[0]
+
 class MenuItemRead(SQLModel):
     id: int
     name: str

@@ -118,7 +118,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                   );
                 },
                 itemBuilder: (context) => [
-                  PopupMenuItem(
+                  const PopupMenuItem(
                     value: 'receipt',
                     child: ListTile(
                       leading: Icon(PhosphorIconsRegular.download, color: AppColors.success),
@@ -126,7 +126,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
-                  PopupMenuItem(
+                  const PopupMenuItem(
                     value: 'write_off',
                     child: ListTile(
                       leading: Icon(PhosphorIconsRegular.upload, color: AppColors.danger),

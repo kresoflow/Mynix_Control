@@ -35,8 +35,8 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
             onTap: onNavigateRoot,
             child: Row(
               children: [
-                Icon(PhosphorIconsRegular.house, size: 20),
-                SizedBox(width: 8),
+                const Icon(PhosphorIconsRegular.house, size: 20),
+                const SizedBox(width: 8),
                 Text('Главная', style: AppTextStyles.h3),
               ],
             ),

@@ -152,7 +152,7 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
                   Switch(
                     value: _isActive,
                     onChanged: (val) => setState(() => _isActive = val),
-                    activeColor: AppColors.brandPrimary,
+                    activeThumbColor: AppColors.brandPrimary,
                   ),
                   const SizedBox(width: 4),
                   Text(

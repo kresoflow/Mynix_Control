@@ -5,23 +5,12 @@ import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
 
+import 'recipe_bulk_edit/recipe_row_state.dart';
+import 'recipe_bulk_edit/ingredient_picker_dialog.dart';
+import 'recipe_bulk_edit/recipe_bulk_edit_row.dart';
 
-class RecipeRowState {
-  int? ingredientId;
-  TextEditingController quantityController;
-  final FocusNode ingredientFocusNode = FocusNode();
-
-  RecipeRowState({this.ingredientId, double quantity = 0})
-      : quantityController = TextEditingController(
-            text: quantity > 0 ? quantity.toString() : '');
-
-  void dispose() {
-    quantityController.dispose();
-    ingredientFocusNode.dispose();
-  }
-}
+export 'recipe_bulk_edit/recipe_row_state.dart';
 
 class RecipeBulkEditDialog extends StatefulWidget {
   final int menuItemId;
@@ -66,9 +55,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
   }
 
   void _addRow() {
-    setState(() {
-      _rows.add(RecipeRowState());
-    });
+    setState(() => _rows.add(RecipeRowState()));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_rows.isNotEmpty) {
         _rows.last.ingredientFocusNode.requestFocus();
@@ -78,10 +65,13 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
 
   void _duplicateRow(int index) {
     setState(() {
-      _rows.insert(index + 1, RecipeRowState(
-        ingredientId: _rows[index].ingredientId,
-        quantity: double.tryParse(_rows[index].quantityController.text) ?? 0,
-      ));
+      _rows.insert(
+        index + 1,
+        RecipeRowState(
+          ingredientId: _rows[index].ingredientId,
+          quantity: double.tryParse(_rows[index].quantityController.text) ?? 0,
+        ),
+      );
     });
   }
 
@@ -115,123 +105,6 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
     Navigator.of(context).pop();
   }
 
-  Future<int?> _showIngredientPicker(BuildContext context) {
-    final Map<String, List<dynamic>> grouped = {};
-    for (var ing in widget.availableIngredients) {
-      final catName = ing.categoryName ?? 'Без категории';
-      grouped.putIfAbsent(catName, () => []).add(ing);
-    }
-    
-    final sortedKeys = grouped.keys.toList()..sort();
-
-    return showDialog<int>(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          width: 500,
-          height: 600,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Выберите сырье', style: AppTextStyles.h3),
-                  IconButton(
-                    icon: const Icon(PhosphorIconsRegular.x),
-                    onPressed: () => Navigator.of(ctx).pop(),
-                  )
-                ],
-              ),
-              const Divider(),
-              Expanded(
-                child: StatefulBuilder(
-                  builder: (context, setDialogState) {
-                    final Map<String, bool> expandedCats = {};
-                    
-                    // Create a flat list dynamically whenever state changes inside the dialog
-                    List<dynamic> buildFlatList() {
-                      final list = <dynamic>[];
-                      for (final catName in sortedKeys) {
-                        final items = grouped[catName]!;
-                        final isExpanded = expandedCats[catName] ?? false;
-                        
-                        list.add({
-                          'type': 'header',
-                          'categoryName': catName,
-                          'isExpanded': isExpanded,
-                        });
-                        
-                        if (isExpanded) {
-                          list.addAll(items.map((item) => {'type': 'item', 'item': item}));
-                        }
-                      }
-                      return list;
-                    }
-
-                    var flatList = buildFlatList();
-
-                    return ListView.builder(
-                      itemCount: flatList.length,
-                      itemBuilder: (context, index) {
-                        final data = flatList[index];
-                        if (data['type'] == 'header') {
-                          final catName = data['categoryName'] as String;
-                          final isExpanded = data['isExpanded'] as bool;
-                          
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                setDialogState(() {
-                                  expandedCats[catName] = !isExpanded;
-                                  flatList = buildFlatList();
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(catName, style: AppTextStyles.h3),
-                                    ),
-                                    AnimatedRotation(
-                                      turns: isExpanded ? 0.5 : 0.0,
-                                      duration: const Duration(milliseconds: 200),
-                                      child: const Icon(PhosphorIconsRegular.caretDown, color: Colors.grey, size: 16),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        } else {
-                          final ing = data['item'];
-                          return ListTile(
-                            title: Text(ing.name),
-                            subtitle: Text('Алерт: ${ing.minStockAlert.toInt()} ${ing.unit} | Остаток: ${ing.currentStock.toInt()} ${ing.unit}'),
-                            trailing: Text(ing.unit, style: const TextStyle(color: Colors.grey)),
-                            onTap: () {
-                              Navigator.of(ctx).pop(ing.id);
-                            },
-                          );
-                        }
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return CallbackShortcuts(
@@ -258,10 +131,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Редактор техкарты',
-                      style: AppTextStyles.h2,
-                    ),
+                    Text('Редактор техкарты', style: AppTextStyles.h2),
                     Row(
                       children: [
                         ElevatedButton.icon(
@@ -279,134 +149,83 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  children: const [
-                    Expanded(flex: 3, child: Text('Сырье / Ингредиент', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+                const Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text('Сырье / Ингредиент', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                    ),
                     SizedBox(width: 16),
-                    Expanded(flex: 1, child: Text('Кол-во', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-                    SizedBox(width: 96), // Space for copy/delete buttons
+                    Expanded(
+                      flex: 1,
+                      child: Text('Кол-во', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                    ),
+                    SizedBox(width: 96),
                   ],
                 ),
                 const Divider(),
                 Expanded(
-              child: ListView.separated(
-                itemCount: _rows.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final row = _rows[index];
-                  final selectedIngredient = widget.availableIngredients.where((i) => i.id == row.ingredientId).firstOrNull;
-                  final unit = selectedIngredient?.unit ?? '';
-                  
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: InkWell(
-                          focusNode: row.ingredientFocusNode,
-                          onTap: () async {
-                            final selected = await _showIngredientPicker(context);
-                            if (selected != null) {
-                              setState(() {
-                                row.ingredientId = selected;
-                              });
-                            }
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    row.ingredientId != null 
-                                      ? (selectedIngredient?.name ?? 'Неизвестно')
-                                      : 'Выберите сырье...',
-                                    style: TextStyle(color: row.ingredientId != null ? Theme.of(context).textTheme.bodyLarge?.color : Colors.grey, fontSize: 15),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const Icon(PhosphorIconsRegular.caretDown, size: 16, color: Colors.grey),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 1,
-                        child: TextFormField(
-                          controller: row.quantityController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _addRow(),
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                            hintText: '0.0',
-                            suffixText: unit.isNotEmpty ? unit : null,
-                            suffixStyle: const TextStyle(color: Colors.grey),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(PhosphorIconsRegular.copy, color: AppColors.info),
-                            onPressed: () => _duplicateRow(index),
-                            tooltip: 'Дублировать',
-                          ),
-                          IconButton(
-                            icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
-                            onPressed: () => _removeRow(index),
-                            tooltip: 'Удалить',
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.success,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: _save,
-                child: const Text(
-                  'Сохранить всё (Ctrl+S)',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  child: ListView.separated(
+                    itemCount: _rows.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final row = _rows[index];
+                      final selectedIngredient = widget.availableIngredients
+                          .where((i) => i.id == row.ingredientId)
+                          .firstOrNull;
+
+                      return RecipeBulkEditRow(
+                        row: row,
+                        index: index,
+                        selectedIngredient: selectedIngredient,
+                        onPickIngredient: () async {
+                          final selectedId = await IngredientPickerDialog.show(
+                            context,
+                            widget.availableIngredients,
+                          );
+                          if (selectedId != null) {
+                            setState(() => row.ingredientId = selectedId);
+                          }
+                        },
+                        onDuplicate: () => _duplicateRow(index),
+                        onRemove: () => _removeRow(index),
+                        onAddNext: () {
+                          if (index == _rows.length - 1) {
+                            _addRow();
+                          }
+                        },
+                      );
+                    },
                   ),
                 ),
-              ),
+                const Divider(),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Всего строк: ${_rows.length}',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Отмена'),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton(
+                          onPressed: _save,
+                          child: const Text('Сохранить (Ctrl+S)'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
-    ),
       ),
     );
   }

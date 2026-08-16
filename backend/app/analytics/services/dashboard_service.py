@@ -32,6 +32,9 @@ async def get_today_dashboard(session: AsyncSession) -> DashboardTodayRead:
             total_orders=0,
             dishes_revenue=0.0,
             retail_revenue=0.0,
+            total_cogs=0.0,
+            net_profit=0.0,
+            margin_percentage=0.0,
             low_stock_alerts=[],
             top_items=[],
             recent_orders=[]

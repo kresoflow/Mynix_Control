@@ -158,7 +158,7 @@ class RevenueShareWidget extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(width: 14),
+        const SizedBox(width: 14),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -170,7 +170,7 @@ class RevenueShareWidget extends StatelessWidget {
                 letterSpacing: 0.3,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               '${value.toStringAsFixed(0)} ${context.watch<SettingsBloc>().state.currency} (${(share * 100).toStringAsFixed(1)}%)',
               style: AppTextStyles.bodyMedium.copyWith(

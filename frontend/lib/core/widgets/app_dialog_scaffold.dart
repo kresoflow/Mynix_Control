@@ -132,7 +132,7 @@ class AppDialogScaffold extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppRadii.dialog)),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppRadii.dialog)),
                 border: Border(
                   top: BorderSide(
                     color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder,

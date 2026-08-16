@@ -4,7 +4,6 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
@@ -71,7 +70,7 @@ void performBulkSave({
          final opts = optionsRaw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
          final prices = row.priceController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
          
-         List<Map<String, dynamic>> variations = [];
+         final List<Map<String, dynamic>> variations = [];
          for (int i = 0; i < opts.length; i++) {
             double p = 0.0;
             if (i < prices.length) {
@@ -134,7 +133,7 @@ void performBulkSave({
       return;
     }
 
-    int sortIndex = 0;
+    final int sortIndex = 0;
     for (var row in retailRows) {
       final baseName = row.nameController.text.trim();
       if (baseName.isEmpty) continue;
@@ -151,13 +150,14 @@ void performBulkSave({
       if (volumes.isEmpty) volumes.add('');
 
       String uLabel = '';
-      if (row.selectedUnit == 'l') uLabel = 'л';
-      else if (row.selectedUnit == 'ml') uLabel = 'мл';
+      if (row.selectedUnit == 'l') {
+        uLabel = 'л';
+      } else if (row.selectedUnit == 'ml') uLabel = 'мл';
       else if (row.selectedUnit == 'kg') uLabel = 'кг';
       else if (row.selectedUnit == 'g') uLabel = 'г';
       else if (row.selectedUnit == 'pcs') uLabel = 'шт';
 
-      bool hasOptions = !(flavors.length == 1 && flavors[0] == '' && volumes.length == 1 && volumes[0] == '');
+      final bool hasOptions = !(flavors.length == 1 && flavors[0] == '' && volumes.length == 1 && volumes[0] == '');
 
       if (!hasOptions) {
         final purchase = purchases.isNotEmpty ? (double.tryParse(purchases.first) ?? 0.0) : 0.0;
@@ -185,12 +185,12 @@ void performBulkSave({
         final flavor = flavors[f];
         final groupName = baseName;
 
-        List<Map<String, dynamic>> variations = [];
+        final List<Map<String, dynamic>> variations = [];
 
         for (int v = 0; v < volumes.length; v++) {
           final volume = volumes[v];
           
-          List<String> nameParts = [baseName];
+          final List<String> nameParts = [baseName];
           if (flavor.isNotEmpty) nameParts.add(flavor);
           if (volume.isNotEmpty) nameParts.add('$volume $uLabel'.trim());
           

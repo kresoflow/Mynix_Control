@@ -15,6 +15,7 @@ class CatalogContentView extends StatelessWidget {
   final void Function(dynamic category) onCategoryVisibilityToggle;
   final void Function(dynamic category) onCategoryEdit;
   final void Function(dynamic category) onCategoryDelete;
+  final void Function(dynamic category)? onCategoryRestore;
   final void Function(MenuItem item) onItemTap;
   final void Function(MenuItem item, bool? val) onItemToggle;
   final void Function(MenuItem item) onItemEdit;
@@ -35,6 +36,7 @@ class CatalogContentView extends StatelessWidget {
     required this.onCategoryVisibilityToggle,
     required this.onCategoryEdit,
     required this.onCategoryDelete,
+    this.onCategoryRestore,
     required this.onItemTap,
     required this.onItemToggle,
     required this.onItemEdit,
@@ -76,6 +78,7 @@ class CatalogContentView extends StatelessWidget {
                     onVisibilityToggle: () => onCategoryVisibilityToggle(cat),
                     onEdit: () => onCategoryEdit(cat),
                     onDelete: () => onCategoryDelete(cat),
+                    onRestore: onCategoryRestore != null ? () => onCategoryRestore!(cat) : null,
                   );
                 } else {
                   final item = currentItems[index - currentCategories.length];
@@ -118,6 +121,7 @@ class CatalogContentView extends StatelessWidget {
             onVisibilityToggle: () => onCategoryVisibilityToggle(cat),
             onEdit: () => onCategoryEdit(cat),
             onDelete: () => onCategoryDelete(cat),
+            onRestore: onCategoryRestore != null ? () => onCategoryRestore!(cat) : null,
           );
         } else {
           final item = currentItems[index - currentCategories.length];

@@ -141,7 +141,7 @@ class PosSettingsModal extends StatelessWidget {
                             ),
                             Switch(
                               value: state.enableRainbowColors,
-                              activeColor: AppColors.brandPrimary,
+                              activeThumbColor: AppColors.brandPrimary,
                               onChanged: (val) {
                                 context.read<PosSettingsCubit>().toggleRainbowColors();
                               },

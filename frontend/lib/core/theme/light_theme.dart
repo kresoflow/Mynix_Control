@@ -83,7 +83,7 @@ ThemeData getLightTheme() {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.danger),
+        borderSide: const BorderSide(color: AppColors.danger),
       ),
       labelStyle: AppTextStyles.caption.copyWith(color: AppColors.lightSubtext),
       prefixIconColor: AppColors.lightSubtext,
@@ -128,6 +128,12 @@ ThemeData getLightTheme() {
       checkColor: WidgetStateProperty.all(Colors.white),
       side: BorderSide(color: AppColors.lightBorder, width: 1.5),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+    ),
+
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      behavior: SnackBarBehavior.floating,
     ),
   );
 }

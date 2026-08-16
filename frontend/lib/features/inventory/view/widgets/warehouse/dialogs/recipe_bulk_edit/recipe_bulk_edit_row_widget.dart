@@ -106,12 +106,12 @@ class _RecipeBulkEditRowWidgetState extends State<RecipeBulkEditRowWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(PhosphorIconsRegular.copy, color: AppColors.info),
+              icon: const Icon(PhosphorIconsRegular.copy, color: AppColors.info),
               onPressed: widget.onDuplicateRow,
               tooltip: 'Дублировать',
             ),
             IconButton(
-              icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
+              icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
               onPressed: widget.onRemoveRow,
               tooltip: 'Удалить',
             ),

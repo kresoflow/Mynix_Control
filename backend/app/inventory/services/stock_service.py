@@ -134,6 +134,7 @@ async def receive_stock(
         created_by=user_id,
     )
     session.add(txn)
+    await session.flush()
     return txn
 
 async def receive_retail_stock(

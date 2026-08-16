@@ -17,7 +17,7 @@ extension SuppliersPart on InventoryRepository {
         '/suppliers/',
         data: {
           'name': name,
-          if (contactInfo != null) 'contact_info': contactInfo,
+          'contact_info': ?contactInfo,
         },
       );
       return Supplier.fromJson(response.data);

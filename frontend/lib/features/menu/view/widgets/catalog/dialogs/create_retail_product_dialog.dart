@@ -14,7 +14,7 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
   final nameController = TextEditingController(text: itemToEdit?.cleanName ?? '');
   
   final sellingPriceController = TextEditingController(text: isEditing ? itemToEdit.price.toInt().toString() : '');
-  String selectedUnit = 'pcs';
+  final String selectedUnit = 'pcs';
   String? selectedIcon;
   final currency = context.read<SettingsBloc>().state.currency;
 

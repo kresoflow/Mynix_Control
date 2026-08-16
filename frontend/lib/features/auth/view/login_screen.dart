@@ -10,6 +10,7 @@ import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/features/superadmin/domain/superadmin_repository.dart';
 import 'package:mynix_frontend/features/superadmin/presentation/bloc/superadmin_bloc.dart';
 import 'package:mynix_frontend/features/superadmin/presentation/superadmin_screen.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isPinMode = false;
+  final bool _isPinMode = false;
   final _pinController = TextEditingController();
 
   @override
@@ -97,8 +98,10 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: colorScheme.error),
+            AppToast.showError(
+              context,
+              'Ошибка авторизации',
+              subtitle: state.message,
             );
           }
         },
@@ -128,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       'Добро пожаловать',
                       style: AppTextStyles.body.copyWith(
@@ -168,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -202,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

@@ -43,6 +43,8 @@ TestingSessionLocal = sessionmaker(
 )
 
 
+from app.dependencies import get_tenant_session
+
 async def override_get_session():
     async with TestingSessionLocal() as session:
         try:
@@ -53,7 +55,18 @@ async def override_get_session():
             raise
 
 
+async def override_get_tenant_session():
+    async with TestingSessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+
+
 app.dependency_overrides[get_session] = override_get_session
+app.dependency_overrides[get_tenant_session] = override_get_tenant_session
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)

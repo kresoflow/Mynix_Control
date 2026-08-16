@@ -7,21 +7,21 @@ ThemeData getDarkTheme() {
   final colorScheme = ColorScheme(
     brightness: Brightness.dark,
     primary: AppColors.brandPrimary,
-    onPrimary: Color(0xFF0E1016),
-    primaryContainer: Color(0xFF2A2210),
+    onPrimary: const Color(0xFF0E1016),
+    primaryContainer: const Color(0xFF2A2210),
     onPrimaryContainer: AppColors.brandPrimary,
     secondary: AppColors.brandSecondary,
     onSecondary: Colors.white,
-    secondaryContainer: Color(0xFF2D1A0F),
+    secondaryContainer: const Color(0xFF2D1A0F),
     onSecondaryContainer: AppColors.brandSecondary,
     tertiary: AppColors.brandTertiary,
-    onTertiary: Color(0xFF0E1016),
+    onTertiary: const Color(0xFF0E1016),
     surface: AppColors.darkSurface,
     onSurface: AppColors.darkText,
     surfaceContainerHighest: AppColors.darkCard,
     onSurfaceVariant: AppColors.darkSubtext,
     outline: AppColors.darkBorder,
-    outlineVariant: Color(0xFF1E2535),
+    outlineVariant: const Color(0xFF1E2535),
     error: AppColors.danger,
     onError: Colors.white,
     shadow: Colors.black,
@@ -87,7 +87,7 @@ ThemeData getDarkTheme() {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.danger),
+        borderSide: const BorderSide(color: AppColors.danger),
       ),
       labelStyle: AppTextStyles.caption,
       hintStyle: GoogleFonts.inter(
@@ -171,13 +171,9 @@ ThemeData getDarkTheme() {
     ),
 
     // Snackbar
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.darkCard,
-      contentTextStyle: AppTextStyles.body.copyWith(color: AppColors.darkText),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppColors.darkBorder),
-      ),
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       behavior: SnackBarBehavior.floating,
     ),
 

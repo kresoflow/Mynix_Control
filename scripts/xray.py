@@ -238,26 +238,34 @@ class XRayEngine:
                                                 if kw.arg == "path" and isinstance(kw.value, ast.Constant):
                                                     path_suffix = str(kw.value.value)
 
-                                        # Extract require_permission AST call
+                                        # Extract require_permission or require_system_admin AST call
                                         required_perm = None
+                                        has_system_admin = False
                                         for subnode in ast.walk(dec):
                                             if isinstance(subnode, ast.Call):
                                                 fname = subnode.func.id if isinstance(subnode.func, ast.Name) else ""
                                                 if fname == "require_permission" and subnode.args and isinstance(subnode.args[0], ast.Constant):
                                                     required_perm = str(subnode.args[0].value)
+                                                elif fname in ("require_system_admin", "Depends") and "require_system_admin" in ast.dump(subnode):
+                                                    has_system_admin = True
 
                                         is_tenant_session = False
                                         is_public_session = False
+                                        has_current_user = False
 
                                         # Inspect function args
                                         for arg in node.args.args:
                                             ann_name = ""
                                             if isinstance(arg.annotation, ast.Name):
                                                 ann_name = arg.annotation.id
+                                            elif isinstance(arg.annotation, ast.Subscript):
+                                                ann_name = ast.dump(arg.annotation)
                                             if "TenantSession" in ann_name or "get_tenant_session" in ann_name:
                                                 is_tenant_session = True
                                             if "get_session" in ann_name or "get_public_session" in ann_name:
                                                 is_public_session = True
+                                            if "CurrentUser" in ann_name or "get_current_user" in ann_name:
+                                                has_current_user = True
 
                                         for default_val in node.args.defaults:
                                             for subnode in ast.walk(default_val):
@@ -266,21 +274,37 @@ class XRayEngine:
                                                         is_tenant_session = True
                                                     if "get_session" in subnode.id:
                                                         is_public_session = True
+                                                    if "CurrentUser" in subnode.id or "get_current_user" in subnode.id:
+                                                        has_current_user = True
+                                                    if "require_system_admin" in subnode.id:
+                                                        has_system_admin = True
                                                 elif isinstance(subnode, ast.Call):
                                                     fname = subnode.func.id if isinstance(subnode.func, ast.Name) else ""
                                                     if fname == "require_permission" and subnode.args and isinstance(subnode.args[0], ast.Constant) and not required_perm:
                                                         required_perm = str(subnode.args[0].value)
+                                                    if fname == "require_system_admin" or "require_system_admin" in ast.dump(subnode):
+                                                        has_system_admin = True
 
                                         full_path = f"{base_prefix}{local_prefix}{path_suffix}".replace("//", "/")
                                         if not full_path.startswith("/"):
                                             full_path = "/" + full_path
                                         norm_path = full_path.rstrip("/") if len(full_path) > 1 else full_path
 
-                                        perm_status = "OK"
-                                        if not required_perm:
+                                        if has_system_admin:
+                                            required_perm = "system:admin"
+                                            perm_status = "OK"
+                                        elif full_path in ("/api/v1/auth/login", "/api/v1/auth/pin"):
+                                            required_perm = "public"
+                                            perm_status = "PUBLIC_ALLOWED"
+                                        elif full_path == "/api/v1/auth/me" and has_current_user:
+                                            required_perm = "authenticated"
+                                            perm_status = "OK"
+                                        elif not required_perm:
                                             perm_status = "PUBLIC_OR_UNGUARDED"
                                         elif required_perm not in seeded_perms:
                                             perm_status = "UNSEEDED_PERMISSION"
+                                        else:
+                                            perm_status = "OK"
 
                                         routes.append({
                                             "method": method_name.upper(),
@@ -969,7 +993,7 @@ def main():
 
     if args.security:
         engine = XRayEngine(root_dir)
-        unguarded = [r for r in engine.routes if r['perm_status'] != 'OK' and not r['path'].endswith('/health') and not r['path'] == '/']
+        unguarded = [r for r in engine.routes if r['perm_status'] not in ('OK', 'PUBLIC_ALLOWED') and not r['path'].endswith('/health') and not r['path'] == '/']
         print(f"=== 🛡️ SECURITY & PBAC AUDIT ===")
         print(f"Total Routes: {len(engine.routes)}")
         print(f"Unguarded Routes: {len(unguarded)}")
@@ -1011,7 +1035,7 @@ def main():
 
     if args.ci:
         engine = XRayEngine(root_dir)
-        unguarded = [r for r in engine.routes if r['perm_status'] != 'OK' and not r['path'].endswith('/health') and not r['path'] == '/']
+        unguarded = [r for r in engine.routes if r['perm_status'] not in ('OK', 'PUBLIC_ALLOWED') and not r['path'].endswith('/health') and not r['path'] == '/']
         if unguarded:
             print(f"CI FAILURE: {len(unguarded)} unguarded routes found!")
             sys.exit(1)

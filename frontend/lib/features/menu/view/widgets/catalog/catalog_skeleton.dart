@@ -5,7 +5,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 class CatalogSkeleton extends StatelessWidget {
   final bool isList;
   final int count;
-  const CatalogSkeleton({super.key, required this.isList, this.count = 8});
+  const CatalogSkeleton({super.key, this.isList = false, this.count = 8});
 
   @override
   Widget build(BuildContext context) {

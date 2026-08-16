@@ -70,10 +70,18 @@ class UpdateCategory extends CategoryEvent {
   List<Object?> get props => [id, name, sortOrder, color, isVisible, icon];
 }
 
+class RestoreCategory extends CategoryEvent {
+  final int id;
+  const RestoreCategory(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
+
 class DeleteCategory extends CategoryEvent {
   final int id;
   final String mode;
-  const DeleteCategory(this.id, {this.mode = 'only'});
+  const DeleteCategory(this.id, {this.mode = 'all'});
 
   @override
   List<Object?> get props => [id, mode];

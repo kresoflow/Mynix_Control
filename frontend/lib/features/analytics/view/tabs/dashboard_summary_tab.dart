@@ -35,7 +35,7 @@ class DashboardSummaryTab extends StatelessWidget {
           return Center(
             child: Text(
               state.message,
-              style: TextStyle(color: AppColors.danger),
+              style: const TextStyle(color: AppColors.danger),
             ),
           );
         }

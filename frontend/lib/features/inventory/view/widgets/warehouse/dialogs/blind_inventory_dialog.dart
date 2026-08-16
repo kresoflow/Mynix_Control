@@ -79,7 +79,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
         context.read<IngredientBloc>().add(LoadIngredients());
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Инвентаризация успешно проведена!'),
             backgroundColor: AppColors.success,
           ),

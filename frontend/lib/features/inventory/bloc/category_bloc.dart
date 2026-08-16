@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'category_event.dart';
+export 'category_event.dart';
 
 abstract class CategoryState extends Equatable {
   const CategoryState();
@@ -36,6 +37,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<CreateCategory>(_onCreateCategory);
     on<CreateCategoriesBulk>(_onCreateCategoriesBulk);
     on<UpdateCategory>(_onUpdateCategory);
+    on<RestoreCategory>(_onRestoreCategory);
     on<DeleteCategory>(_onDeleteCategory);
   }
 
@@ -106,6 +108,19 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     }
   }
 
+  Future<void> _onRestoreCategory(
+    RestoreCategory event,
+    Emitter<CategoryState> emit,
+  ) async {
+    try {
+      await repository.restoreCategory(event.id);
+      add(LoadCategories());
+    } catch (e) {
+      emit(CategoryError(message: e.toString()));
+      add(LoadCategories());
+    }
+  }
+
   Future<void> _onDeleteCategory(
     DeleteCategory event,
     Emitter<CategoryState> emit,
@@ -114,7 +129,6 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       await repository.deleteCategory(event.id, mode: event.mode);
       add(LoadCategories());
     } catch (e) {
-      // Re-emit loaded but we need a way to show toast. For now just emit error.
       emit(
         CategoryError(message: e.toString().replaceFirst('Exception: ', '')),
       );

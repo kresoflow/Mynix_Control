@@ -35,82 +35,82 @@ class OrderDetailsDialog extends StatelessWidget {
       ),
       child: Center(
         child: Container(
-          width: 420,
+          width: 440,
           constraints: const BoxConstraints(maxHeight: 800),
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
-              )
+              ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
+              // ── Header (Order Number & Status Badge) ─────────────────
               Container(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
-                child: Column(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: AppColors.brandPrimary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(PhosphorIconsFill.receipt, color: AppColors.brandPrimary, size: 28),
+                          child: Icon(PhosphorIconsFill.receipt, color: AppColors.brandPrimary, size: 22),
                         ),
-                        IconButton(
-                          icon: const Icon(PhosphorIconsRegular.x),
-                          onPressed: () => Navigator.pop(context),
-                          color: subtext,
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Чек #${order.orderNumber}',
+                              style: AppTextStyles.h2,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              DateFormat('dd.MM.yyyy, HH:mm').format(order.createdAt),
+                              style: AppTextStyles.caption.copyWith(color: subtext),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Чек #${order.orderNumber}',
-                      style: AppTextStyles.h2,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      order.total.toCurrency(context),
-                      style: AppTextStyles.h1.copyWith(color: AppColors.brandPrimary, fontWeight: FontWeight.w800),
-                      textAlign: TextAlign.center,
+                    IconButton(
+                      icon: const Icon(PhosphorIconsRegular.x),
+                      onPressed: () => Navigator.pop(context),
+                      color: subtext,
                     ),
                   ],
                 ),
               ),
 
-              // Dashed separator (Visual)
+              // Dashed separator
               SizedBox(
                 height: 1,
                 child: CustomPaint(painter: _DashedLinePainter(color: isDark ? Colors.white24 : Colors.black12)),
               ),
 
-              // Receipt Meta
+              // ── Receipt Meta ─────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
                   children: [
-                    _MetaRow('Время', DateFormat('HH:mm  dd.MM.yyyy').format(order.createdAt), text, subtext),
-                    const SizedBox(height: 12),
-                    _MetaRow('Способ оплаты', order.paymentMethod == 'cash' ? 'Наличные' : 'Банковская карта', text, subtext),
-                    const SizedBox(height: 12),
-                    _MetaRow('Статус', _localizeStatus(order.status), _getStatusColor(order.status), subtext),
+                    _buildMetaRow('Способ оплаты', order.paymentMethod == 'cash' ? 'Наличные' : 'Банковская карта / Перевод', text, subtext),
+                    const SizedBox(height: 10),
+                    _buildMetaRow('Статус чека', _localizeStatus(order.status), _getStatusColor(order.status), subtext),
                   ],
                 ),
               ),
@@ -120,32 +120,47 @@ class OrderDetailsDialog extends StatelessWidget {
                 child: CustomPaint(painter: _DashedLinePainter(color: isDark ? Colors.white24 : Colors.black12)),
               ),
 
-              // Items List
+              // ── Items List ───────────────────────────────────────────
               Expanded(
                 child: ListView.separated(
                   padding: const EdgeInsets.all(24),
                   itemCount: order.items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  separatorBuilder: (_, _) => const SizedBox(height: 14),
                   itemBuilder: (context, index) {
                     final item = order.items[index];
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '${item.quantity}x',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.brandPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(item.menuItemName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
                               if (item.selectedOptions != null && item.selectedOptions!.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text('С модификаторами', style: AppTextStyles.caption.copyWith(color: subtext)),
+                                const SizedBox(height: 2),
+                                Text('С модификаторами', style: AppTextStyles.caption.copyWith(color: subtext, fontSize: 11)),
                               ],
-                              const SizedBox(height: 4),
-                              Text('${item.quantity}  x  ${item.unitPrice.toCurrency(context)}', style: AppTextStyles.caption.copyWith(color: subtext)),
+                              const SizedBox(height: 2),
+                              Text('${item.unitPrice.toCurrency(context)} за шт.', style: AppTextStyles.caption.copyWith(color: subtext)),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         Text(item.subtotal.toCurrency(context), style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
                       ],
                     );
@@ -153,28 +168,55 @@ class OrderDetailsDialog extends StatelessWidget {
                 ),
               ),
 
-              if (canCancel)
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -4)),
-                    ],
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: AppDangerButton(
-                      label: 'Отменить этот чек',
-                      onPressed: () {
-                        context.read<OrdersBloc>().add(CancelOrder(order.id));
-                        Navigator.pop(context);
-                      },
-                    ),
+              // ── Bottom Summary & Total (UX Fixed: prominently placed at bottom of receipt) ──
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkCard : AppColors.lightBg,
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                  border: Border(
+                    top: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
                   ),
                 ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'ИТОГО К ОПЛАТЕ:',
+                          style: AppTextStyles.h3.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                          ),
+                        ),
+                        Text(
+                          order.total.toCurrency(context),
+                          style: AppTextStyles.h1.copyWith(
+                            color: AppColors.brandPrimary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (canCancel) ...[
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: AppDangerButton(
+                          label: 'Отменить этот чек',
+                          icon: PhosphorIconsRegular.xCircle,
+                          onPressed: () {
+                            context.read<OrdersBloc>().add(CancelOrder(order.id));
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -182,7 +224,7 @@ class OrderDetailsDialog extends StatelessWidget {
     );
   }
 
-  Widget _MetaRow(String label, String value, Color valueColor, Color labelColor) {
+  Widget _buildMetaRow(String label, String value, Color valueColor, Color labelColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -205,12 +247,12 @@ class OrderDetailsDialog extends StatelessWidget {
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'new': return AppColors.brandPrimary;
-      case 'cooking': return AppColors.warning;
-      case 'ready': return AppColors.success;
-      case 'completed': return AppColors.darkSubtext;
+      case 'completed': return AppColors.success;
       case 'cancelled': return AppColors.danger;
-      default: return AppColors.darkText;
+      case 'new':
+      case 'cooking':
+      case 'ready':
+      default: return AppColors.warning;
     }
   }
 }
@@ -221,10 +263,12 @@ class _DashedLinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    double dashWidth = 5, dashSpace = 5, startX = 0;
     final paint = Paint()
       ..color = color
       ..strokeWidth = 1;
+    const dashWidth = 4.0;
+    const dashSpace = 4.0;
+    double startX = 0;
     while (startX < size.width) {
       canvas.drawLine(Offset(startX, 0), Offset(startX + dashWidth, 0), paint);
       startX += dashWidth + dashSpace;
@@ -232,5 +276,5 @@ class _DashedLinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

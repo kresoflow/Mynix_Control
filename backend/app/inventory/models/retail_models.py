@@ -48,12 +48,12 @@ class RetailProductRead(SQLModel):
 class RetailProductCreate(SQLModel):
     name: str
     category_id: int
-    price: float
-    cost: float = 0.0
-    unit: UnitType = UnitType.PCS
-    min_stock_alert: float = 0.0
-    barcode: Optional[str] = None
-    is_available: bool = True
+    unit: str = "pcs"
+    purchase_price: float = Field(default=0.0, ge=0.0)
+    selling_price: float = Field(default=0.0, ge=0.0)
     sort_order: int = 0
     attributes: Optional[dict] = None
     initial_stock: float = 0.0
+    min_stock_alert: float = 0.0
+    barcode: Optional[str] = None
+    parent_id: Optional[int] = None

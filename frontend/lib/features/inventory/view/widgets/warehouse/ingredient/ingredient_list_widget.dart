@@ -194,7 +194,7 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                               },
                               itemBuilder: (ctx) => [
                                 const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                                PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
+                                const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
                               ],
                             ),
                           ],

@@ -9,7 +9,6 @@ import '../catalog_enums.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_icons.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class MenuGridItem extends StatelessWidget {
@@ -104,10 +103,10 @@ class MenuGridItem extends StatelessWidget {
                           )
                         ],
                       ),
-                      child: finalIconWidget!,
+                      child: finalIconWidget,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -123,7 +122,7 @@ class MenuGridItem extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         if (item.attributesString != null) ...[
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(item.attributesString!, style: AppTextStyles.caption.copyWith(fontSize: 11), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
                         ],
                       ],
@@ -181,8 +180,8 @@ class MenuGridItem extends StatelessWidget {
                   },
                   itemBuilder: (ctx) => [
                     if (item.isAvailable) const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                    if (item.isAvailable) PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
-                    if (!item.isAvailable) PopupMenuItem(value: 'restore', child: Text('Восстановить', style: TextStyle(color: AppColors.success))),
+                    if (item.isAvailable) const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
+                    if (!item.isAvailable) const PopupMenuItem(value: 'restore', child: Text('Восстановить', style: TextStyle(color: AppColors.success))),
                   ],
                 ),
               ),

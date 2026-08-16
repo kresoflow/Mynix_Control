@@ -38,6 +38,14 @@ extension CategoriesPart on InventoryRepository {
     }
   }
 
+  Future<void> createCategoriesBulk(List<Map<String, dynamic>> categories) async {
+    try {
+      await _dio.post('/categories/bulk', data: categories);
+    } catch (e) {
+      throw Exception('Failed to create categories in bulk: ${e.toString()}');
+    }
+  }
+
   Future<void> updateCategory({
     required int id,
     String? name,
@@ -59,7 +67,20 @@ extension CategoriesPart on InventoryRepository {
     }
   }
 
-  Future<void> deleteCategory(int id, {String mode = 'only'}) async {
+  Future<void> restoreCategory(int id) async {
+    try {
+      await _dio.post('/categories/$id/restore');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(
+          e.response?.data['detail'] ?? 'Failed to restore category',
+        );
+      }
+      throw Exception('Failed to restore category: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteCategory(int id, {String mode = 'all'}) async {
     try {
       await _dio.delete('/categories/$id?mode=$mode');
     } catch (e) {

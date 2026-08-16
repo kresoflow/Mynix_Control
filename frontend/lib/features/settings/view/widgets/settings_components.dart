@@ -67,7 +67,7 @@ class SettingsRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: AppTextStyles.bodyMedium.copyWith(

@@ -8,17 +8,16 @@ import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart';
-import 'package:mynix_frontend/features/pos/repository/menu_repository.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
 
 import 'receive_document/receipt_row_data.dart';
 import 'receive_document/receive_document_header.dart';
 import 'receive_document/receive_document_meta_row.dart';
 import 'receive_document/receive_document_table_header.dart';
-import 'receive_document/receive_document_item_row.dart';
 import 'receive_document/receive_document_footer.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-
+import 'receive_document/receive_document_processor.dart';
+import 'receive_document/receive_document_items_list.dart';
 
 class ReceiveDocumentDialog extends StatefulWidget {
   const ReceiveDocumentDialog({super.key});
@@ -31,7 +30,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   final _invoiceNumberController = TextEditingController();
   final _reasonController = TextEditingController();
   int? _selectedSupplierId;
-  
+
   int _tabIndex = 1; // 1 = Товары витрины, 2 = Сырье
   int? _selectedParentId;
   int? _selectedChildId;
@@ -48,12 +47,14 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     _loadIngredients();
     _addItem();
   }
-  
+
   @override
   void dispose() {
     for (var item in _items) {
       item.dispose();
     }
+    _invoiceNumberController.dispose();
+    _reasonController.dispose();
     super.dispose();
   }
 
@@ -74,9 +75,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   }
 
   void _addItem() {
-    setState(() {
-      _items.add(ReceiptRowData());
-    });
+    setState(() => _items.add(ReceiptRowData()));
     _focusRow(_items.last.nameFocusNode);
   }
 
@@ -95,6 +94,41 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     });
   }
 
+  void _onRowIngredientSelected(int index, Ingredient selection) {
+    setState(() {
+      final item = _items[index];
+      item.ingredient = selection;
+      item.newName = selection.name;
+      item.price = selection.costPerUnit;
+      item.priceController.text = item.price.toString();
+      item.selectedUnit = ['шт', 'л', 'мл', 'кг', 'г', 'порц'].contains(selection.unit) ? selection.unit : 'шт';
+      _focusRow(item.qtyFocusNode);
+    });
+  }
+
+  void _onRowNameChanged(int index, String val) {
+    _items[index].newName = val;
+    if (_items[index].ingredient?.name != val) {
+      setState(() => _items[index].ingredient = null);
+    }
+  }
+
+  void _onRowNameSubmitted(int index) {
+    if (_tabIndex == 1) {
+      _focusRow(_items[index].flavorFocusNode);
+    } else {
+      _focusRow(_items[index].qtyFocusNode);
+    }
+  }
+
+  void _onRowSellPriceSubmitted(int index) {
+    if (index == _items.length - 1) {
+      _addItem();
+    } else {
+      _focusRow(_items[index + 1].nameFocusNode);
+    }
+  }
+
   Future<void> _save({required bool complete}) async {
     if (_items.isEmpty || _items.every((item) => item.ingredient == null && item.newName.trim().isEmpty)) {
       showDialog(
@@ -109,119 +143,24 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     }
 
     setState(() => _isSaving = true);
-
-    double getConversionFactor(String fromUnit, String toUnit) {
-      if (fromUnit == toUnit) return 1.0;
-      if (fromUnit == 'кг' && toUnit == 'г') return 1000.0;
-      if (fromUnit == 'г' && toUnit == 'кг') return 0.001;
-      if (fromUnit == 'л' && toUnit == 'мл') return 1000.0;
-      if (fromUnit == 'мл' && toUnit == 'л') return 0.001;
-      return 1.0;
-    }
-
     try {
-      final repo = context.read<InventoryRepository>();
-      final menuRepo = context.read<MenuRepository>();
-      final categoryId = _selectedChildId ?? _selectedParentId;
-
-      List<Map<String, dynamic>> docItems = [];
-
-      for (var item in _items) {
-        int? finalIngredientId;
-        int? finalRetailProductId;
-        
-        if (item.ingredient != null) {
-          final isRetail = item.ingredient!.attributes?['is_retail'] == true;
-          if (isRetail) {
-            finalRetailProductId = item.ingredient!.id;
-          } else {
-            finalIngredientId = item.ingredient!.id;
-          }
-        } else if (item.newName.trim().isNotEmpty) {
-          if (categoryId == null) {
-            throw Exception('Не выбрана категория для новых товаров ("${item.newName}"). Укажите категорию сверху.');
-          }
-          String unitKey = 'pcs';
-          switch (item.selectedUnit) {
-            case 'кг': unitKey = 'kg'; break;
-            case 'г': unitKey = 'g'; break;
-            case 'л': unitKey = 'l'; break;
-            case 'мл': unitKey = 'ml'; break;
-            case 'шт':
-            case 'порц':
-            default:
-              unitKey = 'pcs'; break;
-          }
-
-          if (_tabIndex == 1) { // Retail
-            final Map<String, dynamic> attributes = {};
-            final flavor = item.flavorController.text.trim();
-            final volume = item.volumeController.text.trim();
-            if (flavor.isNotEmpty) attributes['Вкус'] = flavor;
-            if (volume.isNotEmpty) attributes['Объем'] = '$volume ${item.selectedUnit}'.trim();
-
-            finalRetailProductId = await menuRepo.createRetailProduct(
-              name: item.newName.trim(),
-              categoryId: categoryId,
-              unit: unitKey,
-              purchasePrice: item.price,
-              sellingPrice: item.price,
-              attributes: attributes.isNotEmpty ? attributes : null,
-              initialStock: 0,
-            );
-          } else { // Ingredient
-            finalIngredientId = await repo.createIngredient(
-              name: item.newName.trim(),
-              unit: unitKey,
-              minStockAlert: 0,
-              costPerUnit: item.price,
-              categoryId: categoryId,
-              initialStock: 0,
-            );
-          }
-        } else {
-          continue; // skip empty rows
-        }
-
-        double factor = 1.0;
-        if (item.ingredient != null) {
-          factor = getConversionFactor(item.selectedUnit, item.ingredient!.unit);
-        }
-
-        final dbQuantity = item.quantity * factor;
-        final dbPricePerUnit = item.price / factor;
-
-        docItems.add({
-          'ingredient_id': finalIngredientId,
-          'retail_product_id': finalRetailProductId,
-          'quantity': dbQuantity,
-          'price_per_unit': dbPricePerUnit,
-          'total_price': dbQuantity * dbPricePerUnit,
-        });
-      }
-
-      if (docItems.isEmpty) {
-        throw Exception('Нет товаров для прихода');
-      }
-
-      final data = {
-        'type': 'receipt',
-        'supplier_id': _selectedSupplierId,
-        'invoice_number': _invoiceNumberController.text,
-        'reason': _reasonController.text,
-        'items': docItems,
-        'status': complete ? 'completed' : 'draft',
-      };
-
-      if (mounted) {
-        context.read<DocumentBloc>().add(CreateDocument(data));
-        Navigator.of(context).pop();
-      }
+      await ReceiveDocumentProcessor.saveDocument(
+        context: context,
+        items: _items,
+        selectedSupplierId: _selectedSupplierId,
+        invoiceNumber: _invoiceNumberController.text,
+        reason: _reasonController.text,
+        tabIndex: _tabIndex,
+        categoryId: _selectedChildId ?? _selectedParentId,
+        complete: complete,
+      );
     } catch (e) {
-       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger));
-         setState(() => _isSaving = false);
-       }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
+        );
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -230,7 +169,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     final currency = context.watch<SettingsBloc>().state.currency;
     final width = MediaQuery.of(context).size.width * 0.95;
     final height = MediaQuery.of(context).size.height * 0.95;
-    
+
     double totalSum = 0;
     for (var item in _items) {
       totalSum += item.quantity * item.price;
@@ -266,7 +205,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                 Column(
                   children: [
                     ReceiveDocumentHeader(onClose: () => Navigator.of(context).pop()),
-                    
                     BlocBuilder<DocumentBloc, DocumentState>(
                       builder: (context, state) {
                         return ReceiveDocumentMetaRow(
@@ -293,92 +231,32 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                           onParentChanged: (val) => setState(() => _selectedParentId = val),
                           onChildChanged: (val) => setState(() => _selectedChildId = val),
                         );
-                      }
+                      },
                     ),
-                    
                     ReceiveDocumentTableHeader(currency: currency, tabIndex: _tabIndex),
-
                     Expanded(
-                      child: _isLoadingIngredients
-                          ? const Center(child: CircularProgressIndicator())
-                          : ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                              itemCount: _items.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 6),
-                              itemBuilder: (context, index) {
-                                final item = _items[index];
-                                return ReceiveDocumentItemRow(
-                                  item: item,
-                                  index: index,
-                                  isLast: index == _items.length - 1,
-                                  availableIngredients: _availableIngredients,
-                                  tabIndex: _tabIndex,
-                                  onIngredientSelected: (selection) {
-                                    setState(() {
-                                      item.ingredient = selection;
-                                      item.newName = selection.name;
-                                      item.price = selection.costPerUnit;
-                                      item.priceController.text = item.price.toString();
-                                      if (['шт', 'л', 'мл', 'кг', 'г', 'порц'].contains(selection.unit)) {
-                                        item.selectedUnit = selection.unit;
-                                      } else {
-                                        item.selectedUnit = 'шт';
-                                      }
-                                      _focusRow(item.qtyFocusNode);
-                                    });
-                                  },
-                                  onNameChanged: (val) {
-                                    item.newName = val;
-                                    if (item.ingredient?.name != val) {
-                                      setState(() {
-                                        item.ingredient = null;
-                                      });
-                                    }
-                                  },
-                                  onNameSubmitted: () {
-                                    if (_tabIndex == 1) {
-                                      _focusRow(item.flavorFocusNode);
-                                    } else {
-                                      _focusRow(item.qtyFocusNode);
-                                    }
-                                  },
-                                  onFlavorSubmitted: () => _focusRow(item.volumeFocusNode),
-                                  onVolumeSubmitted: () => _focusRow(item.qtyFocusNode),
-                                  onQtySubmitted: () => _focusRow(item.minStockAlertFocusNode),
-                                  onMinStockAlertSubmitted: () => _focusRow(item.priceFocusNode),
-                                  onPriceSubmitted: () => _focusRow(item.sellPriceFocusNode),
-                                  onSellPriceSubmitted: () {
-                                    if (index == _items.length - 1) {
-                                      _addItem();
-                                    } else {
-                                      _focusRow(_items[index + 1].nameFocusNode);
-                                    }
-                                  },
-                                  onUnitChanged: (val) {
-                                    if (val != null) setState(() => item.selectedUnit = val);
-                                  },
-                                  onQtyChanged: (val) {
-                                    final num = double.tryParse(val);
-                                    if (num != null) setState(() => item.quantity = num);
-                                  },
-                                  onMinStockAlertChanged: (val) {
-                                    final num = double.tryParse(val);
-                                    if (num != null) setState(() => item.minStockAlert = num);
-                                  },
-                                  onPriceChanged: (val) {
-                                    final num = double.tryParse(val);
-                                    if (num != null) setState(() => item.price = num);
-                                  },
-                                  onSellPriceChanged: (val) {
-                                    final num = double.tryParse(val);
-                                    if (num != null) setState(() => item.sellPrice = num);
-                                  },
-                                  onRemove: () => _removeItem(index),
-                                );
-                              },
-                            ),
+                      child: ReceiveDocumentItemsList(
+                        isLoading: _isLoadingIngredients,
+                        items: _items,
+                        availableIngredients: _availableIngredients,
+                        tabIndex: _tabIndex,
+                        onIngredientSelected: _onRowIngredientSelected,
+                        onNameChanged: _onRowNameChanged,
+                        onNameSubmitted: _onRowNameSubmitted,
+                        onFlavorSubmitted: (i) => _focusRow(_items[i].volumeFocusNode),
+                        onVolumeSubmitted: (i) => _focusRow(_items[i].qtyFocusNode),
+                        onQtySubmitted: (i) => _focusRow(_items[i].minStockAlertFocusNode),
+                        onMinStockAlertSubmitted: (i) => _focusRow(_items[i].priceFocusNode),
+                        onPriceSubmitted: (i) => _focusRow(_items[i].sellPriceFocusNode),
+                        onSellPriceSubmitted: _onRowSellPriceSubmitted,
+                        onUnitChanged: (i, val) { if (val != null) setState(() => _items[i].selectedUnit = val); },
+                        onQtyChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].quantity = n); },
+                        onMinStockAlertChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].minStockAlert = n); },
+                        onPriceChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].price = n); },
+                        onSellPriceChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].sellPrice = n); },
+                        onRemove: _removeItem,
+                      ),
                     ),
-                    
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Row(
@@ -391,7 +269,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                         ],
                       ),
                     ),
-
                     ReceiveDocumentFooter(
                       totalSum: totalSum,
                       currency: currency,
@@ -405,9 +282,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                 if (_isSaving)
                   Container(
                     color: Colors.black54,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: const Center(child: CircularProgressIndicator()),
                   ),
               ],
             ),

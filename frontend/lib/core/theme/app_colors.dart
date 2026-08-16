@@ -20,15 +20,16 @@ abstract class AppColors {
   static Color lightBg        = const Color(0xFFEAECEF);
   static Color lightSurface   = const Color(0xFFFFFFFF);
   static Color lightCard      = const Color(0xFFFFFFFF);
+  static Color lightCardHover = const Color(0xFFF3F4F6);
   static Color lightBorder    = const Color(0xFF9CA3AF);
   static Color lightText      = const Color(0xFF000000);
   static Color lightSubtext   = const Color(0xFF4B5563);
 
   // ── Semantic ───────────────────────────────────────────────────────────────
-  static Color success = const Color(0xFF16A34A);
-  static Color warning = const Color(0xFFD97706);
-  static Color danger  = const Color(0xFFDC2626);
-  static Color info    = const Color(0xFF2563EB);
+  static const Color success = Color(0xFF16A34A);
+  static const Color warning = Color(0xFFD97706);
+  static const Color danger  = Color(0xFFDC2626);
+  static const Color info    = Color(0xFF2563EB);
 
   // ── Category Rainbow Palette ───────────────────────────────────────────────
   static const List<Color> categoryRainbowPalette = [

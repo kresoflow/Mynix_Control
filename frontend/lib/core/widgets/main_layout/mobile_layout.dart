@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 
 class MobileLayout extends StatelessWidget {
   final Widget child;
@@ -48,7 +45,7 @@ class MobileLayout extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(PhosphorIconsRegular.bookOpen),
+              leading: const Icon(PhosphorIconsRegular.bookOpen),
               title: const Text('Каталог'),
               onTap: () {
                 Navigator.pop(context);
@@ -56,7 +53,7 @@ class MobileLayout extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(PhosphorIconsRegular.warehouse),
+              leading: const Icon(PhosphorIconsRegular.warehouse),
               title: const Text('Склад'),
               onTap: () {
                 Navigator.pop(context);
@@ -64,7 +61,7 @@ class MobileLayout extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(PhosphorIconsRegular.chartLineUp),
+              leading: const Icon(PhosphorIconsRegular.chartLineUp),
               title: const Text('Аналитика'),
               onTap: () {
                 Navigator.pop(context);

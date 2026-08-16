@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
@@ -108,7 +107,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                   child: SwitchListTile(
                     title: const Text('Отображать на кассе'),
                     value: isVisible,
-                    activeColor: AppColors.brandPrimary,
+                    activeThumbColor: AppColors.brandPrimary,
                     shape: RoundedRectangleBorder(borderRadius: AppRadii.inputRadius),
                     onChanged: (val) {
                       setState(() {

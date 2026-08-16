@@ -21,14 +21,14 @@ class DataGridView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (columns.isEmpty) return const Center(child: Text("No columns defined"));
+    if (columns.isEmpty) return const Center(child: Text('No columns defined'));
 
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
-          headingRowColor: MaterialStateProperty.all(AppColors.brandPrimary.withOpacity(0.1)),
+          headingRowColor: WidgetStateProperty.all(AppColors.brandPrimary.withOpacity(0.1)),
           columns: [
             const DataColumn(label: Text('Действия', style: TextStyle(fontWeight: FontWeight.bold))),
             ...columns.map((c) {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_category_dialog.dart';
@@ -76,7 +75,7 @@ class MenuManagerCategoriesList extends StatelessWidget {
                                     activeThumbColor: Theme.of(context).colorScheme.primary,
                                   ),
                                   IconButton(
-                                    icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
+                                    icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                                     onPressed: () => onDelete(cat.id),
                                   ),
                                 ],

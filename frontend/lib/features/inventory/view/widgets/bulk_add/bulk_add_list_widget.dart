@@ -187,7 +187,7 @@ class _BulkRowState extends State<_BulkRow> {
                   ),
                   const SizedBox(width: 4),
                   IconButton(
-                    icon: Icon(PhosphorIconsRegular.trash,
+                    icon: const Icon(PhosphorIconsRegular.trash,
                         color: AppColors.danger, size: 18),
                     onPressed: widget.onRemove,
                     tooltip: 'Удалить',

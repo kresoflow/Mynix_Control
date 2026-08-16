@@ -49,7 +49,7 @@ async def create_order(
     # 1. Validate shift
     shift = await get_open_shift(session)
     if not shift:
-        raise ValueError("Cannot create order: no open shift.")
+        raise ValueError("Смена закрыта. Откройте смену в кассе для создания заказов.")
 
     # 2. Resolve prices and build items
     order_items_data = []
@@ -62,9 +62,10 @@ async def create_order(
         result = await session.execute(stmt)
         menu_item = result.scalar_one_or_none()
         if not menu_item:
-            raise ValueError(f"Menu item #{item_req.menu_item_id} not found")
+            raise ValueError(f"Позиция #{item_req.menu_item_id} не найдена в меню")
         if not menu_item.is_available:
-            raise ValueError(f"Menu item '{menu_item.name}' is not available")
+            item_label = getattr(menu_item, 'clean_name', menu_item.name)
+            raise ValueError(f"Позиция «{item_label}» недоступна для продажи (в архиве).")
 
         # Use overridden price if provided (e.g. for variations), otherwise use base price
         actual_price = item_req.unit_price_override if item_req.unit_price_override is not None else menu_item.price

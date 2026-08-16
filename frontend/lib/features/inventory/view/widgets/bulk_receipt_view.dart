@@ -138,7 +138,7 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
             Row(
               children: [
                 const Icon(PhosphorIconsRegular.receipt, size: 32, color: Colors.grey),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Text(
                   'Приходная накладная',
                   style: AppTextStyles.h1,
@@ -166,8 +166,8 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
             ),
             const SizedBox(height: 32),
             // Header
-            Row(
-              children: const [
+            const Row(
+              children: [
                 Expanded(
                   flex: 3,
                   child: Text(

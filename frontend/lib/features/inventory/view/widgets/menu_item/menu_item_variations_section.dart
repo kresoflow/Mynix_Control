@@ -67,7 +67,7 @@ class MenuItemVariationsSection extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
+                  icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                   onPressed: () => onRemoveVariation(i),
                 ),
               ],

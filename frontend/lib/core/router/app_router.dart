@@ -11,11 +11,7 @@ import 'package:mynix_frontend/features/inventory/view/warehouse_screen.dart';
 import 'package:mynix_frontend/features/analytics/view/analytics_dashboard_screen.dart';
 import 'package:mynix_frontend/features/settings/view/settings_screen.dart';
 import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
-import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
-import 'package:mynix_frontend/features/orders/repository/orders_repository.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/widgets/main_layout.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');

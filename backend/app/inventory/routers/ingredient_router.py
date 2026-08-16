@@ -11,7 +11,7 @@ async def list_ingredients(current_user: CurrentUser, session: TenantSession):
 
 @router.post("/ingredients/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission("inventory:manage"))])
 async def create_ingredient(data: IngredientCreate, current_user: CurrentUser, session: TenantSession):
-    item = await svc.create_ingredient(session, data.model_dump())
+    item = await svc.create_ingredient(session, data.model_dump(), user_id=current_user.id)
     return {
         "id": item.id,
         "name": item.name,

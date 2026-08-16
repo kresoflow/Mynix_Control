@@ -1,22 +1,8 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, status, Body
-from pydantic import BaseModel
 from app.dependencies import require_permission, CurrentUser, TenantSession
-from app.inventory.models import MenuItemCreate, MenuItemRead, RetailProductRead
+from app.inventory.models import MenuItemCreate, MenuItemRead, RetailProductRead, RetailProductCreate
 from app.inventory.services import menu_service as svc
-
-class RetailProductCreate(BaseModel):
-    name: str
-    category_id: int
-    unit: str
-    purchase_price: float
-    selling_price: float
-    sort_order: int = 0
-    attributes: Optional[dict] = None
-    initial_stock: float = 0.0
-    min_stock_alert: float = 0.0
-    barcode: Optional[str] = None
-    parent_id: Optional[int] = None
 
 router = APIRouter(tags=["Menu Items"])
 
@@ -46,7 +32,7 @@ async def delete_menu_item(item_id: int, current_user: CurrentUser, session: Ten
 
 @router.post("/retail-product/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission("menu:manage"))])
 async def create_retail_product(data: RetailProductCreate, current_user: CurrentUser, session: TenantSession):
-    item = await svc.create_retail_product(session, data.model_dump())
+    item = await svc.create_retail_product(session, data.model_dump(), user_id=current_user.id)
     return {"status": "ok", "id": item.retail_product_id}
 
 @router.get("/inventory/retail/", response_model=list[RetailProductRead], dependencies=[Depends(require_permission("inventory:view"))])

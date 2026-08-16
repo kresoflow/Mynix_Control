@@ -1,5 +1,6 @@
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
+from app.base_model import TenantModel
 from app.inventory.models.enums import UnitType
 from app.inventory.models.ingredient_models import Ingredient
 
@@ -29,9 +30,7 @@ class RecipeCreate(SQLModel):
     ingredient_id: int
     quantity_required: float
 
-class RecipeCreateItem(SQLModel):
-    ingredient_id: int
-    quantity_required: float
+RecipeCreateItem = RecipeCreate
 
 class BulkRecipeCreate(SQLModel):
-    recipes: List[RecipeCreateItem]
+    recipes: List[RecipeCreate]

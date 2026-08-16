@@ -164,7 +164,7 @@ class _AppButtonState extends State<AppButton> {
         break;
     }
 
-    Widget content = widget.isLoading
+    final Widget content = widget.isLoading
         ? SizedBox(
             width: 18,
             height: 18,

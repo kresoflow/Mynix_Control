@@ -23,6 +23,7 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
       final List<String> parts = [];
       if (map['variation'] != null) {
         String varName = map['variation'].toString();
+        varName = varName.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];
         varName = varName.replaceAll(widget.cartItem.menuItem.cleanName, '').trim();
         if (widget.cartItem.menuItem.attributesString != null) {
           varName = varName.replaceAll(widget.cartItem.menuItem.attributesString!, '').trim();
@@ -33,7 +34,12 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
       }
       if (map['modifiers'] != null) {
         for (var m in map['modifiers']) {
-          parts.add(m['name']);
+          if (m['name'] != null) {
+            final String mName = m['name'].toString().split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0].trim();
+            if (mName.isNotEmpty) {
+              parts.add(mName);
+            }
+          }
         }
       }
       return parts.join(', ');
@@ -97,7 +103,7 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
             SizedBox(
               width: isMobile ? 54 : 64,
               child: Text(
-                '${(item.total as num).toCurrency(context)}',
+                (item.total as num).toCurrency(context),
                 textAlign: TextAlign.right,
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 14,

@@ -58,69 +58,126 @@ async def update_category(session: AsyncSession, category_id: int, data: dict) -
     await session.flush()
     return MenuCategoryRead.model_validate(category)
 
-async def delete_category(session: AsyncSession, category_id: int, mode: str = "only") -> None:
+async def delete_category(session: AsyncSession, category_id: int, mode: str = "all") -> None:
     stmt = select(MenuCategory).where(MenuCategory.id == category_id)
     result = await session.execute(stmt)
     category = result.scalars().first()
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
         
-    if mode == "only":
-        sub_stmt = select(MenuCategory).where(MenuCategory.parent_id == category_id)
-        sub_res = await session.execute(sub_stmt)
-        for sub in sub_res.scalars().all():
-            sub.parent_id = category.parent_id
-            session.add(sub)
-            
-        item_stmt = select(MenuItem).where(MenuItem.category_id == category_id)
-        item_res = await session.execute(item_stmt)
-        for item in item_res.scalars().all():
-            item.category_id = category.parent_id
-            session.add(item)
-            
-        retail_stmt = select(RetailProduct).where(RetailProduct.category_id == category_id)
-        retail_res = await session.execute(retail_stmt)
-        for rp in retail_res.scalars().all():
-            if category.parent_id is None:
-                raise HTTPException(status_code=400, detail="Невозможно переместить товары витрины в корень. Удалите их или переместите вручную.")
-            rp.category_id = category.parent_id
-            session.add(rp)
-            
-    elif mode == "all":
-        item_stmt = select(MenuItem).where(MenuItem.category_id == category_id)
-        item_res = await session.execute(item_stmt)
-        for item in item_res.scalars().all():
+    from app.pos.models import OrderItem
+
+    item_stmt = select(MenuItem).where(MenuItem.category_id == category_id)
+    item_res = await session.execute(item_stmt)
+    menu_items = item_res.scalars().all()
+
+    retail_stmt = select(RetailProduct).where(RetailProduct.category_id == category_id)
+    retail_res = await session.execute(retail_stmt)
+    retail_products = retail_res.scalars().all()
+
+    sub_stmt = select(MenuCategory).where(MenuCategory.parent_id == category_id)
+    sub_res = await session.execute(sub_stmt)
+    subcategories = sub_res.scalars().all()
+
+    if mode == "hard":
+        # Check if any items have order items
+        has_orders = False
+        for item in menu_items:
+            order_stmt = select(OrderItem).where(OrderItem.menu_item_id == item.id).limit(1)
+            order_res = await session.execute(order_stmt)
+            if order_res.scalars().first() is not None:
+                has_orders = True
+                break
+
+        if not has_orders:
+            for rp in retail_products:
+                m_stmt = select(MenuItem).where(MenuItem.retail_product_id == rp.id)
+                m_res = await session.execute(m_stmt)
+                for m in m_res.scalars().all():
+                    order_stmt = select(OrderItem).where(OrderItem.menu_item_id == m.id).limit(1)
+                    order_res = await session.execute(order_stmt)
+                    if order_res.scalars().first() is not None:
+                        has_orders = True
+                        break
+
+        if has_orders:
+            raise HTTPException(status_code=400, detail="Нельзя удалить навсегда: по товарам этой категории есть завершенные чеки.")
+
+        # Hard delete allowed
+        for item in menu_items:
             recipe_stmt = select(Recipe).where(Recipe.menu_item_id == item.id)
             recipe_res = await session.execute(recipe_stmt)
             for r in recipe_res.scalars().all():
                 await session.delete(r)
             await session.delete(item)
-            
-        retail_stmt = select(RetailProduct).where(RetailProduct.category_id == category_id)
-        retail_res = await session.execute(retail_stmt)
-        for rp in retail_res.scalars().all():
+
+        for rp in retail_products:
             m_stmt = select(MenuItem).where(MenuItem.retail_product_id == rp.id)
             m_res = await session.execute(m_stmt)
             for m in m_res.scalars().all():
-                r_stmt = select(Recipe).where(Recipe.menu_item_id == m.id)
-                r_res = await session.execute(r_stmt)
-                for r in r_res.scalars().all():
-                    await session.delete(r)
                 await session.delete(m)
-                
-            trans_stmt = select(StockTransaction).where(StockTransaction.retail_product_id == rp.id)
-            trans_res = await session.execute(trans_stmt)
-            for t in trans_res.scalars().all():
-                await session.delete(t)
-                
             await session.delete(rp)
-            
-        sub_stmt = select(MenuCategory).where(MenuCategory.parent_id == category_id)
-        sub_res = await session.execute(sub_stmt)
-        for sub in sub_res.scalars().all():
-            await delete_category(session, sub.id, mode="all")
-    else:
-        raise HTTPException(status_code=400, detail="Invalid deletion mode")
-        
-    await session.delete(category)
+
+        for sub in subcategories:
+            await delete_category(session, sub.id, mode="hard")
+
+        await session.delete(category)
+        await session.flush()
+        return
+
+    # Default Soft Delete (Smart Archive)
+    for item in menu_items:
+        item.is_available = False
+        session.add(item)
+
+    for rp in retail_products:
+        m_stmt = select(MenuItem).where(MenuItem.retail_product_id == rp.id)
+        m_res = await session.execute(m_stmt)
+        for m in m_res.scalars().all():
+            m.is_available = False
+            session.add(m)
+        rp.is_available = False
+        session.add(rp)
+
+    for sub in subcategories:
+        await delete_category(session, sub.id, mode="all")
+
+    category.is_visible = False
+    session.add(category)
     await session.flush()
+
+async def restore_category(session: AsyncSession, category_id: int) -> MenuCategoryRead:
+    stmt = select(MenuCategory).where(MenuCategory.id == category_id)
+    result = await session.execute(stmt)
+    category = result.scalars().first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+        
+    category.is_visible = True
+    session.add(category)
+
+    item_stmt = select(MenuItem).where(MenuItem.category_id == category_id)
+    item_res = await session.execute(item_stmt)
+    for item in item_res.scalars().all():
+        item.is_available = True
+        session.add(item)
+
+    retail_stmt = select(RetailProduct).where(RetailProduct.category_id == category_id)
+    retail_res = await session.execute(retail_stmt)
+    for rp in retail_res.scalars().all():
+        m_stmt = select(MenuItem).where(MenuItem.retail_product_id == rp.id)
+        m_res = await session.execute(m_stmt)
+        for m in m_res.scalars().all():
+            m.is_available = True
+            session.add(m)
+        rp.is_available = True
+        session.add(rp)
+
+    sub_stmt = select(MenuCategory).where(MenuCategory.parent_id == category_id)
+    sub_res = await session.execute(sub_stmt)
+    for sub in sub_res.scalars().all():
+        sub.is_visible = True
+        session.add(sub)
+
+    await session.flush()
+    return MenuCategoryRead.model_validate(category)

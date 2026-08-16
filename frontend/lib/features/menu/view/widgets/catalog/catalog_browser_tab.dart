@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/menu_modifiers_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'catalog_dialogs.dart';
@@ -18,6 +15,7 @@ import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 
 class CatalogBrowserTab extends StatefulWidget {
   final String categoryType;
@@ -45,8 +43,8 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
   List<dynamic> _navigationHistory = [];
   CategoryManageMode _manageMode = CategoryManageMode.none;
   CategoryViewMode _viewMode = CategoryViewMode.grid;
-  Set<int> _selectedCategories = {};
-  Set<int> _selectedItems = {};
+  final Set<int> _selectedCategories = {};
+  final Set<int> _selectedItems = {};
   bool _showArchived = false;
 
   @override
@@ -59,9 +57,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
     final prefs = await SharedPreferences.getInstance();
     final mode = prefs.getString('category_view_mode');
     if (mode == 'list' && mounted) {
-      setState(() {
-        _viewMode = CategoryViewMode.list;
-      });
+      setState(() => _viewMode = CategoryViewMode.list);
     }
   }
 
@@ -72,49 +68,132 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
 
   int? get _currentCategoryId => _navigationHistory.isEmpty ? null : _navigationHistory.last.id;
 
-  void _showAddDialog(BuildContext context) {
-    String parentType = 'dish';
-    final catState = context.read<CategoryBloc>().state;
-    if (catState is CategoryLoaded && _currentCategoryId != null) {
-      final parentCat = catState.categories.where((c) => c.id == _currentCategoryId).firstOrNull;
-      if (parentCat != null) parentType = parentCat.categoryType;
+  void _confirmDeleteCategory(BuildContext context, dynamic category) {
+    if (!category.isVisible) {
+      _confirmHardDeleteCategory(context, category);
+      return;
     }
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      builder: (ctx) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(PhosphorIconsRegular.squaresFour),
-                title: const Text('Создать подкатегорию'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  showAddCategoryDialog(context, currentCategoryId: _currentCategoryId, type: parentType);
-                },
-              ),
-              ListTile(
-                leading: const Icon(PhosphorIconsRegular.hamburger),
-                title: const Text('Добавить блюдо'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  showAddMenuItemDialog(context, currentCategoryId: _currentCategoryId);
-                },
-              ),
-              ListTile(
-                leading: const Icon(PhosphorIconsRegular.storefront),
-                title: const Text('Добавить товар (витрина)'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  showAddRetailProductDialog(context, currentCategoryId: _currentCategoryId);
-                },
-              ),
-            ],
+      builder: (ctx) => MynixDialog(
+        title: 'Удаление категории',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Удалить категорию «${category.name}»?\nВсе вложенные блюда и товары будут заархивированы и скрыты.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
-        );
-      },
+        ),
+        actions: [
+          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+          AppDangerButton(
+            label: 'Удалить',
+            icon: PhosphorIconsRegular.trash,
+            onPressed: () {
+              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'all'));
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmHardDeleteCategory(BuildContext context, dynamic category) {
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Удаление навсегда',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Окончательно стереть категорию «${category.name}» из базы данных?\nЭто возможно только если по её товарам не было продаж.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
+        ),
+        actions: [
+          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+          AppDangerButton(
+            label: 'Удалить навсегда',
+            icon: PhosphorIconsRegular.trash,
+            onPressed: () {
+              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'hard'));
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteItem(BuildContext context, dynamic item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Архивация позиции',
+        icon: PhosphorIconsRegular.archive,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Архивировать позицию «${item.name}»?\nОна исчезнет с кассы, но сохранится в отчетах.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
+        ),
+        actions: [
+          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+          AppDangerButton(
+            label: 'Архивировать',
+            icon: PhosphorIconsRegular.archive,
+            onPressed: () {
+              context.read<MenuBloc>().add(DeleteMenuItem(item.id));
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteSelected(BuildContext context, int selectedCount) {
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Массовое удаление',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Удалить выбранные элементы ($selectedCount шт.)?\nВложенные позиции будут архивированы.',
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.lightSubtext),
+        ),
+        actions: [
+          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+          AppDangerButton(
+            label: 'Удалить',
+            icon: PhosphorIconsRegular.trash,
+            onPressed: () {
+              for (var itemId in _selectedItems) {
+                context.read<MenuBloc>().add(DeleteMenuItem(itemId));
+              }
+              for (var catId in _selectedCategories) {
+                context.read<CategoryBloc>().add(DeleteCategory(catId, mode: 'all'));
+              }
+              Navigator.pop(ctx);
+              setState(() {
+                _selectedCategories.clear();
+                _selectedItems.clear();
+                _manageMode = CategoryManageMode.none;
+              });
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -126,12 +205,24 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
         listeners: [
           BlocListener<CategoryBloc, CategoryState>(
             listener: (context, state) {
-              if (state is CategoryError) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: AppColors.danger));
+              if (state is CategoryError) {
+                AppToast.showError(
+                  context,
+                  'Ошибка категории',
+                  subtitle: state.message,
+                );
+              }
             },
           ),
           BlocListener<MenuBloc, MenuState>(
             listener: (context, state) {
-              if (state is MenuError) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: AppColors.warning));
+              if (state is MenuError) {
+                AppToast.showError(
+                  context,
+                  'Ошибка каталога',
+                  subtitle: state.message,
+                );
+              }
             },
           ),
         ],
@@ -143,15 +234,12 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
 
                 List<dynamic> currentCategories = [];
                 if (catState is CategoryLoaded) {
-                  currentCategories = catState.categories
-                      .where((c) {
-                        if (c.parentId != _currentCategoryId) return false;
-                        if (widget.categoryType == 'all') {
-                          return c.categoryType != 'ingredient';
-                        }
-                        return c.categoryType == widget.categoryType;
-                      })
-                      .toList();
+                  currentCategories = catState.categories.where((c) {
+                    if (!_showArchived && !c.isVisible) return false;
+                    if (c.parentId != _currentCategoryId) return false;
+                    if (widget.categoryType == 'all') return c.categoryType != 'ingredient';
+                    return c.categoryType == widget.categoryType;
+                  }).toList();
                 }
 
                 List<dynamic> currentItems = [];
@@ -181,157 +269,76 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       isAllSelected: isAllSelected,
                       navigationHistory: _navigationHistory,
                       currentCategoryId: _currentCategoryId,
-                      showArchived: _showArchived,
                       rootTitle: widget.rootTitle,
-                      onShowArchivedToggle: () {
-                        setState(() {
-                          _showArchived = !_showArchived;
-                        });
-                      },
-                      addMenuBuilder: widget.addMenuBuilder,
-                      onManageModeChanged: (mode) {
-                        setState(() {
-                          _manageMode = mode;
-                          if (mode == CategoryManageMode.delete) {
-                            _selectedCategories.clear();
-                            _selectedItems.clear();
-                          }
-                        });
-                      },
+                      showArchived: _showArchived,
+                      onShowArchivedToggle: () => setState(() => _showArchived = !_showArchived),
+                      onManageModeChanged: (mode) => setState(() {
+                        _manageMode = mode;
+                        _selectedCategories.clear();
+                        _selectedItems.clear();
+                      }),
                       onViewModeChanged: (mode) {
-                        setState(() {
-                          _viewMode = mode;
-                          _saveViewMode(mode);
-                        });
+                        setState(() => _viewMode = mode);
+                        _saveViewMode(mode);
                       },
-                      onSelectAllToggle: () {
-                        setState(() {
-                          if (isAllSelected) {
-                            _selectedCategories.clear();
-                            _selectedItems.clear();
-                          } else {
-                            _selectedCategories = currentCategories.map((c) => c.id as int).toSet();
-                            _selectedItems = currentItems.map((i) => i.id as int).toSet();
-                          }
-                        });
-                      },
-                      onClearSelection: () {
-                        setState(() {
-                          _manageMode = CategoryManageMode.none;
+                      onSelectAllToggle: () => setState(() {
+                        if (isAllSelected) {
                           _selectedCategories.clear();
                           _selectedItems.clear();
-                        });
-                      },
-                      onDeleteSelected: () {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => MynixDialog(
-                            title: 'Массовое удаление',
-                            icon: PhosphorIconsRegular.trash,
-                            isDestructive: true,
-                            content: Text(
-                              'Удалить выбранные элементы ($selectedCount шт.)?\nЭто действие нельзя отменить.',
-                              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.lightSubtext), // Or context dependent, MynixDialog handles dark mode usually. Better to just use Text
-                            ),
-                            actions: [
-                              AppGhostButton(
-                                label: 'Отмена',
-                                onPressed: () => Navigator.pop(ctx),
-                              ),
-                              const SizedBox(width: 12),
-                              AppDangerButton(
-                                label: 'Удалить',
-                                icon: PhosphorIconsRegular.trash,
-                                onPressed: () {
-                                  for (var itemId in _selectedItems) {
-                                    context.read<MenuBloc>().add(DeleteMenuItem(itemId));
-                                  }
-                                  for (var catId in _selectedCategories) {
-                                    context.read<CategoryBloc>().add(DeleteCategory(catId, mode: 'all'));
-                                  }
-                                  setState(() {
-                                    _selectedItems.clear();
-                                    _selectedCategories.clear();
-                                    _manageMode = CategoryManageMode.none;
-                                  });
-                                  Navigator.pop(ctx);
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      onNavigateUp: () {
-                        if (_navigationHistory.isNotEmpty) setState(() => _navigationHistory.removeLast());
-                      },
-                      onNavigateToRoot: () {
-                        setState(() => _navigationHistory.clear());
-                      },
-                      onNavigateToHistory: (index) {
-                        setState(() => _navigationHistory = _navigationHistory.sublist(0, index + 1));
-                      },
-                      onAddPressed: () => _showAddDialog(context),
+                        } else {
+                          _selectedCategories.addAll(currentCategories.map((c) => c.id as int));
+                          _selectedItems.addAll(currentItems.map((i) => i.id as int));
+                        }
+                      }),
+                      onClearSelection: () => setState(() {
+                        _selectedCategories.clear();
+                        _selectedItems.clear();
+                        _manageMode = CategoryManageMode.none;
+                      }),
+                      onDeleteSelected: () => _confirmDeleteSelected(context, selectedCount),
+                      onNavigateUp: () => setState(() => _navigationHistory.removeLast()),
+                      onNavigateToRoot: () => setState(() => _navigationHistory.clear()),
+                      onNavigateToHistory: (index) => setState(() => _navigationHistory = _navigationHistory.sublist(0, index + 1)),
+                      onAddPressed: () => showAddCategoryDialog(context, currentCategoryId: _currentCategoryId),
+                      addMenuBuilder: widget.addMenuBuilder,
                     ),
                     Expanded(
-                      child: Builder(
-                        builder: (context) {
-                          if (isLoading) return CatalogSkeleton(isList: _viewMode == CategoryViewMode.list);
-                          
-                          return CatalogContentView(
-                            currentCategories: currentCategories,
-                            currentItems: currentItems,
-                            viewMode: _viewMode,
-                            manageMode: _manageMode,
-                            selectedCategories: _selectedCategories,
-                            selectedItems: _selectedItems,
-                            emptyMessage: widget.emptyMessage,
-                            onCategoryTap: (cat) {
-                              if (_manageMode == CategoryManageMode.delete) {
-                                setState(() => _selectedCategories.contains(cat.id) ? _selectedCategories.remove(cat.id) : _selectedCategories.add(cat.id));
-                              } else if (_manageMode == CategoryManageMode.none) {
-                                setState(() => _navigationHistory.add(cat));
-                              }
-                            },
-                            onCategoryToggle: (cat, val) => setState(() => val == true ? _selectedCategories.add(cat.id) : _selectedCategories.remove(cat.id)),
-                            onCategoryVisibilityToggle: (cat) => context.read<CategoryBloc>().add(UpdateCategory(id: cat.id, isVisible: !cat.isVisible)),
-                            onCategoryEdit: (cat) => showAddCategoryDialog(context, currentCategoryId: _currentCategoryId, itemToEdit: cat),
-                            onCategoryDelete: (cat) => context.read<CategoryBloc>().add(DeleteCategory(cat.id, mode: 'all')),
-                            onItemTap: (item) async {
-                              if (_manageMode == CategoryManageMode.delete) {
-                                setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id));
-                              } else if (_manageMode == CategoryManageMode.none) {
-                                  bool hasOptions = false;
-                                  List<dynamic>? variations;
-                                  List<dynamic>? modifiers;
-                                  if (item.attributesJson != null && item.attributesJson!.isNotEmpty && item.attributesJson != '{}') {
-                                     try {
-                                        final attrs = jsonDecode(item.attributesJson!);
-                                        variations = attrs['variations'] as List?;
-                                        modifiers = attrs['modifier_groups'] as List?;
-                                        if ((variations != null && variations.length > 1) || (modifiers != null && modifiers.isNotEmpty)) {
-                                           hasOptions = true;
-                                        }
-                                     } catch (_) {}
-                                  }
-                                  if (hasOptions) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (ctx) => MenuModifiersDialog(item: item, isReadOnly: true),
-                                    );
+                      child: isLoading
+                          ? const CatalogSkeleton()
+                          : CatalogContentView(
+                              viewMode: _viewMode,
+                              manageMode: _manageMode,
+                              currentCategories: currentCategories,
+                              currentItems: currentItems,
+                              selectedCategories: _selectedCategories,
+                              selectedItems: _selectedItems,
+                              emptyMessage: widget.emptyMessage,
+                              onCategoryTap: (category) => setState(() => _navigationHistory.add(category)),
+                              onCategoryToggle: (cat, val) => setState(() => _selectedCategories.contains(cat.id) ? _selectedCategories.remove(cat.id) : _selectedCategories.add(cat.id)),
+                              onCategoryVisibilityToggle: (cat) => context.read<CategoryBloc>().add(UpdateCategory(id: cat.id, isVisible: !cat.isVisible)),
+                              onCategoryEdit: (cat) => showAddCategoryDialog(context, itemToEdit: cat, currentCategoryId: _currentCategoryId),
+                              onCategoryDelete: (cat) => _confirmDeleteCategory(context, cat),
+                              onCategoryRestore: (cat) => context.read<CategoryBloc>().add(RestoreCategory(cat.id)),
+                              onItemToggle: (item, val) => setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id)),
+                              onItemEdit: (item) => showAddMenuItemDialog(context, itemToEdit: item, currentCategoryId: _currentCategoryId),
+                              onItemDelete: (item) => _confirmDeleteItem(context, item),
+                              onItemRestore: (item) => context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_active': true})),
+                              onItemTap: (item) {
+                                if (_manageMode == CategoryManageMode.delete) {
+                                  setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id));
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('У этого блюда нет опций для предпросмотра.')),
+                                  final children = (menuState as MenuLoaded).items.where((i) => i.parentId == item.id).toList();
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => MenuModifiersDialog(
+                                      item: item,
+                                      childrenItems: children.isNotEmpty ? children : null,
+                                      isReadOnly: true,
+                                    ),
                                   );
                                 }
-                              }
-                            },
-                            onItemToggle: (item, val) => setState(() => val == true ? _selectedItems.add(item.id) : _selectedItems.remove(item.id)),
-                            onItemEdit: (item) => showAddMenuItemDialog(context, itemToEdit: item),
-                            onItemDelete: (item) => context.read<MenuBloc>().add(DeleteMenuItem(item.id)),
-                            onItemRestore: (item) => context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true})),
-                          );
-                        },
-                      ),
+                              },
+                            ),
                     ),
                   ],
                 );

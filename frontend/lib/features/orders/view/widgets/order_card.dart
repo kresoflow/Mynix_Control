@@ -25,7 +25,6 @@ class _OrderCardState extends State<OrderCard> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? AppColors.darkCard : AppColors.lightCard;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -47,14 +46,14 @@ class _OrderCardState extends State<OrderCard> {
                     color: AppColors.brandPrimary.withValues(alpha: 0.1),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ],
         ),
         child: Material(
@@ -72,7 +71,7 @@ class _OrderCardState extends State<OrderCard> {
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: isMobile ? _buildMobileLayout(isDark) : _buildDesktopLayout(isDark),
+              child: _buildLayout(isDark),
             ),
           ),
         ),
@@ -80,15 +79,7 @@ class _OrderCardState extends State<OrderCard> {
     );
   }
 
-  Widget _buildDesktopLayout(bool isDark) {
-    return _buildUnifiedLayout(isDark);
-  }
-
-  Widget _buildMobileLayout(bool isDark) {
-    return _buildUnifiedLayout(isDark);
-  }
-
-  Widget _buildUnifiedLayout(bool isDark) {
+  Widget _buildLayout(bool isDark) {
     final textColor = isDark ? AppColors.darkText : AppColors.lightText;
     final subtextColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
     
@@ -115,25 +106,27 @@ class _OrderCardState extends State<OrderCard> {
     }
 
     final dateStr = DateFormat('dd MMM yyyy, HH:mm').format(widget.order.createdAt);
+    final totalItemsCount = widget.order.items.fold<int>(0, (sum, i) => sum + i.quantity);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── TOP HEADER: Order Number, Date & Status Badge ─────────
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+                    color: statusColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     isCancelled ? PhosphorIconsRegular.xCircle : PhosphorIconsRegular.receipt,
                     color: statusColor,
-                    size: 24,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -142,81 +135,105 @@ class _OrderCardState extends State<OrderCard> {
                   children: [
                     Text(
                       'Заказ #${widget.order.orderNumber}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      style: AppTextStyles.h3.copyWith(
                         color: textColor,
+                        fontWeight: FontWeight.bold,
                         decoration: isCancelled ? TextDecoration.lineThrough : null,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       dateStr,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: subtextColor,
-                      ),
+                      style: AppTextStyles.caption.copyWith(color: subtextColor),
                     ),
                   ],
                 ),
               ],
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${isCancelled ? 0.0 : widget.order.total.toCurrency(context)}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isCancelled ? subtextColor : textColor,
-                    decoration: isCancelled ? TextDecoration.lineThrough : null,
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                statusText,
+                style: AppTextStyles.caption.copyWith(
+                  color: statusColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
                 ),
-                const SizedBox(height: 2),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    statusText,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: statusColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
         
-        const SizedBox(height: 12),
-        Divider(color: isDark ? AppColors.darkBorder : AppColors.lightBorder, height: 1),
-        const SizedBox(height: 12),
+        // ── MIDDLE: Items preview ─────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Text(
+            widget.order.items.map((e) => '${e.quantity}x ${e.menuItemName}').join(', '),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              height: 1.3,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
         
+        Divider(color: isDark ? AppColors.darkBorder : AppColors.lightBorder, height: 1),
+        const SizedBox(height: 10),
+        
+        // ── BOTTOM TOTAL BAR (UX Fixed: Clear financial bottom-line) ─
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: Text(
-                widget.order.items.map((e) => '${e.quantity}x ${e.menuItemName}').join(', '),
-                style: TextStyle(
-                  fontSize: 13,
+            Row(
+              children: [
+                Icon(
+                  widget.order.paymentMethod == 'cash' 
+                      ? PhosphorIconsRegular.money 
+                      : PhosphorIconsRegular.creditCard,
+                  size: 16,
                   color: subtextColor,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+                const SizedBox(width: 6),
+                Text(
+                  widget.order.paymentMethod == 'cash' ? 'Наличные' : 'Безналичный',
+                  style: AppTextStyles.caption.copyWith(color: subtextColor, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 8),
+                Text('•', style: TextStyle(color: subtextColor, fontSize: 12)),
+                const SizedBox(width: 8),
+                Text(
+                  '$totalItemsCount шт.',
+                  style: AppTextStyles.caption.copyWith(color: subtextColor),
+                ),
+              ],
             ),
-            Icon(PhosphorIconsRegular.caretRight, color: subtextColor, size: 20),
+            Row(
+              children: [
+                Text(
+                  'Итого: ',
+                  style: AppTextStyles.caption.copyWith(color: subtextColor),
+                ),
+                Text(
+                  isCancelled ? '0.00' : widget.order.total.toCurrency(context),
+                  style: AppTextStyles.h2.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: isCancelled ? subtextColor : (isDark ? AppColors.darkText : AppColors.lightText),
+                    decoration: isCancelled ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(PhosphorIconsRegular.caretRight, color: subtextColor, size: 16),
+              ],
+            ),
           ],
         ),
       ],
     );
   }
-
 }
