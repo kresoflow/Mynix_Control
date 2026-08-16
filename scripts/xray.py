@@ -155,13 +155,20 @@ class XRayEngine:
         seed_file = os.path.join(self.root_dir, "backend", "app", "users", "seed.py")
         perms = set()
         if os.path.exists(seed_file):
-            with open(seed_file, "r", encoding="utf-8") as f:
-                content = f.read()
-            matches = re.findall(r'\("([a-z_]+:[a-z_]+)"', content)
-            perms.update(matches)
+            import ast
+            try:
+                with open(seed_file, "r", encoding="utf-8") as f:
+                    tree = ast.parse(f.read(), filename=seed_file)
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                        if ":" in node.value and not node.value.startswith("http"):
+                            perms.add(node.value)
+            except Exception:
+                pass
         return perms
 
     def _scan_backend_routes(self) -> List[Dict[str, Any]]:
+        import ast
         seeded_perms = self._get_seeded_permissions()
         routes = []
         module_prefixes = {
@@ -177,17 +184,35 @@ class XRayEngine:
         if not os.path.exists(backend_app_dir):
             return []
 
+        http_methods = {"get", "post", "put", "delete", "patch"}
+
         for root, _, files in os.walk(backend_app_dir):
             for f in files:
                 if f.endswith(".py") and ("router" in f or "ws.py" in f):
                     filepath = os.path.join(root, f)
                     rel_path = os.path.relpath(filepath, self.root_dir).replace('\\', '/')
-                    with open(filepath, "r", encoding="utf-8", errors="ignore") as fp:
-                        lines = fp.readlines()
-                    content = "".join(lines)
+                    try:
+                        with open(filepath, "r", encoding="utf-8", errors="ignore") as fp:
+                            source = fp.read()
+                        tree = ast.parse(source, filename=filepath)
+                    except Exception:
+                        continue
+
+                    # 1. Collect APIRouter prefixes from AST assignment nodes
                     router_prefixes = {"router": "", "app": ""}
-                    for m in re.finditer(r'([a-zA-Z0-9_]+)\s*=\s*APIRouter\([^)]*prefix=["\']([^"\']+)["\']', content):
-                        router_prefixes[m.group(1)] = m.group(2)
+                    for node in ast.walk(tree):
+                        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
+                            func_name = ""
+                            if isinstance(node.value.func, ast.Name):
+                                func_name = node.value.func.id
+                            elif isinstance(node.value.func, ast.Attribute):
+                                func_name = node.value.func.attr
+                            if func_name == "APIRouter":
+                                for kw in node.value.keywords:
+                                    if kw.arg == "prefix" and isinstance(kw.value, ast.Constant):
+                                        for target in node.targets:
+                                            if isinstance(target, ast.Name):
+                                                router_prefixes[target.id] = str(kw.value.value)
 
                     parts = rel_path.split("/")
                     mod_name = parts[2] if len(parts) > 2 else ""
@@ -195,48 +220,79 @@ class XRayEngine:
                     if mod_name == "analytics" and "analytics_router" in f:
                         base_prefix = "/api/v1/analytics"
 
-                    endpoint_regex = re.compile(
-                        r'@([a-zA-Z0-9_]+)\.(get|post|put|delete|patch)\(\s*["\']([^"\']*)["\'](.*)',
-                        re.MULTILINE
-                    )
+                    # 2. Inspect all functions with decorators via AST
+                    for node in ast.walk(tree):
+                        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                            for dec in node.decorator_list:
+                                if isinstance(dec, ast.Call) and isinstance(dec.func, ast.Attribute):
+                                    method_name = dec.func.attr.lower()
+                                    if method_name in http_methods:
+                                        router_var = dec.func.value.id if isinstance(dec.func.value, ast.Name) else "router"
+                                        local_prefix = router_prefixes.get(router_var, "")
 
-                    for line_idx, line in enumerate(lines, 1):
-                        match = endpoint_regex.search(line)
-                        if match:
-                            r_var = match.group(1)
-                            http_method = match.group(2).upper()
-                            path_suffix = match.group(3)
-                            local_prefix = router_prefixes.get(r_var, "")
+                                        path_suffix = ""
+                                        if dec.args and isinstance(dec.args[0], ast.Constant):
+                                            path_suffix = str(dec.args[0].value)
+                                        else:
+                                            for kw in dec.keywords:
+                                                if kw.arg == "path" and isinstance(kw.value, ast.Constant):
+                                                    path_suffix = str(kw.value.value)
 
-                            snippet = "".join(lines[line_idx-1:min(line_idx+8, len(lines))])
-                            perm_match = re.search(r'require_permission\(["\']([^"\']+)["\']\)', snippet)
-                            required_perm = perm_match.group(1) if perm_match else None
+                                        # Extract require_permission AST call
+                                        required_perm = None
+                                        for subnode in ast.walk(dec):
+                                            if isinstance(subnode, ast.Call):
+                                                fname = subnode.func.id if isinstance(subnode.func, ast.Name) else ""
+                                                if fname == "require_permission" and subnode.args and isinstance(subnode.args[0], ast.Constant):
+                                                    required_perm = str(subnode.args[0].value)
 
-                            is_tenant_session = "TenantSession" in snippet or "get_tenant_session" in snippet
-                            is_public_session = "get_session" in snippet or "get_public_session" in snippet
+                                        is_tenant_session = False
+                                        is_public_session = False
 
-                            full_path = f"{base_prefix}{local_prefix}{path_suffix}".replace("//", "/")
-                            if not full_path.startswith("/"):
-                                full_path = "/" + full_path
-                            norm_path = full_path.rstrip("/") if len(full_path) > 1 else full_path
+                                        # Inspect function args
+                                        for arg in node.args.args:
+                                            ann_name = ""
+                                            if isinstance(arg.annotation, ast.Name):
+                                                ann_name = arg.annotation.id
+                                            if "TenantSession" in ann_name or "get_tenant_session" in ann_name:
+                                                is_tenant_session = True
+                                            if "get_session" in ann_name or "get_public_session" in ann_name:
+                                                is_public_session = True
 
-                            perm_status = "OK"
-                            if not required_perm:
-                                perm_status = "PUBLIC_OR_UNGUARDED"
-                            elif required_perm not in seeded_perms:
-                                perm_status = "UNSEEDED_PERMISSION"
+                                        for default_val in node.args.defaults:
+                                            for subnode in ast.walk(default_val):
+                                                if isinstance(subnode, ast.Name):
+                                                    if "get_tenant_session" in subnode.id or "TenantSession" in subnode.id:
+                                                        is_tenant_session = True
+                                                    if "get_session" in subnode.id:
+                                                        is_public_session = True
+                                                elif isinstance(subnode, ast.Call):
+                                                    fname = subnode.func.id if isinstance(subnode.func, ast.Name) else ""
+                                                    if fname == "require_permission" and subnode.args and isinstance(subnode.args[0], ast.Constant) and not required_perm:
+                                                        required_perm = str(subnode.args[0].value)
 
-                            routes.append({
-                                "method": http_method,
-                                "path": full_path,
-                                "norm_path": norm_path,
-                                "permission": required_perm,
-                                "perm_status": perm_status,
-                                "session_type": "TenantSession" if is_tenant_session else ("PublicSession" if is_public_session else "None"),
-                                "file": rel_path,
-                                "line": line_idx,
-                                "module": mod_name
-                            })
+                                        full_path = f"{base_prefix}{local_prefix}{path_suffix}".replace("//", "/")
+                                        if not full_path.startswith("/"):
+                                            full_path = "/" + full_path
+                                        norm_path = full_path.rstrip("/") if len(full_path) > 1 else full_path
+
+                                        perm_status = "OK"
+                                        if not required_perm:
+                                            perm_status = "PUBLIC_OR_UNGUARDED"
+                                        elif required_perm not in seeded_perms:
+                                            perm_status = "UNSEEDED_PERMISSION"
+
+                                        routes.append({
+                                            "method": method_name.upper(),
+                                            "path": full_path,
+                                            "norm_path": norm_path,
+                                            "permission": required_perm,
+                                            "perm_status": perm_status,
+                                            "session_type": "TenantSession" if is_tenant_session else ("PublicSession" if is_public_session else "None"),
+                                            "file": rel_path,
+                                            "line": node.lineno,
+                                            "module": mod_name
+                                        })
         return routes
 
     def _scan_frontend_api_calls(self) -> List[Dict[str, Any]]:
@@ -877,15 +933,81 @@ def show_module_detail(engine: XRayEngine, title: str, data: Dict[str, Any]):
 # MAIN DISPATCHER
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="Mynix Control Interactive X-Ray")
-    parser.add_argument("--html", action="store_true", help="Generate HTML report directly")
-    parser.add_argument("--ci", action="store_true", help="CI exit code check")
-    parser.add_argument("--api", action="store_true", help="One-shot API scan")
-    parser.add_argument("--security", action="store_true", help="One-shot Security scan")
-    parser.add_argument("--flutter", action="store_true", help="One-shot Flutter scan")
+    parser = argparse.ArgumentParser(description="Mynix Control X-Ray Audit System")
+    parser.add_argument("--json", action="store_true", help="Dump full audit report in JSON to stdout (for AI agents)")
+    parser.add_argument("--html", nargs="?", const="xray_report.html", help="Generate standalone HTML dashboard report and exit")
+    parser.add_argument("--security", action="store_true", help="Run non-interactive security audit and exit")
+    parser.add_argument("--api", action="store_true", help="Run non-interactive API matrix audit and exit")
+    parser.add_argument("--flutter", action="store_true", help="Run non-interactive Flutter health audit and exit")
+    parser.add_argument("--leaderboard", action="store_true", help="Run non-interactive file leaderboard audit and exit")
+    parser.add_argument("--ci", action="store_true", help="Run CI validation and exit with non-zero code on failures")
     args = parser.parse_args()
 
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..")) if "scripts" in os.path.dirname(__file__) else os.getcwd()
+
+    if args.json:
+        engine = XRayEngine(root_dir)
+        report = {
+            "census": engine.census,
+            "routes": engine.routes,
+            "frontend_calls": engine.frontend_calls,
+            "matrix": engine.matrix,
+            "flutter": engine.flutter,
+            "dead_models": engine.dead_models,
+            "backend_modules": engine.backend_modules,
+            "frontend_features": engine.frontend_features
+        }
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+        sys.exit(0)
+
+    if args.html:
+        engine = XRayEngine(root_dir)
+        output_file = args.html if isinstance(args.html, str) else "xray_report.html"
+        report_path = export_html(engine, output_file)
+        print(f"✅ HTML report generated: {report_path}")
+        sys.exit(0)
+
+    if args.security:
+        engine = XRayEngine(root_dir)
+        unguarded = [r for r in engine.routes if r['perm_status'] != 'OK' and not r['path'].endswith('/health') and not r['path'] == '/']
+        print(f"=== 🛡️ SECURITY & PBAC AUDIT ===")
+        print(f"Total Routes: {len(engine.routes)}")
+        print(f"Unguarded Routes: {len(unguarded)}")
+        for r in unguarded:
+            print(f"  [UNGUARDED] {r['method']:6} {r['path']:45} | {r['file']}:{r['line']}")
+        sys.exit(1 if unguarded else 0)
+
+    if args.api:
+        engine = XRayEngine(root_dir)
+        print(f"=== 🔌 API CONNECTIVITY MATRIX ===")
+        print(f"FastAPI Routes: {len(engine.routes)}")
+        print(f"Flutter Dio Calls: {len(engine.frontend_calls)}")
+        print(f"Matched Routes: {engine.matrix['matched_count']}")
+        print(f"Unused Backend Routes: {len(engine.matrix['unused_backend'])}")
+        print(f"Broken Frontend Calls: {len(engine.matrix['broken_frontend'])}")
+        if engine.matrix['broken_frontend']:
+            print("\nPotential 404 Calls in Frontend:")
+            for fc in engine.matrix['broken_frontend']:
+                print(f"  [404 RISK] {fc['method']:6} {fc['raw_uri']:35} | {fc['file']}:{fc['line']}")
+        sys.exit(0)
+
+    if args.flutter:
+        engine = XRayEngine(root_dir)
+        fl = engine.flutter
+        print(f"=== 📱 FLUTTER HEALTH AUDIT ===")
+        print(f"StatefulWidgets: {len(fl.get('stateful_widgets', []))}")
+        print(f"setState usages: {len(fl.get('set_state_usages', []))}")
+        print(f"Deep Nesting Files (>12 levels): {len(fl.get('deep_nesting_files', []))}")
+        print(f"God Build Methods (>90 lines): {len(fl.get('god_build_methods', []))}")
+        sys.exit(0)
+
+    if args.leaderboard:
+        engine = XRayEngine(root_dir)
+        print(f"=== 🏆 FILE LEADERBOARD ===")
+        print(f"Red Zone (>300 lines): {len(engine.census['red_zone'])}")
+        for idx, r in enumerate(engine.census['red_zone'], 1):
+            print(f"  {idx:2}. {r['lines']:4} lines | {r['path']}")
+        sys.exit(0)
 
     if args.ci:
         engine = XRayEngine(root_dir)
@@ -893,6 +1015,7 @@ def main():
         if unguarded:
             print(f"CI FAILURE: {len(unguarded)} unguarded routes found!")
             sys.exit(1)
+        print("CI SUCCESS: All checks passed.")
         sys.exit(0)
 
     # Launch Interactive Console by default
