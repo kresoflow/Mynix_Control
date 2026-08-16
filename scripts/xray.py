@@ -185,23 +185,29 @@ class XRayEngine:
                     with open(filepath, "r", encoding="utf-8", errors="ignore") as fp:
                         lines = fp.readlines()
                     content = "".join(lines)
-                    router_prefix_match = re.search(r'APIRouter\([^)]*prefix=["\']([^"\']+)["\']', content)
-                    local_prefix = router_prefix_match.group(1) if router_prefix_match else ""
+                    router_prefixes = {"router": "", "app": ""}
+                    for m in re.finditer(r'([a-zA-Z0-9_]+)\s*=\s*APIRouter\([^)]*prefix=["\']([^"\']+)["\']', content):
+                        router_prefixes[m.group(1)] = m.group(2)
 
                     parts = rel_path.split("/")
                     mod_name = parts[2] if len(parts) > 2 else ""
                     base_prefix = module_prefixes.get(mod_name, "/api/v1")
+                    if mod_name == "analytics" and "analytics_router" in f:
+                        base_prefix = "/api/v1/analytics"
 
                     endpoint_regex = re.compile(
-                        r'@(?:router|app)\.(get|post|put|delete|patch)\(\s*["\']([^"\']*)["\'](.*)',
+                        r'@([a-zA-Z0-9_]+)\.(get|post|put|delete|patch)\(\s*["\']([^"\']*)["\'](.*)',
                         re.MULTILINE
                     )
 
                     for line_idx, line in enumerate(lines, 1):
                         match = endpoint_regex.search(line)
                         if match:
-                            http_method = match.group(1).upper()
-                            path_suffix = match.group(2)
+                            r_var = match.group(1)
+                            http_method = match.group(2).upper()
+                            path_suffix = match.group(3)
+                            local_prefix = router_prefixes.get(r_var, "")
+
                             snippet = "".join(lines[line_idx-1:min(line_idx+8, len(lines))])
                             perm_match = re.search(r'require_permission\(["\']([^"\']+)["\']\)', snippet)
                             required_perm = perm_match.group(1) if perm_match else None
