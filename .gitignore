@@ -55,5 +55,6 @@ Thumbs.db
 # Logs & temp
 *.log
 *.tmp
+*.zip
 temp/
 scratch/
