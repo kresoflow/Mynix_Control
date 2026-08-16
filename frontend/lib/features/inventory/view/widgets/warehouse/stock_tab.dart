@@ -6,6 +6,9 @@ import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/s
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_capital_chart_card.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_low_inventory_widget.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
@@ -50,6 +53,16 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
     });
   }
 
+  void _openReceiveDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => BlocProvider.value(
+        value: context.read<IngredientBloc>(),
+        child: const ReceiveDocumentDialog(),
+      ),
+    );
+  }
+
   String _getRootCategoryName(Ingredient item, List<MenuCategory> allCategories) {
     if (item.categoryId == null) return item.categoryName ?? 'Без категории';
     var currentCat = allCategories.where((c) => c.id == item.categoryId).firstOrNull;
@@ -67,134 +80,175 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
   Widget build(BuildContext context) {
     super.build(context);
 
-    return Column(
-      children: [
-        StockPillFilters(
-          currentFilter: _filter,
-          onFilterChanged: (val) => setState(() => _filter = val),
-          isExpandedAll: _isExpandedAll,
-          onToggleExpandAll: _toggleExpandAll,
-        ),
-        Expanded(
-          child: BlocBuilder<IngredientBloc, IngredientState>(
-            builder: (context, state) {
-              if (state is IngredientLoading) {
-                return const SkeletonList();
-              } else if (state is IngredientLoaded) {
-                final filtered = state.ingredients.where((item) {
-                  final isRetail = item.attributes != null && item.attributes!['is_retail'] == true;
-                  if (_filter == 'retail') return isRetail;
-                  if (_filter == 'raw') return !isRetail;
-                  return true;
-                }).toList();
+    return BlocBuilder<IngredientBloc, IngredientState>(
+      builder: (context, state) {
+        if (state is IngredientLoading) {
+          return const SkeletonList();
+        } else if (state is! IngredientLoaded) {
+          return const SizedBox.shrink();
+        }
 
-                if (filtered.isEmpty) {
-                  return const Center(child: Text('Нет товаров в этой категории.'));
-                }
+        final filtered = state.ingredients.where((item) {
+          final isRetail = item.attributes != null && item.attributes!['is_retail'] == true;
+          if (_filter == 'retail') return isRetail;
+          if (_filter == 'raw') return !isRetail;
+          return true;
+        }).toList();
 
-                double totalCapital = 0;
-                double potentialRevenue = 0;
-                int lowStockCount = 0;
-                for (var item in filtered) {
-                  if (item.currentStock > 0) {
-                    totalCapital += item.currentStock * item.costPerUnit;
-                    potentialRevenue += item.currentStock * (item.price ?? item.costPerUnit);
+        if (filtered.isEmpty) {
+          return const Center(child: Text('Нет товаров в этой категории.'));
+        }
+
+        double totalCapital = 0;
+        double potentialRevenue = 0;
+        int lowStockCount = 0;
+        final List<Ingredient> lowStockItems = [];
+
+        for (var item in filtered) {
+          if (item.currentStock > 0) {
+            totalCapital += item.currentStock * item.costPerUnit;
+            potentialRevenue += item.currentStock * (item.price ?? item.costPerUnit);
+          }
+          if (item.isLowStock || item.currentStock <= 0) {
+            lowStockCount++;
+            lowStockItems.add(item);
+          }
+        }
+        final double expectedProfit = potentialRevenue - totalCapital;
+
+        final catState = context.watch<CategoryBloc>().state;
+        final List<MenuCategory> allCategories = catState is CategoryLoaded ? catState.categories : [];
+
+        final Map<String, List<Ingredient>> grouped = {};
+        final Map<String, double> categoryCapitals = {};
+
+        for (var item in filtered) {
+          final cat = _getRootCategoryName(item, allCategories);
+          if (!grouped.containsKey(cat)) {
+            grouped[cat] = [];
+            categoryCapitals[cat] = 0;
+            if (!_expandedCategories.containsKey(cat)) {
+              _expandedCategories[cat] = _isExpandedAll;
+            }
+          }
+          grouped[cat]!.add(item);
+          if (item.currentStock > 0) {
+            categoryCapitals[cat] = (categoryCapitals[cat] ?? 0) + (item.currentStock * item.costPerUnit);
+          }
+        }
+
+        final sortedCategories = grouped.keys.toList()..sort((a, b) {
+          if (a == 'Без категории') return 1;
+          if (b == 'Без категории') return -1;
+          return a.compareTo(b);
+        });
+
+        final List<dynamic> flatList = [];
+        for (final category in sortedCategories) {
+          final items = grouped[category]!;
+          final isExpanded = _expandedCategories[category] ?? false;
+
+          flatList.add({
+            'type': 'header',
+            'categoryName': category,
+            'items': items,
+            'isExpanded': isExpanded,
+          });
+
+          if (isExpanded) {
+            for (int i = 0; i < items.length; i++) {
+              flatList.add({
+                'type': 'item',
+                'item': items[i],
+                'isLast': i == items.length - 1,
+              });
+            }
+          }
+        }
+
+        return Column(
+          children: [
+            StockMetricsHeader(
+              totalCount: filtered.length,
+              lowStockCount: lowStockCount,
+              totalCapital: totalCapital,
+              potentialRevenue: potentialRevenue,
+              expectedProfit: expectedProfit,
+            ),
+            StockPillFilters(
+              currentFilter: _filter,
+              onFilterChanged: (val) => setState(() => _filter = val),
+              isExpandedAll: _isExpandedAll,
+              onToggleExpandAll: _toggleExpandAll,
+            ),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isDesktop = constraints.maxWidth >= 1050;
+
+                  final itemsList = ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    itemCount: flatList.length,
+                    itemBuilder: (context, index) {
+                      final data = flatList[index];
+                      if (data['type'] == 'header') {
+                        return StockCategoryHeader(
+                          categoryName: data['categoryName'],
+                          items: List<Ingredient>.from(data['items'] ?? []),
+                          isExpanded: data['isExpanded'],
+                          onTap: () => _onCategoryExpansionChanged(
+                            data['categoryName'],
+                            !data['isExpanded'],
+                          ),
+                        );
+                      } else {
+                        return StockItemRow(
+                          item: data['item'],
+                          isLast: data['isLast'],
+                        );
+                      }
+                    },
+                  );
+
+                  if (!isDesktop) {
+                    return itemsList;
                   }
-                  if (item.isLowStock || item.currentStock <= 0) {
-                    lowStockCount++;
-                  }
-                }
-                final double expectedProfit = potentialRevenue - totalCapital;
 
-                final catState = context.watch<CategoryBloc>().state;
-                List<MenuCategory> allCategories = [];
-                if (catState is CategoryLoaded) {
-                  allCategories = catState.categories;
-                }
-
-                final Map<String, List<Ingredient>> grouped = {};
-                for (var item in filtered) {
-                  final cat = _getRootCategoryName(item, allCategories);
-                  if (!grouped.containsKey(cat)) {
-                    grouped[cat] = [];
-                    if (!_expandedCategories.containsKey(cat)) {
-                      _expandedCategories[cat] = _isExpandedAll;
-                    }
-                  }
-                  grouped[cat]!.add(item);
-                }
-
-                final sortedCategories = grouped.keys.toList()..sort((a, b) {
-                  if (a == 'Без категории') return 1;
-                  if (b == 'Без категории') return -1;
-                  return a.compareTo(b);
-                });
-
-                final List<dynamic> flatList = [];
-                for (final category in sortedCategories) {
-                  final items = grouped[category]!;
-                  final isExpanded = _expandedCategories[category] ?? false;
-
-                  flatList.add({
-                    'type': 'header',
-                    'categoryName': category,
-                    'items': items,
-                    'isExpanded': isExpanded,
-                  });
-
-                  if (isExpanded) {
-                    for (int i = 0; i < items.length; i++) {
-                      flatList.add({
-                        'type': 'item',
-                        'item': items[i],
-                        'isLast': i == items.length - 1,
-                      });
-                    }
-                  }
-                }
-
-                return Column(
-                  children: [
-                    StockMetricsHeader(
-                      totalCount: filtered.length,
-                      lowStockCount: lowStockCount,
-                      totalCapital: totalCapital,
-                      potentialRevenue: potentialRevenue,
-                      expectedProfit: expectedProfit,
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 65, child: itemsList),
+                        Container(
+                          width: 360,
+                          padding: const EdgeInsets.only(right: 24, top: 8),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                StockCapitalChartCard(
+                                  categoryCapitals: categoryCapitals,
+                                  totalCapital: totalCapital,
+                                  key: ValueKey(totalCapital),
+                                ),
+                                const SizedBox(height: 16),
+                                StockLowInventoryWidget(
+                                  lowStockItems: lowStockItems,
+                                  onReceiveTap: () => _openReceiveDialog(context),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                        itemCount: flatList.length,
-                        itemBuilder: (context, index) {
-                          final data = flatList[index];
-                          if (data['type'] == 'header') {
-                            return StockCategoryHeader(
-                              categoryName: data['categoryName'],
-                              items: List<Ingredient>.from(data['items'] ?? []),
-                              isExpanded: data['isExpanded'],
-                              onTap: () => _onCategoryExpansionChanged(
-                                data['categoryName'],
-                                !data['isExpanded'],
-                              ),
-                            );
-                          } else {
-                            return StockItemRow(
-                              item: data['item'],
-                              isLast: data['isLast'],
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ),
-      ],
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
