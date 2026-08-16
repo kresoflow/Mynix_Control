@@ -50,6 +50,11 @@ class SuperadminRepository {
     required String ownerUsername,
     required String ownerPassword,
     required String ownerFullName,
+    String ownerPinCode = '1234',
+    String? ownerPhone,
+    String? ownerEmail,
+    bool useKds = true,
+    bool enableInventoryDeduction = true,
   }) async {
     final response = await dio.post(
       '/system/tenants',
@@ -61,6 +66,11 @@ class SuperadminRepository {
         'owner_username': ownerUsername,
         'owner_password': ownerPassword,
         'owner_full_name': ownerFullName,
+        'owner_pin_code': ownerPinCode,
+        if (ownerPhone != null && ownerPhone.isNotEmpty) 'owner_phone': ownerPhone,
+        if (ownerEmail != null && ownerEmail.isNotEmpty) 'owner_email': ownerEmail,
+        'use_kds': useKds,
+        'enable_inventory_deduction': enableInventoryDeduction,
       },
     );
     return response.data['tenant_id'];

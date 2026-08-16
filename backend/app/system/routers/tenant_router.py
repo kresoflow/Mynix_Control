@@ -1,4 +1,4 @@
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -25,11 +25,15 @@ def require_system_admin(x_system_token: str = Header(..., description="System A
 class TenantCreateRequest(BaseModel):
     name: str
     schema_name: str
-    address: str
+    address: str = ""
     owner_username: str
     owner_password: str
     owner_full_name: str
-    owner_pin_code: str = "0000"
+    owner_pin_code: str = "1234"
+    owner_phone: Optional[str] = None
+    owner_email: Optional[str] = None
+    use_kds: bool = True
+    enable_inventory_deduction: bool = True
 
 
 class TenantRead(BaseModel):
@@ -62,6 +66,8 @@ async def create_tenant(
         name=data.name,
         schema_name=data.schema_name,
         address=data.address,
+        use_kds=data.use_kds,
+        enable_inventory_deduction=data.enable_inventory_deduction,
     )
     session.add(new_tenant)
     await session.flush()

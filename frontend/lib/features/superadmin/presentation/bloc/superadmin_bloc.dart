@@ -57,6 +57,11 @@ class SuperadminBloc extends Cubit<SuperadminState> {
     required String ownerUsername,
     required String ownerPassword,
     required String ownerFullName,
+    String ownerPinCode = '1234',
+    String? ownerPhone,
+    String? ownerEmail,
+    bool useKds = true,
+    bool enableInventoryDeduction = true,
   }) async {
     final currentState = state;
     emit(SuperadminLoading());
@@ -69,6 +74,11 @@ class SuperadminBloc extends Cubit<SuperadminState> {
         ownerUsername: ownerUsername,
         ownerPassword: ownerPassword,
         ownerFullName: ownerFullName,
+        ownerPinCode: ownerPinCode,
+        ownerPhone: ownerPhone,
+        ownerEmail: ownerEmail,
+        useKds: useKds,
+        enableInventoryDeduction: enableInventoryDeduction,
       );
       // Reload tenants
       await loadTenants();
