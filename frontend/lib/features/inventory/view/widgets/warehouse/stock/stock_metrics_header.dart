@@ -44,7 +44,7 @@ class StockMetricsHeader extends StatelessWidget {
           );
 
           final card3 = DashboardMetricCard(
-            title: 'Потенциал (Розница)',
+            title: 'В рознице',
             value: potentialRevenue.toCurrency(context),
             icon: PhosphorIconsRegular.trendUp,
             gradientColors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],

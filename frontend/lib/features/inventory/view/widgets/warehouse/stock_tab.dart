@@ -166,6 +166,30 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
           }
         }
 
+        final itemsList = ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          itemCount: flatList.length,
+          itemBuilder: (context, index) {
+            final data = flatList[index];
+            if (data['type'] == 'header') {
+              return StockCategoryHeader(
+                categoryName: data['categoryName'],
+                items: List<Ingredient>.from(data['items'] ?? []),
+                isExpanded: data['isExpanded'],
+                onTap: () => _onCategoryExpansionChanged(
+                  data['categoryName'],
+                  !data['isExpanded'],
+                ),
+              );
+            } else {
+              return StockItemRow(
+                item: data['item'],
+                isLast: data['isLast'],
+              );
+            }
+          },
+        );
+
         return Column(
           children: [
             StockMetricsHeader(
@@ -175,73 +199,63 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
               potentialRevenue: potentialRevenue,
               expectedProfit: expectedProfit,
             ),
-            StockPillFilters(
-              currentFilter: _filter,
-              onFilterChanged: (val) => setState(() => _filter = val),
-              isExpandedAll: _isExpandedAll,
-              onToggleExpandAll: _toggleExpandAll,
-            ),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isDesktop = constraints.maxWidth >= 1050;
 
-                  final itemsList = ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    itemCount: flatList.length,
-                    itemBuilder: (context, index) {
-                      final data = flatList[index];
-                      if (data['type'] == 'header') {
-                        return StockCategoryHeader(
-                          categoryName: data['categoryName'],
-                          items: List<Ingredient>.from(data['items'] ?? []),
-                          isExpanded: data['isExpanded'],
-                          onTap: () => _onCategoryExpansionChanged(
-                            data['categoryName'],
-                            !data['isExpanded'],
-                          ),
-                        );
-                      } else {
-                        return StockItemRow(
-                          item: data['item'],
-                          isLast: data['isLast'],
-                        );
-                      }
-                    },
-                  );
-
                   if (!isDesktop) {
-                    return itemsList;
+                    return Column(
+                      children: [
+                        StockPillFilters(
+                          currentFilter: _filter,
+                          onFilterChanged: (val) => setState(() => _filter = val),
+                          isExpandedAll: _isExpandedAll,
+                          onToggleExpandAll: _toggleExpandAll,
+                        ),
+                        Expanded(child: itemsList),
+                      ],
+                    );
                   }
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 65, child: itemsList),
-                        Container(
-                          width: 360,
-                          padding: const EdgeInsets.only(right: 24, top: 8),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                StockCapitalChartCard(
-                                  categoryCapitals: categoryCapitals,
-                                  totalCapital: totalCapital,
-                                  key: ValueKey(totalCapital),
-                                ),
-                                const SizedBox(height: 16),
-                                StockLowInventoryWidget(
-                                  lowStockItems: lowStockItems,
-                                  onReceiveTap: () => _openReceiveDialog(context),
-                                ),
-                              ],
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 65,
+                        child: Column(
+                          children: [
+                            StockPillFilters(
+                              currentFilter: _filter,
+                              onFilterChanged: (val) => setState(() => _filter = val),
+                              isExpandedAll: _isExpandedAll,
+                              onToggleExpandAll: _toggleExpandAll,
                             ),
+                            Expanded(child: itemsList),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: 350,
+                        padding: const EdgeInsets.only(right: 24, top: 8, bottom: 16),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              StockCapitalChartCard(
+                                categoryCapitals: categoryCapitals,
+                                totalCapital: totalCapital,
+                                key: ValueKey(totalCapital),
+                              ),
+                              const SizedBox(height: 14),
+                              StockLowInventoryWidget(
+                                lowStockItems: lowStockItems,
+                                onReceiveTap: () => _openReceiveDialog(context),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   );
                 },
               ),

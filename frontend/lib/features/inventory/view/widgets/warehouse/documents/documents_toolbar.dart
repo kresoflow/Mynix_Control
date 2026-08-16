@@ -71,13 +71,13 @@ class DocumentsToolbar extends StatelessWidget {
             onPressed: onReceiveDocument,
           ),
           const SizedBox(width: 8),
-          AppGhostButton(
+          AppSecondaryButton(
             label: 'Списание',
             icon: PhosphorIconsRegular.shoppingCart,
             onPressed: onWriteOff,
           ),
           const SizedBox(width: 8),
-          AppGhostButton(
+          AppSecondaryButton(
             label: 'Инвентаризация',
             icon: PhosphorIconsRegular.clipboardText,
             onPressed: onBlindInventory,
