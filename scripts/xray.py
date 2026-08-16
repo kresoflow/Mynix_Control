@@ -566,6 +566,16 @@ def print_header(engine: XRayEngine):
     print(f"  {c('📊 Кодовая база:', Color.WHITE)} {c(f'{c_files} файлов', Color.BOLD)} | {c(f'{c_lines:,} LOC', Color.GREEN)} | {c(f'{c_routes} роутов API', Color.BLUE)} | {c(f'{c_red} файлов >300L', Color.RED)} | {c(f'{c_dead} мертвых моделей', Color.YELLOW)}")
     print(f"{Color.GRAY}──────────────────────────────────────────────────────────────────────────────{Color.RESET}")
 
+def safe_input(prompt_text: str) -> str:
+    while True:
+        try:
+            return input(prompt_text).strip()
+        except KeyboardInterrupt:
+            print("\n" + c("Для выхода выберите [0] в меню.", Color.YELLOW))
+            return ""
+        except EOFError:
+            return "0"
+
 def run_interactive_console(root_dir: str):
     engine = XRayEngine(root_dir)
 
@@ -582,13 +592,12 @@ def run_interactive_console(root_dir: str):
         print(f"  {c('[R]', Color.GREEN)} 🔄 {Color.BOLD}Пересканировать проект (Rescan){Color.RESET}")
         print(f"  {c('[0]', Color.RED)} 🚪 {Color.BOLD}Выход{Color.RESET}")
 
-        try:
-            choice = input(f"\n{Color.BOLD}Введите номер действия > {Color.RESET}").strip().upper()
-        except (KeyboardInterrupt, EOFError):
-            print("\nВыход из X-Ray.")
-            break
+        choice = safe_input(f"\n{Color.BOLD}Введите номер действия [0-7, R] > {Color.RESET}").upper()
 
-        if choice == "0":
+        if not choice:
+            continue
+
+        if choice in ("0", "Q", "QUIT", "EXIT", "ВЫХОД"):
             print(f"\n{c('👋 Завершение работы X-Ray. Чистого кода!', Color.GREEN)}\n")
             break
         elif choice == "R":
@@ -615,9 +624,11 @@ def run_interactive_console(root_dir: str):
                 print(f"{c('🌐 Открыто в браузере!', Color.CYAN)}")
             except Exception as e:
                 print(f"Файл готов: {report_file}")
-            input(f"\n{c('Нажмите Enter для возврата в меню...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для возврата в меню...', Color.GRAY)}")
         else:
-            print(f"{c('⚠️ Неверный выбор, попробуйте снова.', Color.YELLOW)}")
+            print(f"\n{c('⚠️ Неверный выбор (' + choice + '). Введите цифру от 0 до 7 или R.', Color.YELLOW)}")
+            import time
+            time.sleep(1)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SUBMENUS
@@ -638,8 +649,8 @@ def handle_api_menu(engine: XRayEngine):
         print("  [3] Показать вызовы фронтенда без ответа на бэкенде (потенциальные 404)")
         print("  [0] ← Назад в главное меню")
 
-        ch = input(f"\n{Color.BOLD}API Меню > {Color.RESET}").strip()
-        if ch == "0":
+        ch = safe_input(f"\n{Color.BOLD}API Меню > {Color.RESET}")
+        if ch in ("0", "Q", "QUIT", "BACK"):
             break
         elif ch == "1":
             print(f"\n{Color.BOLD}{'МЕТОД':<7} {'МАРШРУТ':<45} {'ПРАВО PBAC':<22} {'СЕССИЯ':<15}{Color.RESET}")
@@ -647,12 +658,12 @@ def handle_api_menu(engine: XRayEngine):
             for r in engine.routes:
                 p_col = Color.GREEN if r['perm_status'] == 'OK' else Color.RED
                 print(f"{c(r['method'], Color.CYAN):<16} {r['path']:<45} {c(str(r['permission']), p_col):<30} {r['session_type']:<15}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
         elif ch == "2":
             print(f"\n{Color.BOLD}НЕИСПОЛЬЗУЕМЫЕ ЭНДПОИНТЫ БЭКЕНДА (Нет вызовов во Flutter):{Color.RESET}")
             for r in engine.matrix['unused_backend']:
                 print(f" • {r['method']:6} {r['path']:40} | {r['file']}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
         elif ch == "3":
             print(f"\n{Color.BOLD}ВЫЗОВЫ FLUTTER БЕЗ СОВПАДЕНИЙ НА БЭКЕНДЕ:{Color.RESET}")
             if not engine.matrix['broken_frontend']:
@@ -660,7 +671,7 @@ def handle_api_menu(engine: XRayEngine):
             else:
                 for fc in engine.matrix['broken_frontend']:
                     print(f" • {fc['method']:6} {fc['raw_uri']:35} | {fc['file']}:{fc['line']}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
 
 def handle_security_menu(engine: XRayEngine):
     while True:
@@ -679,26 +690,26 @@ def handle_security_menu(engine: XRayEngine):
         print("  [3] Показать список всех зарегистрированных прав в seed.py")
         print("  [0] ← Назад в главное меню")
 
-        ch = input(f"\n{Color.BOLD}Безопасность Меню > {Color.RESET}").strip()
-        if ch == "0":
+        ch = safe_input(f"\n{Color.BOLD}Безопасность Меню > {Color.RESET}")
+        if ch in ("0", "Q", "QUIT", "BACK"):
             break
         elif ch == "1":
             print(f"\n{Color.BOLD}🔴 НЕЗАЩИЩЕННЫЕ ЭНДПОИНТЫ (ТРЕБУЮТ require_permission):{Color.RESET}")
             for r in unguarded:
                 print(f"  • {c(r['method'], Color.YELLOW):<15} {r['path']:<45} | {r['file']}:{r['line']}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
         elif ch == "2":
             print(f"\n{Color.BOLD}🟢 ЗАЩИЩЕННЫЕ ЭНДПОИНТЫ:{Color.RESET}")
             guarded = [r for r in engine.routes if r['perm_status'] == 'OK']
             for r in guarded:
                 print(f"  • {r['method']:6} {r['path']:40} -> {c(r['permission'], Color.GREEN)}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
         elif ch == "3":
             perms = engine._get_seeded_permissions()
             print(f"\n{Color.BOLD}РЕЕСТР ПРАВ (seed.py — {len(perms)} прав):{Color.RESET}")
             for p in sorted(perms):
                 print(f"  • {c(p, Color.CYAN)}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
 
 def handle_flutter_menu(engine: XRayEngine):
     while True:
@@ -716,25 +727,25 @@ def handle_flutter_menu(engine: XRayEngine):
         print("  [3] Показать огромные build() методы (>90 строк)")
         print("  [0] ← Назад в главное меню")
 
-        ch = input(f"\n{Color.BOLD}Flutter Меню > {Color.RESET}").strip()
-        if ch == "0":
+        ch = safe_input(f"\n{Color.BOLD}Flutter Меню > {Color.RESET}")
+        if ch in ("0", "Q", "QUIT", "BACK"):
             break
         elif ch == "1":
             print(f"\n{Color.BOLD}STATEFUL WIDGETS:{Color.RESET}")
             for sw in fl.get('stateful_widgets', []):
                 print(f"  • {sw['file']}:{sw['line']} -> {c(sw['code'], Color.YELLOW)}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
         elif ch == "2":
             print(f"\n{Color.BOLD}ФАЙЛЫ С ГЛУБОКОЙ ВЛОЖЕННОСТЬЮ ВИДЖЕТОВ (>12 уровней):{Color.RESET}")
             for dn in fl.get('deep_nesting_files', []):
                 print(f"  • Глубина {c(str(dn['depth']), Color.RED)} | {dn['file']}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
         elif ch == "3":
             print(f"\n{Color.BOLD}ОГРОМНЫЕ BUILD МЕТОДЫ (ТРЕБУЮТ ВЫНОСА В WIDGETS):{Color.RESET}")
             for gb in fl.get('god_build_methods', []):
                 gb_lines = gb['lines']
                 print(f"  • {c(f'{gb_lines} строк build()', Color.RED)} | {gb['file']}:{gb['line']}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
 
 def handle_leaderboard_menu(engine: XRayEngine):
     while True:
@@ -753,28 +764,28 @@ def handle_leaderboard_menu(engine: XRayEngine):
         print("  [3] Топ-30 самых больших файлов проекта")
         print("  [0] ← Назад в главное меню")
 
-        ch = input(f"\n{Color.BOLD}Рейтинг Меню > {Color.RESET}").strip()
-        if ch == "0":
+        ch = safe_input(f"\n{Color.BOLD}Рейтинг Меню > {Color.RESET}")
+        if ch in ("0", "Q", "QUIT", "BACK"):
             break
         elif ch == "1":
             print(f"\n{Color.BOLD}🔴 ФАЙЛЫ В КРАСНОЙ ЗОНЕ (>300 СТРОК):{Color.RESET}")
             for idx, r in enumerate(c_red, 1):
                 r_lines = r['lines']
                 print(f"  {idx:2}. {c(f'{r_lines:4} строк', Color.RED)} | {r['path']}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
         elif ch == "2":
             print(f"\n{Color.BOLD}🟡 ФАЙЛЫ В ЖЕЛТОЙ ЗОНЕ (250-300 СТРОК):{Color.RESET}")
             for idx, r in enumerate(c_yellow, 1):
                 r_lines = r['lines']
                 print(f"  {idx:2}. {c(f'{r_lines:4} строк', Color.YELLOW)} | {r['path']}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
         elif ch == "3":
             print(f"\n{Color.BOLD}ТОП-30 САМЫХ БОЛЬШИХ ФАЙЛОВ ПРОЕКТА:{Color.RESET}")
             for idx, r in enumerate(engine.census['leaderboard'][:30], 1):
                 col = Color.RED if r['lines'] > 300 else (Color.YELLOW if r['lines'] >= 250 else Color.GREEN)
                 r_lines = r['lines']
                 print(f"  {idx:2}. {c(f'{r_lines:4} строк', col)} | {r['path']}")
-            input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
+            safe_input(f"\n{c('Нажмите Enter для продолжения...', Color.GRAY)}")
 
 def handle_dead_menu(engine: XRayEngine):
     clear_screen()
@@ -782,7 +793,7 @@ def handle_dead_menu(engine: XRayEngine):
     print(f"Найдено моделей/схем с 0 вызовов в проекте: {c(str(len(engine.dead_models)), Color.YELLOW)}\n")
     for dm in engine.dead_models:
         print(f" • Модель {c(dm['name'], Color.YELLOW)} в {dm['file']}:{dm['line']} — {c('0 использований', Color.RED)}")
-    input(f"\n{c('Нажмите Enter для возврата...', Color.GRAY)}")
+    safe_input(f"\n{c('Нажмите Enter для возврата...', Color.GRAY)}")
 
 def handle_layer_drilldown(engine: XRayEngine):
     while True:
@@ -802,8 +813,8 @@ def handle_layer_drilldown(engine: XRayEngine):
 
         print(f"\n  [0] ← Назад в главное меню")
 
-        ch = input(f"\n{Color.BOLD}Выберите модуль (например B1 или F1) > {Color.RESET}").strip().upper()
-        if ch == "0":
+        ch = safe_input(f"\n{Color.BOLD}Выберите модуль (например B1 или F1) > {Color.RESET}").upper()
+        if ch in ("0", "Q", "QUIT", "BACK"):
             break
         elif ch.startswith("B") and ch[1:].isdigit():
             idx = int(ch[1:]) - 1
@@ -839,7 +850,7 @@ def show_module_detail(engine: XRayEngine, title: str, data: Dict[str, Any]):
 
         print(f"{idx:<3} {l_str:<16} {status:<20} {f['path']}")
 
-    input(f"\n{c('Нажмите Enter для возврата к выбору слоев...', Color.GRAY)}")
+    safe_input(f"\n{c('Нажмите Enter для возврата к выбору слоев...', Color.GRAY)}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # MAIN DISPATCHER
