@@ -21,26 +21,6 @@ class StockCategoryHeader extends StatelessWidget {
     required this.onTap,
   });
 
-  IconData _getSmartFallbackIcon(String name) {
-    final lower = name.toLowerCase();
-    if (lower.contains('мясо') || lower.contains('птиц') || lower.contains('рыб') || lower.contains('фарш')) {
-      return PhosphorIconsRegular.bone;
-    }
-    if (lower.contains('напит') || lower.contains('бар') || lower.contains('сок') || lower.contains('вода')) {
-      return PhosphorIconsRegular.brandy;
-    }
-    if (lower.contains('хлеб') || lower.contains('выпеч') || lower.contains('булк')) {
-      return PhosphorIconsRegular.bread;
-    }
-    if (lower.contains('овощ') || lower.contains('фрукт') || lower.contains('зелен')) {
-      return PhosphorIconsRegular.plant;
-    }
-    if (lower.contains('соус') || lower.contains('масл') || lower.contains('специ')) {
-      return PhosphorIconsRegular.drop;
-    }
-    return PhosphorIconsRegular.folderSimple;
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -121,7 +101,7 @@ class StockCategoryHeader extends StatelessWidget {
                                     : (isDark ? AppColors.darkText : AppColors.lightText),
                               )
                             : Icon(
-                                _getSmartFallbackIcon(categoryName),
+                                PhosphorIconsRegular.folderSimple,
                                 size: 18,
                                 color: isExpanded
                                     ? AppColors.brandPrimary

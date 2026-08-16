@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
@@ -64,7 +63,7 @@ class StockCapitalChartCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(9),
                 ),
                 child: Icon(
-                  PhosphorIconsRegular.chartPieSlice,
+                  PhosphorIconsRegular.chartBarHorizontal,
                   color: AppColors.brandPrimary,
                   size: 16,
                 ),
@@ -75,7 +74,7 @@ class StockCapitalChartCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Капитал по категориям',
+                      'Структура капитала',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: isDark ? AppColors.darkText : AppColors.lightText,
                         fontWeight: FontWeight.bold,
@@ -94,7 +93,7 @@ class StockCapitalChartCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           if (topEntries.isEmpty || totalCapital <= 0)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -108,32 +107,32 @@ class StockCapitalChartCard extends StatelessWidget {
               ),
             )
           else ...[
-            SizedBox(
-              height: 100,
-              child: PieChart(
-                PieChartData(
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 28,
-                  sections: topEntries.asMap().entries.map((entry) {
+            // 1. Сегментированная полоса распределения капитала
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: SizedBox(
+                height: 10,
+                child: Row(
+                  children: topEntries.asMap().entries.map((entry) {
                     final idx = entry.key;
                     final item = entry.value;
                     final pct = (item.value / totalCapital) * 100;
-                    return PieChartSectionData(
-                      color: colors[idx % colors.length],
-                      value: item.value,
-                      title: pct >= 12 ? '${pct.toStringAsFixed(0)}%' : '',
-                      radius: 20,
-                      titleStyle: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    final color = colors[idx % colors.length];
+
+                    return Expanded(
+                      flex: (pct * 10).round().clamp(1, 1000),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                        color: color,
                       ),
                     );
                   }).toList(),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
+
+            // 2. Список категорий с бейджами долей и суммами
             ...topEntries.asMap().entries.map((entry) {
               final idx = entry.key;
               final item = entry.value;
@@ -141,35 +140,52 @@ class StockCapitalChartCard extends StatelessWidget {
               final pct = (item.value / totalCapital) * 100;
 
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
+                padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
                     Container(
-                      width: 7,
-                      height: 7,
+                      width: 8,
+                      height: 8,
                       decoration: BoxDecoration(
                         color: color,
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         item.key,
                         style: AppTextStyles.caption.copyWith(
                           color: isDark ? AppColors.darkText : AppColors.lightText,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '${pct.toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     Text(
-                      '${pct.toStringAsFixed(0)}% (${item.value.toCurrency(context)})',
+                      item.value.toCurrency(context),
                       style: AppTextStyles.caption.copyWith(
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                        fontSize: 10,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                   ],
