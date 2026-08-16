@@ -576,23 +576,30 @@ def safe_input(prompt_text: str) -> str:
         except EOFError:
             return "0"
 
+def print_main_menu(engine: XRayEngine):
+    print_header(engine)
+    print(f"{Color.BOLD}ГЛАВНОЕ МЕНЮ АУДИТА:{Color.RESET}")
+    print(f"  {c('[1]', Color.CYAN)} 🔌 {Color.BOLD}Матрица API{Color.RESET} (Стыковка Frontend Dio ↔ Backend FastAPI)")
+    print(f"  {c('[2]', Color.CYAN)} 🛡️  {Color.BOLD}Безопасность & PBAC{Color.RESET} (Аудит прав доступа и Multi-Tenancy)")
+    print(f"  {c('[3]', Color.CYAN)} 📱 {Color.BOLD}Чистота Flutter{Color.RESET} (StatefulWidget, вложенность, God-методы)")
+    print(f"  {c('[4]', Color.CYAN)} 🏆 {Color.BOLD}Рейтинг Тяжеловесов{Color.RESET} (Красная зона >300 строк, топ монстров)")
+    print(f"  {c('[5]', Color.CYAN)} 🧟 {Color.BOLD}Мертвый Код{Color.RESET} (Неиспользуемые модели и забытые классы)")
+    print(f"  {c('[6]', Color.CYAN)} 🔍 {Color.BOLD}Глубокий Вход в Слой/Модуль{Color.RESET} (Детальный аудит конкретной папки)")
+    print(f"  {c('[7]', Color.CYAN)} 🌐 {Color.BOLD}Открыть HTML-Дашборд{Color.RESET} (Сгенерировать и открыть xray_report.html)")
+    print(f"  {c('[R]', Color.GREEN)} 🔄 {Color.BOLD}Пересканировать проект (Rescan){Color.RESET}")
+    print(f"  {c('[0]', Color.RED)} 🚪 {Color.BOLD}Выход{Color.RESET}")
+    print(f"{Color.GRAY}  (Введите 'M' в любой момент, чтобы показать это меню заново){Color.RESET}")
+
 def run_interactive_console(root_dir: str):
     engine = XRayEngine(root_dir)
+    show_menu = True
 
     while True:
-        print_header(engine)
-        print(f"{Color.BOLD}ГЛАВНОЕ МЕНЮ АУДИТА:{Color.RESET}")
-        print(f"  {c('[1]', Color.CYAN)} 🔌 {Color.BOLD}Матрица API{Color.RESET} (Стыковка Frontend Dio ↔ Backend FastAPI)")
-        print(f"  {c('[2]', Color.CYAN)} 🛡️  {Color.BOLD}Безопасность & PBAC{Color.RESET} (Аудит прав доступа и Multi-Tenancy)")
-        print(f"  {c('[3]', Color.CYAN)} 📱 {Color.BOLD}Чистота Flutter{Color.RESET} (StatefulWidget, вложенность, God-методы)")
-        print(f"  {c('[4]', Color.CYAN)} 🏆 {Color.BOLD}Рейтинг Тяжеловесов{Color.RESET} (Красная зона >300 строк, топ монстров)")
-        print(f"  {c('[5]', Color.CYAN)} 🧟 {Color.BOLD}Мертвый Код{Color.RESET} (Неиспользуемые модели и забытые классы)")
-        print(f"  {c('[6]', Color.CYAN)} 🔍 {Color.BOLD}Глубокий Вход в Слой/Модуль{Color.RESET} (Детальный аудит конкретной папки)")
-        print(f"  {c('[7]', Color.CYAN)} 🌐 {Color.BOLD}Открыть HTML-Дашборд{Color.RESET} (Сгенерировать и открыть xray_report.html)")
-        print(f"  {c('[R]', Color.GREEN)} 🔄 {Color.BOLD}Пересканировать проект (Rescan){Color.RESET}")
-        print(f"  {c('[0]', Color.RED)} 🚪 {Color.BOLD}Выход{Color.RESET}")
+        if show_menu:
+            print_main_menu(engine)
+            show_menu = False
 
-        choice = safe_input(f"\n{Color.BOLD}Введите номер действия [0-7, R] > {Color.RESET}").upper()
+        choice = safe_input(f"\n{Color.BOLD}X-Ray [0-7, R, M=Меню] > {Color.RESET}").upper()
 
         if not choice:
             continue
@@ -600,22 +607,31 @@ def run_interactive_console(root_dir: str):
         if choice in ("0", "Q", "QUIT", "EXIT", "ВЫХОД"):
             print(f"\n{c('👋 Завершение работы X-Ray. Чистого кода!', Color.GREEN)}\n")
             break
+        elif choice in ("M", "HELP", "?", "МЕНЮ"):
+            show_menu = True
         elif choice == "R":
             print(f"\n{c('🔄 Пересканирование всей кодовой базы...', Color.BLUE)}")
             engine.rescan()
             print(f"{c('✅ Готово!', Color.GREEN)}")
+            show_menu = True
         elif choice == "1":
             handle_api_menu(engine)
+            show_menu = True
         elif choice == "2":
             handle_security_menu(engine)
+            show_menu = True
         elif choice == "3":
             handle_flutter_menu(engine)
+            show_menu = True
         elif choice == "4":
             handle_leaderboard_menu(engine)
+            show_menu = True
         elif choice == "5":
             handle_dead_menu(engine)
+            show_menu = True
         elif choice == "6":
             handle_layer_drilldown(engine)
+            show_menu = True
         elif choice == "7":
             report_file = export_html(engine)
             print(f"\n{c('✅ HTML-дашборд обновлен:', Color.GREEN)} {report_file}")
@@ -625,10 +641,9 @@ def run_interactive_console(root_dir: str):
             except Exception as e:
                 print(f"Файл готов: {report_file}")
             safe_input(f"\n{c('Нажмите Enter для возврата в меню...', Color.GRAY)}")
+            show_menu = True
         else:
-            print(f"\n{c('⚠️ Неверный выбор (' + choice + '). Введите цифру от 0 до 7 или R.', Color.YELLOW)}")
-            import time
-            time.sleep(1)
+            print(f"{c('⚠️ Неверная команда: ' + choice + '. Введите число от 0 до 7, R (Rescan) или M (показать меню).', Color.YELLOW)}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SUBMENUS
