@@ -5,6 +5,7 @@ import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/ingredient/ingredient_quick_setup_card.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class IngredientCategorySidebar extends StatelessWidget {
@@ -75,22 +76,40 @@ class IngredientCategorySidebar extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          showAddCategoryDialog(context, type: 'ingredient');
-                        },
-                        icon: const Icon(PhosphorIconsRegular.folderPlus),
-                        label: const Text('Создать категорию'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              showAddCategoryDialog(context, type: 'ingredient');
+                            },
+                            icon: const Icon(PhosphorIconsRegular.folderPlus),
+                            label: const Text('Создать категорию'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: TextButton.icon(
+                            onPressed: () => IngredientQuickSetupCard.showAsDialog(context),
+                            icon: const Icon(PhosphorIconsRegular.cards, size: 16),
+                            label: const Text('Шаблоны полок'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

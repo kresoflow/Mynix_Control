@@ -14,6 +14,19 @@ class IngredientQuickSetupCard extends StatelessWidget {
     required this.onSetupComplete,
   });
 
+  static Future<void> showAsDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(24),
+        child: IngredientQuickSetupCard(
+          onSetupComplete: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
   static const _fastFoodPreset = [
     {'name': 'Мясо и полуфабрикаты', 'icon': 'meat'},
     {'name': 'Хлеб и выпечка', 'icon': 'bread'},

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/ingredient/ingredient_quick_setup_card.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_item_row.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
@@ -57,7 +62,81 @@ class IngredientTableView extends StatelessWidget {
     final currency = context.watch<SettingsBloc>().state.currency;
 
     if (filteredIngredients.isEmpty) {
-      return const Center(child: Text('В этой категории пусто'));
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 480),
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                PhosphorIconsRegular.cookingPot,
+                size: 56,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'В этой категории пока нет сырья',
+                style: AppTextStyles.h3,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Добавьте ингредиенты для техкарт и склада или примените готовые шаблоны полок:',
+                style: AppTextStyles.caption.copyWith(
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      showAddIngredientDialog(context, initialCategoryId: selectedCategoryId);
+                    },
+                    icon: const Icon(PhosphorIconsRegular.plus, size: 16),
+                    label: const Text('Добавить'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.brandPrimary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const BulkAddModal(initialTabIndex: 2),
+                      );
+                    },
+                    icon: const Icon(PhosphorIconsRegular.listPlus, size: 16),
+                    label: const Text('Массово'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () => IngredientQuickSetupCard.showAsDialog(context),
+                    icon: const Icon(PhosphorIconsRegular.cards, size: 16),
+                    label: const Text('Шаблоны полок'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     return Padding(
