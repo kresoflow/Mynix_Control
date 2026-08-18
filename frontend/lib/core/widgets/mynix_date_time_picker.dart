@@ -40,6 +40,7 @@ class _MynixDateTimePickerDialogState extends State<_MynixDateTimePickerDialog> 
   late DateTime _displayedMonth;
   late DateTime _selectedDate;
   late TimeOfDay _selectedTime;
+  bool _isSelectingYearMonth = false;
 
   static const List<String> _months = [
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -81,6 +82,7 @@ class _MynixDateTimePickerDialogState extends State<_MynixDateTimePickerDialog> 
     setState(() {
       _selectedDate = DateTime(target.year, target.month, target.day);
       _displayedMonth = DateTime(target.year, target.month);
+      _isSelectingYearMonth = false;
     });
   }
 
@@ -128,7 +130,7 @@ class _MynixDateTimePickerDialogState extends State<_MynixDateTimePickerDialog> 
           ),
           const SizedBox(height: 14),
 
-          // ── Переключатель месяца и года ───────────────────────────
+          // ── Переключатель месяца и года (с кнопкой быстрого выбора) ─
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -143,11 +145,29 @@ class _MynixDateTimePickerDialogState extends State<_MynixDateTimePickerDialog> 
                   onPressed: _previousMonth,
                   splashRadius: 20,
                 ),
-                Text(
-                  '${_months[_displayedMonth.month - 1]} ${_displayedMonth.year}',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                InkWell(
+                  borderRadius: BorderRadius.circular(6),
+                  onTap: () => setState(() => _isSelectingYearMonth = !_isSelectingYearMonth),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${_months[_displayedMonth.month - 1]} ${_displayedMonth.year}',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          _isSelectingYearMonth ? PhosphorIconsRegular.caretUp : PhosphorIconsRegular.caretDown,
+                          size: 14,
+                          color: AppColors.brandPrimary,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 IconButton(
@@ -160,88 +180,135 @@ class _MynixDateTimePickerDialogState extends State<_MynixDateTimePickerDialog> 
           ),
           const SizedBox(height: 10),
 
-          // ── Заголовки дней недели ─────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _weekdays.map((w) {
-              final isWeekend = w == 'Сб' || w == 'Вс';
-              return SizedBox(
-                width: 40,
-                child: Center(
-                  child: Text(
-                    w,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isWeekend ? AppColors.danger.withValues(alpha: 0.8) : Colors.grey,
-                    ),
-                  ),
+          if (_isSelectingYearMonth) ...[
+            // ── Сетка выбора месяцев ─────────────────────────────────
+            SizedBox(
+              height: 220,
+              child: GridView.builder(
+                shrinkWrap: true,
+                itemCount: 12,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 6,
+                  crossAxisSpacing: 6,
+                  childAspectRatio: 2.2,
                 ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 6),
-
-          // ── Сетка дней месяца ─────────────────────────────────────
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 42, // 6 weeks
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
-              childAspectRatio: 1.1,
-            ),
-            itemBuilder: (context, index) {
-              final dayNumber = index - firstDayOfWeek + 1;
-              if (dayNumber < 1 || dayNumber > daysInMonth) {
-                return const SizedBox();
-              }
-
-              final cellDate = DateTime(_displayedMonth.year, _displayedMonth.month, dayNumber);
-              final isSelected = cellDate.year == _selectedDate.year &&
-                  cellDate.month == _selectedDate.month &&
-                  cellDate.day == _selectedDate.day;
-              final isToday = cellDate.year == now.year &&
-                  cellDate.month == now.month &&
-                  cellDate.day == now.day;
-
-              return InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () {
-                  setState(() {
-                    _selectedDate = cellDate;
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.brandPrimary
-                        : (isToday
-                            ? (isDark ? Colors.white10 : Colors.black12)
-                            : Colors.transparent),
+                itemBuilder: (context, index) {
+                  final isCurrentMonth = _displayedMonth.month == index + 1;
+                  return InkWell(
                     borderRadius: BorderRadius.circular(8),
-                    border: isToday && !isSelected
-                        ? Border.all(color: AppColors.brandPrimary, width: 1.2)
-                        : null,
-                  ),
+                    onTap: () {
+                      setState(() {
+                        _displayedMonth = DateTime(_displayedMonth.year, index + 1);
+                        _isSelectingYearMonth = false;
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isCurrentMonth
+                            ? AppColors.brandPrimary
+                            : (isDark ? Colors.white10 : Colors.black12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _months[index],
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isCurrentMonth ? FontWeight.bold : FontWeight.normal,
+                            color: isCurrentMonth ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ] else ...[
+            // ── Заголовки дней недели ─────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: _weekdays.map((w) {
+                final isWeekend = w == 'Сб' || w == 'Вс';
+                return SizedBox(
+                  width: 40,
                   child: Center(
                     child: Text(
-                      '$dayNumber',
+                      w,
                       style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isSelected || isToday ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected
-                            ? Colors.white
-                            : (isDark ? AppColors.darkText : AppColors.lightText),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isWeekend ? AppColors.danger.withValues(alpha: 0.8) : Colors.grey,
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 6),
+
+            // ── Сетка дней месяца ─────────────────────────────────────
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 42, // 6 weeks
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+                childAspectRatio: 1.1,
+              ),
+              itemBuilder: (context, index) {
+                final dayNumber = index - firstDayOfWeek + 1;
+                if (dayNumber < 1 || dayNumber > daysInMonth) {
+                  return const SizedBox();
+                }
+
+                final cellDate = DateTime(_displayedMonth.year, _displayedMonth.month, dayNumber);
+                final isSelected = cellDate.year == _selectedDate.year &&
+                    cellDate.month == _selectedDate.month &&
+                    cellDate.day == _selectedDate.day;
+                final isToday = cellDate.year == now.year &&
+                    cellDate.month == now.month &&
+                    cellDate.day == now.day;
+
+                return InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () {
+                    setState(() {
+                      _selectedDate = cellDate;
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.brandPrimary
+                          : (isToday
+                              ? (isDark ? Colors.white10 : Colors.black12)
+                              : Colors.transparent),
+                      borderRadius: BorderRadius.circular(8),
+                      border: isToday && !isSelected
+                          ? Border.all(color: AppColors.brandPrimary, width: 1.2)
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$dayNumber',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected || isToday ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected
+                              ? Colors.white
+                              : (isDark ? AppColors.darkText : AppColors.lightText),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
           const SizedBox(height: 14),
           const Divider(height: 1),
           const SizedBox(height: 14),

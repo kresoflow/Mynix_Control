@@ -113,7 +113,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
 
               // 3. Дата и время документа (Mynix Smart DateTime Picker)
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: SizedBox(
                   height: 46,
                   child: InkWell(
@@ -133,7 +133,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
                         dateStr,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: isDark ? AppColors.darkText : AppColors.lightText,
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
                         overflow: TextOverflow.ellipsis,

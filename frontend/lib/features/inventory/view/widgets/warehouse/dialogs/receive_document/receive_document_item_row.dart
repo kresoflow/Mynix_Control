@@ -122,11 +122,22 @@ class ReceiveDocumentItemRow extends StatelessWidget {
 
           // 3. Unit Selector
           SizedBox(
-            width: 65,
+            width: 70,
             height: 40,
             child: DropdownButtonFormField<String>(
               initialValue: item.selectedUnit,
-              decoration: buildBulkInputDecoration(context, ''),
+              isExpanded: true,
+              icon: const Icon(PhosphorIconsRegular.caretDown, size: 14),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                isDense: true,
+                filled: true,
+                fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
               style: AppTextStyles.bodyMedium.copyWith(
                 color: isDark ? AppColors.darkText : AppColors.lightText,
                 fontSize: 13,

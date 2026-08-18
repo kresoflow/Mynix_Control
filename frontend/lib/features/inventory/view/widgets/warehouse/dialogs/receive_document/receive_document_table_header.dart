@@ -69,7 +69,7 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
 
           // 3. Ед. изм.
           SizedBox(
-            width: 65,
+            width: 70,
             child: Text(
               'Ед. изм.',
               style: AppTextStyles.caption.copyWith(
