@@ -36,11 +36,6 @@ class Ingredient {
     if (barcode != null && barcode!.isNotEmpty) {
       return barcode!;
     }
-    if (categoryId != null) {
-      final prefix = (categoryId! * 10).toString();
-      final seq = (id % 100).toString().padLeft(2, '0');
-      return '$prefix-$seq';
-    }
     return '#$id';
   }
 

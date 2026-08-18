@@ -21,6 +21,25 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
   int? selectedCategoryId = itemToEdit?.categoryId ?? initialCategoryId;
   final currency = context.read<SettingsBloc>().state.currency;
 
+  String generateNextSku(int? catId) {
+    if (catId == null) return '';
+    final catState = context.read<CategoryBloc>().state;
+    final ingState = context.read<IngredientBloc>().state;
+    if (catState is! CategoryLoaded || ingState is! IngredientLoaded) return '';
+
+    final ingredientCategories = catState.categories.where((c) => c.categoryType == 'ingredient').toList();
+    final catIndex = ingredientCategories.indexWhere((c) => c.id == catId);
+    final prefix = catIndex >= 0 ? (catIndex + 1) * 10 : 10;
+
+    final itemsInCat = ingState.ingredients.where((i) => i.categoryId == catId && (itemToEdit == null || i.id != itemToEdit.id)).length;
+    final seq = (itemsInCat + 1).toString().padLeft(2, '0');
+    return '$prefix-$seq';
+  }
+
+  if (!isEditing && barcodeController.text.isEmpty && selectedCategoryId != null) {
+    barcodeController.text = generateNextSku(selectedCategoryId);
+  }
+
   showDialog(
     context: context,
     builder: (ctx) {
@@ -107,6 +126,9 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                             onChanged: (val) {
                               setState(() {
                                 selectedCategoryId = val;
+                                if (!isEditing || barcodeController.text.isEmpty || barcodeController.text.contains('-')) {
+                                  barcodeController.text = generateNextSku(val);
+                                }
                               });
                             },
                           );
@@ -147,14 +169,23 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                   TextFormField(
                     controller: barcodeController,
                     decoration: InputDecoration(
-                      labelText: 'Штрихкод (опционально)',
+                      labelText: 'Артикул / SKU (или штрихкод)',
                       filled: true,
                       fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
                       border: OutlineInputBorder(
                         borderRadius: AppRadii.inputRadius,
                         borderSide: BorderSide.none,
                       ),
-                      prefixIcon: Icon(PhosphorIconsRegular.barcode, color: AppColors.brandPrimary),
+                      prefixIcon: Icon(PhosphorIconsRegular.tag, color: AppColors.brandPrimary),
+                      suffixIcon: IconButton(
+                        icon: Icon(PhosphorIconsRegular.sparkle, color: AppColors.brandPrimary),
+                        tooltip: 'Автогенерация серийного SKU',
+                        onPressed: () {
+                          setState(() {
+                            barcodeController.text = generateNextSku(selectedCategoryId);
+                          });
+                        },
+                      ),
                     ),
                   ),
                   if (!isEditing) ...[
