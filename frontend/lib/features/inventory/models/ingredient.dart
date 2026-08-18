@@ -29,6 +29,21 @@ class Ingredient {
     this.barcode,
   });
 
+  String get displayCode {
+    if (attributes?['sku'] != null && attributes!['sku'].toString().isNotEmpty) {
+      return attributes!['sku'].toString();
+    }
+    if (barcode != null && barcode!.isNotEmpty) {
+      return barcode!;
+    }
+    if (categoryId != null) {
+      final prefix = (categoryId! * 10).toString();
+      final seq = (id % 100).toString().padLeft(2, '0');
+      return '$prefix-$seq';
+    }
+    return '#$id';
+  }
+
   factory Ingredient.fromJson(Map<String, dynamic> json) {
     return Ingredient(
       id: json['id'],

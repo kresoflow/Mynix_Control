@@ -88,7 +88,7 @@ class BulkAddTabsBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          if (onLoadPreset != null && (tabIndex == 0 || tabIndex == 2 || tabIndex == 3)) ...[
+          if (onLoadPreset != null) ...[
             PopupMenuButton<String>(
               tooltip: 'Загрузить готовый шаблон данных',
               onSelected: onLoadPreset,

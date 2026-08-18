@@ -202,26 +202,26 @@ class _BulkAddModalState extends State<BulkAddModal> {
       } else if (_tabIndex == 2) {
         final List<Map<String, dynamic>> preset = presetType == 'fastfood'
             ? [
-                {'name': 'Говяжья котлета (п/ф 150г)', 'unit': 'pcs', 'cost': 85.0, 'alert': 20.0, 'category': 'Мясо и полуфабрикаты'},
-                {'name': 'Булочка Бриошь с кунжутом', 'unit': 'pcs', 'cost': 25.0, 'alert': 30.0, 'category': 'Хлеб и выпечка'},
-                {'name': 'Сыр Чеддер (слайсы)', 'unit': 'kg', 'cost': 650.0, 'alert': 2.0, 'category': 'Молочка и сыры'},
-                {'name': 'Соус «Бургер Smoke»', 'unit': 'kg', 'cost': 220.0, 'alert': 3.0, 'category': 'Соусы и приправы'},
-                {'name': 'Огурцы маринованные (слайсы)', 'unit': 'kg', 'cost': 180.0, 'alert': 1.5, 'category': 'Овощи и зелень'},
-                {'name': 'Помидоры свежие', 'unit': 'kg', 'cost': 120.0, 'alert': 5.0, 'category': 'Овощи и зелень'},
-                {'name': 'Картофель фри (заморозка 9мм)', 'unit': 'kg', 'cost': 140.0, 'alert': 15.0, 'category': 'Заморозка'},
-                {'name': 'Масло фритюрное', 'unit': 'l', 'cost': 130.0, 'alert': 10.0, 'category': 'Масла и жиры'},
-                {'name': 'Соль пищевая поваренная', 'unit': 'kg', 'cost': 30.0, 'alert': 1.0, 'category': 'Соусы и приправы'},
-                {'name': 'Упаковка для бургера крафт', 'unit': 'pcs', 'cost': 4.5, 'alert': 100.0, 'category': 'Упаковка и расходники'},
+                {'name': 'Говяжья котлета (п/ф 150г)', 'unit': 'pcs', 'cost': 85.0, 'alert': 20.0, 'category': 'Мясо и полуфабрикаты', 'sku': '10-01'},
+                {'name': 'Булочка Бриошь с кунжутом', 'unit': 'pcs', 'cost': 25.0, 'alert': 30.0, 'category': 'Хлеб и выпечка', 'sku': '20-01'},
+                {'name': 'Сыр Чеддер (слайсы)', 'unit': 'kg', 'cost': 650.0, 'alert': 2.0, 'category': 'Молочка и сыры', 'sku': '30-01'},
+                {'name': 'Соус «Бургер Smoke»', 'unit': 'kg', 'cost': 220.0, 'alert': 3.0, 'category': 'Соусы и приправы', 'sku': '40-01'},
+                {'name': 'Огурцы маринованные (слайсы)', 'unit': 'kg', 'cost': 180.0, 'alert': 1.5, 'category': 'Овощи и зелень', 'sku': '50-01'},
+                {'name': 'Помидоры свежие', 'unit': 'kg', 'cost': 120.0, 'alert': 5.0, 'category': 'Овощи и зелень', 'sku': '50-02'},
+                {'name': 'Картофель фри (заморозка 9мм)', 'unit': 'kg', 'cost': 140.0, 'alert': 15.0, 'category': 'Заморозка', 'sku': '60-01'},
+                {'name': 'Масло фритюрное', 'unit': 'l', 'cost': 130.0, 'alert': 10.0, 'category': 'Масла и жиры', 'sku': '70-01'},
+                {'name': 'Соль пищевая поваренная', 'unit': 'kg', 'cost': 30.0, 'alert': 1.0, 'category': 'Соусы и приправы', 'sku': '40-02'},
+                {'name': 'Упаковка для бургера крафт', 'unit': 'pcs', 'cost': 4.5, 'alert': 100.0, 'category': 'Упаковка и расходники', 'sku': '80-01'},
               ]
             : [
-                {'name': 'Стейк Рибай п/ф 300г', 'unit': 'pcs', 'cost': 550.0, 'alert': 10.0, 'category': 'Мясо и полуфабрикаты'},
-                {'name': 'Лосось свежий филе', 'unit': 'kg', 'cost': 1200.0, 'alert': 5.0, 'category': 'Рыба и морепродукты'},
-                {'name': 'Сливки 33%', 'unit': 'l', 'cost': 380.0, 'alert': 8.0, 'category': 'Молочка и сыры'},
-                {'name': 'Сыр Пармезан', 'unit': 'kg', 'cost': 1400.0, 'alert': 3.0, 'category': 'Молочка и сыры'},
-                {'name': 'Паста Феттуччине', 'unit': 'kg', 'cost': 220.0, 'alert': 10.0, 'category': 'Крупы и макароны'},
-                {'name': 'Оливковое масло Extra Virgin', 'unit': 'l', 'cost': 750.0, 'alert': 5.0, 'category': 'Масла и жиры'},
-                {'name': 'Томаты Черри', 'unit': 'kg', 'cost': 250.0, 'alert': 4.0, 'category': 'Овощи и зелень'},
-                {'name': 'Зелень микс (руккола, шпинат)', 'unit': 'kg', 'cost': 450.0, 'alert': 3.0, 'category': 'Овощи и зелень'},
+                {'name': 'Стейк Рибай п/ф 300г', 'unit': 'pcs', 'cost': 550.0, 'alert': 10.0, 'category': 'Мясо и полуфабрикаты', 'sku': '10-01'},
+                {'name': 'Лосось свежий филе', 'unit': 'kg', 'cost': 1200.0, 'alert': 5.0, 'category': 'Рыба и морепродукты', 'sku': '90-01'},
+                {'name': 'Сливки 33%', 'unit': 'l', 'cost': 380.0, 'alert': 8.0, 'category': 'Молочка и сыры', 'sku': '30-01'},
+                {'name': 'Сыр Пармезан', 'unit': 'kg', 'cost': 1400.0, 'alert': 3.0, 'category': 'Молочка и сыры', 'sku': '30-02'},
+                {'name': 'Паста Феттуччине', 'unit': 'kg', 'cost': 220.0, 'alert': 10.0, 'category': 'Крупы и макароны', 'sku': '11-01'},
+                {'name': 'Оливковое масло Extra Virgin', 'unit': 'l', 'cost': 750.0, 'alert': 5.0, 'category': 'Масла и жиры', 'sku': '70-01'},
+                {'name': 'Томаты Черри', 'unit': 'kg', 'cost': 250.0, 'alert': 4.0, 'category': 'Овощи и зелень', 'sku': '50-01'},
+                {'name': 'Зелень микс (руккола, шпинат)', 'unit': 'kg', 'cost': 450.0, 'alert': 3.0, 'category': 'Овощи и зелень', 'sku': '50-02'},
               ];
 
         _ingredientRows.clear();
@@ -230,6 +230,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
           final row = IngredientRowData(
             categoryId: catName != null ? catMap[catName.toLowerCase().trim()] : null,
             categoryName: catName,
+            sku: item['sku'] as String?,
           );
           row.nameController.text = item['name'] as String;
           row.selectedUnit = item['unit'] as String;

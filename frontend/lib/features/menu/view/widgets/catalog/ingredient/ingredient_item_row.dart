@@ -110,7 +110,7 @@ class IngredientItemRow extends StatelessWidget {
                                 ),
                               ),
                               child: Text(
-                                '#${item.id}',
+                                item.displayCode,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontFamily: 'monospace',

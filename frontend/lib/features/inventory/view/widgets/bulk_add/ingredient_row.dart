@@ -10,6 +10,7 @@ class IngredientRowData {
   String selectedUnit;
   int? categoryId;
   String? categoryName;
+  String? sku;
 
   IngredientRowData({
     String name = '',
@@ -19,6 +20,7 @@ class IngredientRowData {
     String selectedUnit = 'g',
     this.categoryId,
     this.categoryName,
+    this.sku,
   }) : nameController = TextEditingController(text: name),
        stockController = TextEditingController(text: stock),
        alertController = TextEditingController(text: alert),

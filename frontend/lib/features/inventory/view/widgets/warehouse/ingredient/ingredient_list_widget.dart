@@ -184,7 +184,7 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '#${item.id}',
+                                item.displayCode,
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontFamily: 'monospace',

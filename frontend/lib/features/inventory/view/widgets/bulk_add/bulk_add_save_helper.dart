@@ -112,6 +112,7 @@ void performBulkSave({
         'initial_stock': stock,
         'category_id': row.categoryId ?? targetCategoryId,
         'sort_order': sortIndex++,
+        'barcode': row.sku,
       });
     }
     if (items.isNotEmpty) {
