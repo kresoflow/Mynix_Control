@@ -57,22 +57,28 @@ class ReceiveDocumentSupplierSelect extends StatelessWidget {
               items: [
                 const DropdownMenuItem<int?>(
                   value: null,
-                  child: Text('Без поставщика'),
+                  child: Text('Без поставщика', overflow: TextOverflow.ellipsis),
                 ),
                 const DropdownMenuItem<int?>(
                   value: -1,
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(PhosphorIconsRegular.mapPin, size: 14, color: AppColors.warning),
                       SizedBox(width: 6),
-                      Text('Разовая закупка (базар/рынок)'),
+                      Flexible(
+                        child: Text(
+                          'Разовая закупка (базар/рынок)',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 ...suppliers.map((s) {
                   return DropdownMenuItem(
                     value: s.id,
-                    child: Text(s.name),
+                    child: Text(s.name, overflow: TextOverflow.ellipsis),
                   );
                 }),
               ],
