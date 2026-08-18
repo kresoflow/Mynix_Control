@@ -19,6 +19,8 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
   final int? selectedChildId;
   final ValueChanged<int?> onParentChanged;
   final ValueChanged<int?> onChildChanged;
+  final bool isAdHocPurchase;
+  final ValueChanged<bool>? onAdHocChanged;
 
   const ReceiveDocumentMetaRow({
     super.key,
@@ -34,6 +36,8 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
     required this.selectedChildId,
     required this.onParentChanged,
     required this.onChildChanged,
+    this.isAdHocPurchase = false,
+    this.onAdHocChanged,
   });
 
   InputDecoration _buildInputDecoration(BuildContext context, String label, IconData icon, bool isDark) {
@@ -75,6 +79,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
                   suppliers: suppliers,
                   selectedSupplierId: selectedSupplierId,
                   onSupplierChanged: onSupplierChanged,
+                  onAdHocChanged: onAdHocChanged,
                   onAddSupplier: onAddSupplier,
                   isDark: isDark,
                 ),
@@ -107,6 +112,16 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
               ),
             ],
           ),
+          if (isAdHocPurchase) ...[
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              decoration: _buildInputDecoration(context, 'Откуда закупка? (базар, продавец, место)', PhosphorIconsRegular.mapPin, isDark),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           ReceiveDocumentSmartHeader(
             tabIndex: tabIndex,

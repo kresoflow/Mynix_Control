@@ -13,6 +13,7 @@ class IngredientHeaderBar extends StatelessWidget {
   final VoidCallback onCancelManageMode;
   final VoidCallback onSelectAll;
   final VoidCallback onDeleteSelected;
+  final ValueChanged<String>? onSearchChanged;
 
   const IngredientHeaderBar({
     super.key,
@@ -23,6 +24,7 @@ class IngredientHeaderBar extends StatelessWidget {
     required this.onCancelManageMode,
     required this.onSelectAll,
     required this.onDeleteSelected,
+    this.onSearchChanged,
   });
 
   @override
@@ -38,6 +40,21 @@ class IngredientHeaderBar extends StatelessWidget {
         children: [
           Text('Управление сырьем', style: AppTextStyles.h3),
           const SizedBox(width: 16),
+          if (onSearchChanged != null)
+            SizedBox(
+              width: 250,
+              height: 38,
+              child: TextField(
+                onChanged: onSearchChanged,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Поиск по названию...',
+                  prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ),
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,

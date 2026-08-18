@@ -58,7 +58,7 @@ class MenuItemCreate(SQLModel):
     name: str
     short_name: Optional[str] = None
     tags: Optional[list] = None
-    category_id: int
+    category_id: Optional[int] = None
     retail_product_id: Optional[int] = None
     price: float
     description: Optional[str] = None

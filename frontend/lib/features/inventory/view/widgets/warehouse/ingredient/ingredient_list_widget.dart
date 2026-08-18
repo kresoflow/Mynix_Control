@@ -174,7 +174,28 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                               final cat = widget.catState is CategoryLoaded ? (widget.catState as CategoryLoaded).categories.where((c) => c.id == item.categoryId).firstOrNull : null;
                               return IconHelper.buildIcon(cat?.icon, color: isLowStock ? AppColors.danger : Colors.grey);
                             }(),
-                        title: Text(item.name, style: const TextStyle(fontSize: 16)),
+                        title: Row(
+                          children: [
+                            Flexible(child: Text(item.name, style: const TextStyle(fontSize: 16))),
+                            if (item.categoryId == null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                margin: const EdgeInsets.only(left: 8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.warning.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'Без категории',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.warning,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                         subtitle: Text('Остаток: ${item.currentStock.toInt()} ${item.unit} | Алерт: ${item.minStockAlert.toInt()} ${item.unit}'),
                         trailing: widget.isManageMode ? null : Row(
                           mainAxisSize: MainAxisSize.min,

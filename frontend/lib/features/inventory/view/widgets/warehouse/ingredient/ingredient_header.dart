@@ -17,6 +17,7 @@ class IngredientHeader extends StatelessWidget {
   final ValueChanged<bool> onManageModeChanged;
   final ValueChanged<Set<int>> onSelectedIngredientsChanged;
   final List<int> Function(List<dynamic>, int) getDescendantCategoryIds;
+  final ValueChanged<String>? onSearchChanged;
 
   const IngredientHeader({
     super.key,
@@ -26,6 +27,7 @@ class IngredientHeader extends StatelessWidget {
     required this.onManageModeChanged,
     required this.onSelectedIngredientsChanged,
     required this.getDescendantCategoryIds,
+    this.onSearchChanged,
   });
 
   @override
@@ -40,6 +42,22 @@ class IngredientHeader extends StatelessWidget {
       child: Row(
         children: [
           Text('Управление сырьем', style: AppTextStyles.h3),
+          const SizedBox(width: 16),
+          if (onSearchChanged != null)
+            SizedBox(
+              width: 250,
+              height: 38,
+              child: TextField(
+                onChanged: onSearchChanged,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Поиск по названию...',
+                  prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ),
           const Spacer(),
           if (isManageMode) ...[
             TextButton.icon(

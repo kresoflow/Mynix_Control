@@ -51,12 +51,6 @@ void performBulkSave({
       context.read<CategoryBloc>().add(CreateCategoriesBulk(categories: bulkData));
     }
   } else if (tabIndex == 0) {
-    if (targetCategoryId == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Выберите категорию!')));
-      return;
-    }
     int sortIndex = 0;
     for (var row in dishRows) {
       final name = row.nameController.text.trim();
@@ -93,17 +87,13 @@ void performBulkSave({
         CreateMenuItem(
           name: name,
           price: basePrice,
-          category: targetCategoryId.toString(),
+          category: targetCategoryId?.toString() ?? '',
           sortOrder: sortIndex++,
           attributes: attributes,
         ),
       );
     }
   } else if (tabIndex == 2) {
-    if (targetCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Выберите категорию!')));
-      return;
-    }
     int sortIndex = 0;
     for (var row in ingredientRows) {
       final name = row.nameController.text.trim();
@@ -126,14 +116,6 @@ void performBulkSave({
       );
     }
   } else {
-    if (targetCategoryId == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Выберите категорию!')));
-      return;
-    }
-
-    final int sortIndex = 0;
     for (var row in retailRows) {
       final baseName = row.nameController.text.trim();
       if (baseName.isEmpty) continue;
@@ -152,10 +134,15 @@ void performBulkSave({
       String uLabel = '';
       if (row.selectedUnit == 'l') {
         uLabel = 'л';
-      } else if (row.selectedUnit == 'ml') uLabel = 'мл';
-      else if (row.selectedUnit == 'kg') uLabel = 'кг';
-      else if (row.selectedUnit == 'g') uLabel = 'г';
-      else if (row.selectedUnit == 'pcs') uLabel = 'шт';
+      } else if (row.selectedUnit == 'ml') {
+        uLabel = 'мл';
+      } else if (row.selectedUnit == 'kg') {
+        uLabel = 'кг';
+      } else if (row.selectedUnit == 'g') {
+        uLabel = 'г';
+      } else if (row.selectedUnit == 'pcs') {
+        uLabel = 'шт';
+      }
 
       final bool hasOptions = !(flavors.length == 1 && flavors[0] == '' && volumes.length == 1 && volumes[0] == '');
 
@@ -205,7 +192,6 @@ void performBulkSave({
           final purchase = getValue(purchases, v);
           final sell = getValue(sells, v);
           final stock = getValue(stocks, v);
-          final alert = getValue(alerts, v);
           final barcode = v < barcodes.length ? barcodes[v] : (barcodes.isNotEmpty ? barcodes.last : null);
 
           variations.add({

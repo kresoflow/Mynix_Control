@@ -7,6 +7,8 @@ import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ing
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_header_bar.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/ingredient/ingredient_quick_setup_card.dart';
 
 class IngredientTab extends StatefulWidget {
   const IngredientTab({super.key});
@@ -19,6 +21,7 @@ class _IngredientTabState extends State<IngredientTab> {
   int? _selectedCategoryId;
   bool _isManageMode = false;
   final Set<int> _selectedIngredients = {};
+  String _searchQuery = '';
 
   void _selectAll(IngredientLoaded state) {
     final raw = state.ingredients.where((i) => !i.isRetail).toList();
@@ -79,6 +82,7 @@ class _IngredientTabState extends State<IngredientTab> {
               if (state is IngredientLoaded) _selectAll(state);
             },
             onDeleteSelected: _confirmDeleteSelected,
+            onSearchChanged: (q) => setState(() => _searchQuery = q),
           ),
           Expanded(
             child: BlocListener<IngredientBloc, IngredientState>(
@@ -91,39 +95,52 @@ class _IngredientTabState extends State<IngredientTab> {
                   );
                 }
               },
-              child: BlocBuilder<IngredientBloc, IngredientState>(
-                builder: (context, state) {
-                  if (state is IngredientLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is IngredientLoaded) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        IngredientCategorySidebar(
-                          selectedCategoryId: _selectedCategoryId,
-                          onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
-                        ),
-                        Expanded(
-                          child: IngredientTableView(
-                            ingredients: state.ingredients,
-                            selectedCategoryId: _selectedCategoryId,
-                            isManageMode: _isManageMode,
-                            selectedIngredients: _selectedIngredients,
-                            onToggleSelect: (id, sel) {
-                              setState(() {
-                                if (sel) {
-                                  _selectedIngredients.add(id);
-                                } else {
-                                  _selectedIngredients.remove(id);
-                                }
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  return const Center(child: Text('Ошибка загрузки склада'));
+              child: BlocBuilder<CategoryBloc, CategoryState>(
+                builder: (context, categoryState) {
+                  return BlocBuilder<IngredientBloc, IngredientState>(
+                    builder: (context, state) {
+                      if (state is IngredientLoading || categoryState is CategoryLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is IngredientLoaded && categoryState is CategoryLoaded) {
+                        final hasIngredientCategories = categoryState.categories
+                            .any((c) => c.categoryType == 'ingredient');
+
+                        if (!hasIngredientCategories) {
+                          return IngredientQuickSetupCard(
+                            onSetupComplete: () {},
+                          );
+                        }
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            IngredientCategorySidebar(
+                              selectedCategoryId: _selectedCategoryId,
+                              onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
+                            ),
+                            Expanded(
+                              child: IngredientTableView(
+                                ingredients: state.ingredients.where((i) => _searchQuery.isEmpty || i.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList(),
+                                selectedCategoryId: _selectedCategoryId,
+                                isManageMode: _isManageMode,
+                                selectedIngredients: _selectedIngredients,
+                                onToggleSelect: (id, sel) {
+                                  setState(() {
+                                    if (sel) {
+                                      _selectedIngredients.add(id);
+                                    } else {
+                                      _selectedIngredients.remove(id);
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return const Center(child: Text('Ошибка загрузки склада'));
+                    },
+                  );
                 },
               ),
             ),

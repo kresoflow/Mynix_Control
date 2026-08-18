@@ -30,6 +30,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   final _invoiceNumberController = TextEditingController();
   final _reasonController = TextEditingController();
   int? _selectedSupplierId;
+  bool _isAdHocPurchase = false;
 
   int _tabIndex = 1; // 1 = Товары витрины, 2 = Сырье
   int? _selectedParentId;
@@ -144,10 +145,12 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
 
     setState(() => _isSaving = true);
     try {
+      final supplierId = _selectedSupplierId == -1 ? null : _selectedSupplierId;
+
       await ReceiveDocumentProcessor.saveDocument(
         context: context,
         items: _items,
-        selectedSupplierId: _selectedSupplierId,
+        selectedSupplierId: supplierId,
         invoiceNumber: _invoiceNumberController.text,
         reason: _reasonController.text,
         tabIndex: _tabIndex,
@@ -230,6 +233,8 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                           selectedChildId: _selectedChildId,
                           onParentChanged: (val) => setState(() => _selectedParentId = val),
                           onChildChanged: (val) => setState(() => _selectedChildId = val),
+                          isAdHocPurchase: _isAdHocPurchase,
+                          onAdHocChanged: (val) => setState(() => _isAdHocPurchase = val),
                         );
                       },
                     ),

@@ -8,6 +8,7 @@ class ReceiveDocumentSupplierSelect extends StatelessWidget {
   final List<Supplier> suppliers;
   final int? selectedSupplierId;
   final ValueChanged<int?> onSupplierChanged;
+  final ValueChanged<bool>? onAdHocChanged;
   final VoidCallback onAddSupplier;
   final bool isDark;
 
@@ -16,6 +17,7 @@ class ReceiveDocumentSupplierSelect extends StatelessWidget {
     required this.suppliers,
     required this.selectedSupplierId,
     required this.onSupplierChanged,
+    this.onAdHocChanged,
     required this.onAddSupplier,
     required this.isDark,
   });
@@ -57,6 +59,16 @@ class ReceiveDocumentSupplierSelect extends StatelessWidget {
                   value: null,
                   child: Text('Без поставщика'),
                 ),
+                const DropdownMenuItem<int?>(
+                  value: -1,
+                  child: Row(
+                    children: [
+                      Icon(PhosphorIconsRegular.mapPin, size: 14, color: AppColors.warning),
+                      SizedBox(width: 6),
+                      Text('Разовая закупка (базар/рынок)'),
+                    ],
+                  ),
+                ),
                 ...suppliers.map((s) {
                   return DropdownMenuItem(
                     value: s.id,
@@ -64,7 +76,10 @@ class ReceiveDocumentSupplierSelect extends StatelessWidget {
                   );
                 }),
               ],
-              onChanged: onSupplierChanged,
+              onChanged: (val) {
+                onSupplierChanged(val);
+                onAdHocChanged?.call(val == -1);
+              },
             ),
           ),
         ),

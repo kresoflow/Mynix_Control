@@ -66,7 +66,7 @@ class UpdateRetailProduct extends MenuEvent {
 
 class CreateRetailProduct extends MenuEvent {
   final String name;
-  final int categoryId;
+  final int? categoryId;
   final String unit;
   final double purchasePrice;
   final double sellingPrice;
@@ -79,7 +79,7 @@ class CreateRetailProduct extends MenuEvent {
 
   const CreateRetailProduct({
     required this.name,
-    required this.categoryId,
+    this.categoryId,
     required this.unit,
     required this.purchasePrice,
     required this.sellingPrice,
@@ -97,13 +97,13 @@ class CreateRetailProduct extends MenuEvent {
 
 class CreateRetailProductGroup extends MenuEvent {
   final String name;
-  final int categoryId;
+  final int? categoryId;
   final String? flavor;
   final List<Map<String, dynamic>> variations;
 
   const CreateRetailProductGroup({
     required this.name,
-    required this.categoryId,
+    this.categoryId,
     this.flavor,
     required this.variations,
   });
@@ -221,7 +221,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
           
       final parentId = await menuRepository.createMenuItem(
         name: event.name,
-        category: event.categoryId.toString(),
+        category: event.categoryId?.toString() ?? '',
         price: basePrice,
         type: 'retail',
         attributes: {

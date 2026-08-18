@@ -61,10 +61,11 @@ class MenuRepository {
     String type = 'dish',
   }) async {
     try {
+      final catId = int.tryParse(category);
       final response = await _dio.post('/menu/', data: {
         'name': name,
         'price': price,
-        'category_id': int.tryParse(category) ?? 0,
+        'category_id': (catId == null || catId == 0) ? null : catId,
         'is_available': true,
         'sort_order': sortOrder,
         'attributes': attributes,
@@ -79,7 +80,7 @@ class MenuRepository {
 
   Future<int> createRetailProduct({
     required String name,
-    required int categoryId,
+    int? categoryId,
     required String unit,
     required double purchasePrice,
     required double sellingPrice,

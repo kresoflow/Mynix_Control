@@ -11,7 +11,7 @@ class RetailProduct(TenantModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=100, index=True)
-    category_id: int = Field(foreign_key="menu_categories.id", index=True)
+    category_id: Optional[int] = Field(default=None, foreign_key="menu_categories.id", index=True, nullable=True)
     price: float = Field(ge=0)
     cost: float = Field(default=0.0)
     unit: UnitType = Field(default=UnitType.PCS)
@@ -32,7 +32,7 @@ class RetailProduct(TenantModel, table=True):
 class RetailProductRead(SQLModel):
     id: int
     name: str
-    category_id: int
+    category_id: Optional[int] = None
     category_name: Optional[str] = None
     price: float
     cost: float
@@ -47,7 +47,7 @@ class RetailProductRead(SQLModel):
 
 class RetailProductCreate(SQLModel):
     name: str
-    category_id: int
+    category_id: Optional[int] = None
     unit: str = "pcs"
     purchase_price: float = Field(default=0.0, ge=0.0)
     selling_price: float = Field(default=0.0, ge=0.0)
