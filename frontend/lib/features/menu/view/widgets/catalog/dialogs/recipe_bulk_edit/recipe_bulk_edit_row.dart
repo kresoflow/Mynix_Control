@@ -4,6 +4,34 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'recipe_row_state.dart';
 
+class SmartDecimalInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String newText = newValue.text.replaceAll(',', '.');
+
+    // Auto-prepend 0 if starts with dot: .04 -> 0.04
+    if (newText.startsWith('.')) {
+      newText = '0$newText';
+    }
+
+    // Only allow digits and at most one decimal point
+    if (newText.isNotEmpty && !RegExp(r'^\d*\.?\d*$').hasMatch(newText)) {
+      return oldValue;
+    }
+
+    final diff = newText.length - newValue.text.length;
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(
+        offset: (newValue.selection.baseOffset + diff).clamp(0, newText.length),
+      ),
+    );
+  }
+}
+
 class RecipeBulkEditRow extends StatelessWidget {
   final RecipeRowState row;
   final int index;
@@ -23,6 +51,24 @@ class RecipeBulkEditRow extends StatelessWidget {
     required this.onRemove,
     required this.onAddNext,
   });
+
+  void _handleQuantitySubmit(String unit) {
+    final text = row.quantityController.text.trim();
+    if (text.isNotEmpty) {
+      final val = double.tryParse(text);
+      if (val != null) {
+        final unitLower = unit.toLowerCase();
+        if ((unitLower == 'kg' || unitLower == 'кг' || unitLower == 'l' || unitLower == 'л') &&
+            val >= 5.0 &&
+            !text.contains('.')) {
+          // User typed whole grams (e.g. 40 -> 0.040, 150 -> 0.150)
+          final converted = val / 1000.0;
+          row.quantityController.text = converted.toStringAsFixed(3).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+        }
+      }
+    }
+    onAddNext();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +155,7 @@ class RecipeBulkEditRow extends StatelessWidget {
         ),
         const SizedBox(width: 16),
 
-        // Quantity Field with Tab / Enter to add or move next
+        // Quantity Field with Smart Decimal auto-formatting and Grams-to-Kg auto-conversion
         Expanded(
           flex: 1,
           child: Focus(
@@ -117,7 +163,7 @@ class RecipeBulkEditRow extends StatelessWidget {
               if (event is KeyDownEvent &&
                   event.logicalKey == LogicalKeyboardKey.tab &&
                   !HardwareKeyboard.instance.isShiftPressed) {
-                onAddNext();
+                _handleQuantitySubmit(unit);
                 return KeyEventResult.handled;
               }
               return KeyEventResult.ignored;
@@ -126,6 +172,7 @@ class RecipeBulkEditRow extends StatelessWidget {
               controller: row.quantityController,
               focusNode: row.quantityFocusNode,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [SmartDecimalInputFormatter()],
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
                 hintText: '0.00',
@@ -133,7 +180,7 @@ class RecipeBulkEditRow extends StatelessWidget {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              onFieldSubmitted: (_) => onAddNext(),
+              onFieldSubmitted: (_) => _handleQuantitySubmit(unit),
             ),
           ),
         ),
