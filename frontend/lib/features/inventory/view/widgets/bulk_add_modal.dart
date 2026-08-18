@@ -164,26 +164,26 @@ class _BulkAddModalState extends State<BulkAddModal> {
       } else if (_tabIndex == 2) {
         final List<Map<String, dynamic>> preset = presetType == 'fastfood'
             ? [
-                {'name': 'Котлета говяжья п/ф 150г', 'unit': 'шт', 'cost': 85.0, 'alert': 20.0},
-                {'name': 'Булочка бриошь с кунжутом', 'unit': 'шт', 'cost': 18.0, 'alert': 50.0},
-                {'name': 'Сыр Чеддер слайсы', 'unit': 'кг', 'cost': 650.0, 'alert': 5.0},
-                {'name': 'Соус Бургер фирменный', 'unit': 'кг', 'cost': 280.0, 'alert': 3.0},
-                {'name': 'Салат Айсберг свежий', 'unit': 'кг', 'cost': 140.0, 'alert': 5.0},
-                {'name': 'Помидоры свежие', 'unit': 'кг', 'cost': 120.0, 'alert': 10.0},
-                {'name': 'Огурцы маринованные', 'unit': 'кг', 'cost': 190.0, 'alert': 4.0},
-                {'name': 'Картофель фри 9мм зам.', 'unit': 'кг', 'cost': 135.0, 'alert': 30.0},
-                {'name': 'Масло фритюрное', 'unit': 'л', 'cost': 160.0, 'alert': 40.0},
-                {'name': 'Упаковка для бургера', 'unit': 'шт', 'cost': 4.5, 'alert': 100.0},
+                {'name': 'Котлета говяжья п/ф 150г', 'unit': 'pcs', 'cost': 85.0, 'alert': 20.0},
+                {'name': 'Булочка бриошь с кунжутом', 'unit': 'pcs', 'cost': 18.0, 'alert': 50.0},
+                {'name': 'Сыр Чеддер слайсы', 'unit': 'kg', 'cost': 650.0, 'alert': 5.0},
+                {'name': 'Соус Бургер фирменный', 'unit': 'kg', 'cost': 280.0, 'alert': 3.0},
+                {'name': 'Салат Айсберг свежий', 'unit': 'kg', 'cost': 140.0, 'alert': 5.0},
+                {'name': 'Помидоры свежие', 'unit': 'kg', 'cost': 120.0, 'alert': 10.0},
+                {'name': 'Огурцы маринованные', 'unit': 'kg', 'cost': 190.0, 'alert': 4.0},
+                {'name': 'Картофель фри 9мм зам.', 'unit': 'kg', 'cost': 135.0, 'alert': 30.0},
+                {'name': 'Масло фритюрное', 'unit': 'l', 'cost': 160.0, 'alert': 40.0},
+                {'name': 'Упаковка для бургера', 'unit': 'pcs', 'cost': 4.5, 'alert': 100.0},
               ]
             : [
-                {'name': 'Стейк Рибай п/ф 300г', 'unit': 'шт', 'cost': 550.0, 'alert': 10.0},
-                {'name': 'Лосось свежий филе', 'unit': 'кг', 'cost': 1200.0, 'alert': 5.0},
-                {'name': 'Сливки 33%', 'unit': 'л', 'cost': 380.0, 'alert': 8.0},
-                {'name': 'Сыр Пармезан', 'unit': 'кг', 'cost': 1400.0, 'alert': 3.0},
-                {'name': 'Паста Феттуччине', 'unit': 'кг', 'cost': 220.0, 'alert': 10.0},
-                {'name': 'Оливковое масло Extra Virgin', 'unit': 'л', 'cost': 750.0, 'alert': 5.0},
-                {'name': 'Томаты Черри', 'unit': 'кг', 'cost': 250.0, 'alert': 4.0},
-                {'name': 'Зелень микс (руккола, шпинат)', 'unit': 'кг', 'cost': 450.0, 'alert': 3.0},
+                {'name': 'Стейк Рибай п/ф 300г', 'unit': 'pcs', 'cost': 550.0, 'alert': 10.0},
+                {'name': 'Лосось свежий филе', 'unit': 'kg', 'cost': 1200.0, 'alert': 5.0},
+                {'name': 'Сливки 33%', 'unit': 'l', 'cost': 380.0, 'alert': 8.0},
+                {'name': 'Сыр Пармезан', 'unit': 'kg', 'cost': 1400.0, 'alert': 3.0},
+                {'name': 'Паста Феттуччине', 'unit': 'kg', 'cost': 220.0, 'alert': 10.0},
+                {'name': 'Оливковое масло Extra Virgin', 'unit': 'l', 'cost': 750.0, 'alert': 5.0},
+                {'name': 'Томаты Черри', 'unit': 'kg', 'cost': 250.0, 'alert': 4.0},
+                {'name': 'Зелень микс (руккола, шпинат)', 'unit': 'kg', 'cost': 450.0, 'alert': 3.0},
               ];
 
         _ingredientRows.clear();

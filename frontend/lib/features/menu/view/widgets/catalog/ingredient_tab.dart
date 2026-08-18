@@ -8,7 +8,6 @@ import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ing
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/ingredient/ingredient_quick_setup_card.dart';
 
 class IngredientTab extends StatefulWidget {
   const IngredientTab({super.key});
@@ -102,20 +101,12 @@ class _IngredientTabState extends State<IngredientTab> {
                       if (state is IngredientLoading || categoryState is CategoryLoading) {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is IngredientLoaded && categoryState is CategoryLoaded) {
-                        final hasIngredientCategories = categoryState.categories
-                            .any((c) => c.categoryType == 'ingredient' && c.isVisible);
-
-                        if (!hasIngredientCategories) {
-                          return IngredientQuickSetupCard(
-                            onSetupComplete: () {},
-                          );
-                        }
-
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             IngredientCategorySidebar(
                               selectedCategoryId: _selectedCategoryId,
+                              isManageMode: _isManageMode,
                               onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
                             ),
                             Expanded(

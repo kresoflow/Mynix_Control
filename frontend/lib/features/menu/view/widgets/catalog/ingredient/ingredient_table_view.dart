@@ -8,7 +8,6 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/ingredient/ingredient_quick_setup_card.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_item_row.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
@@ -117,15 +116,6 @@ class IngredientTableView extends StatelessWidget {
                     },
                     icon: const Icon(PhosphorIconsRegular.listPlus, size: 16),
                     label: const Text('Массово'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: () => IngredientQuickSetupCard.showAsDialog(context),
-                    icon: const Icon(PhosphorIconsRegular.cards, size: 16),
-                    label: const Text('Шаблоны полок'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

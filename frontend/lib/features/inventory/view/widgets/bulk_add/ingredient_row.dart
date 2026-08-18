@@ -14,11 +14,21 @@ class IngredientRowData {
     String stock = '0',
     String alert = '0',
     String cost = '0',
-    this.selectedUnit = 'g',
+    String selectedUnit = 'g',
   }) : nameController = TextEditingController(text: name),
        stockController = TextEditingController(text: stock),
        alertController = TextEditingController(text: alert),
-       costController = TextEditingController(text: cost);
+       costController = TextEditingController(text: cost),
+       selectedUnit = _normalizeUnit(selectedUnit);
+
+  static String _normalizeUnit(String unit) {
+    if (unit == 'шт' || unit == 'pcs') return 'pcs';
+    if (unit == 'кг' || unit == 'kg') return 'kg';
+    if (unit == 'г' || unit == 'g') return 'g';
+    if (unit == 'л' || unit == 'l') return 'l';
+    if (unit == 'мл' || unit == 'ml') return 'ml';
+    return 'pcs';
+  }
 
   IngredientRowData clone() {
     return IngredientRowData(
