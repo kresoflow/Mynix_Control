@@ -185,6 +185,9 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                           );
                           if (selectedId != null) {
                             setState(() => row.ingredientId = selectedId);
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              row.quantityFocusNode.requestFocus();
+                            });
                           }
                         },
                         onDuplicate: () => _duplicateRow(index),
@@ -192,6 +195,8 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
                         onAddNext: () {
                           if (index == _rows.length - 1) {
                             _addRow();
+                          } else {
+                            _rows[index + 1].ingredientFocusNode.requestFocus();
                           }
                         },
                       );

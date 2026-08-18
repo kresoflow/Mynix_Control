@@ -4,6 +4,7 @@ class RecipeRowState {
   int? ingredientId;
   TextEditingController quantityController;
   final FocusNode ingredientFocusNode = FocusNode();
+  final FocusNode quantityFocusNode = FocusNode();
 
   RecipeRowState({this.ingredientId, double quantity = 0})
       : quantityController = TextEditingController(
@@ -13,5 +14,6 @@ class RecipeRowState {
   void dispose() {
     quantityController.dispose();
     ingredientFocusNode.dispose();
+    quantityFocusNode.dispose();
   }
 }
