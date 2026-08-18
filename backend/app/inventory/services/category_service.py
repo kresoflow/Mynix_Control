@@ -41,7 +41,7 @@ async def bulk_create_categories(session: AsyncSession, categories_data: list[di
     return [MenuCategoryRead.model_validate(c) for c in categories]
 
 async def list_categories(session: AsyncSession) -> list[MenuCategoryRead]:
-    stmt = select(MenuCategory).order_by(MenuCategory.sort_order)
+    stmt = select(MenuCategory).where(MenuCategory.is_visible == True).order_by(MenuCategory.sort_order)
     result = await session.execute(stmt)
     categories = result.scalars().all()
     return [MenuCategoryRead.model_validate(c) for c in categories]
@@ -66,6 +66,14 @@ async def delete_category(session: AsyncSession, category_id: int, mode: str = "
         raise HTTPException(status_code=404, detail="Category not found")
         
     from app.pos.models import OrderItem
+    from app.inventory.models.ingredient_models import Ingredient
+
+    # Unlink any ingredients referencing this category
+    ing_stmt = select(Ingredient).where(Ingredient.category_id == category_id)
+    ing_res = await session.execute(ing_stmt)
+    for ing in ing_res.scalars().all():
+        ing.category_id = None
+        session.add(ing)
 
     item_stmt = select(MenuItem).where(MenuItem.category_id == category_id)
     item_res = await session.execute(item_stmt)
@@ -79,31 +87,28 @@ async def delete_category(session: AsyncSession, category_id: int, mode: str = "
     sub_res = await session.execute(sub_stmt)
     subcategories = sub_res.scalars().all()
 
-    if mode == "hard":
-        # Check if any items have order items
-        has_orders = False
-        for item in menu_items:
-            order_stmt = select(OrderItem).where(OrderItem.menu_item_id == item.id).limit(1)
-            order_res = await session.execute(order_stmt)
-            if order_res.scalars().first() is not None:
-                has_orders = True
-                break
+    # Check if any items have order items
+    has_orders = False
+    for item in menu_items:
+        order_stmt = select(OrderItem).where(OrderItem.menu_item_id == item.id).limit(1)
+        order_res = await session.execute(order_stmt)
+        if order_res.scalars().first() is not None:
+            has_orders = True
+            break
 
-        if not has_orders:
-            for rp in retail_products:
-                m_stmt = select(MenuItem).where(MenuItem.retail_product_id == rp.id)
-                m_res = await session.execute(m_stmt)
-                for m in m_res.scalars().all():
-                    order_stmt = select(OrderItem).where(OrderItem.menu_item_id == m.id).limit(1)
-                    order_res = await session.execute(order_stmt)
-                    if order_res.scalars().first() is not None:
-                        has_orders = True
-                        break
+    if not has_orders:
+        for rp in retail_products:
+            m_stmt = select(MenuItem).where(MenuItem.retail_product_id == rp.id)
+            m_res = await session.execute(m_stmt)
+            for m in m_res.scalars().all():
+                order_stmt = select(OrderItem).where(OrderItem.menu_item_id == m.id).limit(1)
+                order_res = await session.execute(order_stmt)
+                if order_res.scalars().first() is not None:
+                    has_orders = True
+                    break
 
-        if has_orders:
-            raise HTTPException(status_code=400, detail="Нельзя удалить навсегда: по товарам этой категории есть завершенные чеки.")
-
-        # Hard delete allowed
+    if mode == "hard" or not has_orders:
+        # Delete recipe and items if no orders
         for item in menu_items:
             recipe_stmt = select(Recipe).where(Recipe.menu_item_id == item.id)
             recipe_res = await session.execute(recipe_stmt)
@@ -125,7 +130,7 @@ async def delete_category(session: AsyncSession, category_id: int, mode: str = "
         await session.flush()
         return
 
-    # Default Soft Delete (Smart Archive)
+    # If has orders and mode != hard, Soft Delete (Archive)
     for item in menu_items:
         item.is_available = False
         session.add(item)

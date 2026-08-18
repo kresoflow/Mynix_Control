@@ -8,19 +8,24 @@ import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.da
 
 class IngredientQuickSetupCard extends StatelessWidget {
   final VoidCallback onSetupComplete;
+  final bool isModal;
 
   const IngredientQuickSetupCard({
     super.key,
     required this.onSetupComplete,
+    this.isModal = false,
   });
 
   static Future<void> showAsDialog(BuildContext context) {
     return showDialog(
       context: context,
+      barrierDismissible: true,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(24),
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: IngredientQuickSetupCard(
+          isModal: true,
           onSetupComplete: () => Navigator.of(ctx).pop(),
         ),
       ),
@@ -68,71 +73,103 @@ class IngredientQuickSetupCard extends StatelessWidget {
     return Center(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 560),
-        padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
           children: [
-            Icon(
-              PhosphorIconsRegular.clipboardText,
-              size: 48,
-              color: AppColors.brandPrimary,
-            ),
-            const SizedBox(height: 16),
-            Text('Быстрая настройка склада', style: AppTextStyles.h2, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text(
-              'У вас ещё нет категорий. Выберите шаблон или создайте свои:',
-              style: AppTextStyles.caption.copyWith(
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: _PresetCard(
-                    emoji: '🍔',
-                    title: 'Фастфуд',
-                    subtitle: '8 категорий',
-                    onTap: () => _applyPreset(context, _fastFoodPreset),
-                    isDark: isDark,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(32, 28, 32, 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    PhosphorIconsRegular.clipboardText,
+                    size: 44,
+                    color: AppColors.brandPrimary,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _PresetCard(
-                    emoji: '🍝',
-                    title: 'Ресторан',
-                    subtitle: '12 категорий',
-                    onTap: () => _applyPreset(context, [..._fastFoodPreset, ..._restaurantExtra]),
-                    isDark: isDark,
+                  const SizedBox(height: 12),
+                  Text(
+                    'Быстрая настройка склада',
+                    style: AppTextStyles.h2,
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            TextButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => const BulkAddModal(initialTabIndex: 3),
-                );
-              },
-              icon: const Icon(PhosphorIconsRegular.pencilSimple),
-              label: const Text('Создать свои вручную'),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: AppTextStyles.button,
+                  const SizedBox(height: 6),
+                  Text(
+                    'Выберите готовый шаблон полок или создайте свои:',
+                    style: AppTextStyles.caption.copyWith(
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _PresetCard(
+                          emoji: '🍔',
+                          title: 'Фастфуд',
+                          subtitle: '8 категорий',
+                          onTap: () => _applyPreset(context, _fastFoodPreset),
+                          isDark: isDark,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _PresetCard(
+                          emoji: '🍝',
+                          title: 'Ресторан',
+                          subtitle: '12 категорий',
+                          onTap: () => _applyPreset(context, [..._fastFoodPreset, ..._restaurantExtra]),
+                          isDark: isDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  TextButton.icon(
+                    onPressed: () {
+                      if (isModal) Navigator.of(context).pop();
+                      showDialog(
+                        context: context,
+                        builder: (_) => const BulkAddModal(initialTabIndex: 3),
+                      );
+                    },
+                    icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 16),
+                    label: const Text('Создать свои вручную'),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      textStyle: AppTextStyles.button,
+                    ),
+                  ),
+                ],
               ),
             ),
+            if (isModal)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: IconButton(
+                  icon: Icon(
+                    PhosphorIconsRegular.x,
+                    size: 20,
+                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: 'Закрыть',
+                ),
+              ),
           ],
         ),
       ),
@@ -161,15 +198,15 @@ class _PresetCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         hoverColor: AppColors.brandPrimary.withValues(alpha: 0.08),
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           decoration: BoxDecoration(
             border: Border.all(
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
             children: [

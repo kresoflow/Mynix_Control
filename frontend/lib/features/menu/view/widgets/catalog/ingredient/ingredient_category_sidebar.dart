@@ -38,7 +38,7 @@ class IngredientCategorySidebar extends StatelessWidget {
           }
           if (catState is CategoryLoaded) {
             final ingredientCategories = catState.categories
-                .where((c) => c.categoryType == 'ingredient')
+                .where((c) => c.categoryType == 'ingredient' && c.isVisible)
                 .toList();
 
             // Строим дерево

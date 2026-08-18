@@ -10,6 +10,7 @@ class BulkAddTabsBar extends StatelessWidget {
   final Function(int) onTabSelected;
   final Function(String) onCategoryTypeChanged;
   final VoidCallback onAddRow;
+  final ValueChanged<String>? onLoadPreset;
 
   const BulkAddTabsBar({
     super.key,
@@ -18,6 +19,7 @@ class BulkAddTabsBar extends StatelessWidget {
     required this.onTabSelected,
     required this.onCategoryTypeChanged,
     required this.onAddRow,
+    this.onLoadPreset,
   });
 
   static const tabLabels = ['Блюда', 'Товары витрины', 'Сырьё', 'Папки'];
@@ -86,6 +88,70 @@ class BulkAddTabsBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          if (onLoadPreset != null && (tabIndex == 0 || tabIndex == 2 || tabIndex == 3)) ...[
+            PopupMenuButton<String>(
+              tooltip: 'Загрузить готовый шаблон данных',
+              onSelected: onLoadPreset,
+              itemBuilder: (ctx) => [
+                const PopupMenuItem(
+                  value: 'fastfood',
+                  child: Row(
+                    children: [
+                      Text('🍔', style: TextStyle(fontSize: 18)),
+                      SizedBox(width: 8),
+                      Text('Шаблон «Фастфуд»'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'restaurant',
+                  child: Row(
+                    children: [
+                      Text('🍝', style: TextStyle(fontSize: 18)),
+                      SizedBox(width: 8),
+                      Text('Шаблон «Ресторан»'),
+                    ],
+                  ),
+                ),
+              ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      PhosphorIconsRegular.cards,
+                      size: 16,
+                      color: AppColors.brandPrimary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Пресеты',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      PhosphorIconsRegular.caretDown,
+                      size: 12,
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
           if (tabIndex == 3) ...[
             Container(
               padding: const EdgeInsets.all(4),

@@ -103,7 +103,7 @@ class _IngredientTabState extends State<IngredientTab> {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is IngredientLoaded && categoryState is CategoryLoaded) {
                         final hasIngredientCategories = categoryState.categories
-                            .any((c) => c.categoryType == 'ingredient');
+                            .any((c) => c.categoryType == 'ingredient' && c.isVisible);
 
                         if (!hasIngredientCategories) {
                           return IngredientQuickSetupCard(

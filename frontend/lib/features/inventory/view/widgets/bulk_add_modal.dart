@@ -124,6 +124,105 @@ class _BulkAddModalState extends State<BulkAddModal> {
     });
   }
 
+  void _loadPreset(String presetType) {
+    setState(() {
+      if (_tabIndex == 3) {
+        final List<Map<String, String>> preset = presetType == 'fastfood'
+            ? [
+                {'name': 'Мясо и полуфабрикаты', 'icon': 'meat'},
+                {'name': 'Хлеб и выпечка', 'icon': 'bread'},
+                {'name': 'Молочка и сыры', 'icon': 'cheese'},
+                {'name': 'Соусы и приправы', 'icon': 'drop'},
+                {'name': 'Овощи и зелень', 'icon': 'plant'},
+                {'name': 'Заморозка', 'icon': 'snowflake'},
+                {'name': 'Масла и жиры', 'icon': 'dropHalf'},
+                {'name': 'Упаковка и расходники', 'icon': 'package'},
+              ]
+            : [
+                {'name': 'Мясо и полуфабрикаты', 'icon': 'meat'},
+                {'name': 'Хлеб и выпечка', 'icon': 'bread'},
+                {'name': 'Молочка и сыры', 'icon': 'cheese'},
+                {'name': 'Соусы и приправы', 'icon': 'drop'},
+                {'name': 'Овощи и зелень', 'icon': 'plant'},
+                {'name': 'Заморозка', 'icon': 'snowflake'},
+                {'name': 'Масла и жиры', 'icon': 'dropHalf'},
+                {'name': 'Упаковка и расходники', 'icon': 'package'},
+                {'name': 'Рыба и морепродукты', 'icon': 'fishSimple'},
+                {'name': 'Крупы и макароны', 'icon': 'grains'},
+                {'name': 'Напитки', 'icon': 'beer'},
+                {'name': 'Десертные ингредиенты', 'icon': 'cookie'},
+              ];
+
+        _categoryRows.clear();
+        for (int i = 0; i < preset.length; i++) {
+          final row = CategoryRowData();
+          row.nameController.text = preset[i]['name']!;
+          row.selectedIcon = preset[i]['icon'];
+          row.sortOrderController.text = (i + 1).toString();
+          _categoryRows.add(row);
+        }
+      } else if (_tabIndex == 2) {
+        final List<Map<String, dynamic>> preset = presetType == 'fastfood'
+            ? [
+                {'name': 'Котлета говяжья п/ф 150г', 'unit': 'шт', 'cost': 85.0, 'alert': 20.0},
+                {'name': 'Булочка бриошь с кунжутом', 'unit': 'шт', 'cost': 18.0, 'alert': 50.0},
+                {'name': 'Сыр Чеддер слайсы', 'unit': 'кг', 'cost': 650.0, 'alert': 5.0},
+                {'name': 'Соус Бургер фирменный', 'unit': 'кг', 'cost': 280.0, 'alert': 3.0},
+                {'name': 'Салат Айсберг свежий', 'unit': 'кг', 'cost': 140.0, 'alert': 5.0},
+                {'name': 'Помидоры свежие', 'unit': 'кг', 'cost': 120.0, 'alert': 10.0},
+                {'name': 'Огурцы маринованные', 'unit': 'кг', 'cost': 190.0, 'alert': 4.0},
+                {'name': 'Картофель фри 9мм зам.', 'unit': 'кг', 'cost': 135.0, 'alert': 30.0},
+                {'name': 'Масло фритюрное', 'unit': 'л', 'cost': 160.0, 'alert': 40.0},
+                {'name': 'Упаковка для бургера', 'unit': 'шт', 'cost': 4.5, 'alert': 100.0},
+              ]
+            : [
+                {'name': 'Стейк Рибай п/ф 300г', 'unit': 'шт', 'cost': 550.0, 'alert': 10.0},
+                {'name': 'Лосось свежий филе', 'unit': 'кг', 'cost': 1200.0, 'alert': 5.0},
+                {'name': 'Сливки 33%', 'unit': 'л', 'cost': 380.0, 'alert': 8.0},
+                {'name': 'Сыр Пармезан', 'unit': 'кг', 'cost': 1400.0, 'alert': 3.0},
+                {'name': 'Паста Феттуччине', 'unit': 'кг', 'cost': 220.0, 'alert': 10.0},
+                {'name': 'Оливковое масло Extra Virgin', 'unit': 'л', 'cost': 750.0, 'alert': 5.0},
+                {'name': 'Томаты Черри', 'unit': 'кг', 'cost': 250.0, 'alert': 4.0},
+                {'name': 'Зелень микс (руккола, шпинат)', 'unit': 'кг', 'cost': 450.0, 'alert': 3.0},
+              ];
+
+        _ingredientRows.clear();
+        for (var item in preset) {
+          final row = IngredientRowData();
+          row.nameController.text = item['name'] as String;
+          row.selectedUnit = item['unit'] as String;
+          row.costController.text = (item['cost'] as num).toString();
+          row.alertController.text = (item['alert'] as num).toString();
+          _ingredientRows.add(row);
+        }
+      } else if (_tabIndex == 0) {
+        final List<Map<String, dynamic>> preset = presetType == 'fastfood'
+            ? [
+                {'name': 'Бургер Классический', 'price': 280.0, 'options': 'Одинарный, Двойной', 'prices': '280, 380'},
+                {'name': 'Чизбургер с чеддером', 'price': 310.0, 'options': '', 'prices': ''},
+                {'name': 'Картофель фри хрустящий', 'price': 140.0, 'options': 'Стандарт, Большой', 'prices': '140, 190'},
+                {'name': 'Наггетсы куриные', 'price': 180.0, 'options': '6 шт, 9 шт', 'prices': '180, 250'},
+                {'name': 'Кола 0.5л', 'price': 90.0, 'options': '', 'prices': ''},
+              ]
+            : [
+                {'name': 'Паста Карбонара', 'price': 450.0, 'options': '', 'prices': ''},
+                {'name': 'Стейк Рибай', 'price': 1200.0, 'options': 'Medium, Well Done', 'prices': '1200, 1200'},
+                {'name': 'Салат Цезарь с курицей', 'price': 390.0, 'options': '', 'prices': ''},
+                {'name': 'Суп Том Ям с морепродуктами', 'price': 490.0, 'options': '', 'prices': ''},
+              ];
+
+        _dishRows.clear();
+        for (var item in preset) {
+          final row = DishRowData();
+          row.nameController.text = item['name'] as String;
+          row.priceController.text = (item['prices'] as String).isNotEmpty ? (item['prices'] as String) : (item['price'] as num).toString();
+          row.optionsController.text = item['options'] as String;
+          _dishRows.add(row);
+        }
+      }
+    });
+  }
+
   void _saveAll() {
     performBulkSave(
       context: context,
@@ -185,6 +284,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
                   }),
                   onCategoryTypeChanged: (val) => setState(() => _categoryType = val),
                   onAddRow: _addRow,
+                  onLoadPreset: _loadPreset,
                 ),
                 const SizedBox(height: 12),
                 Padding(
