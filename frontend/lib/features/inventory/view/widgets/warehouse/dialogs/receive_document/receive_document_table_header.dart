@@ -29,9 +29,8 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Название (просторная колонка)
+          // 1. Название
           Expanded(
-            flex: isRetail ? 3 : 5,
             child: Text(
               isRetail ? 'Товар витрины' : 'Сырьё / Ингредиент',
               style: AppTextStyles.caption.copyWith(
@@ -42,10 +41,10 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // Вкус и объем только для Витрины
+          // 2. Вкус и объем (только для витрины)
           if (isRetail) ...[
-            Expanded(
-              flex: 2,
+            SizedBox(
+              width: 85,
               child: Text(
                 'Вкус',
                 style: AppTextStyles.caption.copyWith(
@@ -55,8 +54,8 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Expanded(
-              flex: 2,
+            SizedBox(
+              width: 55,
               child: Text(
                 'Объем',
                 style: AppTextStyles.caption.copyWith(
@@ -68,9 +67,9 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
             const SizedBox(width: 8),
           ],
 
-          // Ед. изм.
-          Expanded(
-            flex: 1,
+          // 3. Ед. изм.
+          SizedBox(
+            width: 65,
             child: Text(
               'Ед. изм.',
               style: AppTextStyles.caption.copyWith(
@@ -81,9 +80,9 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // Кол-во
-          Expanded(
-            flex: 1,
+          // 4. Кол-во
+          SizedBox(
+            width: isRetail ? 70 : 80,
             child: Text(
               'Кол-во',
               style: AppTextStyles.caption.copyWith(
@@ -94,9 +93,9 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // Алерт
-          Expanded(
-            flex: 1,
+          // 5. Алерт
+          SizedBox(
+            width: isRetail ? 60 : 80,
             child: Text(
               'Алерт',
               style: AppTextStyles.caption.copyWith(
@@ -107,9 +106,9 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // Закупка
-          Expanded(
-            flex: 1,
+          // 6. Закупка
+          SizedBox(
+            width: isRetail ? 80 : 100,
             child: Text(
               'Закупка ($currency)',
               style: AppTextStyles.caption.copyWith(
@@ -120,10 +119,10 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // Продажа только для витрины
+          // 7. Продажа (только для витрины)
           if (isRetail) ...[
-            Expanded(
-              flex: 1,
+            SizedBox(
+              width: 80,
               child: Text(
                 'Продажа ($currency)',
                 style: AppTextStyles.caption.copyWith(
@@ -135,9 +134,9 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
             const SizedBox(width: 8),
           ],
 
-          // Сумма
-          Expanded(
-            flex: 1,
+          // 8. Сумма
+          SizedBox(
+            width: isRetail ? 80 : 100,
             child: Text(
               'Сумма ($currency)',
               style: AppTextStyles.caption.copyWith(
@@ -146,7 +145,7 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 44), // Место под кнопку корзины
+          const SizedBox(width: 44), // Место под кнопку удаления
         ],
       ),
     );

@@ -110,7 +110,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             ),
           ),
 
-          // 2. Retail specific fields
+          // 2. Retail specific fields (Вкус & Объем)
           if (isRetail)
             ReceiveDocumentRetailFields(
               item: item,
@@ -118,11 +118,11 @@ class ReceiveDocumentItemRow extends StatelessWidget {
               onVolumeSubmitted: onVolumeSubmitted,
             ),
 
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
           // 3. Unit Selector
           SizedBox(
-            width: 58,
+            width: 65,
             height: 40,
             child: DropdownButtonFormField<String>(
               initialValue: item.selectedUnit,
@@ -138,11 +138,11 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
           // 4. Quantity
           SizedBox(
-            width: 60,
+            width: isRetail ? 70 : 80,
             height: 40,
             child: TextFormField(
               controller: item.qtyController,
@@ -158,11 +158,11 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
           // 5. Min Stock Alert
           SizedBox(
-            width: 55,
+            width: isRetail ? 60 : 80,
             height: 40,
             child: TextFormField(
               controller: item.minStockAlertController,
@@ -178,11 +178,11 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
           // 6. Cost Price
           SizedBox(
-            width: 75,
+            width: isRetail ? 80 : 100,
             height: 40,
             child: TextFormField(
               controller: item.priceController,
@@ -200,9 +200,9 @@ class ReceiveDocumentItemRow extends StatelessWidget {
 
           // 7. Sell Price (Retail only)
           if (isRetail) ...[
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
             SizedBox(
-              width: 75,
+              width: 80,
               height: 40,
               child: TextFormField(
                 controller: item.sellPriceController,
@@ -219,11 +219,11 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             ),
           ],
 
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
-          // 8. Total sum & Remove
+          // 8. Total sum
           SizedBox(
-            width: 90,
+            width: isRetail ? 80 : 100,
             child: Text(
               sum.toStringAsFixed(2),
               textAlign: TextAlign.right,
@@ -234,12 +234,15 @@ class ReceiveDocumentItemRow extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
-          IconButton(
-            icon: const Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
-            onPressed: onRemove,
-            tooltip: 'Удалить строку',
+          SizedBox(
+            width: 36,
+            child: IconButton(
+              icon: const Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
+              onPressed: onRemove,
+              tooltip: 'Удалить строку',
+            ),
           ),
         ],
       ),

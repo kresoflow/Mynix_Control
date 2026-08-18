@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/models/supplier.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/mynix_date_time_picker.dart';
 import 'receive_document_smart_header.dart';
 import 'receive_document_supplier_select.dart';
 
@@ -71,7 +72,8 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dateStr = '${documentDate.day.toString().padLeft(2, '0')}.${documentDate.month.toString().padLeft(2, '0')}.${documentDate.year}';
+    final timeStr = '${documentDate.hour.toString().padLeft(2, '0')}:${documentDate.minute.toString().padLeft(2, '0')}';
+    final dateStr = '${documentDate.day.toString().padLeft(2, '0')}.${documentDate.month.toString().padLeft(2, '0')}.${documentDate.year}, $timeStr';
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -109,7 +111,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
               ),
               const SizedBox(width: 12),
 
-              // 3. Дата документа (Smart Hybrid Date)
+              // 3. Дата и время документа (Mynix Smart DateTime Picker)
               Expanded(
                 flex: 2,
                 child: SizedBox(
@@ -117,24 +119,24 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(10),
                     onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: documentDate,
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime(2035),
+                      final picked = await showMynixDateTimePicker(
+                        context,
+                        initialDateTime: documentDate,
                       );
                       if (picked != null) {
                         onDateChanged(picked);
                       }
                     },
                     child: InputDecorator(
-                      decoration: _buildInputDecoration(context, 'Дата документа', PhosphorIconsRegular.calendarBlank, isDark),
+                      decoration: _buildInputDecoration(context, 'Дата и время', PhosphorIconsRegular.calendarBlank, isDark),
                       child: Text(
                         dateStr,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: isDark ? AppColors.darkText : AppColors.lightText,
-                          fontSize: 13,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),

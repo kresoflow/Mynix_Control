@@ -22,9 +22,9 @@ class ReceiveDocumentRetailFields extends StatelessWidget {
 
     return Row(
       children: [
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         SizedBox(
-          width: 78,
+          width: 85,
           height: 40,
           child: TextFormField(
             controller: item.flavorController,
@@ -37,9 +37,9 @@ class ReceiveDocumentRetailFields extends StatelessWidget {
             onFieldSubmitted: (_) => onFlavorSubmitted(),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         SizedBox(
-          width: 48,
+          width: 55,
           height: 40,
           child: TextFormField(
             controller: item.volumeController,
