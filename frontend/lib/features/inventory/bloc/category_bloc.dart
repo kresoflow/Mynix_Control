@@ -39,6 +39,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<UpdateCategory>(_onUpdateCategory);
     on<RestoreCategory>(_onRestoreCategory);
     on<DeleteCategory>(_onDeleteCategory);
+    on<DeleteCategoriesBulk>(_onDeleteCategoriesBulk);
   }
 
   Future<void> _onCreateCategoriesBulk(
@@ -54,16 +55,33 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     }
   }
 
+  Future<void> _onDeleteCategoriesBulk(
+    DeleteCategoriesBulk event,
+    Emitter<CategoryState> emit,
+  ) async {
+    try {
+      await repository.deleteCategoriesBulk(event.ids, mode: event.mode);
+      add(LoadCategories());
+    } catch (e) {
+      emit(CategoryError(message: e.toString()));
+      add(LoadCategories());
+    }
+  }
+
   Future<void> _onLoadCategories(
     LoadCategories event,
     Emitter<CategoryState> emit,
   ) async {
-    emit(CategoryLoading());
+    if (state is! CategoryLoaded) {
+      emit(CategoryLoading());
+    }
     try {
       final items = await repository.getCategories();
       emit(CategoryLoaded(categories: items));
     } catch (e) {
-      emit(CategoryError(message: e.toString()));
+      if (state is! CategoryLoaded) {
+        emit(CategoryError(message: e.toString()));
+      }
     }
   }
 

@@ -86,3 +86,12 @@ class DeleteCategory extends CategoryEvent {
   @override
   List<Object?> get props => [id, mode];
 }
+
+class DeleteCategoriesBulk extends CategoryEvent {
+  final List<int> ids;
+  final String mode;
+  const DeleteCategoriesBulk(this.ids, {this.mode = 'all'});
+
+  @override
+  List<Object?> get props => [ids, mode];
+}

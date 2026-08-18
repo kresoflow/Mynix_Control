@@ -132,13 +132,6 @@ class BulkAddCategorySelector extends StatelessWidget {
           }
           final int? safeChildId = childExists ? selectedChildId : null;
 
-          if (selectedChildId != safeChildId) {
-            WidgetsBinding.instance.addPostFrameCallback((_) => onChildChanged(safeChildId));
-          }
-          if (selectedParentId != safeParentId) {
-            WidgetsBinding.instance.addPostFrameCallback((_) => onParentChanged(safeParentId));
-          }
-
           final String? parentName = parents
               .where((c) => c.id == safeParentId)
               .firstOrNull

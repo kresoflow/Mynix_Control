@@ -44,6 +44,15 @@ class CreateIngredient extends IngredientEvent {
   ];
 }
 
+class CreateIngredientsBulk extends IngredientEvent {
+  final List<Map<String, dynamic>> ingredients;
+
+  const CreateIngredientsBulk({required this.ingredients});
+
+  @override
+  List<Object?> get props => [ingredients];
+}
+
 class ReceiveStock extends IngredientEvent {
   final int ingredientId;
   final double quantity;

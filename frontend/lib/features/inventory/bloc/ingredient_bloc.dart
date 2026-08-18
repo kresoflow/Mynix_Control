@@ -37,6 +37,7 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
   IngredientBloc(this.repository) : super(IngredientLoading()) {
     on<LoadIngredients>(_onLoadIngredients);
     on<CreateIngredient>(_onCreateIngredient);
+    on<CreateIngredientsBulk>(_onCreateIngredientsBulk);
     on<ReceiveStock>(_onReceiveStock);
     on<UpdateIngredient>(_onUpdateIngredient);
     on<DeleteIngredient>(_onDeleteIngredient);
@@ -46,6 +47,19 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
         add(LoadIngredients());
       }
     });
+  }
+
+  Future<void> _onCreateIngredientsBulk(
+    CreateIngredientsBulk event,
+    Emitter<IngredientState> emit,
+  ) async {
+    try {
+      await repository.createIngredientsBulk(event.ingredients);
+      add(LoadIngredients());
+    } catch (e) {
+      emit(IngredientError(message: e.toString()));
+      add(LoadIngredients());
+    }
   }
 
   @override
@@ -58,14 +72,18 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
     LoadIngredients event,
     Emitter<IngredientState> emit,
   ) async {
-    emit(IngredientLoading());
+    if (state is! IngredientLoaded) {
+      emit(IngredientLoading());
+    }
     try {
       final rawItems = await repository.getIngredients();
       final retailItems = await repository.getRetailProducts();
       final merged = [...rawItems, ...retailItems];
       emit(IngredientLoaded(ingredients: merged));
     } catch (e) {
-      emit(IngredientError(message: e.toString()));
+      if (state is! IngredientLoaded) {
+        emit(IngredientError(message: e.toString()));
+      }
     }
   }
 

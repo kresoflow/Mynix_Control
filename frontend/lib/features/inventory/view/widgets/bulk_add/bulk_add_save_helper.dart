@@ -95,6 +95,7 @@ void performBulkSave({
     }
   } else if (tabIndex == 2) {
     int sortIndex = 0;
+    final items = <Map<String, dynamic>>[];
     for (var row in ingredientRows) {
       final name = row.nameController.text.trim();
       if (name.isEmpty) continue;
@@ -103,17 +104,18 @@ void performBulkSave({
       final alert = double.tryParse(row.alertController.text) ?? 0.0;
       final stock = double.tryParse(row.stockController.text) ?? 0.0;
 
-      context.read<IngredientBloc>().add(
-        CreateIngredient(
-          name: name,
-          unit: row.selectedUnit,
-          costPerUnit: cost,
-          minStockAlert: alert,
-          initialStock: stock,
-          categoryId: row.categoryId ?? targetCategoryId,
-          sortOrder: sortIndex++,
-        ),
-      );
+      items.add({
+        'name': name,
+        'unit': row.selectedUnit,
+        'cost_per_unit': cost,
+        'min_stock_alert': alert,
+        'initial_stock': stock,
+        'category_id': row.categoryId ?? targetCategoryId,
+        'sort_order': sortIndex++,
+      });
+    }
+    if (items.isNotEmpty) {
+      context.read<IngredientBloc>().add(CreateIngredientsBulk(ingredients: items));
     }
   } else {
     for (var row in retailRows) {

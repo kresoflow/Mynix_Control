@@ -41,6 +41,19 @@ extension IngredientsPart on InventoryRepository {
     }
   }
 
+  Future<void> createIngredientsBulk(List<Map<String, dynamic>> items) async {
+    await Future.wait(items.map((item) => createIngredient(
+      name: item['name'],
+      unit: item['unit'],
+      minStockAlert: item['min_stock_alert'],
+      costPerUnit: item['cost_per_unit'],
+      categoryId: item['category_id'],
+      initialStock: item['initial_stock'] ?? 0.0,
+      sortOrder: item['sort_order'] ?? 0,
+      barcode: item['barcode'],
+    )));
+  }
+
   Future<List<Ingredient>> getRetailProducts() async {
     try {
       final response = await _dio.get('/inventory/retail/');

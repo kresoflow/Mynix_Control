@@ -92,4 +92,8 @@ extension CategoriesPart on InventoryRepository {
       throw Exception('Failed to delete category: ${e.toString()}');
     }
   }
+
+  Future<void> deleteCategoriesBulk(List<int> ids, {String mode = 'all'}) async {
+    await Future.wait(ids.map((id) => deleteCategory(id, mode: mode)));
+  }
 }

@@ -63,9 +63,8 @@ class IngredientCategorySidebar extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              for (var cat in categories) {
-                context.read<CategoryBloc>().add(DeleteCategory(cat.id, mode: 'all'));
-              }
+              final ids = categories.map((c) => c.id).toList();
+              context.read<CategoryBloc>().add(DeleteCategoriesBulk(ids, mode: 'all'));
               Navigator.pop(ctx);
             },
             child: const Text('Удалить все'),
