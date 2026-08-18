@@ -13,6 +13,8 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
   final VoidCallback onAddSupplier;
   final TextEditingController invoiceController;
   final TextEditingController reasonController;
+  final DateTime documentDate;
+  final ValueChanged<DateTime> onDateChanged;
   final int tabIndex;
   final ValueChanged<int> onTabChanged;
   final int? selectedParentId;
@@ -30,6 +32,8 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
     required this.onAddSupplier,
     required this.invoiceController,
     required this.reasonController,
+    required this.documentDate,
+    required this.onDateChanged,
     required this.tabIndex,
     required this.onTabChanged,
     required this.selectedParentId,
@@ -67,6 +71,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dateStr = '${documentDate.day.toString().padLeft(2, '0')}.${documentDate.month.toString().padLeft(2, '0')}.${documentDate.year}';
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -74,7 +79,9 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
         children: [
           Row(
             children: [
+              // 1. Поставщик
               Expanded(
+                flex: 3,
                 child: ReceiveDocumentSupplierSelect(
                   suppliers: suppliers,
                   selectedSupplierId: selectedSupplierId,
@@ -84,8 +91,11 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
                   isDark: isDark,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
+
+              // 2. Номер накладной
               Expanded(
+                flex: 2,
                 child: SizedBox(
                   height: 46,
                   child: TextField(
@@ -97,8 +107,44 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
+
+              // 3. Дата документа (Smart Hybrid Date)
               Expanded(
+                flex: 2,
+                child: SizedBox(
+                  height: 46,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: documentDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2035),
+                      );
+                      if (picked != null) {
+                        onDateChanged(picked);
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: _buildInputDecoration(context, 'Дата документа', PhosphorIconsRegular.calendarBlank, isDark),
+                      child: Text(
+                        dateStr,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // 4. Комментарий
+              Expanded(
+                flex: 3,
                 child: SizedBox(
                   height: 46,
                   child: TextField(

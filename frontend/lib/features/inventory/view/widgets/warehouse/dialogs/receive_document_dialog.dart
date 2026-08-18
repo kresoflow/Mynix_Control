@@ -29,6 +29,7 @@ class ReceiveDocumentDialog extends StatefulWidget {
 class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   final _invoiceNumberController = TextEditingController();
   final _reasonController = TextEditingController();
+  DateTime _documentDate = DateTime.now();
   int? _selectedSupplierId;
   bool _isAdHocPurchase = false;
 
@@ -99,18 +100,28 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     setState(() {
       final item = _items[index];
       item.ingredient = selection;
-      item.newName = selection.name;
+      item.nameController.text = selection.name;
       item.price = selection.costPerUnit;
-      item.priceController.text = item.price.toString();
-      item.selectedUnit = ['шт', 'л', 'мл', 'кг', 'г', 'порц'].contains(selection.unit) ? selection.unit : 'шт';
-      _focusRow(item.qtyFocusNode);
+      item.priceController.text = selection.costPerUnit.toStringAsFixed(2);
+      item.selectedUnit = selection.unit;
+      item.minStockAlert = selection.minStockAlert;
+      item.minStockAlertController.text = selection.minStockAlert.toInt().toString();
+
+      if (selection.attributes != null) {
+        final flavor = selection.attributes!['Вкус'] ?? '';
+        final vol = selection.attributes!['Объем'] ?? '';
+        item.flavorController.text = flavor;
+        item.volumeController.text = vol.replaceAll(RegExp(r'[^0-9.]'), '');
+      }
     });
+    _focusRow(_items[index].qtyFocusNode);
   }
 
   void _onRowNameChanged(int index, String val) {
-    _items[index].newName = val;
-    if (_items[index].ingredient?.name != val) {
-      setState(() => _items[index].ingredient = null);
+    final item = _items[index];
+    item.newName = val;
+    if (item.ingredient != null && item.ingredient!.name != val) {
+      setState(() => item.ingredient = null);
     }
   }
 
@@ -153,6 +164,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
         selectedSupplierId: supplierId,
         invoiceNumber: _invoiceNumberController.text,
         reason: _reasonController.text,
+        documentDate: _documentDate,
         tabIndex: _tabIndex,
         categoryId: _selectedChildId ?? _selectedParentId,
         complete: complete,
@@ -188,13 +200,16 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
         child: Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           insetPadding: const EdgeInsets.all(20),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           child: Container(
             width: width,
             height: height,
-            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.35),
@@ -227,6 +242,8 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                           },
                           invoiceController: _invoiceNumberController,
                           reasonController: _reasonController,
+                          documentDate: _documentDate,
+                          onDateChanged: (val) => setState(() => _documentDate = val),
                           tabIndex: _tabIndex,
                           onTabChanged: (val) => setState(() => _tabIndex = val),
                           selectedParentId: _selectedParentId,

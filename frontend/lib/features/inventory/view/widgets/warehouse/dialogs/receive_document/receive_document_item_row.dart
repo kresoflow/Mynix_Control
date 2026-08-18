@@ -122,7 +122,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
 
           // 3. Unit Selector
           SizedBox(
-            width: 70,
+            width: 58,
             height: 40,
             child: DropdownButtonFormField<String>(
               initialValue: item.selectedUnit,
@@ -142,7 +142,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
 
           // 4. Quantity
           SizedBox(
-            width: 70,
+            width: 60,
             height: 40,
             child: TextFormField(
               controller: item.qtyController,
@@ -162,7 +162,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
 
           // 5. Min Stock Alert
           SizedBox(
-            width: 70,
+            width: 55,
             height: 40,
             child: TextFormField(
               controller: item.minStockAlertController,
@@ -182,7 +182,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
 
           // 6. Cost Price
           SizedBox(
-            width: 85,
+            width: 75,
             height: 40,
             child: TextFormField(
               controller: item.priceController,
@@ -202,7 +202,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
           if (isRetail) ...[
             const SizedBox(width: 6),
             SizedBox(
-              width: 85,
+              width: 75,
               height: 40,
               child: TextFormField(
                 controller: item.sellPriceController,

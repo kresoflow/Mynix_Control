@@ -25,6 +25,7 @@ class ReceiveDocumentProcessor {
     required int tabIndex,
     required int? categoryId,
     required bool complete,
+    DateTime? documentDate,
   }) async {
     final repo = context.read<InventoryRepository>();
     final menuRepo = context.read<MenuRepository>();
@@ -113,6 +114,7 @@ class ReceiveDocumentProcessor {
 
     final data = {
       'type': 'receipt',
+      'date': (documentDate ?? DateTime.now()).toIso8601String(),
       'supplier_id': selectedSupplierId,
       'invoice_number': invoiceNumber,
       'reason': reason,

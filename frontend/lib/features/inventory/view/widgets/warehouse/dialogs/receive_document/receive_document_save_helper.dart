@@ -19,6 +19,7 @@ Future<void> saveReceiveDocument({
   required int? selectedSupplierId,
   required String invoiceNumber,
   required String reason,
+  DateTime? documentDate,
   required void Function(bool) setSavingState,
 }) async {
   if (items.isEmpty || items.every((item) => item.ingredient == null && item.newName.trim().isEmpty)) {
@@ -125,6 +126,7 @@ Future<void> saveReceiveDocument({
 
     final data = {
       'type': 'receipt',
+      'date': (documentDate ?? DateTime.now()).toIso8601String(),
       'supplier_id': selectedSupplierId,
       'invoice_number': invoiceNumber,
       'reason': reason,
