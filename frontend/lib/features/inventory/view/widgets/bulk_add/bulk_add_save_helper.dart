@@ -4,6 +4,8 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/pos/models/menu_category.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
@@ -94,6 +96,17 @@ void performBulkSave({
       );
     }
   } else if (tabIndex == 2) {
+    final catState = context.read<CategoryBloc>().state;
+    final ingState = context.read<IngredientBloc>().state;
+    final ingredientCategories = catState is CategoryLoaded
+        ? catState.categories.where((c) => c.categoryType == 'ingredient').toList()
+        : <MenuCategory>[];
+    final existingIngredients = ingState is IngredientLoaded
+        ? ingState.ingredients
+        : <Ingredient>[];
+
+    final Map<int, int> categorySeqCounters = {};
+
     int sortIndex = 0;
     final items = <Map<String, dynamic>>[];
     for (var row in ingredientRows) {
@@ -103,6 +116,20 @@ void performBulkSave({
       final cost = double.tryParse(row.costController.text) ?? 0.0;
       final alert = double.tryParse(row.alertController.text) ?? 0.0;
       final stock = double.tryParse(row.stockController.text) ?? 0.0;
+      final effectiveCatId = row.categoryId ?? targetCategoryId;
+
+      String? sku = row.sku;
+      if (sku == null || sku.trim().isEmpty) {
+        if (effectiveCatId != null) {
+          final catIndex = ingredientCategories.indexWhere((c) => c.id == effectiveCatId);
+          final prefix = catIndex >= 0 ? (catIndex + 1) * 10 : 10;
+          final existingInCat = existingIngredients.where((i) => i.categoryId == effectiveCatId).length;
+          final currentBatchCount = categorySeqCounters[effectiveCatId] ?? 0;
+          final nextSeq = existingInCat + currentBatchCount + 1;
+          categorySeqCounters[effectiveCatId] = currentBatchCount + 1;
+          sku = '$prefix-${nextSeq.toString().padLeft(2, '0')}';
+        }
+      }
 
       items.add({
         'name': name,
@@ -110,9 +137,9 @@ void performBulkSave({
         'cost_per_unit': cost,
         'min_stock_alert': alert,
         'initial_stock': stock,
-        'category_id': row.categoryId ?? targetCategoryId,
+        'category_id': effectiveCatId,
         'sort_order': sortIndex++,
-        'barcode': row.sku,
+        'barcode': sku,
       });
     }
     if (items.isNotEmpty) {

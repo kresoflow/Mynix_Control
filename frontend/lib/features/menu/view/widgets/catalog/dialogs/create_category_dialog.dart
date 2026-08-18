@@ -129,7 +129,13 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                 icon: PhosphorIconsRegular.floppyDisk,
                 width: null,
                 onPressed: () {
-                  final sortOrder = int.tryParse(sortOrderController.text) ?? 0;
+                  int defaultSort = 1;
+                  final catState = context.read<CategoryBloc>().state;
+                  if (catState is CategoryLoaded) {
+                    final sameType = catState.categories.where((c) => c.categoryType == type).toList();
+                    defaultSort = sameType.length + 1;
+                  }
+                  final sortOrder = int.tryParse(sortOrderController.text) ?? defaultSort;
                   final finalIcon = selectedIcon;
                   
                   if (nameController.text.isNotEmpty) {
@@ -169,7 +175,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                              'is_visible': isVisible,
                              'icon': finalIcon,
                            });
-                           currentSortOrder += 10;
+                           currentSortOrder += 1;
                          }
                          context.read<CategoryBloc>().add(CreateCategoriesBulk(categories: bulkData));
                       }
