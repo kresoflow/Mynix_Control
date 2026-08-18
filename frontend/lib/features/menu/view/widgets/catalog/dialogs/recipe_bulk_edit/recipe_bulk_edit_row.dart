@@ -10,24 +10,42 @@ class SmartDecimalInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    String newText = newValue.text.replaceAll(',', '.');
-
-    // Auto-prepend 0 if starts with dot: .04 -> 0.04
-    if (newText.startsWith('.')) {
-      newText = '0$newText';
+    // If user hit Backspace on '0.' -> clear to empty
+    if (oldValue.text == '0.' && newValue.text == '0') {
+      return const TextEditingValue(text: '', selection: TextSelection.collapsed(offset: 0));
     }
 
-    // Only allow digits and at most one decimal point
+    String newText = newValue.text.replaceAll(',', '.');
+
+    // 1. If starts with dot -> auto-prefix 0.
+    if (newText == '.') {
+      newText = '0.';
+    }
+
+    // 2. If user enters '0' as first character -> automatically become '0.'
+    if (newText == '0') {
+      newText = '0.';
+    } else if (newText.startsWith('0') && !newText.startsWith('0.') && newText.length > 1) {
+      // User typed 0 then another digit e.g. '04' -> '0.04'
+      newText = '0.${newText.substring(1)}';
+    }
+
+    // 3. Ignore redundant consecutive dots e.g. '0..' -> '0.'
+    if (newText.contains('..')) {
+      newText = newText.replaceAll('..', '.');
+    }
+
+    // 4. Validate decimal pattern
     if (newText.isNotEmpty && !RegExp(r'^\d*\.?\d*$').hasMatch(newText)) {
       return oldValue;
     }
 
     final diff = newText.length - newValue.text.length;
+    final newOffset = (newValue.selection.baseOffset + diff).clamp(0, newText.length);
+
     return TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(
-        offset: (newValue.selection.baseOffset + diff).clamp(0, newText.length),
-      ),
+      selection: TextSelection.collapsed(offset: newOffset),
     );
   }
 }
@@ -54,18 +72,8 @@ class RecipeBulkEditRow extends StatelessWidget {
 
   void _handleQuantitySubmit(String unit) {
     final text = row.quantityController.text.trim();
-    if (text.isNotEmpty) {
-      final val = double.tryParse(text);
-      if (val != null) {
-        final unitLower = unit.toLowerCase();
-        if ((unitLower == 'kg' || unitLower == 'кг' || unitLower == 'l' || unitLower == 'л') &&
-            val >= 5.0 &&
-            !text.contains('.')) {
-          // User typed whole grams (e.g. 40 -> 0.040, 150 -> 0.150)
-          final converted = val / 1000.0;
-          row.quantityController.text = converted.toStringAsFixed(3).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
-        }
-      }
+    if (text.isNotEmpty && text.endsWith('.')) {
+      row.quantityController.text = text.substring(0, text.length - 1);
     }
     onAddNext();
   }
