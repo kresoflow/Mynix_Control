@@ -49,17 +49,43 @@ class RecipeBulkEditRow extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    selectedIngredient != null
-                        ? selectedIngredient.name
-                        : 'Выберите сырье...',
-                    style: TextStyle(
-                      color: selectedIngredient != null
-                          ? Theme.of(context).textTheme.bodyLarge?.color
-                          : Colors.grey,
-                      fontWeight: selectedIngredient != null
-                          ? FontWeight.w600
-                          : FontWeight.normal,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (selectedIngredient != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              selectedIngredient.displayCode,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        Flexible(
+                          child: Text(
+                            selectedIngredient != null
+                                ? selectedIngredient.name
+                                : 'Выберите сырье...',
+                            style: TextStyle(
+                              color: selectedIngredient != null
+                                  ? Theme.of(context).textTheme.bodyLarge?.color
+                                  : Colors.grey,
+                              fontWeight: selectedIngredient != null
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const Icon(PhosphorIconsRegular.caretDown, size: 16, color: Colors.grey),
