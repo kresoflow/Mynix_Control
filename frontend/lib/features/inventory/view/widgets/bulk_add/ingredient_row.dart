@@ -8,6 +8,8 @@ class IngredientRowData {
   final TextEditingController costController;
   final FocusNode firstFocusNode = FocusNode();
   String selectedUnit;
+  int? categoryId;
+  String? categoryName;
 
   IngredientRowData({
     String name = '',
@@ -15,6 +17,8 @@ class IngredientRowData {
     String alert = '0',
     String cost = '0',
     String selectedUnit = 'g',
+    this.categoryId,
+    this.categoryName,
   }) : nameController = TextEditingController(text: name),
        stockController = TextEditingController(text: stock),
        alertController = TextEditingController(text: alert),
@@ -37,6 +41,8 @@ class IngredientRowData {
       alert: alertController.text,
       cost: costController.text,
       selectedUnit: selectedUnit,
+      categoryId: categoryId,
+      categoryName: categoryName,
     );
   }
 }

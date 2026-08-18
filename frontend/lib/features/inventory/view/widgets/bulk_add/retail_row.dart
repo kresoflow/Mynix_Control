@@ -12,6 +12,8 @@ class RetailRowData {
   final TextEditingController barcodeController;
   final FocusNode firstFocusNode = FocusNode();
   String selectedUnit;
+  int? categoryId;
+  String? categoryName;
 
   RetailRowData({
     String name = '',
@@ -23,6 +25,8 @@ class RetailRowData {
     String alert = '0',
     String barcode = '',
     this.selectedUnit = 'pcs',
+    this.categoryId,
+    this.categoryName,
   }) : nameController = TextEditingController(text: name),
        flavorController = TextEditingController(text: flavor),
        volumeController = TextEditingController(text: volume),
@@ -43,6 +47,8 @@ class RetailRowData {
       alert: alertController.text,
       barcode: barcodeController.text,
       selectedUnit: selectedUnit,
+      categoryId: categoryId,
+      categoryName: categoryName,
     );
   }
 }

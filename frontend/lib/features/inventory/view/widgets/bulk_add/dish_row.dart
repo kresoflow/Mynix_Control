@@ -6,14 +6,27 @@ class DishRowData {
   final TextEditingController optionsController;
   final TextEditingController priceController;
   final FocusNode firstFocusNode = FocusNode();
+  int? categoryId;
+  String? categoryName;
 
-  DishRowData({String name = '', String options = '', String price = '0'})
-    : nameController = TextEditingController(text: name),
-      optionsController = TextEditingController(text: options),
-      priceController = TextEditingController(text: price);
+  DishRowData({
+    String name = '',
+    String options = '',
+    String price = '0',
+    this.categoryId,
+    this.categoryName,
+  }) : nameController = TextEditingController(text: name),
+       optionsController = TextEditingController(text: options),
+       priceController = TextEditingController(text: price);
 
   DishRowData clone() {
-    return DishRowData(name: nameController.text, options: optionsController.text, price: priceController.text);
+    return DishRowData(
+      name: nameController.text,
+      options: optionsController.text,
+      price: priceController.text,
+      categoryId: categoryId,
+      categoryName: categoryName,
+    );
   }
 }
 

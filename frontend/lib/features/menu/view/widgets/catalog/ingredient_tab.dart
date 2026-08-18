@@ -111,7 +111,14 @@ class _IngredientTabState extends State<IngredientTab> {
                             ),
                             Expanded(
                               child: IngredientTableView(
-                                ingredients: state.ingredients.where((i) => _searchQuery.isEmpty || i.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList(),
+                                ingredients: state.ingredients.where((i) {
+                                  if (_searchQuery.isEmpty) return true;
+                                  final q = _searchQuery.toLowerCase().trim();
+                                  return i.name.toLowerCase().contains(q) ||
+                                         '#${i.id}'.contains(q) ||
+                                         '${i.id}' == q ||
+                                         (i.barcode != null && i.barcode!.toLowerCase().contains(q));
+                                }).toList(),
                                 selectedCategoryId: _selectedCategoryId,
                                 isManageMode: _isManageMode,
                                 selectedIngredients: _selectedIngredients,

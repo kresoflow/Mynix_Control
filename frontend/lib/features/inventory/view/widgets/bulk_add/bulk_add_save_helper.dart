@@ -87,7 +87,7 @@ void performBulkSave({
         CreateMenuItem(
           name: name,
           price: basePrice,
-          category: targetCategoryId?.toString() ?? '',
+          category: (row.categoryId ?? targetCategoryId)?.toString() ?? '',
           sortOrder: sortIndex++,
           attributes: attributes,
         ),
@@ -110,7 +110,7 @@ void performBulkSave({
           costPerUnit: cost,
           minStockAlert: alert,
           initialStock: stock,
-          categoryId: targetCategoryId,
+          categoryId: row.categoryId ?? targetCategoryId,
           sortOrder: sortIndex++,
         ),
       );
@@ -156,7 +156,7 @@ void performBulkSave({
         context.read<MenuBloc>().add(
           CreateRetailProduct(
             name: baseName,
-            categoryId: targetCategoryId,
+            categoryId: row.categoryId ?? targetCategoryId,
             unit: row.selectedUnit,
             purchasePrice: purchase,
             sellingPrice: sell,
@@ -207,7 +207,7 @@ void performBulkSave({
         context.read<MenuBloc>().add(
           CreateRetailProductGroup(
             name: groupName,
-            categoryId: targetCategoryId,
+            categoryId: row.categoryId ?? targetCategoryId,
             flavor: flavor,
             variations: variations,
           ),

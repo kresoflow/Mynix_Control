@@ -97,18 +97,38 @@ class IngredientItemRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              item.name,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? AppColors.darkText : AppColors.lightText,
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+                                ),
+                              ),
+                              child: Text(
+                                '#${item.id}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontFamily: 'monospace',
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                ),
                               ),
                             ),
-                          ),
+                            Flexible(
+                              child: Text(
+                                item.name,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                                ),
+                              ),
+                            ),
                           if (item.categoryId == null)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

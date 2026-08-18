@@ -176,6 +176,22 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                             }(),
                         title: Row(
                           children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '#${item.id}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontFamily: 'monospace',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                             Flexible(child: Text(item.name, style: const TextStyle(fontSize: 16))),
                             if (item.categoryId == null)
                               Container(
