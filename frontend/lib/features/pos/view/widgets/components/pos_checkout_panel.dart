@@ -65,15 +65,15 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: bg,
         border: Border(top: BorderSide(color: border, width: 1.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            offset: const Offset(0, -8),
-            blurRadius: 16,
+            offset: const Offset(0, -6),
+            blurRadius: 12,
           ),
         ],
       ),
@@ -104,13 +104,14 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ── 1. Compact Customer Row ──────────────────────────────────
-              _buildCustomerRow(context, customer, state, isDark, border),
-              const SizedBox(height: 10),
-
-              // ── 2. Primary Payment Method Selector ────────────────────────
+              // ── 1. Single Combined Row: Guest + Payment Method Tabs ────────
               Row(
                 children: [
+                  // Compact Guest Pill
+                  _buildCompactGuestChip(context, customer, state, isDark, border),
+                  const SizedBox(width: 6),
+
+                  // Cash Tab
                   Expanded(
                     child: _buildPaymentMethodTab(
                       method: 'CASH',
@@ -120,7 +121,9 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                       isDark: isDark,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
+
+                  // Transfer Tab
                   Expanded(
                     child: _buildPaymentMethodTab(
                       method: 'TRANSFER',
@@ -130,8 +133,10 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                       isDark: isDark,
                     ),
                   ),
+
+                  // Debt / Deposit Tab (if customer selected)
                   if (customer != null) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: _buildPaymentMethodTab(
                         method: customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
@@ -145,15 +150,15 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                 ],
               ),
 
-              // ── 3. Transfer Providers Bar (DC / Алиф / Спитамен) ─────────
+              // ── 2. Compact Transfer Banks Row (DC / Алиф / Спитамен) ───────
               if (_paymentMethod == 'TRANSFER') ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 _buildTransferProvidersRow(isDark, border),
               ],
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-              // ── 4. Total Amount Row ──────────────────────────────────────
+              // ── 3. Total Amount Row ────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -162,27 +167,27 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                     style: TextStyle(
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                      fontSize: 13,
                     ),
                   ),
                   Text(
                     state.payableTotal.toCurrency(context),
-                    style: AppTextStyles.h1.copyWith(
+                    style: AppTextStyles.h2.copyWith(
                       color: isDark ? AppColors.darkText : AppColors.lightText,
                       fontWeight: FontWeight.w900,
-                      fontSize: 26,
+                      fontSize: 22,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-              // ── 5. Main Action Checkout Button ───────────────────────────
+              // ── 4. Main Pay Button ─────────────────────────────────────────
               AppButton.primary(
                 label: isSubmitting ? 'Обработка...' : _getButtonLabel(state.payableTotal),
                 icon: _getButtonIcon(),
                 isFullWidth: true,
-                height: 48,
+                height: 44,
                 isLoading: isSubmitting,
                 onPressed: isEmpty || isSubmitting
                     ? null
@@ -202,7 +207,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
     );
   }
 
-  Widget _buildCustomerRow(
+  Widget _buildCompactGuestChip(
     BuildContext context,
     dynamic customer,
     CartState state,
@@ -210,116 +215,90 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
     Color border,
   ) {
     if (customer == null) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: border),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(PhosphorIconsRegular.user, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                const SizedBox(width: 6),
-                Text(
-                  'Клиент:',
-                  style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Анонимный гость',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkText : AppColors.lightText),
-                ),
-              ],
+      return InkWell(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (_) => CustomerPickerModal(
+              selectedCustomer: null,
+              onSelect: (c) => context.read<CartBloc>().add(SelectCustomer(c)),
             ),
-            InkWell(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => CustomerPickerModal(
-                    selectedCustomer: null,
-                    onSelect: (c) => context.read<CartBloc>().add(SelectCustomer(c)),
-                  ),
-                );
-              },
-              child: Text(
-                '+ Прикрепить',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+          );
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 9),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkCard : AppColors.lightCard,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.userPlus, size: 13, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              const SizedBox(width: 5),
+              Text(
+                'Гость',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
 
     final bonus = (customer.bonusBalance as num?)?.toDouble() ?? 0.0;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: AppColors.brandPrimary.withValues(alpha: 0.08),
+        color: AppColors.brandPrimary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(PhosphorIconsRegular.userCheck, size: 15, color: AppColors.brandPrimary),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    customer.name.toString(),
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+          Icon(PhosphorIconsRegular.userCheck, size: 13, color: AppColors.brandPrimary),
+          const SizedBox(width: 5),
+          InkWell(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (_) => CustomerPickerModal(
+                  selectedCustomer: customer,
+                  onSelect: (c) => context.read<CartBloc>().add(SelectCustomer(c)),
                 ),
-                if (bonus > 0) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    '🎁${bonus.toStringAsFixed(0)}',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
-                  ),
-                ],
-              ],
+              );
+            },
+            child: Text(
+              customer.name.toString(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.brandPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (bonus > 0 || state.bonusToSpend > 0) ...[
-            InkWell(
-              onTap: () {
-                if (state.bonusToSpend > 0) {
-                  context.read<CartBloc>().add(const SetBonusToSpend(0.0));
-                } else {
-                  final maxBonus = bonus < state.total ? bonus : state.total;
-                  context.read<CartBloc>().add(SetBonusToSpend(maxBonus));
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                margin: const EdgeInsets.only(right: 6),
-                decoration: BoxDecoration(
-                  color: state.bonusToSpend > 0 ? AppColors.brandPrimary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.brandPrimary),
-                ),
-                child: Text(
-                  state.bonusToSpend > 0 ? 'Бонусы: -${state.bonusToSpend.toStringAsFixed(0)}с' : 'Списать 🎁',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: state.bonusToSpend > 0 ? Colors.black : AppColors.brandPrimary,
-                  ),
-                ),
-              ),
+          if (bonus > 0) ...[
+            const SizedBox(width: 4),
+            Text(
+              '🎁${bonus.toStringAsFixed(0)}',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
             ),
           ],
+          const SizedBox(width: 4),
           InkWell(
             onTap: () => context.read<CartBloc>().add(const SelectCustomer(null)),
-            child: Icon(PhosphorIconsRegular.xCircle, size: 16, color: AppColors.error),
+            child: Icon(PhosphorIconsRegular.xCircle, size: 14, color: AppColors.error),
           ),
         ],
       ),
@@ -338,15 +317,15 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
     return InkWell(
       onTap: () => setState(() => _paymentMethod = method),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(8),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        duration: const Duration(milliseconds: 120),
+        height: 32,
         decoration: BoxDecoration(
           color: isSelected
               ? activeColor.withValues(alpha: 0.15)
               : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? activeColor : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             width: isSelected ? 1.5 : 1,
@@ -355,12 +334,12 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 16, color: isSelected ? activeColor : inactiveColor),
-            const SizedBox(width: 6),
+            Icon(icon, size: 14, color: isSelected ? activeColor : inactiveColor),
+            const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
               ),
@@ -373,10 +352,11 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
   Widget _buildTransferProvidersRow(bool isDark, Color border) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      height: 28,
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: border),
       ),
       child: Row(
@@ -385,20 +365,19 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
           return Expanded(
             child: InkWell(
               onTap: () => setState(() => _transferProvider = p.id),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(5),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                padding: const EdgeInsets.symmetric(vertical: 6),
+                duration: const Duration(milliseconds: 100),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   p.label,
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                    fontSize: 10,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     color: isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText),
                   ),
                 ),
