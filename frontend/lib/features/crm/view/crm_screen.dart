@@ -8,6 +8,7 @@ import 'package:mynix_frontend/features/crm/bloc/crm_event.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_state.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/customer_kpi_cards.dart';
+import 'package:mynix_frontend/features/crm/view/widgets/customer_table_header.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/customer_row.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_form_modal.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_details_dialog.dart';
@@ -131,6 +132,7 @@ class _CrmScreenState extends State<CrmScreen> {
           final totalLtv = state is CrmLoaded ? state.totalLtv : 0.0;
           final totalBonuses = state is CrmLoaded ? state.totalBonuses : 0.0;
           final debtorsCount = state is CrmLoaded ? state.debtorsCount : 0;
+          final depositsCount = state is CrmLoaded ? state.depositsCount : 0;
           final vipCount = state is CrmLoaded ? state.vipCount : 0;
 
           return Padding(
@@ -169,7 +171,7 @@ class _CrmScreenState extends State<CrmScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // KPI summary
                 CustomerKpiCards(
@@ -181,7 +183,7 @@ class _CrmScreenState extends State<CrmScreen> {
                   debtorsCount: debtorsCount,
                   vipCount: vipCount,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // Search and Filters
                 Row(
@@ -197,32 +199,36 @@ class _CrmScreenState extends State<CrmScreen> {
                           fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
                           enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _buildFilterPill('Все', 'all', isDark),
+                          _buildFilterPill('Все ($totalCount)', 'all', isDark),
                           const SizedBox(width: 6),
-                          _buildFilterPill('🔥 VIP', 'vip', isDark),
+                          _buildFilterPill('🔥 VIP ($vipCount)', 'vip', isDark),
                           const SizedBox(width: 6),
                           _buildFilterPill('⚠️ Спящие', 'churn', isDark),
                           const SizedBox(width: 6),
                           _buildFilterPill('✨ Новички', 'new', isDark),
                           const SizedBox(width: 6),
-                          _buildFilterPill('Должники', 'debtors', isDark),
+                          _buildFilterPill('Должники ($debtorsCount)', 'debtors', isDark),
                           const SizedBox(width: 6),
-                          _buildFilterPill('Депозиты', 'deposits', isDark),
+                          _buildFilterPill('Депозиты ($depositsCount)', 'deposits', isDark),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
+
+                // Table Header
+                const CustomerTableHeader(),
+                const SizedBox(height: 4),
 
                 // Customer List
                 Expanded(
@@ -263,7 +269,7 @@ class _CrmScreenState extends State<CrmScreen> {
       onTap: () => _onFilterChanged(value),
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
           borderRadius: BorderRadius.circular(10),

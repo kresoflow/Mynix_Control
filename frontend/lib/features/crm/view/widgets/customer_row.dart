@@ -41,22 +41,22 @@ class _CustomerRowState extends State<CustomerRow> {
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _isHovered ? AppColors.brandPrimary.withValues(alpha: 0.5) : border),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _isHovered ? AppColors.brandPrimary.withValues(alpha: 0.4) : border),
         ),
         child: InkWell(
           onTap: widget.onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           child: Row(
             children: [
               // Avatar
               Container(
-                width: 40,
-                height: 40,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: AppColors.brandPrimary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
@@ -64,7 +64,7 @@ class _CustomerRowState extends State<CustomerRow> {
                 alignment: Alignment.center,
                 child: Text(
                   c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',
-                  style: TextStyle(color: AppColors.brandPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(color: AppColors.brandPrimary, fontWeight: FontWeight.bold, fontSize: 15),
                 ),
               ),
               const SizedBox(width: 14),
@@ -74,13 +74,14 @@ class _CustomerRowState extends State<CustomerRow> {
                 flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
                       children: [
                         Flexible(
                           child: Text(
                             c.name,
-                            style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w700),
+                            style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w700, fontSize: 13),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -88,10 +89,10 @@ class _CustomerRowState extends State<CustomerRow> {
                         if (c.tierLevel != 'standard') ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                             decoration: BoxDecoration(
                               color: (c.tierLevel == 'gold' ? Colors.amber : Colors.blueGrey).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               c.tierLevel.toUpperCase(),
@@ -110,7 +111,7 @@ class _CustomerRowState extends State<CustomerRow> {
                         c.phone!,
                         style: AppTextStyles.caption.copyWith(
                           color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                          fontSize: 12,
+                          fontSize: 11,
                         ),
                       ),
                   ],
@@ -122,16 +123,17 @@ class _CustomerRowState extends State<CustomerRow> {
                 flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'LTV: ${c.totalSpent.toStringAsFixed(0)} с',
+                      '${c.totalSpent.toStringAsFixed(0)} с',
                       style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700, fontSize: 12),
                     ),
                     Text(
                       '${c.ordersCount} заказов • ср. ${c.averageCheck.toStringAsFixed(0)} с',
                       style: AppTextStyles.caption.copyWith(
                         color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                        fontSize: 11,
+                        fontSize: 10,
                       ),
                     ),
                   ],
@@ -139,55 +141,80 @@ class _CustomerRowState extends State<CustomerRow> {
               ),
 
               // Bonus Points Pill
-              if (c.bonusBalance > 0) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(PhosphorIconsRegular.gift, size: 13, color: AppColors.brandPrimary),
-                      const SizedBox(width: 4),
-                      Text(
-                        c.bonusBalance.toStringAsFixed(0),
-                        style: TextStyle(color: AppColors.brandPrimary, fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                    ],
-                  ),
+              SizedBox(
+                width: 90,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: c.bonusBalance > 0
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandPrimary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(PhosphorIconsRegular.gift, size: 12, color: AppColors.brandPrimary),
+                              const SizedBox(width: 4),
+                              Text(
+                                c.bonusBalance.toStringAsFixed(0),
+                                style: TextStyle(color: AppColors.brandPrimary, fontWeight: FontWeight.bold, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Text('0', style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, fontSize: 12)),
                 ),
-                const SizedBox(width: 10),
-              ],
+              ),
+              const SizedBox(width: 8),
 
               // Balance Badge
-              _buildBalanceBadge(c.balance),
-              const SizedBox(width: 12),
+              SizedBox(
+                width: 120,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _buildBalanceBadge(c.balance),
+                ),
+              ),
+              const SizedBox(width: 8),
 
               // Quick Actions
-              IconButton(
-                icon: Icon(
-                  c.balance < 0 ? PhosphorIconsRegular.handCoins : PhosphorIconsRegular.wallet,
-                  color: c.balance < 0 ? AppColors.brandPrimary : AppColors.success,
-                  size: 20,
+              SizedBox(
+                width: 70,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    InkWell(
+                      onTap: widget.onPay,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          c.balance < 0 ? PhosphorIconsRegular.handCoins : PhosphorIconsRegular.wallet,
+                          color: c.balance < 0 ? AppColors.brandPrimary : AppColors.success,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: Icon(PhosphorIconsRegular.dotsThreeVertical, size: 16, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                      onSelected: (val) {
+                        if (val == 'edit') widget.onEdit();
+                        if (val == 'delete') widget.onDelete();
+                        if (val == 'history') widget.onTap();
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(value: 'history', child: Text('История и бонусы')),
+                        const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
+                        const PopupMenuItem(value: 'delete', child: Text('Удалить гостя', style: TextStyle(color: AppColors.error))),
+                      ],
+                    ),
+                  ],
                 ),
-                tooltip: c.balance < 0 ? 'Принять оплату долга' : 'Внести депозит',
-                onPressed: widget.onPay,
-              ),
-              PopupMenuButton<String>(
-                icon: Icon(PhosphorIconsRegular.dotsThreeVertical, size: 18, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
-                onSelected: (val) {
-                  if (val == 'edit') widget.onEdit();
-                  if (val == 'delete') widget.onDelete();
-                  if (val == 'history') widget.onTap();
-                },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'history', child: Text('История и бонусы')),
-                  const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                  const PopupMenuItem(value: 'delete', child: Text('Удалить гостя', style: TextStyle(color: AppColors.error))),
-                ],
               ),
             ],
           ),
@@ -204,21 +231,21 @@ class _CustomerRowState extends State<CustomerRow> {
     if (balance < -0.01) {
       bg = AppColors.error.withValues(alpha: 0.12);
       fg = AppColors.error;
-      text = 'Долг: ${balance.abs().toStringAsFixed(2)} с';
+      text = 'Долг: ${balance.abs().toStringAsFixed(0)} с';
     } else if (balance > 0.01) {
       bg = AppColors.success.withValues(alpha: 0.12);
       fg = AppColors.success;
-      text = 'Депозит: +${balance.toStringAsFixed(2)} с';
+      text = 'Депозит: +${balance.toStringAsFixed(0)} с';
     } else {
-      bg = Colors.grey.withValues(alpha: 0.12);
+      bg = Colors.grey.withValues(alpha: 0.08);
       fg = Colors.grey;
-      text = '0.00 с';
+      text = '0 с';
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
-      child: Text(text, style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 12)),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+      child: Text(text, style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 11), maxLines: 1),
     );
   }
 }

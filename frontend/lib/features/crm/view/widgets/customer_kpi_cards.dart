@@ -29,12 +29,12 @@ class CustomerKpiCards extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth < 900;
+        final isNarrow = constraints.maxWidth < 800;
         final cards = [
           _buildCard(
             title: 'LTV Базы (Выручка)',
             value: '${totalLtv.toStringAsFixed(0)} с',
-            subtitle: '$vipCount VIP гостей (LTV > 10k)',
+            subtitle: '$vipCount VIP гостей',
             icon: PhosphorIconsRegular.chartLineUp,
             color: AppColors.brandPrimary,
             isDark: isDark,
@@ -42,25 +42,25 @@ class CustomerKpiCards extends StatelessWidget {
           _buildCard(
             title: 'Бонусный фонд',
             value: '${totalBonuses.toStringAsFixed(0)} бонусов',
-            subtitle: 'На счетах гостей',
+            subtitle: 'На балансе клиентов',
             icon: PhosphorIconsRegular.gift,
             color: Colors.amber,
             isDark: isDark,
           ),
           _buildCard(
             title: 'Долг гостей',
-            value: '- ${totalDebt.toStringAsFixed(2)} с',
+            value: totalDebt > 0 ? '- ${totalDebt.toStringAsFixed(0)} с' : '0 с',
             subtitle: '$debtorsCount должников',
             icon: PhosphorIconsRegular.trendDown,
-            color: AppColors.error,
+            color: totalDebt > 0 ? AppColors.error : AppColors.darkSubtext,
             isDark: isDark,
           ),
           _buildCard(
             title: 'Всего в базе',
             value: '$totalCount',
-            subtitle: 'Гостей в CRM',
+            subtitle: 'Активных гостей',
             icon: PhosphorIconsRegular.users,
-            color: Colors.blueAccent,
+            color: Colors.cyanAccent,
             isDark: isDark,
           ),
         ];
@@ -70,7 +70,7 @@ class CustomerKpiCards extends StatelessWidget {
             children: [
               for (int i = 0; i < cards.length; i++) ...[
                 cards[i],
-                if (i < cards.length - 1) const SizedBox(height: 10),
+                if (i < cards.length - 1) const SizedBox(height: 8),
               ],
             ],
           );
@@ -80,7 +80,7 @@ class CustomerKpiCards extends StatelessWidget {
           children: [
             for (int i = 0; i < cards.length; i++) ...[
               Expanded(child: cards[i]),
-              if (i < cards.length - 1) const SizedBox(width: 12),
+              if (i < cards.length - 1) const SizedBox(width: 10),
             ],
           ],
         );
@@ -100,23 +100,25 @@ class CustomerKpiCards extends StatelessWidget {
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: border),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 22),
+            alignment: Alignment.center,
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,23 +128,32 @@ class CustomerKpiCards extends StatelessWidget {
                   title,
                   style: AppTextStyles.caption.copyWith(
                     color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: AppTextStyles.h3.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                     fontSize: 11,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 1),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      value,
+                      style: AppTextStyles.h3.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                      maxLines: 1,
+                    ),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark ? AppColors.textSecondaryDark.withValues(alpha: 0.7) : AppColors.textSecondaryLight.withValues(alpha: 0.7),
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                    ),
+                  ],
                 ),
               ],
             ),

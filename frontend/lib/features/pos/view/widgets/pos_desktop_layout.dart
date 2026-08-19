@@ -29,7 +29,7 @@ class PosDesktopLayout extends StatelessWidget {
               child: ConstrainedBox(
                 // Ограничиваем максимальную ширину корзины, 
                 // чтобы при 50% на огромном мониторе она не была слишком гигантской
-                constraints: const BoxConstraints(maxWidth: 650),
+                constraints: const BoxConstraints(minWidth: 340, maxWidth: 650),
                 child: const PosCart(),
               ),
             ),

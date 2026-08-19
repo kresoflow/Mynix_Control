@@ -54,90 +54,94 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
   Widget build(BuildContext context) {
     final item = widget.cartItem;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
           color: _hovered
               ? (isDark ? AppColors.darkCardHover : AppColors.lightBg)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Name + attributes
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     item.menuItem.cleanName,
-                    style: AppTextStyles.bodyMedium,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   if (item.menuItem.attributesString != null)
                     Text(
                       item.menuItem.attributesString!,
-                      style: AppTextStyles.caption,
+                      style: AppTextStyles.caption.copyWith(fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   if (item.selectedOptionsJson != null)
                     Text(
                       _parseSelectedOptions(item.selectedOptionsJson!),
-                      style: AppTextStyles.caption.copyWith(color: AppColors.brandPrimary, fontSize: isMobile ? 10 : null),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.brandPrimary,
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
 
             // Qty controls
-            _QtyControl(cartItem: item, isMobile: isMobile),
+            _QtyControl(cartItem: item),
 
-            SizedBox(width: isMobile ? 8 : 12),
+            const SizedBox(width: 6),
 
             // Line total
             SizedBox(
-              width: isMobile ? 54 : 64,
+              width: 54,
               child: Text(
                 (item.total as num).toCurrency(context),
                 textAlign: TextAlign.right,
                 style: GoogleFonts.jetBrainsMono(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: isDark ? AppColors.darkText : AppColors.lightText,
                 ),
               ),
             ),
 
-            // Remove — always visible on mobile, visible on hover on desktop
-            if (isMobile)
-              IconButton(
-                icon: const Icon(PhosphorIconsRegular.x, size: 16),
-                color: AppColors.danger,
-                padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            const SizedBox(width: 4),
+
+            // Remove button
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: IconButton(
+                icon: const Icon(PhosphorIconsRegular.x, size: 14),
+                color: AppColors.danger.withValues(alpha: _hovered ? 1.0 : 0.4),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
                 tooltip: 'Удалить',
                 onPressed: () =>
                     context.read<CartBloc>().add(RemoveItemFromCart(item.id)),
-              )
-            else
-              AnimatedOpacity(
-                opacity: _hovered ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 150),
-                child: IconButton(
-                  icon: const Icon(PhosphorIconsRegular.x, size: 20),
-                  color: AppColors.danger,
-                  padding: const EdgeInsets.all(12),
-                  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                  tooltip: 'Удалить',
-                  onPressed: () =>
-                      context.read<CartBloc>().add(RemoveItemFromCart(item.id)),
-                ),
               ),
+            ),
           ],
         ),
       ),
@@ -147,8 +151,7 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
 
 class _QtyControl extends StatelessWidget {
   final dynamic cartItem;
-  final bool isMobile;
-  const _QtyControl({required this.cartItem, this.isMobile = false});
+  const _QtyControl({required this.cartItem});
 
   @override
   Widget build(BuildContext context) {
@@ -156,9 +159,9 @@ class _QtyControl extends StatelessWidget {
     final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     return Container(
-      height: isMobile ? 36 : 48,
+      height: 28,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: borderColor),
       ),
       child: Row(
@@ -166,7 +169,6 @@ class _QtyControl extends StatelessWidget {
         children: [
           _QtyBtn(
             icon: PhosphorIconsRegular.minus,
-            isMobile: isMobile,
             onPressed: cartItem.quantity > 1
                 ? () => context
                     .read<CartBloc>()
@@ -176,12 +178,12 @@ class _QtyControl extends StatelessWidget {
                     .add(RemoveItemFromCart(cartItem.id)),
           ),
           Container(
-            width: isMobile ? 32 : 48,
+            width: 26,
             alignment: Alignment.center,
             child: Text(
               '${cartItem.quantity}',
               style: GoogleFonts.jetBrainsMono(
-                fontSize: isMobile ? 14 : 16,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: isDark ? AppColors.darkText : AppColors.lightText,
               ),
@@ -189,7 +191,6 @@ class _QtyControl extends StatelessWidget {
           ),
           _QtyBtn(
             icon: PhosphorIconsRegular.plus,
-            isMobile: isMobile,
             onPressed: () => context
                 .read<CartBloc>()
                 .add(UpdateCartItemQuantity(cartItem.id, cartItem.quantity + 1)),
@@ -203,18 +204,17 @@ class _QtyControl extends StatelessWidget {
 class _QtyBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
-  final bool isMobile;
-  const _QtyBtn({required this.icon, required this.onPressed, this.isMobile = false});
+  const _QtyBtn({required this.icon, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
+      borderRadius: BorderRadius.circular(6),
       child: SizedBox(
-        width: isMobile ? 36 : 48,
-        height: isMobile ? 36 : 48,
-        child: Icon(icon, size: isMobile ? 16 : 18, color: AppColors.darkSubtext),
+        width: 24,
+        height: 28,
+        child: Icon(icon, size: 12, color: AppColors.darkSubtext),
       ),
     );
   }
