@@ -17,7 +17,7 @@ class PosCheckoutPanel extends StatefulWidget {
 
 class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
   String _paymentMethod = 'CASH'; // 'CASH', 'TRANSFER', 'DEBT', 'DEPOSIT'
-  String _transferProvider = 'alif'; // 'dc', 'alif', 'spitamen', 'other'
+  String _transferProvider = 'dc'; // 'dc', 'alif', 'spitamen', 'other'
 
   static const _providers = [
     (id: 'dc', label: 'DC'),
@@ -106,6 +106,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             children: [
               // ── 1. Compact Non-Stretched Pills: Guest + Payment Method Tabs ──
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Compact Guest Chip (same compact style)
                   _buildCompactGuestChip(context, customer, state, isDark, border),
