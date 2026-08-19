@@ -4,7 +4,6 @@ import 'dart:convert';
 
 import 'package:mynix_frontend/core/widgets/responsive_layout.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
@@ -16,8 +15,7 @@ import 'package:mynix_frontend/features/pos/view/widgets/barcode_scanner_listene
 import 'widgets/pos_mobile_layout.dart';
 import 'widgets/pos_desktop_layout.dart';
 import 'widgets/open_shift_modal.dart';
-import 'widgets/x_report_modal.dart';
-import 'widgets/close_shift_modal.dart';
+import 'widgets/pos_shift_hub_modal.dart';
 
 import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
 import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
@@ -102,36 +100,45 @@ class _PosScreenState extends State<PosScreen> {
                         ],
                         const Spacer(),
 
-                        // Action Buttons: X-Report & Close Shift
-                        IconButton(
-                          tooltip: 'X-Отчет (Текущая статистика)',
-                          icon: Icon(PhosphorIconsRegular.chartPie, color: AppColors.brandPrimary),
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => const XReportModal(),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 4),
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            final expected = (state as ShiftOpen).shiftDetails['current_cash_expected'] ?? 0.0;
-                            showDialog(
-                              context: context,
-                              builder: (context) => CloseShiftModal(
-                                expectedCash: (expected as num).toDouble(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(PhosphorIconsRegular.lockKey, size: 16, color: AppColors.danger),
-                          label: const Text('Закрыть смену'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.danger,
-                            side: const BorderSide(color: AppColors.danger),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            textStyle: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold),
+                        // Single Unified Shift Hub Action Button
+                        InkWell(
+                          onTap: () => showShiftHubModal(context),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandTertiary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.brandTertiary.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.brandTertiary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Управление сменой',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  PhosphorIconsRegular.caretRight,
+                                  size: 13,
+                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

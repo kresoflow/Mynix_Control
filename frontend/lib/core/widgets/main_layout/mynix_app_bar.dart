@@ -8,12 +8,12 @@ import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
 import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'icon_btn.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
 
 class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCashTap;
@@ -171,7 +171,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       onSelected: (value) {
         if (value == 'close_shift') {
-          _showCloseShiftDialog(context);
+          showShiftHubModal(context, initialTab: 1);
         } else if (value == 'logout') {
           context.read<AuthBloc>().add(LoggedOut());
         }
@@ -211,46 +211,5 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
       ],
     );
   }
-
-  void _showCloseShiftDialog(BuildContext context) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Закрытие смены'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Введите фактическую сумму наличных в кассе (Z-отчет):'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Сумма (с)',
-                prefixIcon: Icon(PhosphorIconsRegular.money),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final amount = double.tryParse(controller.text) ?? 0.0;
-              context.read<ShiftBloc>().add(CloseShiftRequested(amount));
-              Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
-            child: const Text('ЗАКРЫТЬ'),
-          ),
-        ],
-      ),
-    );
-  }
 }
+

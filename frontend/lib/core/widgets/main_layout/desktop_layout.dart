@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'cashbox_modal.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
 import 'mynix_app_bar.dart';
 import 'mynix_nav_rail.dart';
 
@@ -25,7 +25,7 @@ class _DesktopLayoutState extends State<DesktopLayout> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
       appBar: MynixAppBar(
-        onCashTap: () => showCashboxModal(context),
+        onCashTap: () => showShiftHubModal(context),
         onToggleSidebar: () {
           setState(() {
             _isSidebarOpen = !_isSidebarOpen;
