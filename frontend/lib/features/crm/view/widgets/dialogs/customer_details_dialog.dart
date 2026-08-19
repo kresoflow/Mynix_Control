@@ -12,6 +12,7 @@ import 'package:mynix_frontend/features/crm/bloc/crm_state.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_statement_pdf_service.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_payment_modal.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_bonus_tab.dart';
+import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_orders_tab.dart';
 
 class CustomerDetailsDialog extends StatefulWidget {
   final Customer customer;
@@ -28,11 +29,12 @@ class CustomerDetailsDialog extends StatefulWidget {
 }
 
 class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
-  int _activeTab = 0; // 0 = Ledger, 1 = Bonus & LTV
+  int _activeTab = 0; // 0 = Orders, 1 = Ledger, 2 = Bonus & LTV
 
   @override
   void initState() {
     super.initState();
+    context.read<CrmBloc>().add(LoadCustomerOrdersEvent(widget.customer.id));
     context.read<CrmBloc>().add(LoadCustomerTransactionsEvent(widget.customer.id));
   }
 
@@ -122,21 +124,28 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Tabs Switcher
+                  // Tabs Switcher (3 Tabs)
                   Row(
                     children: [
                       _buildTabButton(
-                        label: 'Взаиморасчеты (Сальдо)',
-                        icon: PhosphorIconsRegular.wallet,
+                        label: 'Чеки & Заказы',
+                        icon: PhosphorIconsRegular.receipt,
                         isActive: _activeTab == 0,
                         onTap: () => setState(() => _activeTab = 0),
                       ),
                       const SizedBox(width: 8),
                       _buildTabButton(
-                        label: 'Бонусы & LTV',
-                        icon: PhosphorIconsRegular.gift,
+                        label: 'Взаиморасчеты (Сальдо)',
+                        icon: PhosphorIconsRegular.wallet,
                         isActive: _activeTab == 1,
                         onTap: () => setState(() => _activeTab = 1),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildTabButton(
+                        label: 'Бонусы & LTV',
+                        icon: PhosphorIconsRegular.gift,
+                        isActive: _activeTab == 2,
+                        onTap: () => setState(() => _activeTab = 2),
                       ),
                       const Spacer(),
                       IconButton(
@@ -152,9 +161,7 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
 
                   // Tab Content
                   Expanded(
-                    child: _activeTab == 0
-                        ? _buildLedgerTab(context, currentCustomer, transactions, isDark)
-                        : CustomerBonusTab(customer: currentCustomer),
+                    child: _buildActiveTabContent(context, currentCustomer, transactions, isDark),
                   ),
                 ],
               ),
@@ -163,6 +170,23 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
         );
       },
     );
+  }
+
+  Widget _buildActiveTabContent(
+    BuildContext context,
+    Customer currentCustomer,
+    List<CustomerTransaction> transactions,
+    bool isDark,
+  ) {
+    switch (_activeTab) {
+      case 0:
+        return CustomerOrdersTab(customer: currentCustomer);
+      case 1:
+        return _buildLedgerTab(context, currentCustomer, transactions, isDark);
+      case 2:
+      default:
+        return CustomerBonusTab(customer: currentCustomer);
+    }
   }
 
   Widget _buildTabButton({
@@ -176,7 +200,7 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? AppColors.brandPrimary.withValues(alpha: 0.15) : (isDark ? AppColors.darkCard : AppColors.lightCard),
           borderRadius: BorderRadius.circular(10),
@@ -187,12 +211,12 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 16, color: isActive ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+            Icon(icon, size: 15, color: isActive ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 color: isActive ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
               ),
@@ -243,7 +267,7 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
           child: transactions.isEmpty
               ? Center(
                   child: Text(
-                    'История операций пуста',
+                    'История сальдо пуста',
                     style: TextStyle(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
                   ),
                 )

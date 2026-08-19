@@ -20,6 +20,7 @@ class CrmLoaded extends CrmState {
   final String activeFilter; // "all", "debtors", "deposits", "vip", "churn", "new"
   final Map<int, List<CustomerTransaction>> transactionsCache;
   final Map<int, List<BonusTransaction>> bonusTransactionsCache;
+  final Map<int, List<Map<String, dynamic>>> ordersCache;
   final bool isSubmitting;
 
   const CrmLoaded({
@@ -28,6 +29,7 @@ class CrmLoaded extends CrmState {
     this.activeFilter = 'all',
     this.transactionsCache = const {},
     this.bonusTransactionsCache = const {},
+    this.ordersCache = const {},
     this.isSubmitting = false,
   });
 
@@ -56,6 +58,7 @@ class CrmLoaded extends CrmState {
     String? activeFilter,
     Map<int, List<CustomerTransaction>>? transactionsCache,
     Map<int, List<BonusTransaction>>? bonusTransactionsCache,
+    Map<int, List<Map<String, dynamic>>>? ordersCache,
     bool? isSubmitting,
   }) {
     return CrmLoaded(
@@ -64,6 +67,7 @@ class CrmLoaded extends CrmState {
       activeFilter: activeFilter ?? this.activeFilter,
       transactionsCache: transactionsCache ?? this.transactionsCache,
       bonusTransactionsCache: bonusTransactionsCache ?? this.bonusTransactionsCache,
+      ordersCache: ordersCache ?? this.ordersCache,
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
@@ -75,6 +79,7 @@ class CrmLoaded extends CrmState {
         activeFilter,
         transactionsCache,
         bonusTransactionsCache,
+        ordersCache,
         isSubmitting,
       ];
 }

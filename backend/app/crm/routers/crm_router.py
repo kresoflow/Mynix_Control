@@ -114,3 +114,14 @@ async def create_bonus_transaction(
     return await crm_loyalty_service.create_bonus_transaction(
         session, customer_id, data, user_id=user.id
     )
+
+# ── Customer Orders & Receipts ───────────────────────────────────
+
+@router.get("/{customer_id}/orders", dependencies=[Depends(require_permission("crm:view"))])
+async def get_customer_orders(
+    customer_id: int,
+    session: TenantSession,
+    user: CurrentUser,
+):
+    return await crm_service.get_customer_orders(session, customer_id)
+

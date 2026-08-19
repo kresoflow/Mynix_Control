@@ -17,7 +17,26 @@ class CrmBloc extends Bloc<CrmEvent, CrmState> {
     on<CreateCustomerTransactionEvent>(_onCreateTransaction);
     on<LoadCustomerBonusTransactionsEvent>(_onLoadBonusTransactions);
     on<CreateCustomerBonusTransactionEvent>(_onCreateBonusTransaction);
+    on<LoadCustomerOrdersEvent>(_onLoadCustomerOrders);
   }
+
+  Future<void> _onLoadCustomerOrders(
+    LoadCustomerOrdersEvent event,
+    Emitter<CrmState> emit,
+  ) async {
+    if (state is! CrmLoaded) return;
+    final loadedState = state as CrmLoaded;
+
+    try {
+      final orders = await repository.getCustomerOrders(event.customerId);
+      final newCache = Map<int, List<Map<String, dynamic>>>.from(loadedState.ordersCache);
+      newCache[event.customerId] = orders;
+      emit(loadedState.copyWith(ordersCache: Map.from(newCache)));
+    } catch (e) {
+      emit(CrmError(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
 
   Future<void> _onLoadCustomers(
     LoadCustomers event,

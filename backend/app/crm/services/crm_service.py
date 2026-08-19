@@ -262,3 +262,40 @@ async def create_customer_transaction(
         date=txn.date,
         created_by=txn.created_by,
     )
+
+async def get_customer_orders(session: AsyncSession, customer_id: int) -> list:
+    from app.pos.models import Order
+    from sqlalchemy.orm import selectinload
+    stmt = (
+        select(Order)
+        .where(Order.customer_id == customer_id)
+        .options(selectinload(Order.items))
+        .order_by(Order.created_at.desc())
+    )
+    result = await session.execute(stmt)
+    orders = result.scalars().all()
+    return [
+        {
+            "id": o.id,
+            "order_number": o.order_number,
+            "status": o.status,
+            "payment_method": o.payment_method,
+            "total": o.total,
+            "bonus_spent": getattr(o, 'bonus_spent', 0.0) or 0.0,
+            "note": o.note,
+            "created_at": o.created_at.isoformat(),
+            "items": [
+                {
+                    "menu_item_name": oi.menu_item_name,
+                    "quantity": oi.quantity,
+                    "unit_price": oi.unit_price,
+                    "subtotal": oi.subtotal,
+                    "selected_options": oi.selected_options,
+                    "item_type": oi.item_type,
+                }
+                for oi in o.items
+            ],
+        }
+        for o in orders
+    ]
+

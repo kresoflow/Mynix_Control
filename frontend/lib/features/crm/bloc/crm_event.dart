@@ -82,3 +82,13 @@ class CreateCustomerBonusTransactionEvent extends CrmEvent {
   @override
   List<Object?> get props => [customerId, data];
 }
+
+class LoadCustomerOrdersEvent extends CrmEvent {
+  final int customerId;
+
+  const LoadCustomerOrdersEvent(this.customerId);
+
+  @override
+  List<Object?> get props => [customerId];
+}
+

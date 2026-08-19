@@ -101,7 +101,17 @@ class CrmRepository {
       final response = await _dio.post('/crm/customers/$customerId/bonus-transactions', data: data);
       return BonusTransaction.fromJson(response.data);
     } catch (e) {
-      throw Exception('Не удалось провести бонусную операцию: $e');
+      throw Exception('Не удалось провести операцию с бонусами: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getCustomerOrders(int customerId) async {
+    try {
+      final response = await _dio.get('/crm/customers/$customerId/orders');
+      final List data = response.data;
+      return data.cast<Map<String, dynamic>>();
+    } catch (e) {
+      throw Exception('Не удалось загрузить историю заказов: $e');
     }
   }
 }
