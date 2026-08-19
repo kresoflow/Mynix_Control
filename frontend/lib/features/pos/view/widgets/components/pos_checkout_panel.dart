@@ -7,8 +7,7 @@ import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
-
-import 'package:mynix_frontend/features/pos/view/widgets/components/pos_cart_customer_bar.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/customer_picker_modal.dart';
 
 class PosCheckoutPanel extends StatefulWidget {
   const PosCheckoutPanel({super.key});
@@ -17,28 +16,46 @@ class PosCheckoutPanel extends StatefulWidget {
   State<PosCheckoutPanel> createState() => _PosCheckoutPanelState();
 }
 
-class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _scaleAnimation;
-  String _selectedPaymentMethod = 'CASH'; // 'CASH', 'TRANSFER', 'DEBT', 'DEPOSIT'
+class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
+  String _paymentMethod = 'CASH'; // 'CASH', 'TRANSFER', 'DEBT', 'DEPOSIT'
+  String _transferProvider = 'alif'; // 'dc', 'alif', 'spitamen', 'other'
 
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-    
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
+  static const _providers = [
+    (id: 'dc', label: 'DC'),
+    (id: 'alif', label: 'Алиф'),
+    (id: 'spitamen', label: 'Спитамен'),
+    (id: 'other', label: 'Другой'),
+  ];
+
+  String _getProviderLabel(String id) {
+    switch (id) {
+      case 'dc':
+        return 'Dushanbe City';
+      case 'alif':
+        return 'Alif Mobi';
+      case 'spitamen':
+        return 'Spitamen Pay';
+      default:
+        return 'Перевод';
+    }
   }
 
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
+  String _getButtonLabel(double total) {
+    if (_paymentMethod == 'TRANSFER') {
+      return 'Оплатить (${_getProviderLabel(_transferProvider)})';
+    } else if (_paymentMethod == 'DEBT') {
+      return 'Оформить в долг';
+    } else if (_paymentMethod == 'DEPOSIT') {
+      return 'Списать с депозита';
+    }
+    return 'Оплатить наличными';
+  }
+
+  IconData _getButtonIcon() {
+    if (_paymentMethod == 'TRANSFER') return PhosphorIconsRegular.qrCode;
+    if (_paymentMethod == 'DEBT') return PhosphorIconsRegular.handCoins;
+    if (_paymentMethod == 'DEPOSIT') return PhosphorIconsRegular.wallet;
+    return PhosphorIconsRegular.money;
   }
 
   @override
@@ -46,19 +63,18 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 24, isMobile ? 16 : 24, isMobile ? 16 : 24, isMobile ? 24 : 32),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: bg,
         border: Border(top: BorderSide(color: border, width: 1.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            offset: const Offset(0, -10),
-            blurRadius: 20,
-          )
+            offset: const Offset(0, -8),
+            blurRadius: 16,
+          ),
         ],
       ),
       child: BlocConsumer<CartBloc, CartState>(
@@ -83,151 +99,101 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
         builder: (context, state) {
           final isEmpty = state.items.isEmpty;
           final customer = state.selectedCustomer;
+          final isSubmitting = state.isSubmitting;
 
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              PosCartCustomerBar(customer: customer),
-              const SizedBox(height: 12),
+              // ── 1. Compact Customer Row ──────────────────────────────────
+              _buildCustomerRow(context, customer, state, isDark, border),
+              const SizedBox(height: 10),
 
-              // Payment method selector
+              // ── 2. Primary Payment Method Selector ────────────────────────
               Row(
                 children: [
                   Expanded(
-                    child: _buildPaymentOption(
+                    child: _buildPaymentMethodTab(
                       method: 'CASH',
                       label: 'Наличные',
                       icon: PhosphorIconsRegular.money,
-                      isSelected: _selectedPaymentMethod == 'CASH',
+                      isSelected: _paymentMethod == 'CASH',
                       isDark: isDark,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: _buildPaymentOption(
+                    child: _buildPaymentMethodTab(
                       method: 'TRANSFER',
                       label: 'Перевод',
                       icon: PhosphorIconsRegular.qrCode,
-                      isSelected: _selectedPaymentMethod == 'TRANSFER',
+                      isSelected: _paymentMethod == 'TRANSFER',
                       isDark: isDark,
                     ),
                   ),
                   if (customer != null) ...[
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildPaymentOption(
+                      child: _buildPaymentMethodTab(
                         method: customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
                         label: customer.balance > 0 ? 'Депозит' : 'В долг',
                         icon: customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
-                        isSelected: _selectedPaymentMethod == 'DEBT' || _selectedPaymentMethod == 'DEPOSIT',
+                        isSelected: _paymentMethod == 'DEBT' || _paymentMethod == 'DEPOSIT',
                         isDark: isDark,
                       ),
                     ),
                   ],
                 ],
               ),
-              if (customer != null && (customer.bonusBalance > 0 || state.bonusToSpend > 0)) ...[
-                const SizedBox(height: 10),
-                InkWell(
-                  onTap: () {
-                    if (state.bonusToSpend > 0) {
-                      context.read<CartBloc>().add(const SetBonusToSpend(0.0));
-                    } else {
-                      final maxBonus = customer.bonusBalance < state.total ? customer.bonusBalance : state.total;
-                      context.read<CartBloc>().add(SetBonusToSpend(maxBonus));
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: state.bonusToSpend > 0
-                          ? AppColors.brandPrimary.withValues(alpha: 0.15)
-                          : (isDark ? AppColors.darkCard : AppColors.lightCard),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: state.bonusToSpend > 0 ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          PhosphorIconsRegular.gift,
-                          size: 15,
-                          color: state.bonusToSpend > 0 ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            state.bonusToSpend > 0
-                                ? 'Списано бонусов: ${state.bonusToSpend.toStringAsFixed(0)} с'
-                                : 'Списать бонусы (доступно: ${customer.bonusBalance.toStringAsFixed(0)} с)',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: state.bonusToSpend > 0 ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          state.bonusToSpend > 0 ? 'Отменить' : 'Применить',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: state.bonusToSpend > 0 ? AppColors.error : AppColors.brandPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
 
-              // Subtotal row
+              // ── 3. Transfer Providers Bar (DC / Алиф / Спитамен) ─────────
+              if (_paymentMethod == 'TRANSFER') ...[
+                const SizedBox(height: 8),
+                _buildTransferProvidersRow(isDark, border),
+              ],
+
+              const SizedBox(height: 12),
+
+              // ── 4. Total Amount Row ──────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'К оплате',
-                    style: AppTextStyles.h2.copyWith(
+                    style: TextStyle(
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                   Text(
                     state.payableTotal.toCurrency(context),
                     style: AppTextStyles.h1.copyWith(
                       color: isDark ? AppColors.darkText : AppColors.lightText,
-                      fontWeight: FontWeight.bold,
-                      fontSize: isMobile ? 24 : 32,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 26,
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: isMobile ? 12 : 20),
-              
-              // Standardized checkout button
-              ScaleTransition(
-                scale: isEmpty ? const AlwaysStoppedAnimation(1.0) : _scaleAnimation,
-                child: AppButton.primary(
-                  label: state.isSubmitting
-                      ? 'Обработка...'
-                      : _getCheckoutButtonLabel(),
-                  icon: _getCheckoutButtonIcon(),
-                  isFullWidth: true,
-                  height: 48,
-                  isLoading: state.isSubmitting,
-                  onPressed: isEmpty || state.isSubmitting
-                      ? null
-                      : () {
-                          context.read<CartBloc>().add(
-                            CheckoutCart(paymentMethod: _selectedPaymentMethod),
-                          );
-                        },
-                ),
+              const SizedBox(height: 12),
+
+              // ── 5. Main Action Checkout Button ───────────────────────────
+              AppButton.primary(
+                label: isSubmitting ? 'Обработка...' : _getButtonLabel(state.payableTotal),
+                icon: _getButtonIcon(),
+                isFullWidth: true,
+                height: 48,
+                isLoading: isSubmitting,
+                onPressed: isEmpty || isSubmitting
+                    ? null
+                    : () {
+                        final note = _paymentMethod == 'TRANSFER'
+                            ? 'Перевод: ${_getProviderLabel(_transferProvider)}'
+                            : null;
+                        context.read<CartBloc>().add(
+                              CheckoutCart(paymentMethod: _paymentMethod, note: note),
+                            );
+                      },
               ),
             ],
           );
@@ -236,7 +202,131 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
     );
   }
 
-  Widget _buildPaymentOption({
+  Widget _buildCustomerRow(
+    BuildContext context,
+    dynamic customer,
+    CartState state,
+    bool isDark,
+    Color border,
+  ) {
+    if (customer == null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : AppColors.lightCard,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: border),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(PhosphorIconsRegular.user, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                const SizedBox(width: 6),
+                Text(
+                  'Клиент:',
+                  style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Анонимный гость',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkText : AppColors.lightText),
+                ),
+              ],
+            ),
+            InkWell(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => CustomerPickerModal(
+                    selectedCustomer: null,
+                    onSelect: (c) => context.read<CartBloc>().add(SelectCustomer(c)),
+                  ),
+                );
+              },
+              child: Text(
+                '+ Прикрепить',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final bonus = (customer.bonusBalance as num?)?.toDouble() ?? 0.0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.brandPrimary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(PhosphorIconsRegular.userCheck, size: 15, color: AppColors.brandPrimary),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    customer.name.toString(),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (bonus > 0) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    '🎁${bonus.toStringAsFixed(0)}',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (bonus > 0 || state.bonusToSpend > 0) ...[
+            InkWell(
+              onTap: () {
+                if (state.bonusToSpend > 0) {
+                  context.read<CartBloc>().add(const SetBonusToSpend(0.0));
+                } else {
+                  final maxBonus = bonus < state.total ? bonus : state.total;
+                  context.read<CartBloc>().add(SetBonusToSpend(maxBonus));
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(
+                  color: state.bonusToSpend > 0 ? AppColors.brandPrimary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: AppColors.brandPrimary),
+                ),
+                child: Text(
+                  state.bonusToSpend > 0 ? 'Бонусы: -${state.bonusToSpend.toStringAsFixed(0)}с' : 'Списать 🎁',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: state.bonusToSpend > 0 ? Colors.black : AppColors.brandPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          InkWell(
+            onTap: () => context.read<CartBloc>().add(const SelectCustomer(null)),
+            child: Icon(PhosphorIconsRegular.xCircle, size: 16, color: AppColors.error),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodTab({
     required String method,
     required String label,
     required IconData icon,
@@ -247,38 +337,32 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
     final inactiveColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
 
     return InkWell(
-      onTap: () => setState(() => _selectedPaymentMethod = method),
+      onTap: () => setState(() => _paymentMethod = method),
       borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? activeColor.withValues(alpha: 0.15)
               : (isDark ? AppColors.darkCard : AppColors.lightCard),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected 
-                ? activeColor 
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            color: isSelected ? activeColor : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             width: isSelected ? 1.5 : 1,
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 15, color: isSelected ? activeColor : inactiveColor),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isSelected ? activeColor : inactiveColor,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  fontSize: 11,
-                ),
+            Icon(icon, size: 16, color: isSelected ? activeColor : inactiveColor),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
               ),
             ),
           ],
@@ -287,31 +371,42 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> with SingleTickerPr
     );
   }
 
-  String _getCheckoutButtonLabel() {
-    switch (_selectedPaymentMethod) {
-      case 'TRANSFER':
-        return 'Оплатить (Перевод)';
-      case 'DEBT':
-        return 'Оформить (В долг)';
-      case 'DEPOSIT':
-        return 'Оплатить (С депозита)';
-      case 'CASH':
-      default:
-        return 'Оплатить (Наличные)';
-    }
-  }
-
-  IconData _getCheckoutButtonIcon() {
-    switch (_selectedPaymentMethod) {
-      case 'TRANSFER':
-        return PhosphorIconsRegular.qrCode;
-      case 'DEBT':
-        return PhosphorIconsRegular.handCoins;
-      case 'DEPOSIT':
-        return PhosphorIconsRegular.wallet;
-      case 'CASH':
-      default:
-        return PhosphorIconsRegular.money;
-    }
+  Widget _buildTransferProvidersRow(bool isDark, Color border) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        children: _providers.map((p) {
+          final isSelected = _transferProvider == p.id;
+          return Expanded(
+            child: InkWell(
+              onTap: () => setState(() => _transferProvider = p.id),
+              borderRadius: BorderRadius.circular(6),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 120),
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.brandPrimary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  p.label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                    color: isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 }

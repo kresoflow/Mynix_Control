@@ -58,10 +58,11 @@ class SetBonusToSpend extends CartEvent {
 
 class CheckoutCart extends CartEvent {
   final String paymentMethod;
-  const CheckoutCart({this.paymentMethod = 'CASH'});
+  final String? note;
+  const CheckoutCart({this.paymentMethod = 'CASH', this.note});
   
   @override
-  List<Object?> get props => [paymentMethod];
+  List<Object?> get props => [paymentMethod, note];
 }
 
 class HoldCurrentCart extends CartEvent {
@@ -216,6 +217,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         event.paymentMethod,
         customerId: customerId,
         bonusSpent: state.bonusToSpend > 0 ? state.bonusToSpend : null,
+        note: event.note,
       );
       emit(state.copyWith(items: const [], clearCustomer: true, isSubmitting: false, submitSuccess: true));
     } catch (e) {

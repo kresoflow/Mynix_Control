@@ -12,11 +12,13 @@ class OrderRepository {
     String paymentMethod, {
     int? customerId,
     double? bonusSpent,
+    String? note,
   }) async {
     final orderData = {
       'payment_method': paymentMethod.toLowerCase(),
       if (customerId != null) 'customer_id': customerId,
       if (bonusSpent != null && bonusSpent > 0) 'bonus_spent': bonusSpent,
+      if (note != null && note.isNotEmpty) 'note': note,
       'items': items.map((item) {
         int menuItemId = item.menuItem.id;
         if (item.selectedOptionsJson != null) {
