@@ -42,20 +42,20 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
   String _getButtonLabel(double total) {
     if (_paymentMethod == 'TRANSFER') {
-      return 'Оплатить (${_getProviderLabel(_transferProvider)})';
+      return 'ОПЛАТИТЬ (${_getProviderLabel(_transferProvider)})';
     } else if (_paymentMethod == 'DEBT') {
-      return 'Оформить в долг';
+      return 'ОФОРМИТЬ В ДОЛГ';
     } else if (_paymentMethod == 'DEPOSIT') {
-      return 'Списать с депозита';
+      return 'СПИСАТЬ С ДЕПОЗИТА';
     }
-    return 'Оплатить наличными';
+    return 'ОПЛАТИТЬ ЗАКАЗ';
   }
 
   IconData _getButtonIcon() {
     if (_paymentMethod == 'TRANSFER') return PhosphorIconsRegular.qrCode;
     if (_paymentMethod == 'DEBT') return PhosphorIconsRegular.handCoins;
     if (_paymentMethod == 'DEPOSIT') return PhosphorIconsRegular.wallet;
-    return PhosphorIconsRegular.money;
+    return PhosphorIconsRegular.creditCard;
   }
 
   @override
@@ -65,7 +65,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: bg,
         border: Border(top: BorderSide(color: border, width: 1.5)),
@@ -104,7 +104,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ── 1. Single Combined Row: Guest + Payment Method Tabs ────────
+              // ── 1. Compact Row: Guest + Payment Method Tabs ───────────────
               Row(
                 children: [
                   // Compact Guest Pill
@@ -156,7 +156,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                 _buildTransferProvidersRow(isDark, border),
               ],
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
               // ── 3. Total Amount Row ────────────────────────────────────────
               Row(
@@ -167,27 +167,27 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                     style: TextStyle(
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       fontWeight: FontWeight.w600,
-                      fontSize: 13,
+                      fontSize: 14,
                     ),
                   ),
                   Text(
                     state.payableTotal.toCurrency(context),
-                    style: AppTextStyles.h2.copyWith(
+                    style: AppTextStyles.h1.copyWith(
                       color: isDark ? AppColors.darkText : AppColors.lightText,
                       fontWeight: FontWeight.w900,
-                      fontSize: 22,
+                      fontSize: 26,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
-              // ── 4. Main Pay Button ─────────────────────────────────────────
+              // ── 4. Main Prominent Pay Button (Height: 52px like in reference) ─
               AppButton.primary(
-                label: isSubmitting ? 'Обработка...' : _getButtonLabel(state.payableTotal),
+                label: isSubmitting ? 'ОБРАБОТКА...' : _getButtonLabel(state.payableTotal),
                 icon: _getButtonIcon(),
                 isFullWidth: true,
-                height: 44,
+                height: 52,
                 isLoading: isSubmitting,
                 onPressed: isEmpty || isSubmitting
                     ? null
@@ -227,8 +227,8 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
         },
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 9),
+          height: 30,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
             borderRadius: BorderRadius.circular(8),
@@ -238,7 +238,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(PhosphorIconsRegular.userPlus, size: 13, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              const SizedBox(width: 5),
+              const SizedBox(width: 4),
               Text(
                 'Гость',
                 style: TextStyle(
@@ -255,7 +255,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
     final bonus = (customer.bonusBalance as num?)?.toDouble() ?? 0.0;
     return Container(
-      height: 32,
+      height: 30,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: AppColors.brandPrimary.withValues(alpha: 0.12),
@@ -266,7 +266,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(PhosphorIconsRegular.userCheck, size: 13, color: AppColors.brandPrimary),
-          const SizedBox(width: 5),
+          const SizedBox(width: 4),
           InkWell(
             onTap: () {
               showDialog(
@@ -289,13 +289,13 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             ),
           ),
           if (bonus > 0) ...[
-            const SizedBox(width: 4),
+            const SizedBox(width: 3),
             Text(
               '🎁${bonus.toStringAsFixed(0)}',
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
             ),
           ],
-          const SizedBox(width: 4),
+          const SizedBox(width: 3),
           InkWell(
             onTap: () => context.read<CartBloc>().add(const SelectCustomer(null)),
             child: Icon(PhosphorIconsRegular.xCircle, size: 14, color: AppColors.error),
@@ -320,7 +320,8 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
       borderRadius: BorderRadius.circular(8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        height: 32,
+        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: isSelected
               ? activeColor.withValues(alpha: 0.15)
@@ -334,14 +335,18 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: isSelected ? activeColor : inactiveColor),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
+            Icon(icon, size: 13, color: isSelected ? activeColor : inactiveColor),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -352,7 +357,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
   Widget _buildTransferProvidersRow(bool isDark, Color border) {
     return Container(
-      height: 28,
+      height: 26,
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
