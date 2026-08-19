@@ -142,13 +142,26 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                 SettingsRow(
                   isDark: isDark,
                   title: 'Использовать экран повара (KDS)',
-                  subtitle: 'Если выключено, скрывает вкладку КДС и заказы сразу готовы',
+                  subtitle: 'Если выключено, скрывает модуль КДС и заказы сразу готовы',
                   trailing: Switch(
                     value: _useKds,
                     activeThumbColor: AppColors.brandPrimary,
                     onChanged: (val) => _updateSettings(val, _useOrders, _enableInventory),
                   ),
                 ),
+                if (_useKds) ...[
+                  SettingsDivider(isDark: isDark),
+                  SettingsRow(
+                    isDark: isDark,
+                    title: 'Отображать KDS в главном меню',
+                    subtitle: 'Показывать пункт «Кухня (KDS)» в боковом меню навигации',
+                    trailing: Switch(
+                      value: state.showKdsInNav,
+                      activeThumbColor: AppColors.brandPrimary,
+                      onChanged: (val) => context.read<SettingsBloc>().add(ToggleShowKdsInNav(val)),
+                    ),
+                  ),
+                ],
                 SettingsDivider(isDark: isDark),
                 SettingsRow(
                   isDark: isDark,

@@ -36,18 +36,28 @@ class UpdateFeatureFlags extends SettingsEvent {
   List<Object?> get props => [useKds, useOrders];
 }
 
+class ToggleShowKdsInNav extends SettingsEvent {
+  final bool show;
+  const ToggleShowKdsInNav(this.show);
+
+  @override
+  List<Object?> get props => [show];
+}
+
 // --- States ---
 class SettingsState extends Equatable {
   final String currency;
   final String themeVariant;
   final bool useKds;
   final bool useOrders;
+  final bool showKdsInNav;
 
   const SettingsState({
     this.currency = 'с',
     this.themeVariant = 'basic',
     this.useKds = true,
     this.useOrders = true,
+    this.showKdsInNav = true,
   });
 
   SettingsState copyWith({
@@ -55,17 +65,19 @@ class SettingsState extends Equatable {
     String? themeVariant,
     bool? useKds,
     bool? useOrders,
+    bool? showKdsInNav,
   }) {
     return SettingsState(
       currency: currency ?? this.currency,
       themeVariant: themeVariant ?? this.themeVariant,
       useKds: useKds ?? this.useKds,
       useOrders: useOrders ?? this.useOrders,
+      showKdsInNav: showKdsInNav ?? this.showKdsInNav,
     );
   }
 
   @override
-  List<Object?> get props => [currency, themeVariant, useKds, useOrders];
+  List<Object?> get props => [currency, themeVariant, useKds, useOrders, showKdsInNav];
 }
 
 // --- Bloc ---
@@ -82,6 +94,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
     on<UpdateFeatureFlags>((event, emit) {
       emit(state.copyWith(useKds: event.useKds, useOrders: event.useOrders));
+    });
+
+    on<ToggleShowKdsInNav>((event, emit) {
+      emit(state.copyWith(showKdsInNav: event.show));
     });
   }
 }

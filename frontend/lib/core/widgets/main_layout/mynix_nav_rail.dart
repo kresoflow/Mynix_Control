@@ -5,6 +5,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 
 class MynixNavRail extends StatelessWidget {
   final bool isOpen;
@@ -20,10 +21,11 @@ class MynixNavRail extends StatelessWidget {
 
   static const _allItems = [
     _NavItem(PhosphorIconsRegular.receipt, PhosphorIconsFill.receipt, 'Касса', '/pos'),
-    _NavItem(PhosphorIconsRegular.users, PhosphorIconsFill.users, 'CRM', '/crm'),
+    _NavItem(PhosphorIconsRegular.cookingPot, PhosphorIconsFill.cookingPot, 'Кухня (KDS)', '/kitchen'),
     _NavItem(PhosphorIconsRegular.bookOpenText, PhosphorIconsFill.bookOpenText, 'Каталог', '/catalog'),
     _NavItem(PhosphorIconsRegular.package, PhosphorIconsFill.package, 'Склад', '/warehouse'),
     _NavItem(PhosphorIconsRegular.chartLineUp, PhosphorIconsFill.chartLineUp, 'Аналитика', '/analytics'),
+    _NavItem(PhosphorIconsRegular.users, PhosphorIconsFill.users, 'CRM', '/crm'),
     _NavItem(PhosphorIconsRegular.gear, PhosphorIconsFill.gear, 'Настройки', '/settings'),
   ];
 
@@ -31,6 +33,8 @@ class MynixNavRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
+    final settingsState = context.watch<SettingsBloc>().state;
+    final showKds = settingsState.useKds && settingsState.showKdsInNav;
 
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
@@ -40,19 +44,21 @@ class MynixNavRail extends StatelessWidget {
         }
 
         final visibleItems = _allItems.where((item) {
+          if (item.route == '/kitchen' && !showKds) return false;
+
           if (role.contains('owner') || role.contains('superadmin') || role.contains('admin') || role.contains('manager')) return true;
           
           if (role.contains('universal')) {
             return item.route != '/settings';
           }
           if (role.contains('warehouse')) {
-            return item.route == '/catalog';
+            return item.route == '/catalog' || item.route == '/warehouse';
           }
           if (role.contains('cashier')) {
-            return item.route == '/pos' || item.route == '/crm';
+            return item.route == '/pos' || item.route == '/crm' || item.route == '/kitchen';
           }
           if (role.contains('cook') || role.contains('kitchen')) {
-            return item.route == '/pos';
+            return item.route == '/kitchen' || item.route == '/pos';
           }
           
           return false; // Unknown role
@@ -122,53 +128,58 @@ class _NavSidebarItemState extends State<_NavSidebarItem> {
 
   @override
   Widget build(BuildContext context) {
-    Color bg = Colors.transparent;
-    Color fg = widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
-    Color border = Colors.transparent;
+    final isSelected = widget.isSelected;
+    final item = widget.item;
 
-    if (widget.isSelected) {
-      bg = AppColors.brandPrimary.withValues(alpha: 0.12);
-      fg = AppColors.brandPrimary;
-      border = AppColors.brandPrimary.withValues(alpha: 0.4);
+    Color bg;
+    if (isSelected) {
+      bg = AppColors.brandPrimary.withValues(alpha: 0.15);
     } else if (_isHovered) {
-      bg = widget.isDark ? AppColors.darkCardHover : AppColors.lightCardHover;
-      fg = widget.isDark ? AppColors.darkText : AppColors.lightText;
+      bg = widget.isDark ? AppColors.darkCardHover : AppColors.lightBorder.withValues(alpha: 0.5);
+    } else {
+      bg = Colors.transparent;
     }
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: border, width: 1.5),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                widget.isSelected ? widget.item.selectedIcon : widget.item.icon,
-                color: fg,
-                size: 22,
+    final fg = isSelected
+        ? AppColors.brandPrimary
+        : (widget.isDark ? AppColors.darkText : AppColors.lightText);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.4) : Colors.transparent,
+                width: 1,
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  widget.item.label,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isSelected ? item.selectedIcon : item.icon,
+                  size: 20,
+                  color: fg,
+                ),
+                const SizedBox(width: 14),
+                Text(
+                  item.label,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: fg,
-                    fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
