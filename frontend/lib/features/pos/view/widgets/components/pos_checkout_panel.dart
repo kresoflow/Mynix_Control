@@ -102,56 +102,51 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
           return Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── 1. Ultra-Compact Slim Row: Guest + Payment Method Tabs ──
+              // ── 1. Compact Non-Stretched Pills: Guest + Payment Method Tabs ──
               Row(
                 children: [
-                  // Slim Guest Chip
+                  // Compact Guest Chip (same compact style)
                   _buildCompactGuestChip(context, customer, state, isDark, border),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 8),
 
-                  // Slim Cash Tab
-                  Expanded(
-                    child: _buildPaymentMethodTab(
-                      method: 'CASH',
-                      label: 'Наличные',
-                      icon: PhosphorIconsRegular.money,
-                      isSelected: _paymentMethod == 'CASH',
-                      isDark: isDark,
-                    ),
+                  // Compact Cash Chip (not stretched)
+                  _buildPaymentMethodTab(
+                    method: 'CASH',
+                    label: 'Наличные',
+                    icon: PhosphorIconsRegular.money,
+                    isSelected: _paymentMethod == 'CASH',
+                    isDark: isDark,
                   ),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 8),
 
-                  // Slim Transfer Tab
-                  Expanded(
-                    child: _buildPaymentMethodTab(
-                      method: 'TRANSFER',
-                      label: 'Перевод',
-                      icon: PhosphorIconsRegular.qrCode,
-                      isSelected: _paymentMethod == 'TRANSFER',
-                      isDark: isDark,
-                    ),
+                  // Compact Transfer Chip (not stretched)
+                  _buildPaymentMethodTab(
+                    method: 'TRANSFER',
+                    label: 'Перевод',
+                    icon: PhosphorIconsRegular.qrCode,
+                    isSelected: _paymentMethod == 'TRANSFER',
+                    isDark: isDark,
                   ),
 
-                  // Slim Debt / Deposit Tab (if customer selected)
+                  // Compact Debt / Deposit Chip (if customer selected)
                   if (customer != null) ...[
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: _buildPaymentMethodTab(
-                        method: customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
-                        label: customer.balance > 0 ? 'Депозит' : 'В долг',
-                        icon: customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
-                        isSelected: _paymentMethod == 'DEBT' || _paymentMethod == 'DEPOSIT',
-                        isDark: isDark,
-                      ),
+                    const SizedBox(width: 8),
+                    _buildPaymentMethodTab(
+                      method: customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
+                      label: customer.balance > 0 ? 'Депозит' : 'В долг',
+                      icon: customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
+                      isSelected: _paymentMethod == 'DEBT' || _paymentMethod == 'DEPOSIT',
+                      isDark: isDark,
                     ),
                   ],
                 ],
               ),
 
-              // ── 2. Slim Transfer Banks Row (DC / Алиф / Спитамен) ────────
+              // ── 2. Compact Transfer Banks Row (DC / Алиф / Спитамен) ───────
               if (_paymentMethod == 'TRANSFER') ...[
-                const SizedBox(height: 5),
+                const SizedBox(height: 8),
                 _buildTransferProvidersRow(isDark, border),
               ],
 
@@ -269,24 +264,24 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          height: 26,
-          padding: const EdgeInsets.symmetric(horizontal: 7),
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(color: border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(PhosphorIconsRegular.userPlus, size: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              const SizedBox(width: 4),
+              Icon(PhosphorIconsRegular.userPlus, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              const SizedBox(width: 6),
               Text(
                 'Гость',
                 style: TextStyle(
-                  fontSize: 10.5,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                   color: isDark ? AppColors.darkText : AppColors.lightText,
                 ),
@@ -299,18 +294,18 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
     final bonus = (customer.bonusBalance as num?)?.toDouble() ?? 0.0;
     return Container(
-      height: 26,
-      padding: const EdgeInsets.symmetric(horizontal: 7),
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
         color: AppColors.brandPrimary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(PhosphorIconsRegular.userCheck, size: 12, color: AppColors.brandPrimary),
-          const SizedBox(width: 4),
+          Icon(PhosphorIconsRegular.userCheck, size: 14, color: AppColors.brandPrimary),
+          const SizedBox(width: 6),
           InkWell(
             onTap: () {
               showDialog(
@@ -324,7 +319,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             child: Text(
               customer.name.toString(),
               style: TextStyle(
-                fontSize: 10.5,
+                fontSize: 11.5,
                 fontWeight: FontWeight.w700,
                 color: AppColors.brandPrimary,
               ),
@@ -333,16 +328,16 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             ),
           ),
           if (bonus > 0) ...[
-            const SizedBox(width: 3),
+            const SizedBox(width: 4),
             Text(
               '🎁${bonus.toStringAsFixed(0)}',
-              style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
             ),
           ],
-          const SizedBox(width: 3),
+          const SizedBox(width: 4),
           InkWell(
             onTap: () => context.read<CartBloc>().add(const SelectCustomer(null)),
-            child: Icon(PhosphorIconsRegular.xCircle, size: 13, color: AppColors.error),
+            child: Icon(PhosphorIconsRegular.xCircle, size: 14, color: AppColors.error),
           ),
         ],
       ),
@@ -361,36 +356,33 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
     return InkWell(
       onTap: () => setState(() => _paymentMethod = method),
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        height: 26,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: isSelected
               ? activeColor.withValues(alpha: 0.15)
               : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? activeColor : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             width: isSelected ? 1.5 : 1,
           ),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 12, color: isSelected ? activeColor : inactiveColor),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            Icon(icon, size: 14, color: isSelected ? activeColor : inactiveColor),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
               ),
             ),
           ],
@@ -401,11 +393,11 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
 
   Widget _buildTransferProvidersRow(bool isDark, Color border) {
     return Container(
-      height: 24,
-      padding: const EdgeInsets.all(2),
+      height: 30,
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: border),
       ),
       child: Row(
@@ -414,18 +406,18 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
           return Expanded(
             child: InkWell(
               onTap: () => setState(() => _transferProvider = p.id),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(6),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   p.label,
                   style: TextStyle(
-                    fontSize: 9.5,
+                    fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     color: isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText),
                   ),
