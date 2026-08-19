@@ -93,10 +93,12 @@ class Role(TimestampMixin, table=True):
     permissions: List[Permission] = Relationship(
         back_populates="roles",
         link_model=RolePermission,
+        sa_relationship_kwargs={"lazy": "selectin"},
     )
     users: List["User"] = Relationship(
         back_populates="roles",
         link_model=UserRole,
+        sa_relationship_kwargs={"lazy": "selectin"},
     )
 
 
@@ -125,6 +127,7 @@ class User(TimestampMixin, table=True):
     roles: List[Role] = Relationship(
         back_populates="users",
         link_model=UserRole,
+        sa_relationship_kwargs={"lazy": "selectin"},
     )
 
 

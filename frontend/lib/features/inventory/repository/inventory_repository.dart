@@ -3,6 +3,7 @@ import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/features/inventory/models/document.dart';
 import 'package:mynix_frontend/features/inventory/models/supplier.dart';
+import 'package:mynix_frontend/features/inventory/models/supplier_transaction.dart';
 
 part 'parts/categories_part.dart';
 part 'parts/ingredients_part.dart';

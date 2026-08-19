@@ -20,6 +20,9 @@ Future<void> saveReceiveDocument({
   required String invoiceNumber,
   required String reason,
   DateTime? documentDate,
+  String paymentStatus = 'unpaid',
+  double paidAmount = 0.0,
+  String paymentMethod = 'cash',
   required void Function(bool) setSavingState,
 }) async {
   if (items.isEmpty || items.every((item) => item.ingredient == null && item.newName.trim().isEmpty)) {
@@ -130,6 +133,9 @@ Future<void> saveReceiveDocument({
       'supplier_id': selectedSupplierId,
       'invoice_number': invoiceNumber,
       'reason': reason,
+      'payment_status': paymentStatus,
+      'paid_amount': paidAmount,
+      'payment_method': paymentMethod,
       'items': docItems,
       'status': complete ? 'completed' : 'draft',
     };

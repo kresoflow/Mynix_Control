@@ -18,19 +18,9 @@ class DesktopLayout extends StatefulWidget {
 class _DesktopLayoutState extends State<DesktopLayout> {
   bool _isSidebarOpen = false;
 
-  int _getSelectedIndex(String location) {
-    if (location.startsWith('/catalog')) return 1;
-    if (location.startsWith('/warehouse')) return 2;
-    if (location.startsWith('/analytics')) return 3;
-    if (location.startsWith('/settings')) return 4;
-    return 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final location = widget.location;
-    final selectedIndex = _getSelectedIndex(location);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
@@ -46,11 +36,8 @@ class _DesktopLayoutState extends State<DesktopLayout> {
         children: [
           MynixNavRail(
             isOpen: _isSidebarOpen,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: (index) {
-              final routes = ['/pos', '/catalog', '/warehouse', '/analytics', '/settings'];
-              context.go(routes[index]);
-            },
+            location: widget.location,
+            onRouteSelected: (route) => context.go(route),
           ),
           Container(
             width: 1,

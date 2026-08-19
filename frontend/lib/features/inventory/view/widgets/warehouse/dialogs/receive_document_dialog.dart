@@ -29,9 +29,12 @@ class ReceiveDocumentDialog extends StatefulWidget {
 class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   final _invoiceNumberController = TextEditingController();
   final _reasonController = TextEditingController();
+  final _paidAmountController = TextEditingController();
   DateTime _documentDate = DateTime.now();
   int? _selectedSupplierId;
   bool _isAdHocPurchase = false;
+  String _paymentStatus = 'unpaid'; // 'unpaid', 'paid', 'partial'
+  String _paymentMethod = 'cash'; // 'cash', 'card', 'bank_transfer'
 
   int _tabIndex = 1; // 1 = Товары витрины, 2 = Сырье
   int? _selectedParentId;
@@ -57,6 +60,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     }
     _invoiceNumberController.dispose();
     _reasonController.dispose();
+    _paidAmountController.dispose();
     super.dispose();
   }
 
@@ -96,6 +100,35 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     });
   }
 
+  static String _normalizeUnit(String? unit) {
+    if (unit == null) return 'шт';
+    switch (unit.toLowerCase().trim()) {
+      case 'pcs':
+      case 'pc':
+      case 'шт':
+        return 'шт';
+      case 'kg':
+      case 'кг':
+        return 'кг';
+      case 'g':
+      case 'г':
+      case 'gr':
+        return 'г';
+      case 'l':
+      case 'л':
+        return 'л';
+      case 'ml':
+      case 'мл':
+        return 'мл';
+      case 'portion':
+      case 'порц':
+      case 'порция':
+        return 'порц';
+      default:
+        return 'шт';
+    }
+  }
+
   void _onRowIngredientSelected(int index, Ingredient selection) {
     setState(() {
       final item = _items[index];
@@ -103,7 +136,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       item.nameController.text = selection.name;
       item.price = selection.costPerUnit;
       item.priceController.text = selection.costPerUnit.toStringAsFixed(2);
-      item.selectedUnit = selection.unit;
+      item.selectedUnit = _normalizeUnit(selection.unit);
       item.minStockAlert = selection.minStockAlert;
       item.minStockAlertController.text = selection.minStockAlert.toInt().toString();
 
@@ -157,6 +190,9 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     setState(() => _isSaving = true);
     try {
       final supplierId = _selectedSupplierId == -1 ? null : _selectedSupplierId;
+      final paidAmt = _paymentStatus == 'paid'
+          ? 0.0
+          : (_paymentStatus == 'partial' ? (double.tryParse(_paidAmountController.text) ?? 0.0) : 0.0);
 
       await ReceiveDocumentProcessor.saveDocument(
         context: context,
@@ -167,6 +203,9 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
         documentDate: _documentDate,
         tabIndex: _tabIndex,
         categoryId: _selectedChildId ?? _selectedParentId,
+        paymentStatus: _paymentStatus,
+        paidAmount: paidAmt,
+        paymentMethod: _paymentMethod,
         complete: complete,
       );
     } catch (e) {
@@ -248,7 +287,10 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                           onTabChanged: (val) => setState(() => _tabIndex = val),
                           selectedParentId: _selectedParentId,
                           selectedChildId: _selectedChildId,
-                          onParentChanged: (val) => setState(() => _selectedParentId = val),
+                          onParentChanged: (val) => setState(() {
+                            _selectedParentId = val;
+                            _selectedChildId = null;
+                          }),
                           onChildChanged: (val) => setState(() => _selectedChildId = val),
                           isAdHocPurchase: _isAdHocPurchase,
                           onAdHocChanged: (val) => setState(() => _isAdHocPurchase = val),
@@ -295,6 +337,11 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                       totalSum: totalSum,
                       currency: currency,
                       isSaving: _isSaving,
+                      paymentStatus: _paymentStatus,
+                      paymentMethod: _paymentMethod,
+                      paidAmountController: _paidAmountController,
+                      onPaymentStatusChanged: (val) => setState(() => _paymentStatus = val),
+                      onPaymentMethodChanged: (val) => setState(() => _paymentMethod = val),
                       onCancel: () => Navigator.of(context).pop(),
                       onSaveDraft: () => _save(complete: false),
                       onSaveComplete: () => _save(complete: true),

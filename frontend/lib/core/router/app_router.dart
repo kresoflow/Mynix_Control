@@ -11,6 +11,7 @@ import 'package:mynix_frontend/features/inventory/view/warehouse_screen.dart';
 import 'package:mynix_frontend/features/analytics/view/analytics_dashboard_screen.dart';
 import 'package:mynix_frontend/features/settings/view/settings_screen.dart';
 import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
+import 'package:mynix_frontend/features/crm/view/crm_screen.dart';
 import 'package:mynix_frontend/core/widgets/main_layout.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -77,6 +78,10 @@ class AppRouter {
           GoRoute(
             path: '/orders',
             builder: (context, state) => const OrdersScreen(),
+          ),
+          GoRoute(
+            path: '/crm',
+            builder: (context, state) => const CrmScreen(),
           ),
           GoRoute(
             path: '/kitchen',

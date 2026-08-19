@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
 import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
@@ -51,18 +52,11 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                     color: isDark ? AppColors.darkText : AppColors.lightText,
                     size: 24,
                   ),
-                  const SizedBox(width: 16),
-                  ShaderMask(
-                    shaderCallback: (bounds) => AppColors.logoGradient.createShader(bounds),
-                    child: Text(
-                      'KF',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        height: 1.0,
-                        color: Colors.white,
-                      ),
-                    ),
+                  const SizedBox(width: 14),
+                  Image.memory(
+                    AppLogoData.bytes,
+                    height: 28,
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(width: 12),
                   Text(

@@ -56,6 +56,9 @@ class InventoryDocument {
   final String? invoiceNumber;
   final String? reason;
   final double totalAmount;
+  final String paymentStatus; // 'unpaid', 'paid', 'partial'
+  final double paidAmount;
+  final String paymentMethod;
   final List<InventoryDocumentItem>? items;
 
   InventoryDocument({
@@ -68,20 +71,26 @@ class InventoryDocument {
     this.invoiceNumber,
     this.reason,
     required this.totalAmount,
+    this.paymentStatus = 'unpaid',
+    this.paidAmount = 0.0,
+    this.paymentMethod = 'cash',
     this.items,
   });
 
   factory InventoryDocument.fromJson(Map<String, dynamic> json) {
     return InventoryDocument(
       id: json['id'],
-      type: json['type'],
-      status: json['status'],
+      type: json['type'] ?? 'receipt',
+      status: json['status'] ?? 'draft',
       date: json['date'] != null ? DateTime.tryParse(json['date'].toString()) ?? DateTime.now() : DateTime.now(),
       supplierId: json['supplier_id'],
       supplierName: json['supplier_name'],
       invoiceNumber: json['invoice_number'],
       reason: json['reason'],
       totalAmount: (json['total_amount'] ?? 0).toDouble(),
+      paymentStatus: json['payment_status'] ?? 'unpaid',
+      paidAmount: (json['paid_amount'] as num?)?.toDouble() ?? 0.0,
+      paymentMethod: json['payment_method'] ?? 'cash',
       items: json['items'] != null
           ? (json['items'] as List).map((i) => InventoryDocumentItem.fromJson(i)).toList()
           : null,

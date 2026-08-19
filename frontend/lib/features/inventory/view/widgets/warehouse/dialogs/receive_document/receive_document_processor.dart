@@ -26,6 +26,9 @@ class ReceiveDocumentProcessor {
     required int? categoryId,
     required bool complete,
     DateTime? documentDate,
+    String paymentStatus = 'unpaid',
+    double paidAmount = 0.0,
+    String paymentMethod = 'cash',
   }) async {
     final repo = context.read<InventoryRepository>();
     final menuRepo = context.read<MenuRepository>();
@@ -118,6 +121,9 @@ class ReceiveDocumentProcessor {
       'supplier_id': selectedSupplierId,
       'invoice_number': invoiceNumber,
       'reason': reason,
+      'payment_status': paymentStatus,
+      'paid_amount': paidAmount,
+      'payment_method': paymentMethod,
       'items': docItems,
       'status': complete ? 'completed' : 'draft',
     };

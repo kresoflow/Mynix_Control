@@ -121,31 +121,32 @@ class ReceiveDocumentItemRow extends StatelessWidget {
           const SizedBox(width: 8),
 
           // 3. Unit Selector
-          SizedBox(
+          Container(
             width: 70,
             height: 40,
-            child: DropdownButtonFormField<String>(
-              initialValue: item.selectedUnit,
-              isExpanded: true,
-              icon: const Icon(PhosphorIconsRegular.caretDown, size: 14),
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                isDense: true,
-                filled: true,
-                fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkCard : AppColors.lightCard,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            alignment: Alignment.center,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: const ['шт', 'л', 'мл', 'кг', 'г', 'порц'].contains(item.selectedUnit)
+                    ? item.selectedUnit
+                    : 'шт',
+                isExpanded: true,
+                icon: const Icon(PhosphorIconsRegular.caretDown, size: 14),
+                dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                  fontSize: 13,
                 ),
+                items: const ['шт', 'л', 'мл', 'кг', 'г', 'порц'].map((u) {
+                  return DropdownMenuItem(value: u, child: Text(u));
+                }).toList(),
+                onChanged: onUnitChanged,
               ),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: isDark ? AppColors.darkText : AppColors.lightText,
-                fontSize: 13,
-              ),
-              items: ['шт', 'л', 'мл', 'кг', 'г', 'порц'].map((u) {
-                return DropdownMenuItem(value: u, child: Text(u));
-              }).toList(),
-              onChanged: onUnitChanged,
             ),
           ),
 

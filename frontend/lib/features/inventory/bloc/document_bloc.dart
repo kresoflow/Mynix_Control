@@ -14,6 +14,11 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<CreateSupplier>(_onCreateSupplier);
     on<UpdateSupplier>(_onUpdateSupplier);
     on<DeleteSupplier>(_onDeleteSupplier);
+    on<RecordSupplierPayment>(_onRecordSupplierPayment);
+    on<LoadSupplierTransactions>(_onLoadSupplierTransactions);
+    on<AddSupplierTransaction>(_onAddSupplierTransaction);
+    on<UpdateSupplierTransaction>(_onUpdateSupplierTransaction);
+    on<DeleteSupplierTransaction>(_onDeleteSupplierTransaction);
   }
 
   Future<void> _onLoadDocuments(
@@ -43,7 +48,6 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       final suppliers = await _repository.getSuppliers();
       emit(state.copyWith(suppliers: suppliers));
     } catch (e) {
-      // Intentionally not failing the whole state for suppliers
       emit(state.copyWith(errorMessage: e.toString()));
     }
   }
@@ -59,9 +63,11 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         await _repository.completeDocument(createdDoc.id);
       }
       final documents = await _repository.getDocuments();
+      final suppliers = await _repository.getSuppliers();
       emit(state.copyWith(
         isSubmitting: false,
         documents: documents,
+        suppliers: suppliers,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -79,7 +85,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     try {
       await _repository.completeDocument(event.documentId);
       final documents = await _repository.getDocuments();
-      emit(state.copyWith(isSubmitting: false, documents: documents));
+      final suppliers = await _repository.getSuppliers();
+      emit(state.copyWith(isSubmitting: false, documents: documents, suppliers: suppliers));
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, errorMessage: e.toString()));
     }
@@ -90,7 +97,11 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     Emitter<DocumentState> emit,
   ) async {
     try {
-      await _repository.createSupplier(event.name, contactInfo: event.contactInfo);
+      await _repository.createSupplier(
+        event.name,
+        contactInfo: event.contactInfo,
+        initialBalance: event.initialBalance,
+      );
       final suppliers = await _repository.getSuppliers();
       emit(state.copyWith(suppliers: suppliers));
     } catch (e) {
@@ -124,6 +135,101 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       await _repository.deleteSupplier(event.id);
       final suppliers = await _repository.getSuppliers();
       emit(state.copyWith(suppliers: suppliers));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onRecordSupplierPayment(
+    RecordSupplierPayment event,
+    Emitter<DocumentState> emit,
+  ) async {
+    try {
+      await _repository.recordSupplierPayment(
+        event.supplierId,
+        amount: event.amount,
+        paymentMethod: event.paymentMethod,
+        comment: event.comment,
+      );
+      final suppliers = await _repository.getSuppliers();
+      emit(state.copyWith(suppliers: suppliers));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  // --- Transactions & Ledger ---
+
+  Future<void> _onLoadSupplierTransactions(
+    LoadSupplierTransactions event,
+    Emitter<DocumentState> emit,
+  ) async {
+    emit(state.copyWith(transactionsStatus: DocumentStatus.loading));
+    try {
+      final txns = await _repository.getSupplierTransactions(event.supplierId);
+      emit(state.copyWith(
+        transactionsStatus: DocumentStatus.success,
+        supplierTransactions: txns,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        transactionsStatus: DocumentStatus.failure,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onAddSupplierTransaction(
+    AddSupplierTransaction event,
+    Emitter<DocumentState> emit,
+  ) async {
+    try {
+      await _repository.createSupplierTransaction(
+        event.supplierId,
+        type: event.type,
+        amount: event.amount,
+        paymentMethod: event.paymentMethod,
+        comment: event.comment,
+        date: event.date,
+      );
+      final txns = await _repository.getSupplierTransactions(event.supplierId);
+      final suppliers = await _repository.getSuppliers();
+      emit(state.copyWith(supplierTransactions: txns, suppliers: suppliers));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateSupplierTransaction(
+    UpdateSupplierTransaction event,
+    Emitter<DocumentState> emit,
+  ) async {
+    try {
+      await _repository.updateSupplierTransaction(
+        event.supplierId,
+        event.transactionId,
+        amount: event.amount,
+        paymentMethod: event.paymentMethod,
+        comment: event.comment,
+        date: event.date,
+      );
+      final txns = await _repository.getSupplierTransactions(event.supplierId);
+      final suppliers = await _repository.getSuppliers();
+      emit(state.copyWith(supplierTransactions: txns, suppliers: suppliers));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteSupplierTransaction(
+    DeleteSupplierTransaction event,
+    Emitter<DocumentState> emit,
+  ) async {
+    try {
+      await _repository.deleteSupplierTransaction(event.supplierId, event.transactionId);
+      final txns = await _repository.getSupplierTransactions(event.supplierId);
+      final suppliers = await _repository.getSuppliers();
+      emit(state.copyWith(supplierTransactions: txns, suppliers: suppliers));
     } catch (e) {
       emit(state.copyWith(errorMessage: e.toString()));
     }

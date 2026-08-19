@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import init_db, async_session_factory
+from app.database import init_db, auto_migrate_tenant_schemas, async_session_factory
 
 
 @asynccontextmanager
@@ -26,6 +26,7 @@ async def lifespan(app: FastAPI):
 
     # Create all tables (dev convenience; use Alembic in production)
     await init_db()
+    await auto_migrate_tenant_schemas()
     print("  Database tables ready")
 
     # Run seed data
@@ -47,14 +48,17 @@ async def lifespan(app: FastAPI):
 
 # ── Create FastAPI App ───────────────────────────────────────────
 
-import sentry_sdk
+try:
+    import sentry_sdk
 
-sentry_sdk.init(
-    dsn="https://ee579c86969f6643e4786fef0ebd98a6@o4511875643015168.ingest.de.sentry.io/4511875720544336",
-    send_default_pii=True,
-    traces_sample_rate=1.0,
-    profiles_sample_rate=1.0,
-)
+    sentry_sdk.init(
+        dsn="https://ee579c86969f6643e4786fef0ebd98a6@o4511875643015168.ingest.de.sentry.io/4511875720544336",
+        send_default_pii=True,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
+except ImportError:
+    pass
 
 app = FastAPI(
     title=settings.app_name,
@@ -84,6 +88,15 @@ async def value_error_handler(request, exc: ValueError):
         content={"detail": str(exc)},
     )
 
+@app.exception_handler(Exception)
+async def generic_exception_handler(request, exc: Exception):
+    import traceback
+    traceback.print_exc()
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal Server Error: {str(exc)}"},
+    )
+
 # ── CORS (allow Flutter apps from any origin in development) ─────
 app.add_middleware(
     CORSMiddleware,
@@ -101,6 +114,7 @@ from app.pos.ws import router as ws_router
 from app.inventory.router import router as inventory_router
 from app.kitchen.router import router as kitchen_router
 from app.analytics.router import router as analytics_router
+from app.crm.router import router as crm_router
 from app.system.router import router as system_router
 from app.system.integrations import router as integrations_router
 
@@ -109,6 +123,7 @@ app.include_router(pos_router, prefix="/api/v1")
 app.include_router(inventory_router, prefix="/api/v1")
 app.include_router(kitchen_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1", tags=["Analytics"])
+app.include_router(crm_router, prefix="/api/v1")
 app.include_router(system_router, prefix="/api/v1/system")
 app.include_router(integrations_router, prefix="/api/v1")
 app.include_router(ws_router)  # WebSocket at root /ws/kitchen/{tenant_id}

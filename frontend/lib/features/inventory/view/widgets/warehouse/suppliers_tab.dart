@@ -7,6 +7,9 @@ import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
 import 'package:mynix_frontend/features/inventory/models/supplier.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/edit_supplier_dialog.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/supplier_settlement/supplier_settlement_dialog.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/supplier_payment_dialog.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
 import 'supplier_row.dart';
@@ -34,7 +37,11 @@ class _SuppliersTabState extends State<SuppliersTab> {
     );
     if (result != null && mounted) {
       context.read<DocumentBloc>().add(
-        CreateSupplier(result['name'], contactInfo: result['contact_info']),
+        CreateSupplier(
+          result['name'],
+          contactInfo: result['contact_info'],
+          initialBalance: result['initial_balance'] != null ? double.tryParse(result['initial_balance'].toString()) : null,
+        ),
       );
     }
   }
@@ -51,6 +58,23 @@ class _SuppliersTabState extends State<SuppliersTab> {
           name: result['name'],
           contactInfo: result['contact_info'],
           isActive: result['is_active'],
+        ),
+      );
+    }
+  }
+
+  Future<void> _openPayDebt(BuildContext ctx, Supplier supplier, String currency) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: ctx,
+      builder: (_) => SupplierPaymentDialog(supplier: supplier, currency: currency),
+    );
+    if (result != null && ctx.mounted) {
+      ctx.read<DocumentBloc>().add(
+        RecordSupplierPayment(
+          supplier.id,
+          amount: result['amount'],
+          paymentMethod: result['payment_method'] ?? 'cash',
+          comment: result['comment'],
         ),
       );
     }
@@ -87,30 +111,49 @@ class _SuppliersTabState extends State<SuppliersTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final currency = context.watch<SettingsBloc>().state.currency;
 
-    return BlocBuilder<DocumentBloc, DocumentState>(
-      builder: (ctx, state) {
+    return BlocConsumer<DocumentBloc, DocumentState>(
+      listener: (context, state) {
+        if (state.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage!),
+              backgroundColor: AppColors.danger,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
         if (state.status == DocumentStatus.loading && state.suppliers.isEmpty) {
-          return const SkeletonList();
+          return const Padding(
+            padding: EdgeInsets.all(24),
+            child: SkeletonList(),
+          );
         }
 
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Поставщики',
+                        'Поставщики и взаиморасчеты',
                         style: TextStyle(
                           fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                           color: isDark ? AppColors.darkText : AppColors.lightText,
+                          letterSpacing: -0.5,
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         '${state.suppliers.length} записей',
                         style: TextStyle(
@@ -120,11 +163,13 @@ class _SuppliersTabState extends State<SuppliersTab> {
                       ),
                     ],
                   ),
-                  const Spacer(),
                   ElevatedButton.icon(
                     onPressed: () => _openCreate(context),
-                    icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-                    label: const Text('Добавить'),
+                    icon: const Icon(PhosphorIconsRegular.plus, size: 18),
+                    label: const Text(
+                      'Добавить',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.brandPrimary,
                       foregroundColor: Colors.white,
@@ -170,9 +215,20 @@ class _SuppliersTabState extends State<SuppliersTab> {
                       ),
                     ),
                     Expanded(
-                      flex: 3,
+                      flex: 2,
                       child: Text(
                         'Контактные данные',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Баланс / Долг',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
@@ -184,7 +240,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
                       width: 90,
                       child: Text('Статус', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                     ),
-                    const SizedBox(width: 80),
+                    const SizedBox(width: 130),
                   ],
                 ),
               ),
@@ -216,10 +272,13 @@ class _SuppliersTabState extends State<SuppliersTab> {
                         final isLast = index == state.suppliers.length - 1;
                         return SupplierRow(
                           supplier: supplier,
+                          currency: currency,
                           isLast: isLast,
                           isDark: isDark,
                           onEdit: () => _openEdit(context, supplier),
                           onDelete: () => _confirmDelete(context, supplier),
+                          onPayDebt: () => _openPayDebt(context, supplier, currency),
+                          onOpenSettlement: () => SupplierSettlementDialog.show(context, supplier, currency),
                           onToggleActive: () {
                             context.read<DocumentBloc>().add(
                               UpdateSupplier(

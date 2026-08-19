@@ -183,7 +183,7 @@ ThemeData getDarkTheme() {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: AppColors.darkBorder),
+        side: BorderSide.none,
       ),
       titleTextStyle: AppTextStyles.h2,
       contentTextStyle: AppTextStyles.body.copyWith(color: AppColors.darkSubtext),

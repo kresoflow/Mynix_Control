@@ -6,7 +6,7 @@ from app.inventory.routers.menu_router import router as menu_router
 from app.inventory.routers.recipe_router import router as recipe_router
 from app.inventory.routers.stock_router import router as stock_router
 from app.inventory.routers.document_router import router as document_router
-from app.inventory.routers.document_router import supplier_router
+from app.inventory.routers.supplier_router import router as supplier_router
 
 router = APIRouter()
 

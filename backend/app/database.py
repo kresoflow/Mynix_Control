@@ -68,3 +68,120 @@ async def init_tenant_schema(schema_name: str) -> None:
         await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema_name}"'))
         await conn.execute(text(f'SET search_path TO "{schema_name}"'))
         await conn.run_sync(SQLModel.metadata.create_all)
+
+async def auto_migrate_tenant_schemas() -> None:
+    """Ensure all existing tenant schemas have latest columns on startup."""
+    from sqlalchemy import text
+    try:
+        async with async_session_factory() as session:
+            await session.execute(text("SET search_path TO public"))
+            res = await session.execute(text("SELECT schema_name FROM public.tenants"))
+            schemas = [r[0] for r in res.fetchall()]
+        
+        async with async_engine.begin() as conn:
+            for schema in schemas:
+                await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
+                # suppliers.balance
+                await conn.execute(text(f'ALTER TABLE "{schema}".suppliers ADD COLUMN IF NOT EXISTS balance FLOAT DEFAULT 0.0 NOT NULL'))
+                # inventory_documents payment fields
+                await conn.execute(text(f'ALTER TABLE "{schema}".inventory_documents ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT \'unpaid\''))
+                await conn.execute(text(f'ALTER TABLE "{schema}".inventory_documents ADD COLUMN IF NOT EXISTS paid_amount FLOAT DEFAULT 0.0 NOT NULL'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".inventory_documents ADD COLUMN IF NOT EXISTS payment_method VARCHAR(30) DEFAULT \'cash\''))
+                # supplier_transactions table
+                await conn.execute(text(f'''
+                    CREATE TABLE IF NOT EXISTS "{schema}".supplier_transactions (
+                        id SERIAL PRIMARY KEY,
+                        supplier_id INTEGER NOT NULL REFERENCES "{schema}".suppliers(id) ON DELETE CASCADE,
+                        document_id INTEGER REFERENCES "{schema}".inventory_documents(id) ON DELETE SET NULL,
+                        type VARCHAR(30) NOT NULL,
+                        amount DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        payment_method VARCHAR(30) DEFAULT 'cash',
+                        comment VARCHAR(255),
+                        date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
+                        created_by INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
+                        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+                        updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
+                    )
+                '''))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_supplier_transactions_supplier_id ON "{schema}".supplier_transactions(supplier_id)'))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_supplier_transactions_document_id ON "{schema}".supplier_transactions(document_id)'))
+
+                # customers table
+                await conn.execute(text(f'''
+                    CREATE TABLE IF NOT EXISTS "{schema}".customers (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(150) NOT NULL,
+                        phone VARCHAR(50),
+                        email VARCHAR(100),
+                        address VARCHAR(255),
+                        balance DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        credit_limit DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        discount_percent DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        notes VARCHAR(500),
+                        is_active BOOLEAN NOT NULL DEFAULT true,
+                        total_spent DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        orders_count INTEGER NOT NULL DEFAULT 0,
+                        average_check DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        last_visit_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL,
+                        bonus_balance DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        tier_level VARCHAR(30) NOT NULL DEFAULT 'standard',
+                        birth_date DATE DEFAULT NULL,
+                        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+                        updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
+                    )
+                '''))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_customers_name ON "{schema}".customers(name)'))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_customers_phone ON "{schema}".customers(phone)'))
+
+                # LTV and loyalty columns in customers if table existed previously
+                await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS total_spent DOUBLE PRECISION NOT NULL DEFAULT 0.0'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS orders_count INTEGER NOT NULL DEFAULT 0'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS average_check DOUBLE PRECISION NOT NULL DEFAULT 0.0'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS last_visit_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS bonus_balance DOUBLE PRECISION NOT NULL DEFAULT 0.0'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS tier_level VARCHAR(30) NOT NULL DEFAULT \'standard\''))
+                await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS birth_date DATE DEFAULT NULL'))
+
+                # orders.customer_id & orders.bonus_spent
+                await conn.execute(text(f'ALTER TABLE "{schema}".orders ADD COLUMN IF NOT EXISTS customer_id INTEGER REFERENCES "{schema}".customers(id) ON DELETE SET NULL'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".orders ADD COLUMN IF NOT EXISTS bonus_spent DOUBLE PRECISION NOT NULL DEFAULT 0.0'))
+
+                # customer_transactions table
+                await conn.execute(text(f'''
+                    CREATE TABLE IF NOT EXISTS "{schema}".customer_transactions (
+                        id SERIAL PRIMARY KEY,
+                        customer_id INTEGER NOT NULL REFERENCES "{schema}".customers(id) ON DELETE CASCADE,
+                        order_id INTEGER REFERENCES "{schema}".orders(id) ON DELETE SET NULL,
+                        type VARCHAR(30) NOT NULL,
+                        amount DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        payment_method VARCHAR(30) DEFAULT 'cash',
+                        comment VARCHAR(255),
+                        date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
+                        created_by INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
+                        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+                        updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
+                    )
+                '''))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_customer_transactions_customer_id ON "{schema}".customer_transactions(customer_id)'))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_customer_transactions_order_id ON "{schema}".customer_transactions(order_id)'))
+
+                # bonus_transactions table
+                await conn.execute(text(f'''
+                    CREATE TABLE IF NOT EXISTS "{schema}".bonus_transactions (
+                        id SERIAL PRIMARY KEY,
+                        customer_id INTEGER NOT NULL REFERENCES "{schema}".customers(id) ON DELETE CASCADE,
+                        order_id INTEGER REFERENCES "{schema}".orders(id) ON DELETE SET NULL,
+                        type VARCHAR(30) NOT NULL,
+                        amount DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                        comment VARCHAR(255),
+                        date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
+                        created_by INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
+                        created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc'),
+                        updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
+                    )
+                '''))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_bonus_transactions_customer_id ON "{schema}".bonus_transactions(customer_id)'))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_bonus_transactions_order_id ON "{schema}".bonus_transactions(order_id)'))
+    except Exception as e:
+        print(f"Tenant auto-migration notice: {e}")
+

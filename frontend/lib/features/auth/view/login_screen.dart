@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
@@ -119,6 +120,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Image.memory(
+                      AppLogoData.bytes,
+                      height: 56,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 12),
                     GestureDetector(
                       onLongPress: () {
                         _showSuperadminDialog(context);
@@ -126,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'Kreso Flow',
                         style: AppTextStyles.h1.copyWith(
-                          fontSize: 32,
+                          fontSize: 28,
                           color: AppColors.brandPrimary,
                         ),
                       ),

@@ -48,6 +48,9 @@ PERMISSIONS = [
     # Settings & System
     ("settings:manage", "Manage store and tenant settings"),
     ("system:manage", "System admin and schema inspector"),
+    # CRM & Customers
+    ("crm:manage", "Manage customers and debt ledger"),
+    ("crm:view", "View customers and ledger"),
 ]
 
 # ── Role templates with their permission sets ────────────────────
@@ -65,6 +68,7 @@ ROLE_TEMPLATES = {
             "cashbox:operate", "cashbox:view", "cashbox:expense",
             "shifts:open", "shifts:close", "shifts:view",
             "menu:view",
+            "crm:view", "crm:manage",
         ],
     },
     "cook": {
@@ -87,6 +91,7 @@ ROLE_TEMPLATES = {
             "kitchen:view",
             "inventory:view",
             "menu:view",
+            "crm:view", "crm:manage",
         ],
     },
 }

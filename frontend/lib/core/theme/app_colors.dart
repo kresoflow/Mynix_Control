@@ -29,7 +29,14 @@ abstract class AppColors {
   static const Color success = Color(0xFF16A34A);
   static const Color warning = Color(0xFFD97706);
   static const Color danger  = Color(0xFFDC2626);
+  static const Color error   = Color(0xFFDC2626);
   static const Color info    = Color(0xFF2563EB);
+
+  // ── Subtext & Secondary Aliases ────────────────────────────────────────────
+  static Color get textSecondaryDark => darkSubtext;
+  static Color get textSecondaryLight => lightSubtext;
+  static Color get textTertiaryDark => darkSubtext.withValues(alpha: 0.7);
+  static Color get textTertiaryLight => lightSubtext.withValues(alpha: 0.7);
 
   // ── Category Rainbow Palette ───────────────────────────────────────────────
   static const List<Color> categoryRainbowPalette = [

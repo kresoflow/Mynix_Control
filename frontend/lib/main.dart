@@ -33,8 +33,10 @@ import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/features/orders/repository/orders_repository.dart';
 import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:mynix_frontend/features/crm/repository/crm_repository.dart';
+import 'package:mynix_frontend/features/crm/bloc/crm_bloc.dart';
 
-import 'package:device_preview/device_preview.dart';
+
 
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
 
@@ -56,12 +58,7 @@ void main() async {
       Hive.registerAdapter(MenuItemAdapter());
       Hive.registerAdapter(CartItemAdapter());
 
-      runApp(
-        DevicePreview(
-          enabled: false, // Отключено для работы с полноэкранным вебом/десктопом
-          builder: (context) => const RetailOSApp(),
-        ),
-      );
+      runApp(const RetailOSApp());
     },
   );
 }
@@ -80,6 +77,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
   late final KitchenRepository _kitchenRepository;
   late final ShiftRepository _shiftRepository;
   late final InventoryRepository _inventoryRepository;
+  late final CrmRepository _crmRepository;
   late final AuthBloc _authBloc;
   late final ThemeBloc _themeBloc;
   late final SettingsBloc _settingsBloc;
@@ -93,6 +91,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
   late final DocumentBloc _documentBloc;
   late final OrdersRepository _ordersHistoryRepository;
   late final OrdersBloc _ordersBloc;
+  late final CrmBloc _crmBloc;
   late final PosSettingsCubit _posSettingsCubit;
   late final AppRouter _appRouter;
 
@@ -105,6 +104,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _kitchenRepository = KitchenRepository();
     _shiftRepository = ShiftRepository(apiClient.dio);
     _inventoryRepository = InventoryRepository(apiClient.dio);
+    _crmRepository = CrmRepository(apiClient.dio);
     _authBloc = AuthBloc(_authRepository)..add(AppStarted());
     _themeBloc = ThemeBloc()..add(LoadSavedTheme());
     _settingsBloc = SettingsBloc();
@@ -118,6 +118,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _documentBloc = DocumentBloc(_inventoryRepository);
     _ordersHistoryRepository = OrdersRepository(dio: apiClient.dio);
     _ordersBloc = OrdersBloc(repository: _ordersHistoryRepository);
+    _crmBloc = CrmBloc(_crmRepository);
     _posSettingsCubit = PosSettingsCubit();
     _appRouter = AppRouter(_authBloc);
   }
@@ -136,6 +137,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _categoryBloc.close();
     _documentBloc.close();
     _ordersBloc.close();
+    _crmBloc.close();
     _posSettingsCubit.close();
     webSocketService.dispose();
     super.dispose();
@@ -152,6 +154,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
         RepositoryProvider.value(value: _shiftRepository),
         RepositoryProvider.value(value: _inventoryRepository),
         RepositoryProvider.value(value: _ordersHistoryRepository),
+        RepositoryProvider.value(value: _crmRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -167,6 +170,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
           BlocProvider.value(value: _categoryBloc),
           BlocProvider.value(value: _documentBloc),
           BlocProvider.value(value: _ordersBloc),
+          BlocProvider.value(value: _crmBloc),
           BlocProvider.value(value: _posSettingsCubit),
         ],
         child: BlocListener<AuthBloc, AuthState>(
@@ -193,8 +197,6 @@ class _RetailOSAppState extends State<RetailOSApp> {
                     theme: AppTheme.light,
                     darkTheme: AppTheme.dark,
                     routerConfig: _appRouter.router,
-                    locale: DevicePreview.locale(context),
-                    builder: DevicePreview.appBuilder,
                   );
                 },
               );

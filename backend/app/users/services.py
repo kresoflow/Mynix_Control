@@ -79,7 +79,7 @@ async def authenticate_by_password(
         )
     )
     result = await session.execute(stmt)
-    user = result.scalar_one_or_none()
+    user = result.scalars().first()
 
     if user is None or not verify_password(password, user.hashed_password):
         return None
@@ -104,7 +104,7 @@ async def authenticate_by_pin(
         )
     )
     result = await session.execute(stmt)
-    return result.scalar_one_or_none()
+    return result.scalars().first()
 
 
 # ── Permission helpers ───────────────────────────────────────────

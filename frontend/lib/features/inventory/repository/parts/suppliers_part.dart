@@ -11,13 +11,14 @@ extension SuppliersPart on InventoryRepository {
     }
   }
 
-  Future<Supplier> createSupplier(String name, {String? contactInfo}) async {
+  Future<Supplier> createSupplier(String name, {String? contactInfo, double? initialBalance}) async {
     try {
       final response = await _dio.post(
         '/suppliers/',
         data: {
           'name': name,
-          'contact_info': ?contactInfo,
+          'contact_info': contactInfo,
+          if (initialBalance != null) 'initial_balance': initialBalance,
         },
       );
       return Supplier.fromJson(response.data);
@@ -50,5 +51,102 @@ extension SuppliersPart on InventoryRepository {
       }
       throw Exception('Failed to delete supplier: ${e.toString()}');
     }
+  }
+
+  // --- Transactions & Ledger ---
+
+  Future<List<SupplierTransaction>> getSupplierTransactions(int supplierId) async {
+    try {
+      final response = await _dio.get('/suppliers/$supplierId/transactions');
+      final data = response.data as List;
+      return data.map((json) => SupplierTransaction.fromJson(json)).toList();
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to load supplier transactions');
+      }
+      throw Exception('Failed to load supplier transactions: ${e.toString()}');
+    }
+  }
+
+  Future<SupplierTransaction> createSupplierTransaction(
+    int supplierId, {
+    required SupplierTransactionType type,
+    required double amount,
+    String paymentMethod = 'cash',
+    String? comment,
+    DateTime? date,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/suppliers/$supplierId/transactions',
+        data: {
+          'type': type.toApiString(),
+          'amount': amount,
+          'payment_method': paymentMethod,
+          'comment': comment,
+          if (date != null) 'date': date.toIso8601String(),
+        },
+      );
+      return SupplierTransaction.fromJson(response.data);
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to record transaction');
+      }
+      throw Exception('Failed to record transaction: ${e.toString()}');
+    }
+  }
+
+  Future<SupplierTransaction> updateSupplierTransaction(
+    int supplierId,
+    int transactionId, {
+    double? amount,
+    String? paymentMethod,
+    String? comment,
+    DateTime? date,
+  }) async {
+    try {
+      final Map<String, dynamic> data = {};
+      if (amount != null) data['amount'] = amount;
+      if (paymentMethod != null) data['payment_method'] = paymentMethod;
+      if (comment != null) data['comment'] = comment;
+      if (date != null) data['date'] = date.toIso8601String();
+
+      final response = await _dio.put(
+        '/suppliers/$supplierId/transactions/$transactionId',
+        data: data,
+      );
+      return SupplierTransaction.fromJson(response.data);
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to update transaction');
+      }
+      throw Exception('Failed to update transaction: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteSupplierTransaction(int supplierId, int transactionId) async {
+    try {
+      await _dio.delete('/suppliers/$supplierId/transactions/$transactionId');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to delete transaction');
+      }
+      throw Exception('Failed to delete transaction: ${e.toString()}');
+    }
+  }
+
+  Future<void> recordSupplierPayment(
+    int supplierId, {
+    required double amount,
+    String paymentMethod = 'cash',
+    String? comment,
+  }) async {
+    await createSupplierTransaction(
+      supplierId,
+      type: SupplierTransactionType.payment,
+      amount: amount,
+      paymentMethod: paymentMethod,
+      comment: comment,
+    );
   }
 }

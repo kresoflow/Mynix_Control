@@ -31,18 +31,47 @@ class OrderStatus(str, Enum):
     COMPLETED = "completed"   # Handed to customer
     CANCELLED = "cancelled"   # Cancelled
 
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            val_lower = value.lower()
+            for member in cls:
+                if member.value == val_lower or member.name.lower() == val_lower:
+                    return member
+        return None
+
 
 class PaymentMethod(str, Enum):
     CASH = "cash"
     CARD = "card"
     TRANSFER = "transfer"
     MIXED = "mixed"
+    DEBT = "debt"
+    DEPOSIT = "deposit"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            val_lower = value.lower()
+            for member in cls:
+                if member.value == val_lower or member.name.lower() == val_lower:
+                    return member
+        return None
 
 
 class CashTransactionType(str, Enum):
     INCOME = "income"         # Payment received
     EXPENSE = "expense"       # Cash expense (e.g. napkins purchase)
     WITHDRAWAL = "withdrawal" # Owner cash withdrawal
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            val_lower = value.lower()
+            for member in cls:
+                if member.value == val_lower or member.name.lower() == val_lower:
+                    return member
+        return None
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -85,15 +114,26 @@ class Shift(TenantModel, table=True):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
+from sqlalchemy import Enum as SAEnum
+
 class Order(TenantModel, table=True):
     __tablename__ = "orders"
 
     id: Optional[int] = Field(default=None, primary_key=True)
     shift_id: int = Field(foreign_key="shifts.id", index=True)
     created_by: int = Field(foreign_key="public.users.id")
+    customer_id: Optional[int] = Field(default=None, foreign_key="customers.id", index=True)
     order_number: int = Field(default=0)  # daily sequential number
     status: OrderStatus = Field(default=OrderStatus.NEW)
-    payment_method: PaymentMethod = Field(default=PaymentMethod.CASH)
+    payment_method: PaymentMethod = Field(
+        default=PaymentMethod.CASH,
+        sa_column=Column(
+            SAEnum(PaymentMethod, values_callable=lambda obj: [e.value for e in obj], native_enum=False),
+            nullable=False,
+            default=PaymentMethod.CASH.value
+        )
+    )
+    bonus_spent: float = Field(default=0.0)
     total: float = Field(default=0.0)
     note: Optional[str] = Field(default=None, max_length=500)
 
@@ -168,6 +208,8 @@ class OrderItemCreate(SQLModel):
 class CreateOrderRequest(SQLModel):
     items: list[OrderItemCreate]
     payment_method: PaymentMethod = PaymentMethod.CASH
+    customer_id: Optional[int] = None
+    bonus_spent: float = 0.0
     note: Optional[str] = None
 
 
@@ -181,6 +223,9 @@ class OrderRead(SQLModel):
     order_number: int
     status: OrderStatus
     payment_method: PaymentMethod
+    customer_id: Optional[int] = None
+    customer_name: Optional[str] = None
+    bonus_spent: float = 0.0
     total: float
     note: Optional[str] = None
     created_by: int

@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MynixNavRail extends StatelessWidget {
   final bool isOpen;
-  final int selectedIndex;
-  final ValueChanged<int> onDestinationSelected;
+  final String location;
+  final ValueChanged<String> onRouteSelected;
 
   const MynixNavRail({
     super.key,
     required this.isOpen,
-    required this.selectedIndex,
-    required this.onDestinationSelected,
+    required this.location,
+    required this.onRouteSelected,
   });
 
   static const _allItems = [
     _NavItem(PhosphorIconsRegular.receipt, PhosphorIconsFill.receipt, 'Касса', '/pos'),
+    _NavItem(PhosphorIconsRegular.users, PhosphorIconsFill.users, 'CRM', '/crm'),
     _NavItem(PhosphorIconsRegular.bookOpenText, PhosphorIconsFill.bookOpenText, 'Каталог', '/catalog'),
     _NavItem(PhosphorIconsRegular.package, PhosphorIconsFill.package, 'Склад', '/warehouse'),
     _NavItem(PhosphorIconsRegular.chartLineUp, PhosphorIconsFill.chartLineUp, 'Аналитика', '/analytics'),
@@ -48,7 +48,10 @@ class MynixNavRail extends StatelessWidget {
           if (role.contains('warehouse')) {
             return item.route == '/catalog';
           }
-          if (role.contains('cashier') || role.contains('cook') || role.contains('kitchen')) {
+          if (role.contains('cashier')) {
+            return item.route == '/pos' || item.route == '/crm';
+          }
+          if (role.contains('cook') || role.contains('kitchen')) {
             return item.route == '/pos';
           }
           
@@ -70,14 +73,11 @@ class MynixNavRail extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 16),
-                    for (int i = 0; i < visibleItems.length; i++) ...[
+                    for (final item in visibleItems) ...[
                       _NavSidebarItem(
-                        item: visibleItems[i],
-                        isSelected: _allItems.indexOf(visibleItems[i]) == selectedIndex,
-                        onTap: () {
-                          // Pass the ORIGINAL index so the router matches it.
-                          onDestinationSelected(_allItems.indexOf(visibleItems[i]));
-                        },
+                        item: item,
+                        isSelected: location.startsWith(item.route),
+                        onTap: () => onRouteSelected(item.route),
                         isDark: isDark,
                       ),
                     ],
@@ -118,59 +118,54 @@ class _NavSidebarItem extends StatefulWidget {
 }
 
 class _NavSidebarItemState extends State<_NavSidebarItem> {
-  bool _hovered = false;
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
-    final brand = AppColors.brandPrimary;
-    final color = widget.isSelected
-        ? brand
-        : _hovered
-            ? (widget.isDark ? AppColors.darkText : AppColors.lightText)
-            : (widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+    Color bg = Colors.transparent;
+    Color fg = widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
+    Color border = Colors.transparent;
 
-    final bgColor = widget.isSelected
-        ? brand.withValues(alpha: 0.12)
-        : _hovered
-            ? (widget.isDark
-                ? AppColors.darkBorder.withValues(alpha: 0.5)
-                : AppColors.lightBorder.withValues(alpha: 0.5))
-            : Colors.transparent;
+    if (widget.isSelected) {
+      bg = AppColors.brandPrimary.withValues(alpha: 0.12);
+      fg = AppColors.brandPrimary;
+      border = AppColors.brandPrimary.withValues(alpha: 0.4);
+    } else if (_isHovered) {
+      bg = widget.isDark ? AppColors.darkCardHover : AppColors.lightCardHover;
+      fg = widget.isDark ? AppColors.darkText : AppColors.lightText;
+    }
 
     return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: bgColor,
+            color: bg,
             borderRadius: BorderRadius.circular(12),
-            border: widget.isSelected
-                ? Border.all(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.25),
-                    width: 1,
-                  )
-                : Border.all(color: Colors.transparent, width: 1),
+            border: Border.all(color: border, width: 1.5),
           ),
           child: Row(
             children: [
               Icon(
                 widget.isSelected ? widget.item.selectedIcon : widget.item.icon,
-                size: 24,
-                color: color,
+                color: fg,
+                size: 22,
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   widget.item.label,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: color,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: fg,
                     fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

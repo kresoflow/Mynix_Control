@@ -8,6 +8,7 @@ import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/blind_inventory_dialog.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/document_detail/document_detail_dialog.dart';
 import 'documents/document_journal_row.dart';
 import 'documents/documents_toolbar.dart';
 
@@ -100,7 +101,11 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
                 itemCount: state.documents.length,
                 separatorBuilder: (context, index) => const Divider(height: 1),
                 itemBuilder: (context, index) {
-                  return DocumentJournalRow(doc: state.documents[index]);
+                  final doc = state.documents[index];
+                  return DocumentJournalRow(
+                    doc: doc,
+                    onTap: () => DocumentDetailDialog.show(context, doc.id),
+                  );
                 },
               );
             },

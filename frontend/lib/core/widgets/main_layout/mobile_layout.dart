@@ -8,70 +8,20 @@ class MobileLayout extends StatelessWidget {
   final String location;
   const MobileLayout({super.key, required this.child, required this.location});
 
+  static const _navItems = [
+    (icon: PhosphorIconsRegular.receipt, label: 'Касса', route: '/pos'),
+    (icon: PhosphorIconsRegular.users, label: 'CRM', route: '/crm'),
+    (icon: PhosphorIconsRegular.bookOpenText, label: 'Каталог', route: '/catalog'),
+    (icon: PhosphorIconsRegular.package, label: 'Склад', route: '/warehouse'),
+    (icon: PhosphorIconsRegular.chartLineUp, label: 'Аналитика', route: '/analytics'),
+    (icon: PhosphorIconsRegular.gear, label: 'Настройки', route: '/settings'),
+  ];
+
   int _getSelectedIndex(String location) {
-    if (location.startsWith('/pos')) return 0;
-    if (location.startsWith('/catalog')) return 1;
-    if (location.startsWith('/warehouse')) return 2;
-    if (location.startsWith('/analytics')) return 3;
-    if (location.startsWith('/settings')) return 4;
-    return 0;
-  }
-
-  void _onItemTapped(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        context.go('/pos');
-        break;
-      case 1:
-        context.go('/catalog');
-        break;
-      case 2:
-        context.go('/warehouse');
-        break;
-      case 3:
-        context.go('/analytics');
-        break;
-      case 4:
-        context.go('/settings');
-        break;
+    for (int i = 0; i < _navItems.length; i++) {
+      if (location.startsWith(_navItems[i].route)) return i;
     }
-  }
-
-  void _showBaseMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(PhosphorIconsRegular.bookOpen),
-              title: const Text('Каталог'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/catalog');
-              },
-            ),
-            ListTile(
-              leading: const Icon(PhosphorIconsRegular.warehouse),
-              title: const Text('Склад'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/warehouse');
-              },
-            ),
-            ListTile(
-              leading: const Icon(PhosphorIconsRegular.chartLineUp),
-              title: const Text('Аналитика'),
-              onTap: () {
-                Navigator.pop(context);
-                context.go('/analytics');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+    return 0;
   }
 
   @override
@@ -83,31 +33,16 @@ class MobileLayout extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: selectedIndex,
-        onTap: (index) => _onItemTapped(context, index),
+        onTap: (index) => context.go(_navItems[index].route),
         selectedItemColor: AppColors.brandPrimary,
         unselectedItemColor: AppColors.darkSubtext,
         backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : AppColors.lightSurface,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.receipt),
-            label: 'Касса',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.bookOpenText),
-            label: 'Каталог',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.package),
-            label: 'Склад',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.chartLineUp),
-            label: 'Аналитика',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(PhosphorIconsRegular.gear),
-            label: 'Настройки',
-          ),
+        items: [
+          for (final item in _navItems)
+            BottomNavigationBarItem(
+              icon: Icon(item.icon),
+              label: item.label,
+            ),
         ],
       ),
     );

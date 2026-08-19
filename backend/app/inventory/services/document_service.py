@@ -8,8 +8,10 @@ from sqlalchemy.orm import selectinload
 
 from app.inventory.models import (
     InventoryDocument, InventoryDocumentItem, DocumentType, DocumentStatus,
-    Supplier, Ingredient, RetailProduct, StockTransaction, StockTransactionType,
-    InventoryDocumentCreate, InventoryDocumentItemCreate
+    Supplier, SupplierTransaction, SupplierTransactionType,
+    Ingredient, RetailProduct, StockTransaction, StockTransactionType,
+    InventoryDocumentCreate, InventoryDocumentItemCreate,
+    InventoryDocumentRead, InventoryDocumentDetailRead, InventoryDocumentItemRead
 )
 
 async def create_document(
@@ -23,6 +25,9 @@ async def create_document(
         supplier_id=doc_in.supplier_id,
         invoice_number=doc_in.invoice_number,
         reason=doc_in.reason,
+        payment_status=doc_in.payment_status or "unpaid",
+        paid_amount=doc_in.paid_amount or 0.0,
+        payment_method=doc_in.payment_method or "cash",
         created_by=user_id,
         status=DocumentStatus.DRAFT,
         total_amount=0.0
@@ -73,21 +78,41 @@ async def create_document(
 async def get_documents(
     session: AsyncSession,
     doc_type: Optional[DocumentType] = None
-) -> List[InventoryDocument]:
-    stmt = select(InventoryDocument)
+) -> List[InventoryDocumentRead]:
+    stmt = select(InventoryDocument).options(selectinload(InventoryDocument.supplier))
     if doc_type:
         stmt = stmt.where(InventoryDocument.type == doc_type)
     stmt = stmt.order_by(InventoryDocument.date.desc())
     
     result = await session.execute(stmt)
-    return result.scalars().all()
+    docs = result.scalars().all()
+    return [
+        InventoryDocumentRead(
+            id=d.id,
+            type=d.type,
+            status=d.status,
+            date=d.date,
+            supplier_id=d.supplier_id,
+            supplier_name=d.supplier.name if d.supplier else None,
+            invoice_number=d.invoice_number,
+            reason=d.reason,
+            total_amount=d.total_amount,
+            payment_status=d.payment_status,
+            paid_amount=d.paid_amount,
+            payment_method=d.payment_method,
+            created_by=d.created_by,
+        )
+        for d in docs
+    ]
 
 async def get_document(
     session: AsyncSession,
     document_id: int
-) -> InventoryDocument:
+) -> InventoryDocumentDetailRead:
     stmt = select(InventoryDocument).where(InventoryDocument.id == document_id).options(
-        selectinload(InventoryDocument.items)
+        selectinload(InventoryDocument.items).selectinload(InventoryDocumentItem.ingredient),
+        selectinload(InventoryDocument.items).selectinload(InventoryDocumentItem.retail_product),
+        selectinload(InventoryDocument.supplier),
     )
     result = await session.execute(stmt)
     doc = result.scalar_one_or_none()
@@ -95,7 +120,35 @@ async def get_document(
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
         
-    return doc
+    return InventoryDocumentDetailRead(
+        id=doc.id,
+        type=doc.type,
+        status=doc.status,
+        date=doc.date,
+        supplier_id=doc.supplier_id,
+        supplier_name=doc.supplier.name if doc.supplier else None,
+        invoice_number=doc.invoice_number,
+        reason=doc.reason,
+        total_amount=doc.total_amount,
+        payment_status=doc.payment_status,
+        paid_amount=doc.paid_amount,
+        payment_method=doc.payment_method,
+        created_by=doc.created_by,
+        items=[
+            InventoryDocumentItemRead(
+                id=item.id,
+                document_id=item.document_id,
+                ingredient_id=item.ingredient_id,
+                ingredient_name=item.ingredient.name if item.ingredient else None,
+                retail_product_id=item.retail_product_id,
+                retail_product_name=item.retail_product.name if item.retail_product else None,
+                quantity=item.quantity,
+                price_per_unit=item.price_per_unit,
+                total_price=item.total_price,
+            )
+            for item in doc.items
+        ]
+    )
 
 
 async def complete_document(
@@ -240,10 +293,27 @@ async def complete_document(
                     session.add(txn)
                     ret.current_stock = actual_quantity
                     session.add(ret)                
+
+    # Update supplier balance & record transaction if receipt document with unpaid debt
+    if doc.type == DocumentType.RECEIPT and doc.supplier_id:
+        supplier = await session.get(Supplier, doc.supplier_id)
+        if supplier:
+            unpaid_portion = doc.total_amount - (doc.paid_amount or 0.0)
+            if unpaid_portion > 0:
+                supplier.balance = (supplier.balance or 0.0) - unpaid_portion
+                session.add(supplier)
+
+                txn = SupplierTransaction(
+                    supplier_id=supplier.id,
+                    document_id=doc.id,
+                    type=SupplierTransactionType.INVOICE,
+                    amount=unpaid_portion,
+                    payment_method=doc.payment_method or "debt",
+                    comment=f"Приходная накладная #{doc.id}" + (f" (инвойс {doc.invoice_number})" if doc.invoice_number else ""),
+                    date=doc.date,
+                    created_by=user_id
+                )
+                session.add(txn)
+
     await session.flush()
     return doc
-
-# Suppliers
-async def get_suppliers(session: AsyncSession) -> List[Supplier]:
-    result = await session.execute(select(Supplier).order_by(Supplier.name))
-    return result.scalars().all()

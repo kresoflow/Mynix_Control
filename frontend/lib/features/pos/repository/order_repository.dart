@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:mynix_frontend/features/pos/models/cart_item.dart';
-
 import 'dart:convert';
 
 class OrderRepository {
@@ -8,9 +7,16 @@ class OrderRepository {
 
   OrderRepository(this._dio);
 
-  Future<void> submitOrder(List<CartItem> items, String paymentMethod) async {
+  Future<void> submitOrder(
+    List<CartItem> items,
+    String paymentMethod, {
+    int? customerId,
+    double? bonusSpent,
+  }) async {
     final orderData = {
       'payment_method': paymentMethod.toLowerCase(),
+      if (customerId != null) 'customer_id': customerId,
+      if (bonusSpent != null && bonusSpent > 0) 'bonus_spent': bonusSpent,
       'items': items.map((item) {
         int menuItemId = item.menuItem.id;
         if (item.selectedOptionsJson != null) {

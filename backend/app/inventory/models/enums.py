@@ -23,3 +23,9 @@ class DocumentStatus(str, Enum):
     DRAFT = "draft"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+
+class SupplierTransactionType(str, Enum):
+    INVOICE = "invoice"          # Начисление по накладной
+    PAYMENT = "payment"          # Выплата поставщику (гашение долга)
+    MANUAL_DEBT = "manual_debt"  # Ручной долг
+    ADJUSTMENT = "adjustment"    # Корректировка сальдо
