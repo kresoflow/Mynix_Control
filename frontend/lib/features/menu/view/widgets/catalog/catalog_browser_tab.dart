@@ -10,11 +10,7 @@ import 'catalog_header.dart';
 import 'catalog_content_view.dart';
 import 'catalog_enums.dart';
 import 'catalog_skeleton.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'catalog_deletion_dialogs.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
 
 class CatalogBrowserTab extends StatefulWidget {
@@ -67,135 +63,6 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
   }
 
   int? get _currentCategoryId => _navigationHistory.isEmpty ? null : _navigationHistory.last.id;
-
-  void _confirmDeleteCategory(BuildContext context, dynamic category) {
-    if (!category.isVisible) {
-      _confirmHardDeleteCategory(context, category);
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) => MynixDialog(
-        title: 'Удаление категории',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Удалить категорию «${category.name}»?\nВсе вложенные блюда и товары будут заархивированы и скрыты.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'all'));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmHardDeleteCategory(BuildContext context, dynamic category) {
-    showDialog(
-      context: context,
-      builder: (ctx) => MynixDialog(
-        title: 'Удаление навсегда',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Окончательно стереть категорию «${category.name}» из базы данных?\nЭто возможно только если по её товарам не было продаж.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Удалить навсегда',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'hard'));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDeleteItem(BuildContext context, dynamic item) {
-    showDialog(
-      context: context,
-      builder: (ctx) => MynixDialog(
-        title: 'Архивация позиции',
-        icon: PhosphorIconsRegular.archive,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Архивировать позицию «${item.name}»?\nОна исчезнет с кассы, но сохранится в отчетах.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Архивировать',
-            icon: PhosphorIconsRegular.archive,
-            onPressed: () {
-              context.read<MenuBloc>().add(DeleteMenuItem(item.id));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDeleteSelected(BuildContext context, int selectedCount) {
-    showDialog(
-      context: context,
-      builder: (ctx) => MynixDialog(
-        title: 'Массовое удаление',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Удалить выбранные элементы ($selectedCount шт.)?\nВложенные позиции будут архивированы.',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.lightSubtext),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              for (var itemId in _selectedItems) {
-                context.read<MenuBloc>().add(DeleteMenuItem(itemId));
-              }
-              for (var catId in _selectedCategories) {
-                context.read<CategoryBloc>().add(DeleteCategory(catId, mode: 'all'));
-              }
-              Navigator.pop(ctx);
-              setState(() {
-                _selectedCategories.clear();
-                _selectedItems.clear();
-                _manageMode = CategoryManageMode.none;
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -295,7 +162,16 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                         _selectedItems.clear();
                         _manageMode = CategoryManageMode.none;
                       }),
-                      onDeleteSelected: () => _confirmDeleteSelected(context, selectedCount),
+                      onDeleteSelected: () => CatalogDeletionDialogs.confirmDeleteSelected(
+                        context: context,
+                        selectedItems: _selectedItems,
+                        selectedCategories: _selectedCategories,
+                        onCleared: () => setState(() {
+                          _selectedCategories.clear();
+                          _selectedItems.clear();
+                          _manageMode = CategoryManageMode.none;
+                        }),
+                      ),
                       onNavigateUp: () => setState(() => _navigationHistory.removeLast()),
                       onNavigateToRoot: () => setState(() => _navigationHistory.clear()),
                       onNavigateToHistory: (index) => setState(() => _navigationHistory = _navigationHistory.sublist(0, index + 1)),
@@ -317,11 +193,11 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               onCategoryToggle: (cat, val) => setState(() => _selectedCategories.contains(cat.id) ? _selectedCategories.remove(cat.id) : _selectedCategories.add(cat.id)),
                               onCategoryVisibilityToggle: (cat) => context.read<CategoryBloc>().add(UpdateCategory(id: cat.id, isVisible: !cat.isVisible)),
                               onCategoryEdit: (cat) => showAddCategoryDialog(context, itemToEdit: cat, currentCategoryId: _currentCategoryId),
-                              onCategoryDelete: (cat) => _confirmDeleteCategory(context, cat),
+                              onCategoryDelete: (cat) => CatalogDeletionDialogs.confirmDeleteCategory(context, cat),
                               onCategoryRestore: (cat) => context.read<CategoryBloc>().add(RestoreCategory(cat.id)),
                               onItemToggle: (item, val) => setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id)),
                               onItemEdit: (item) => showAddMenuItemDialog(context, itemToEdit: item, currentCategoryId: _currentCategoryId),
-                              onItemDelete: (item) => _confirmDeleteItem(context, item),
+                              onItemDelete: (item) => CatalogDeletionDialogs.confirmDeleteItem(context, item),
                               onItemRestore: (item) => context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_active': true})),
                               onItemTap: (item) {
                                 if (_manageMode == CategoryManageMode.delete) {
