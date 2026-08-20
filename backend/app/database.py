@@ -142,9 +142,16 @@ async def auto_migrate_tenant_schemas() -> None:
                 await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS tier_level VARCHAR(30) NOT NULL DEFAULT \'standard\''))
                 await conn.execute(text(f'ALTER TABLE "{schema}".customers ADD COLUMN IF NOT EXISTS birth_date DATE DEFAULT NULL'))
 
-                # orders.customer_id & orders.bonus_spent
+                # orders.customer_id & orders.bonus_spent & orders.client_uuid
                 await conn.execute(text(f'ALTER TABLE "{schema}".orders ADD COLUMN IF NOT EXISTS customer_id INTEGER REFERENCES "{schema}".customers(id) ON DELETE SET NULL'))
                 await conn.execute(text(f'ALTER TABLE "{schema}".orders ADD COLUMN IF NOT EXISTS bonus_spent DOUBLE PRECISION NOT NULL DEFAULT 0.0'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".orders ADD COLUMN IF NOT EXISTS client_uuid VARCHAR(64)'))
+                await conn.execute(text(f'CREATE INDEX IF NOT EXISTS ix_{schema}_orders_client_uuid ON "{schema}".orders(client_uuid)'))
+
+                # order_items columns
+                await conn.execute(text(f'ALTER TABLE "{schema}".order_items ADD COLUMN IF NOT EXISTS unit_cost DOUBLE PRECISION NOT NULL DEFAULT 0.0'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".order_items ADD COLUMN IF NOT EXISTS item_type VARCHAR(50) DEFAULT \'dish\''))
+                await conn.execute(text(f'ALTER TABLE "{schema}".order_items ADD COLUMN IF NOT EXISTS selected_options JSONB DEFAULT \'{{\}}\'::jsonb'))
 
                 # customer_transactions table
                 await conn.execute(text(f'''
