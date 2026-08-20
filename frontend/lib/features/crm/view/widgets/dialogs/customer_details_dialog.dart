@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
 import 'package:mynix_frontend/features/crm/models/customer_transaction.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_bloc.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_event.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_state.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_statement_pdf_service.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_payment_modal.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_bonus_tab.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_orders_tab.dart';
+import 'customer_payment_modal.dart';
+import 'customer_bonus_tab.dart';
+import 'customer_orders_tab.dart';
+import 'customer_ledger_tab.dart';
 
 class CustomerDetailsDialog extends StatefulWidget {
   final Customer customer;
@@ -112,7 +112,7 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
                       ),
                       Row(
                         children: [
-                          _buildBalanceBadge(currentCustomer.balance),
+                          _buildBalanceBadge(context, currentCustomer.balance),
                           const SizedBox(width: 8),
                           IconButton(
                             onPressed: () => Navigator.of(context).pop(),
@@ -132,6 +132,7 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
                         icon: PhosphorIconsRegular.receipt,
                         isActive: _activeTab == 0,
                         onTap: () => setState(() => _activeTab = 0),
+                        isDark: isDark,
                       ),
                       const SizedBox(width: 8),
                       _buildTabButton(
@@ -139,6 +140,7 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
                         icon: PhosphorIconsRegular.wallet,
                         isActive: _activeTab == 1,
                         onTap: () => setState(() => _activeTab = 1),
+                        isDark: isDark,
                       ),
                       const SizedBox(width: 8),
                       _buildTabButton(
@@ -146,6 +148,7 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
                         icon: PhosphorIconsRegular.gift,
                         isActive: _activeTab == 2,
                         onTap: () => setState(() => _activeTab = 2),
+                        isDark: isDark,
                       ),
                       const Spacer(),
                       IconButton(
@@ -161,7 +164,7 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
 
                   // Tab Content
                   Expanded(
-                    child: _buildActiveTabContent(context, currentCustomer, transactions, isDark),
+                    child: _buildActiveTabContent(context, currentCustomer, transactions),
                   ),
                 ],
               ),
@@ -176,13 +179,16 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
     BuildContext context,
     Customer currentCustomer,
     List<CustomerTransaction> transactions,
-    bool isDark,
   ) {
     switch (_activeTab) {
       case 0:
         return CustomerOrdersTab(customer: currentCustomer);
       case 1:
-        return _buildLedgerTab(context, currentCustomer, transactions, isDark);
+        return CustomerLedgerTab(
+          customer: currentCustomer,
+          transactions: transactions,
+          onOpenPayment: () => _openPaymentModal(context, currentCustomer),
+        );
       case 2:
       default:
         return CustomerBonusTab(customer: currentCustomer);
@@ -194,8 +200,8 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
     required IconData icon,
     required bool isActive,
     required VoidCallback onTap,
+    required bool isDark,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -227,102 +233,8 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
     );
   }
 
-  Widget _buildLedgerTab(
-    BuildContext context,
-    Customer currentCustomer,
-    List<CustomerTransaction> transactions,
-    bool isDark,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            ElevatedButton.icon(
-              onPressed: () => _openPaymentModal(context, currentCustomer),
-              icon: const Icon(PhosphorIconsRegular.money, size: 18),
-              label: Text(currentCustomer.balance < 0 ? 'Принять оплату долга' : 'Внести депозит'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: currentCustomer.balance < 0 ? AppColors.brandPrimary : AppColors.success,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(width: 10),
-            OutlinedButton.icon(
-              onPressed: () => CustomerStatementPdfService.downloadStatement(currentCustomer, transactions, 'с'),
-              icon: Icon(PhosphorIconsRegular.filePdf, size: 18, color: AppColors.brandPrimary),
-              label: Text('Акт сверки (PDF)', style: TextStyle(color: AppColors.brandPrimary)),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                side: BorderSide(color: AppColors.brandPrimary),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: transactions.isEmpty
-              ? Center(
-                  child: Text(
-                    'История сальдо пуста',
-                    style: TextStyle(color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
-                  ),
-                )
-              : ListView.separated(
-                  itemCount: transactions.length,
-                  separatorBuilder: (_, __) => Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                  itemBuilder: (context, index) {
-                    final txn = transactions[index];
-                    final isDebit = txn.type == CustomerTransactionType.orderDebt;
-                    final dateStr = DateFormat('dd.MM.yyyy HH:mm').format(txn.date);
-                    final methodLabel = txn.paymentMethod == 'transfer' ? 'Перевод' : (txn.paymentMethod == 'cash' ? 'Наличные' : txn.paymentMethod);
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isDebit ? PhosphorIconsRegular.shoppingBag : PhosphorIconsRegular.arrowDownLeft,
-                            color: isDebit ? AppColors.error : AppColors.success,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(txn.type.label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                                Text(
-                                  '$dateStr • $methodLabel${txn.comment != null ? ' • ${txn.comment}' : ''}',
-                                  style: TextStyle(
-                                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            '${isDebit ? '-' : '+'} ${txn.amount.toStringAsFixed(2)} с',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: isDebit ? AppColors.error : AppColors.success,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBalanceBadge(double balance) {
+  Widget _buildBalanceBadge(BuildContext context, double balance) {
+    final symbol = CurrencyFormatter.symbol(context);
     Color bg;
     Color fg;
     String text;
@@ -330,15 +242,15 @@ class _CustomerDetailsDialogState extends State<CustomerDetailsDialog> {
     if (balance < -0.01) {
       bg = AppColors.error.withValues(alpha: 0.12);
       fg = AppColors.error;
-      text = 'Долг: ${balance.abs().toStringAsFixed(2)} с';
+      text = 'Долг: ${balance.abs().toStringAsFixed(2)} $symbol';
     } else if (balance > 0.01) {
       bg = AppColors.success.withValues(alpha: 0.12);
       fg = AppColors.success;
-      text = 'Депозит: +${balance.toStringAsFixed(2)} с';
+      text = 'Депозит: +${balance.toStringAsFixed(2)} $symbol';
     } else {
       bg = Colors.grey.withValues(alpha: 0.12);
       fg = Colors.grey;
-      text = '0.00 с';
+      text = '0.00 $symbol';
     }
 
     return Container(
