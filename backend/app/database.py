@@ -73,6 +73,15 @@ async def auto_migrate_tenant_schemas() -> None:
     """Ensure all existing tenant schemas have latest columns on startup."""
     from sqlalchemy import text
     try:
+        async with async_engine.begin() as conn:
+            # Ensure public schema columns are up to date
+            await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_kds BOOLEAN DEFAULT TRUE'))
+            await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_orders BOOLEAN DEFAULT TRUE'))
+            await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS enable_inventory_deduction BOOLEAN DEFAULT TRUE'))
+            await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS pin_code VARCHAR(10) DEFAULT \'1234\''))
+            await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS phone VARCHAR(50)'))
+            await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS email VARCHAR(255)'))
+
         async with async_session_factory() as session:
             await session.execute(text("SET search_path TO public"))
             res = await session.execute(text("SELECT schema_name FROM public.tenants"))
