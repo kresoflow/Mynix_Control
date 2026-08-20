@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/pos_settings_modal.dart';
 
 class PosBreadcrumbBar extends StatelessWidget {
@@ -89,18 +87,6 @@ class PosBreadcrumbBar extends StatelessWidget {
             onPressed: () => PosSettingsModal.show(context),
             tooltip: 'Настройки кассы',
           ),
-          if (MediaQuery.of(context).size.width < 768)
-            BlocBuilder<ThemeBloc, ThemeState>(
-              builder: (context, themeState) {
-                final isCurrentDark = themeState.isDark(context);
-                return IconButton(
-                  icon: Icon(isCurrentDark ? PhosphorIconsRegular.sun : PhosphorIconsRegular.moon),
-                  color: isCurrentDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  onPressed: () => context.read<ThemeBloc>().add(ToggleThemeMode()),
-                  tooltip: isCurrentDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему',
-                );
-              },
-            ),
         ],
       ),
     );

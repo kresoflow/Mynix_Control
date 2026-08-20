@@ -100,6 +100,8 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 500;
     
     return Stack(
       children: [
@@ -113,50 +115,52 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
           ),
         ),
         Center(
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                width: 420,
-                padding: const EdgeInsets.all(40),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                  borderRadius: BorderRadius.circular(32),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                      blurRadius: 60,
-                      offset: const Offset(0, 20),
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    )
-                  ],
-                  border: Border.all(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                    width: 1.5,
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: isMobile ? screenWidth - 32 : 420,
+                  padding: EdgeInsets.all(isMobile ? 24 : 40),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                    borderRadius: BorderRadius.circular(isMobile ? 24 : 32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                        blurRadius: 60,
+                        offset: const Offset(0, 20),
                       ),
-                      child: Icon(PhosphorIconsRegular.wallet, size: 56, color: AppColors.brandPrimary),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      )
+                    ],
+                    border: Border.all(
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                      width: 1.5,
                     ),
-                    const SizedBox(height: 32),
-                    Text(
-                      'Открытие смены',
-                      style: AppTextStyles.h1.copyWith(fontSize: 28, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(isMobile ? 16 : 20),
+                        decoration: BoxDecoration(
+                          color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(PhosphorIconsRegular.wallet, size: isMobile ? 40 : 56, color: AppColors.brandPrimary),
+                      ),
+                      SizedBox(height: isMobile ? 20 : 32),
+                      Text(
+                        'Открытие смены',
+                        style: AppTextStyles.h1.copyWith(fontSize: isMobile ? 22 : 28, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
                     Text(
                       'Внесите разменный фонд в кассу для начала рабочего дня.',
                       textAlign: TextAlign.center,
@@ -216,7 +220,8 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
             ),
           ),
         ),
-      ],
-    );
+      ),
+    ],
+  );
   }
 }

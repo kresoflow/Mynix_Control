@@ -45,6 +45,8 @@ class _PosScreenState extends State<PosScreen> {
     if (_currentTab == 1 && !useOrders) _currentTab = 0;
     if (_currentTab == 2 && !useKds) _currentTab = 0;
 
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
     return BlocListener<ShiftBloc, ShiftState>(
       listener: (context, state) {
         if (state is ShiftClosedSuccessfully) {
@@ -74,8 +76,8 @@ class _PosScreenState extends State<PosScreen> {
               onBarcodeScanned: (barcode) => _handleBarcode(context, barcode),
               child: Column(
                 children: [
-                  // Sub-tab Navigation Header (only visible when there are alternative tabs to switch to)
-                  if (useOrders || useKds)
+                  // Sub-tab Navigation Header (desktop/tablet only)
+                  if (!isMobile && (useOrders || useKds))
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(

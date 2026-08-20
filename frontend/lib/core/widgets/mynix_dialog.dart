@@ -28,14 +28,17 @@ class MynixDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
 
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 40, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       elevation: 0,
       child: Container(
-        width: width,
+        width: isMobile ? screenWidth - 24 : width,
+        constraints: BoxConstraints(maxWidth: width),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
           borderRadius: AppRadii.dialogRadius,

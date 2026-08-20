@@ -40,23 +40,26 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildGuestChip(context),
-            const SizedBox(width: 8),
-            _buildMethodTab('CASH', 'Наличные', PhosphorIconsRegular.money),
-            const SizedBox(width: 8),
-            _buildMethodTab('TRANSFER', 'Перевод', PhosphorIconsRegular.qrCode),
-            if (customer != null) ...[
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildGuestChip(context),
               const SizedBox(width: 8),
-              _buildMethodTab(
-                customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
-                customer.balance > 0 ? 'Депозит' : 'В долг',
-                customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
-              ),
+              _buildMethodTab('CASH', 'Наличные', PhosphorIconsRegular.money),
+              const SizedBox(width: 8),
+              _buildMethodTab('TRANSFER', 'Перевод', PhosphorIconsRegular.qrCode),
+              if (customer != null) ...[
+                const SizedBox(width: 8),
+                _buildMethodTab(
+                  customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
+                  customer.balance > 0 ? 'Депозит' : 'В долг',
+                  customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
         if (paymentMethod == 'TRANSFER') ...[
           const SizedBox(height: 8),
