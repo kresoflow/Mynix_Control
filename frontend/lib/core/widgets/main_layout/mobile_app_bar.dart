@@ -5,8 +5,6 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
 import 'package:mynix_frontend/core/theme/theme_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/sync_status_badge.dart';
 
 class MobileAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -47,21 +45,11 @@ class MobileAppBar extends StatelessWidget implements PreferredSizeWidget {
             fit: BoxFit.contain,
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, authState) {
-                final tenantName = authState is AuthAuthenticated && authState.tenantName.isNotEmpty
-                    ? authState.tenantName
-                    : 'Kreso Flow';
-                return Text(
-                  tenantName,
-                  style: AppTextStyles.h3.copyWith(fontSize: 14),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                );
-              },
-            ),
+          Text(
+            'Kreso Flow',
+            style: AppTextStyles.h3.copyWith(fontSize: 15, fontWeight: FontWeight.bold),
           ),
+          const Spacer(),
           const SyncStatusBadge(),
           const SizedBox(width: 4),
           IconButton(

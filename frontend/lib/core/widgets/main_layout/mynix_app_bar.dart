@@ -8,8 +8,6 @@ import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
 import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/sync_status_badge.dart';
 import 'icon_btn.dart';
@@ -65,41 +63,6 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                     style: AppTextStyles.h2.copyWith(
                       color: isDark ? AppColors.darkText : AppColors.lightText,
                     ),
-                  ),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, authState) {
-                      if (authState is AuthAuthenticated && authState.tenantName.isNotEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(PhosphorIconsRegular.storefront, size: 14, color: AppColors.brandPrimary),
-                                const SizedBox(width: 6),
-                                Text(
-                                  authState.tenantName,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
                   ),
                 ],
               ),
