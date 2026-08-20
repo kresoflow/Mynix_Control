@@ -5,6 +5,8 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../bloc/superadmin_bloc.dart';
+import 'create_tenant_modules_section.dart';
+import 'tenant_slug_helper.dart';
 
 class CreateTenantModal extends StatefulWidget {
   const CreateTenantModal({super.key});
@@ -55,29 +57,8 @@ class _CreateTenantModalState extends State<CreateTenantModal> {
 
   void _onNameChanged() {
     if (!_isManualSchema) {
-      final slug = _generateSlug(_nameController.text);
-      _schemaController.text = slug;
+      _schemaController.text = TenantSlugHelper.generate(_nameController.text);
     }
-  }
-
-  String _generateSlug(String text) {
-    final translitMap = {
-      'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
-      'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
-      'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-      'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
-      'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
-      ' ': '_', '-': '_', '&': 'and',
-    };
-    var result = '';
-    for (var char in text.toLowerCase().split('')) {
-      if (translitMap.containsKey(char)) {
-        result += translitMap[char]!;
-      } else if (RegExp(r'[a-z0-9_]').hasMatch(char)) {
-        result += char;
-      }
-    }
-    return result.replaceAll(RegExp(r'_+'), '_').replaceAll(RegExp(r'^_+|_+$'), '');
   }
 
   Widget _buildField({
@@ -152,59 +133,6 @@ class _CreateTenantModalState extends State<CreateTenantModal> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSwitchRow({
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-    required IconData icon,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.brandPrimary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            activeTrackColor: AppColors.brandPrimary,
-            onChanged: onChanged,
-          ),
-        ],
-      ),
     );
   }
 
@@ -403,22 +331,11 @@ class _CreateTenantModalState extends State<CreateTenantModal> {
                         const SizedBox(height: 20),
 
                         // 3. Блок Подключаемых Модулей
-                        _buildSectionHeader('3. Модули и возможности', PhosphorIconsRegular.gear, const Color(0xFF6366F1)),
-                        const SizedBox(height: 12),
-                        _buildSwitchRow(
-                          title: 'Кухонный дисплей (KDS)',
-                          subtitle: 'Заказы с кассы мгновенно поступают на экран кухни поварам',
-                          value: _useKds,
-                          onChanged: (val) => setState(() => _useKds = val),
-                          icon: PhosphorIconsRegular.cookingPot,
-                        ),
-                        const SizedBox(height: 10),
-                        _buildSwitchRow(
-                          title: 'Складской учет и автосписание',
-                          subtitle: 'Списание ингредиентов по техкартам и контроль остатков сырья',
-                          value: _enableInventoryDeduction,
-                          onChanged: (val) => setState(() => _enableInventoryDeduction = val),
-                          icon: PhosphorIconsRegular.package,
+                        CreateTenantModulesSection(
+                          useKds: _useKds,
+                          enableInventoryDeduction: _enableInventoryDeduction,
+                          onKdsChanged: (val) => setState(() => _useKds = val),
+                          onInventoryChanged: (val) => setState(() => _enableInventoryDeduction = val),
                         ),
                       ],
                     ),
