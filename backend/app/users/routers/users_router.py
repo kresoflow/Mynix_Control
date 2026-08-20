@@ -31,6 +31,7 @@ async def list_users(
             username=u.username,
             full_name=u.full_name,
             is_active=u.is_active,
+            pin_code=u.pin_code,
             roles=[r.name for r in u.roles],
             permissions=[],
         ))
@@ -57,6 +58,7 @@ async def create_user(
         username=user.username,
         full_name=user.full_name,
         is_active=user.is_active,
+        pin_code=user.pin_code,
         roles=[],
         permissions=[],
     )
@@ -85,6 +87,7 @@ async def update_user(
         username=updated.username,
         full_name=updated.full_name,
         is_active=updated.is_active,
+        pin_code=updated.pin_code,
         roles=[r.name for r in updated.roles] if getattr(updated, "roles", None) else [],
         permissions=[],
     )

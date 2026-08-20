@@ -54,7 +54,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
     final u = widget.userToEdit;
     _usernameController = TextEditingController(text: u?.username ?? '');
     _fullNameController = TextEditingController(text: u?.fullName ?? '');
-    _pinController = TextEditingController();
+    _pinController = TextEditingController(text: u?.pinCode ?? '');
     _passwordController = TextEditingController();
     _selectedRoleName = (u != null && u.roles.isNotEmpty)
         ? u.roles.first

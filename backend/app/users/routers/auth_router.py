@@ -100,6 +100,7 @@ async def me(current_user: CurrentUser):
         username=current_user.username,
         full_name=current_user.full_name,
         is_active=current_user.is_active,
+        pin_code=current_user.pin_code,
         roles=[r.name for r in current_user.roles],
         permissions=svc.collect_permissions(current_user),
     )

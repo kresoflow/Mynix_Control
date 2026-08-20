@@ -4,6 +4,7 @@ class StaffUser {
   final String username;
   final String fullName;
   final bool isActive;
+  final String? pinCode;
   final List<String> roles;
 
   StaffUser({
@@ -12,6 +13,7 @@ class StaffUser {
     required this.username,
     required this.fullName,
     required this.isActive,
+    this.pinCode,
     required this.roles,
   });
 
@@ -22,6 +24,7 @@ class StaffUser {
       username: json['username'] as String,
       fullName: json['full_name'] as String,
       isActive: json['is_active'] as bool,
+      pinCode: json['pin_code'] as String?,
       roles: List<String>.from(json['roles'] ?? []),
     );
   }

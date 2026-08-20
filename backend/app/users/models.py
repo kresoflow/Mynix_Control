@@ -195,6 +195,7 @@ class UserRead(SQLModel):
     username: str
     full_name: str
     is_active: bool
+    pin_code: Optional[str] = None
     roles: List[str] = []       # role names
     permissions: List[str] = []  # permission codes
 

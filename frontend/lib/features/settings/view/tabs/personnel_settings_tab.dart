@@ -82,7 +82,7 @@ class _PersonnelSettingsView extends StatelessWidget {
                     SettingsRow(
                       isDark: isDark,
                       title: '${state.users[i].fullName} (${state.users[i].roles.join(', ')})',
-                      subtitle: 'Логин: ${state.users[i].username}',
+                      subtitle: 'Логин: ${state.users[i].username} • PIN: ${state.users[i].pinCode != null && state.users[i].pinCode!.isNotEmpty ? state.users[i].pinCode! : '1234 (по умолчанию)'}',
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
