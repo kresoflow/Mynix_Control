@@ -31,9 +31,9 @@ async def list_users(
             username=u.username,
             full_name=u.full_name,
             is_active=u.is_active,
-            pin_code=u.pin_code,
+            pin_code="****" if u.pin_code else None,
             roles=[r.name for r in u.roles],
-            permissions=[],
+            permissions=svc.collect_permissions(u),
         ))
     return result
 
@@ -58,7 +58,7 @@ async def create_user(
         username=user.username,
         full_name=user.full_name,
         is_active=user.is_active,
-        pin_code=user.pin_code,
+        pin_code="****" if user.pin_code else None,
         roles=[],
         permissions=[],
     )
@@ -87,9 +87,9 @@ async def update_user(
         username=updated.username,
         full_name=updated.full_name,
         is_active=updated.is_active,
-        pin_code=updated.pin_code,
+        pin_code="****" if updated.pin_code else None,
         roles=[r.name for r in updated.roles] if getattr(updated, "roles", None) else [],
-        permissions=[],
+        permissions=svc.collect_permissions(updated) if getattr(updated, "roles", None) else [],
     )
 
 

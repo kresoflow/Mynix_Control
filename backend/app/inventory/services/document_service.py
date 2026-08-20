@@ -156,8 +156,11 @@ async def complete_document(
     document_id: int,
     user_id: Optional[int] = None
 ) -> InventoryDocument:
-    stmt = select(InventoryDocument).where(InventoryDocument.id == document_id).options(
-        selectinload(InventoryDocument.items)
+    stmt = (
+        select(InventoryDocument)
+        .where(InventoryDocument.id == document_id)
+        .options(selectinload(InventoryDocument.items))
+        .with_for_update()
     )
     result = await session.execute(stmt)
     doc = result.scalar_one_or_none()

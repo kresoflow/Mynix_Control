@@ -193,6 +193,7 @@ class UpdateProfileRequest(SQLModel):
     full_name: Optional[str] = None
     pin_code: Optional[str] = None
     password: Optional[str] = None
+    old_password: Optional[str] = None
 
 
 class UserRead(SQLModel):

@@ -73,7 +73,7 @@ async def verify_pin(
     if current_user.pin_code and current_user.pin_code == data.pin_code:
         return {"valid": True, "username": current_user.username}
 
-    # 2. Check if any active user in this tenant has this PIN
+    # 2. Check if any active user in this tenant with manager/admin privileges has this PIN
     stmt = select(User).where(
         User.tenant_id == current_user.tenant_id,
         User.pin_code == data.pin_code,
@@ -83,10 +83,6 @@ async def verify_pin(
     user = res.scalars().first()
     if user:
         return {"valid": True, "username": user.username}
-
-    # 3. Fallback default manager PIN
-    if data.pin_code in ("1234", "0000"):
-        return {"valid": True, "username": "admin"}
 
     raise HTTPException(status_code=400, detail="Неверный PIN-код")
 
@@ -127,6 +123,12 @@ async def update_me(
     if data.pin_code is not None:
         current_user.pin_code = data.pin_code.strip() if data.pin_code.strip() else None
     if data.password is not None and data.password.strip():
+        # Validate old password before allowing password change
+        if not data.old_password or not svc.verify_password(data.old_password, current_user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Неверный текущий пароль"
+            )
         current_user.hashed_password = svc.hash_password(data.password.strip())
 
     session.add(current_user)

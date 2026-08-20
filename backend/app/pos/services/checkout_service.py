@@ -150,7 +150,10 @@ async def create_order(
         from app.crm.models import Customer, CustomerTransaction, CustomerTransactionType
         from app.crm.services.crm_loyalty_service import update_customer_ltv_and_loyalty
 
-        customer = await session.get(Customer, data.customer_id)
+        # Lock customer row with FOR UPDATE to prevent race conditions during debt/deposit/loyalty updates
+        cust_stmt = select(Customer).where(Customer.id == data.customer_id).with_for_update()
+        cust_res = await session.execute(cust_stmt)
+        customer = cust_res.scalar_one_or_none()
         if not customer or not customer.is_active:
             raise ValueError(f"Клиент #{data.customer_id} не найден или деактивирован")
 
