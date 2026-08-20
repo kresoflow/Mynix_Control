@@ -36,8 +36,9 @@ import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:mynix_frontend/features/crm/repository/crm_repository.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_bloc.dart';
 import 'package:mynix_frontend/features/settings/repository/settings_repository.dart';
-
-
+import 'package:mynix_frontend/features/pos/services/pos_outbox_service.dart';
+import 'package:mynix_frontend/features/pos/services/pos_sync_service.dart';
+import 'package:mynix_frontend/features/pos/services/lan/local_pos_server.dart';
 
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
 
@@ -54,10 +55,13 @@ void main() async {
       WidgetsFlutterBinding.ensureInitialized();
       usePathUrlStrategy();
       
-      // Initialize Hive
+      // Initialize Hive & Offline Outbox
       await Hive.initFlutter();
       Hive.registerAdapter(MenuItemAdapter());
       Hive.registerAdapter(CartItemAdapter());
+
+      await PosOutboxService.init();
+      await LocalPosServer.start();
 
       runApp(const RetailOSApp());
     },
@@ -95,6 +99,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
   late final OrdersBloc _ordersBloc;
   late final CrmBloc _crmBloc;
   late final PosSettingsCubit _posSettingsCubit;
+  late final PosSyncService _posSyncService;
   late final AppRouter _appRouter;
 
   @override
@@ -108,6 +113,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _inventoryRepository = InventoryRepository(apiClient.dio);
     _crmRepository = CrmRepository(apiClient.dio);
     _settingsRepository = SettingsRepository(apiClient.dio);
+    _posSyncService = PosSyncService(apiClient: apiClient)..start();
     _authBloc = AuthBloc(_authRepository)..add(AppStarted());
     _themeBloc = ThemeBloc()..add(LoadSavedTheme());
     _settingsBloc = SettingsBloc();
@@ -128,6 +134,8 @@ class _RetailOSAppState extends State<RetailOSApp> {
 
   @override
   void dispose() {
+    _posSyncService.stop();
+    LocalPosServer.stop();
     _authBloc.close();
     _themeBloc.close();
     _settingsBloc.close();
@@ -150,6 +158,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider.value(value: apiClient),
         RepositoryProvider.value(value: _authRepository),
         RepositoryProvider.value(value: _menuRepository),
         RepositoryProvider.value(value: _orderRepository),

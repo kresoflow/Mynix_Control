@@ -9,13 +9,12 @@ import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/sync_status_badge.dart';
 import 'icon_btn.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/widgets/profile/user_profile_modal.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
-import 'package:mynix_frontend/core/utils/role_formatter.dart';
+import 'app_bar_profile_menu.dart';
 
 class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCashTap;
@@ -108,6 +107,11 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           const Spacer(),
 
+          // 1. Live Sync & Offline Outbox Status Badge
+          const SyncStatusBadge(),
+          const SizedBox(width: 12),
+
+          // 2. Cash Register Shift Status
           BlocBuilder<ShiftBloc, ShiftState>(
             builder: (context, state) {
               final isOpen = state is ShiftOpen;
@@ -129,8 +133,8 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isOpen
-                            ? AppColors.brandTertiary.withValues(alpha: 0.35)
-                            : AppColors.danger.withValues(alpha: 0.35),
+                          ? AppColors.brandTertiary.withValues(alpha: 0.35)
+                          : AppColors.danger.withValues(alpha: 0.35),
                       ),
                     ),
                     child: Row(
@@ -164,6 +168,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           const SizedBox(width: 12),
 
+          // 3. Settings & Theme
           BlocBuilder<PosSettingsCubit, PosSettingsState>(
             builder: (context, posSettings) {
               return IconBtn(
@@ -186,99 +191,12 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
             },
           ),
           const SizedBox(width: 8),
-          _buildProfileMenu(context, isDark),
+
+          // 4. Profile Menu
+          const AppBarProfileMenu(),
           const SizedBox(width: 8),
         ],
       ),
     );
   }
-
-  Widget _buildProfileMenu(BuildContext context, bool isDark) {
-    final authState = context.watch<AuthBloc>().state;
-    String fullName = 'Сотрудник';
-    String role = 'staff';
-    String tenantName = '';
-    if (authState is AuthAuthenticated) {
-      fullName = authState.fullName.isNotEmpty
-          ? authState.fullName
-          : (authState.username.isNotEmpty ? '@${authState.username}' : 'Сотрудник');
-      role = authState.role;
-      tenantName = authState.tenantName;
-    }
-
-    return PopupMenuButton<String>(
-      tooltip: 'Профиль пользователя',
-      offset: const Offset(0, 48),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-      elevation: 8,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.brandPrimary.withValues(alpha: 0.15),
-          border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
-        ),
-        child: Center(
-          child: Icon(PhosphorIconsRegular.user, size: 20, color: AppColors.brandPrimary),
-        ),
-      ),
-      onSelected: (value) {
-        if (value == 'profile') {
-          showUserProfileModal(context);
-        } else if (value == 'logout') {
-          context.read<AuthBloc>().add(LoggedOut());
-        }
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          enabled: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                fullName,
-                style: AppTextStyles.body.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                ),
-              ),
-              if (tenantName.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(
-                  '🏢 $tenantName',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext, fontSize: 11),
-                ),
-              ],
-              const SizedBox(height: 6),
-              RoleFormatter.buildBadge(role),
-            ],
-          ),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem(
-          value: 'profile',
-          child: Row(
-            children: [
-              Icon(PhosphorIconsRegular.userCircle, color: AppColors.brandPrimary, size: 20),
-              const SizedBox(width: 12),
-              Text('Мой профиль и PIN', style: AppTextStyles.body),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'logout',
-          child: Row(
-            children: [
-              Icon(PhosphorIconsRegular.signOut, color: AppColors.darkSubtext, size: 20),
-              const SizedBox(width: 12),
-              Text('Выйти из аккаунта', style: AppTextStyles.body),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }
-
