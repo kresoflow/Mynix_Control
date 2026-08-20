@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
 
 class CustomerFormModal extends StatefulWidget {
@@ -82,205 +85,141 @@ class _CustomerFormModalState extends State<CustomerFormModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
     final isEdit = widget.initialCustomer != null;
+    final symbol = CurrencyFormatter.symbol(context);
 
-    return Dialog(
-      backgroundColor: bg,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: border),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            isEdit ? PhosphorIconsRegular.userGear : PhosphorIconsRegular.userPlus,
-                            color: AppColors.brandPrimary,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          isEdit ? 'Редактировать гостя' : 'Новый гость / клиент',
-                          style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(PhosphorIconsRegular.x, size: 20, color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+    return MynixDialog(
+      title: isEdit ? 'Редактировать гостя' : 'Новый гость / клиент',
+      icon: isEdit ? PhosphorIconsRegular.userGear : PhosphorIconsRegular.userPlus,
+      width: 480,
+      actions: [
+        AppButton.secondary(
+          label: 'Отмена',
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        AppButton.primary(
+          label: isEdit ? 'Сохранить' : 'Создать',
+          onPressed: _submit,
+        ),
+      ],
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Name (Required)
+              _buildField(
+                controller: _nameController,
+                label: 'ФИО / Имя клиента *',
+                hint: 'Например: Иван Петров',
+                icon: PhosphorIconsRegular.user,
+                isDark: isDark,
+                border: border,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Укажите имя клиента' : null,
+              ),
+              const SizedBox(height: 14),
 
-                // Name (Required)
-                _buildField(
-                  controller: _nameController,
-                  label: 'ФИО / Имя клиента *',
-                  hint: 'Например: Иван Петров',
-                  icon: PhosphorIconsRegular.user,
-                  isDark: isDark,
-                  border: border,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Укажите имя клиента' : null,
-                ),
-                const SizedBox(height: 14),
+              // Phone
+              _buildField(
+                controller: _phoneController,
+                label: 'Номер телефона',
+                hint: '+996 555 123 456',
+                icon: PhosphorIconsRegular.phone,
+                keyboardType: TextInputType.phone,
+                isDark: isDark,
+                border: border,
+              ),
+              const SizedBox(height: 14),
 
-                // Phone
-                _buildField(
-                  controller: _phoneController,
-                  label: 'Номер телефона',
-                  hint: '+996 555 123 456',
-                  icon: PhosphorIconsRegular.phone,
-                  keyboardType: TextInputType.phone,
-                  isDark: isDark,
-                  border: border,
-                ),
-                const SizedBox(height: 14),
-
-                // Credit Limit & Discount row
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildField(
-                        controller: _creditLimitController,
-                        label: 'Кредитный лимит (с)',
-                        hint: '0 — без лимита',
-                        icon: PhosphorIconsRegular.shieldCheck,
-                        keyboardType: TextInputType.number,
-                        isDark: isDark,
-                        border: border,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildField(
-                        controller: _discountController,
-                        label: 'Скидка (%)',
-                        hint: '0',
-                        icon: PhosphorIconsRegular.percent,
-                        keyboardType: TextInputType.number,
-                        isDark: isDark,
-                        border: border,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // Birthday (Optional for auto-bonuses)
-                InkWell(
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: _birthDate ?? DateTime(2000, 1, 1),
-                      firstDate: DateTime(1930),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null) setState(() => _birthDate = picked);
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: border),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(PhosphorIconsRegular.cake, size: 18, color: AppColors.brandPrimary),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            _birthDate != null
-                                ? 'День рождения: ${_birthDate!.day.toString().padLeft(2, '0')}.${_birthDate!.month.toString().padLeft(2, '0')}.${_birthDate!.year}'
-                                : 'День рождения (для авто-бонусов)',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: _birthDate != null ? (isDark ? AppColors.darkText : AppColors.lightText) : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                            ),
-                          ),
-                        ),
-                        if (_birthDate != null)
-                          GestureDetector(
-                            onTap: () => setState(() => _birthDate = null),
-                            child: const Icon(PhosphorIconsRegular.xCircle, size: 16, color: Colors.grey),
-                          ),
-                      ],
+              // Credit Limit & Discount row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildField(
+                      controller: _creditLimitController,
+                      label: 'Лимит ($symbol)',
+                      hint: '0 — без лимита',
+                      icon: PhosphorIconsRegular.shieldCheck,
+                      keyboardType: TextInputType.number,
+                      isDark: isDark,
+                      border: border,
                     ),
                   ),
-                ),
-                const SizedBox(height: 14),
-
-                // Notes / Address
-                _buildField(
-                  controller: _notesController,
-                  label: 'Заметки / Описание',
-                  hint: 'Например: постоянный гость, офис #402',
-                  icon: PhosphorIconsRegular.note,
-                  maxLines: 2,
-                  isDark: isDark,
-                  border: border,
-                ),
-                const SizedBox(height: 24),
-
-                // Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          side: BorderSide(color: border),
-                        ),
-                        child: const Text('Отмена'),
-                      ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildField(
+                      controller: _discountController,
+                      label: 'Скидка (%)',
+                      hint: '0',
+                      icon: PhosphorIconsRegular.percent,
+                      keyboardType: TextInputType.number,
+                      isDark: isDark,
+                      border: border,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.brandPrimary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
-                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Birthday (Optional for auto-bonuses)
+              InkWell(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: _birthDate ?? DateTime(2000, 1, 1),
+                    firstDate: DateTime(1930),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) setState(() => _birthDate = picked);
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(PhosphorIconsRegular.cake, size: 18, color: AppColors.brandPrimary),
+                      const SizedBox(width: 10),
+                      Expanded(
                         child: Text(
-                          isEdit ? 'Сохранить изменения' : 'Создать клиента',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
+                          _birthDate != null
+                              ? 'День рождения: ${_birthDate!.day.toString().padLeft(2, '0')}.${_birthDate!.month.toString().padLeft(2, '0')}.${_birthDate!.year}'
+                              : 'День рождения (для бонусов)',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: _birthDate != null ? (isDark ? AppColors.darkText : AppColors.lightText) : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                      if (_birthDate != null)
+                        GestureDetector(
+                          onTap: () => setState(() => _birthDate = null),
+                          child: const Icon(PhosphorIconsRegular.xCircle, size: 16, color: Colors.grey),
+                        ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 14),
+
+              // Notes
+              _buildField(
+                controller: _notesController,
+                label: 'Заметки',
+                hint: 'Например: постоянный гость',
+                icon: PhosphorIconsRegular.note,
+                maxLines: 2,
+                isDark: isDark,
+                border: border,
+              ),
+            ],
           ),
         ),
       ),
