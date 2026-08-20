@@ -46,7 +46,7 @@ import 'package:device_preview/device_preview.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// 📱 ФЛАГ ЭМУЛЯТОРА: Переключите в `true` для тестирования мобильных экранов (iPhone/iPad/Android)
-const bool kEnableDevicePreview = true;
+const bool kEnableDevicePreview = false;
 
 void main() async {
   await SentryFlutter.init(
