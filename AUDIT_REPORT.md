@@ -2,11 +2,11 @@
 
 > **Дата аудита:** 2026-08-20  
 > **Метод:** Сплошной статический и семантический анализ всей кодовой базы `frontend/lib/`.  
-> **Статус:** 🟢 Группы HIGH и MEDIUM полностью отрефакторены!
+> **Статус:** 🟢 100% ЗАВЕРШЕНО (Все группы: HIGH, MEDIUM, LOW успешно отрефакторены и проверены `flutter analyze`)
 
 ---
 
-## 📊 Сводная таблица статуса рефакторинга
+## 📊 Итоговая таблица выполненного рефакторинга
 
 | № | Файл | Категория | Критичность | Risk/Impact | Что нарушено | Статус решения |
 | :- | :--- | :--- | :--- | :--- | :--- | :---: |
@@ -27,7 +27,7 @@
 | **15** | `shift_history_analytics_tab.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (343 строки) | ✅ **ИСПРАВЛЕНО (`a13bc36`):** сокращен до 150 строк, вынесены `analytics_kpi_card.dart` и `analytics_shift_row.dart`, репозиторий инжектирован. |
 | **16** | `customer_form_modal.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (326 строк) | ✅ **ИСПРАВЛЕНО (`47580ca`):** сокращен до 200 строк с переходом на `MynixDialog` и `CurrencyFormatter`. |
 | **17** | `suppliers_tab.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Превышение лимита (303 строки) | ✅ **ИСПРАВЛЕНО (`bc7539f`):** сокращен до 190 строк, вынесен `suppliers_table_header.dart`, исправлен async gap. |
-| **18** | `general_settings_tab.dart` | 1. Сеть / DI | CRITICAL | **MEDIUM** | Прямой вызов `apiClient.dio` | ✅ **ИСПРАВЛЕНО (`bc7539f`):** создан `SettingsRepository`, вызовы инжектированы. |
-| **19** | `create_tenant_modal.dart` | 2. Микроархитектура | MAJOR | **LOW** | Файл-великан (439 строк) | ⏳ Ожидает (Группа LOW) |
-| **20** | `mynix_date_time_picker.dart` | 2. Микроархитектура | MAJOR | **LOW** | Файл-великан (402 строки) | ⏳ Ожидает (Группа LOW) |
-| **21** | `settings_screen.dart` | 2. Микроархитектура | MAJOR | **LOW** | Превышение лимита (275 строк) | ⏳ Ожидает (Группа LOW) |
+| **18** | `general_settings_tab.dart` | 1. Сеть / DI | CRITICAL | **MEDIUM** | Прямой вызов `apiClient.dio` | ✅ **ИСПРАВЛЕНО (`bc7539f`):** создан `SettingsRepository`, вызовы инжектированы через `RepositoryProvider`. |
+| **19** | `create_tenant_modal.dart` | 2. Микроархитектура | MAJOR | **LOW** | Файл-великан (460 строк) | ✅ **ИСПРАВЛЕНО (`ac3f3be`):** сокращен до 260 строк, вынесены `create_tenant_modules_section.dart` и `tenant_slug_helper.dart`. |
+| **20** | `mynix_date_time_picker.dart` | 2. Микроархитектура | MAJOR | **LOW** | Файл-великан (432 строки) | ✅ **ИСПРАВЛЕНО (`c95a4a8`):** сокращен до 175 строк, вынесены `date_time_picker_calendar.dart` и `date_time_picker_time_row.dart`. |
+| **21** | `settings_screen.dart` | 2. Микроархитектура | MAJOR | **LOW** | Превышение лимита (293 строки) | ✅ **ИСПРАВЛЕНО (`8242481`):** сокращен до 150 строк, вынесены `settings_category_tile.dart` и `settings_profile_menu.dart`, устранены устаревшие методы `withOpacity`. |
