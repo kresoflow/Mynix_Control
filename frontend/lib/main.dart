@@ -42,8 +42,11 @@ import 'package:mynix_frontend/features/pos/services/lan/local_pos_server.dart';
 import 'package:mynix_frontend/features/settings/services/lan_settings_service.dart';
 
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
-
+import 'package:device_preview/device_preview.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+
+/// 📱 ФЛАГ ЭМУЛЯТОРА: Переключите в `true` для тестирования мобильных экранов (iPhone/iPad/Android)
+const bool kEnableDevicePreview = false;
 
 void main() async {
   await SentryFlutter.init(
@@ -64,7 +67,12 @@ void main() async {
       await PosOutboxService.init();
       await LanSettingsService.init();
 
-      runApp(const RetailOSApp());
+      runApp(
+        DevicePreview(
+          enabled: kEnableDevicePreview,
+          builder: (context) => const RetailOSApp(),
+        ),
+      );
     },
   );
 }
@@ -207,6 +215,8 @@ class _RetailOSAppState extends State<RetailOSApp> {
                   return MaterialApp.router(
                     title: 'Kreso Flow',
                     debugShowCheckedModeBanner: false,
+                    locale: kEnableDevicePreview ? DevicePreview.locale(context) : null,
+                    builder: kEnableDevicePreview ? DevicePreview.appBuilder : null,
                     themeMode: themeState.mode,
                     theme: AppTheme.light,
                     darkTheme: AppTheme.dark,
