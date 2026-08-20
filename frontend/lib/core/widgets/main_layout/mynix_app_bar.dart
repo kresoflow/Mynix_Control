@@ -15,6 +15,7 @@ import 'icon_btn.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/profile/user_profile_modal.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'package:mynix_frontend/core/utils/role_formatter.dart';
 
 class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCashTap;
@@ -65,6 +66,41 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                     style: AppTextStyles.h2.copyWith(
                       color: isDark ? AppColors.darkText : AppColors.lightText,
                     ),
+                  ),
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, authState) {
+                      if (authState is AuthAuthenticated && authState.tenantName.isNotEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(PhosphorIconsRegular.storefront, size: 14, color: AppColors.brandPrimary),
+                                const SizedBox(width: 6),
+                                Text(
+                                  authState.tenantName,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
                   ),
                 ],
               ),
@@ -159,9 +195,15 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildProfileMenu(BuildContext context, bool isDark) {
     final authState = context.watch<AuthBloc>().state;
-    String roleName = 'Персонал';
+    String fullName = 'Сотрудник';
+    String role = 'staff';
+    String tenantName = '';
     if (authState is AuthAuthenticated) {
-      roleName = authState.role;
+      fullName = authState.fullName.isNotEmpty
+          ? authState.fullName
+          : (authState.username.isNotEmpty ? '@${authState.username}' : 'Сотрудник');
+      role = authState.role;
+      tenantName = authState.tenantName;
     }
 
     return PopupMenuButton<String>(
@@ -195,8 +237,22 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(roleName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText)),
-              Text('Активная сессия', style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext)),
+              Text(
+                fullName,
+                style: AppTextStyles.body.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                ),
+              ),
+              if (tenantName.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '🏢 $tenantName',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext, fontSize: 11),
+                ),
+              ],
+              const SizedBox(height: 6),
+              RoleFormatter.buildBadge(role),
             ],
           ),
         ),

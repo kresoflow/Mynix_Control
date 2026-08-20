@@ -11,7 +11,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoggedIn>(_onLoggedIn);
     on<LoginRequested>(_onLoginRequested);
     on<LoginByPinRequested>(_onLoginByPinRequested);
+    on<RefreshProfile>(_onRefreshProfile);
     on<LoggedOut>(_onLoggedOut);
+  }
+
+  AuthAuthenticated _createAuthenticatedState(Map<String, dynamic> profile) {
+    final roles = profile['roles'] as List? ?? [];
+    final role = roles.isNotEmpty ? roles.first.toString() : 'unknown';
+
+    return AuthAuthenticated(
+      tenantId: profile['tenant_id']?.toString() ?? 'unknown',
+      role: role,
+      permissions: List<String>.from(profile['permissions'] ?? []),
+      fullName: profile['full_name']?.toString() ?? '',
+      username: profile['username']?.toString() ?? '',
+      tenantName: profile['tenant_name']?.toString() ?? 'Kreso Flow Point',
+      tenantAddress: profile['tenant_address']?.toString(),
+    );
   }
 
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {
@@ -20,11 +36,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final hasToken = await authRepository.hasToken();
       if (hasToken) {
         final profile = await authRepository.getMe();
-        emit(AuthAuthenticated(
-          tenantId: profile['tenant_id']?.toString() ?? 'unknown',
-          role: (profile['roles'] is List) ? (profile['roles'] as List).firstOrNull?.toString() ?? 'unknown' : 'unknown',
-          permissions: List<String>.from(profile['permissions'] ?? []),
-        ));
+        emit(_createAuthenticatedState(profile));
       } else {
         emit(AuthUnauthenticated());
       }
@@ -39,11 +51,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final token = await authRepository.login(event.username, event.password);
       if (token != null) {
         final profile = await authRepository.getMe();
-        emit(AuthAuthenticated(
-          tenantId: profile['tenant_id']?.toString() ?? 'unknown',
-          role: (profile['roles'] is List) ? (profile['roles'] as List).firstOrNull?.toString() ?? 'unknown' : 'unknown',
-          permissions: List<String>.from(profile['permissions'] ?? []),
-        ));
+        emit(_createAuthenticatedState(profile));
       } else {
         emit(const AuthError('Не удалось выполнить вход'));
       }
@@ -67,11 +75,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final token = await authRepository.loginByPin(event.pinCode);
       if (token != null) {
         final profile = await authRepository.getMe();
-        emit(AuthAuthenticated(
-          tenantId: profile['tenant_id']?.toString() ?? 'unknown',
-          role: (profile['roles'] is List) ? (profile['roles'] as List).firstOrNull?.toString() ?? 'unknown' : 'unknown',
-          permissions: List<String>.from(profile['permissions'] ?? []),
-        ));
+        emit(_createAuthenticatedState(profile));
       } else {
         emit(const AuthError('Неверный PIN-код'));
       }
@@ -79,6 +83,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final msg = e.toString().replaceAll('Exception: ', '').trim();
       emit(AuthError(msg));
     }
+  }
+
+  Future<void> _onRefreshProfile(RefreshProfile event, Emitter<AuthState> emit) async {
+    try {
+      final profile = await authRepository.getMe();
+      emit(_createAuthenticatedState(profile));
+    } catch (_) {}
   }
 
   Future<void> _onLoggedOut(LoggedOut event, Emitter<AuthState> emit) async {

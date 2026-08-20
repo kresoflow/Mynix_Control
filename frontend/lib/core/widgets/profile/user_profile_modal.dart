@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
+import 'package:mynix_frontend/core/utils/role_formatter.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 
 void showUserProfileModal(BuildContext context) {
   showDialog(
@@ -29,7 +33,8 @@ class _UserProfileModalState extends State<UserProfileModal> {
   bool _showPasswordInput = false;
 
   String _username = 'user';
-  String _role = 'Персонал';
+  String _role = 'staff';
+  String _tenantName = '';
 
   @override
   void initState() {
@@ -54,7 +59,8 @@ class _UserProfileModalState extends State<UserProfileModal> {
           _nameController.text = data['full_name'] ?? '';
           _username = data['username'] ?? 'user';
           final roles = data['roles'] as List? ?? [];
-          _role = roles.isNotEmpty ? roles.first.toString() : 'Пользователь';
+          _role = roles.isNotEmpty ? roles.first.toString() : 'staff';
+          _tenantName = data['tenant_name']?.toString() ?? '';
           _pinController.text = data['pin_code']?.toString() ?? '';
           _isLoading = false;
         });
@@ -80,6 +86,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
 
       await apiClient.dio.put('/auth/me', data: data);
       if (mounted) {
+        context.read<AuthBloc>().add(RefreshProfile());
         AppToast.showSuccess(context, 'Профиль сохранен', subtitle: 'Данные успешно обновлены');
         Navigator.of(context).pop();
       }
@@ -152,24 +159,13 @@ class _UserProfileModalState extends State<UserProfileModal> {
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        'Системный логин',
+                        _tenantName.isNotEmpty ? '🏢 $_tenantName' : 'Системный аккаунт',
                         style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    _role,
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
-                  ),
-                ),
+                RoleFormatter.buildBadge(_role),
               ],
             ),
           ),

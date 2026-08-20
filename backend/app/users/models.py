@@ -205,6 +205,8 @@ class UserRead(SQLModel):
     pin_code: Optional[str] = None
     roles: List[str] = []       # role names
     permissions: List[str] = []  # permission codes
+    tenant_name: Optional[str] = None
+    tenant_address: Optional[str] = None
 
 
 class UserCreate(SQLModel):

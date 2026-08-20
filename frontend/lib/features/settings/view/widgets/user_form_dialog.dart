@@ -4,6 +4,7 @@ import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/settings/models/user_model.dart';
 import 'package:mynix_frontend/features/settings/bloc/user_bloc.dart';
+import 'package:mynix_frontend/core/utils/role_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class UserFormDialog extends StatefulWidget {
@@ -150,7 +151,18 @@ class _UserFormDialogState extends State<UserFormDialog> {
                   ? _selectedRoleName
                   : (widget.roles.isNotEmpty ? widget.roles.first.name : null),
               decoration: const InputDecoration(labelText: 'Роль', border: OutlineInputBorder()),
-              items: widget.roles.map((r) => DropdownMenuItem(value: r.name, child: Text(r.name))).toList(),
+              items: widget.roles
+                  .map((r) => DropdownMenuItem(
+                        value: r.name,
+                        child: Row(
+                          children: [
+                            Icon(RoleFormatter.getRoleIcon(r.name), size: 18, color: RoleFormatter.getRoleColor(r.name)),
+                            const SizedBox(width: 8),
+                            Text(RoleFormatter.formatName(r.name)),
+                          ],
+                        ),
+                      ))
+                  .toList(),
               onChanged: (val) {
                 if (val != null) setState(() => _selectedRoleName = val);
               },

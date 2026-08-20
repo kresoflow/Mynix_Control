@@ -43,4 +43,6 @@ class LoginByPinRequested extends AuthEvent {
   List<Object?> get props => [pinCode];
 }
 
+class RefreshProfile extends AuthEvent {}
+
 class LoggedOut extends AuthEvent {}

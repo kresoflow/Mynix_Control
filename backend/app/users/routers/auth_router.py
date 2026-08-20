@@ -92,8 +92,15 @@ async def verify_pin(
 
 
 @router.get("/auth/me", response_model=UserRead)
-async def me(current_user: CurrentUser):
-    """Return current user profile with roles and permissions."""
+async def me(
+    current_user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
+):
+    """Return current user profile with roles, permissions, and tenant details."""
+    tenant = await session.get(Tenant, current_user.tenant_id)
+    tenant_name = tenant.name if tenant else "Mynix Point"
+    tenant_address = tenant.address if tenant else None
+
     return UserRead(
         id=current_user.id,
         tenant_id=current_user.tenant_id,
@@ -103,6 +110,8 @@ async def me(current_user: CurrentUser):
         pin_code=current_user.pin_code,
         roles=[r.name for r in current_user.roles],
         permissions=svc.collect_permissions(current_user),
+        tenant_name=tenant_name,
+        tenant_address=tenant_address,
     )
 
 
@@ -123,6 +132,10 @@ async def update_me(
     session.add(current_user)
     await session.flush()
 
+    tenant = await session.get(Tenant, current_user.tenant_id)
+    tenant_name = tenant.name if tenant else "Mynix Point"
+    tenant_address = tenant.address if tenant else None
+
     return UserRead(
         id=current_user.id,
         tenant_id=current_user.tenant_id,
@@ -132,5 +145,7 @@ async def update_me(
         pin_code=current_user.pin_code,
         roles=[r.name for r in current_user.roles],
         permissions=svc.collect_permissions(current_user),
+        tenant_name=tenant_name,
+        tenant_address=tenant_address,
     )
 
