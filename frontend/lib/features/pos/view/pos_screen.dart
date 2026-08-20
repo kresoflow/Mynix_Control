@@ -74,32 +74,33 @@ class _PosScreenState extends State<PosScreen> {
               onBarcodeScanned: (barcode) => _handleBarcode(context, barcode),
               child: Column(
                 children: [
-                  // Sub-tab Navigation Header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                          width: 1,
+                  // Sub-tab Navigation Header (only visible when there are alternative tabs to switch to)
+                  if (useOrders || useKds)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                        border: Border(
+                          bottom: BorderSide(
+                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                            width: 1,
+                          ),
                         ),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        _buildTabButton(0, 'Касса', PhosphorIconsRegular.receipt, isDark),
-                        if (useOrders) ...[
-                          const SizedBox(width: 8),
-                          _buildTabButton(1, 'Заказы', PhosphorIconsRegular.listNumbers, isDark),
+                      child: Row(
+                        children: [
+                          _buildTabButton(0, 'Касса', PhosphorIconsRegular.receipt, isDark),
+                          if (useOrders) ...[
+                            const SizedBox(width: 8),
+                            _buildTabButton(1, 'Заказы', PhosphorIconsRegular.listNumbers, isDark),
+                          ],
+                          if (useKds) ...[
+                            const SizedBox(width: 8),
+                            _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
+                          ],
                         ],
-                        if (useKds) ...[
-                          const SizedBox(width: 8),
-                          _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
-                        ],
-                      ],
+                      ),
                     ),
-                  ),
                   // Active Screen View
                   Expanded(
                     child: IndexedStack(
