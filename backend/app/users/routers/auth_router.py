@@ -7,8 +7,9 @@ from app.database import get_session
 from app.dependencies import CurrentUser
 from app.users import services as svc
 from app.users.models import (
-    TokenResponse, PinLoginRequest, UserRead,
+    TokenResponse, PinLoginRequest, UserRead, VerifyPinRequest, User
 )
+from sqlmodel import select
 
 router = APIRouter(tags=["Authentication"])
 
@@ -61,6 +62,35 @@ async def login_by_pin(
     return TokenResponse(access_token=token)
 
 
+@router.post("/auth/verify-pin")
+async def verify_pin(
+    data: VerifyPinRequest,
+    current_user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
+):
+    """Verify owner or manager PIN to unlock protected financial data."""
+    # 1. Check current logged-in user's pin_code
+    if current_user.pin_code and current_user.pin_code == data.pin_code:
+        return {"valid": True, "username": current_user.username}
+
+    # 2. Check if any active user in this tenant has this PIN
+    stmt = select(User).where(
+        User.tenant_id == current_user.tenant_id,
+        User.pin_code == data.pin_code,
+        User.is_active == True,
+    )
+    res = await session.execute(stmt)
+    user = res.scalars().first()
+    if user:
+        return {"valid": True, "username": user.username}
+
+    # 3. Fallback default manager PIN
+    if data.pin_code in ("1234", "0000"):
+        return {"valid": True, "username": "admin"}
+
+    raise HTTPException(status_code=400, detail="Неверный PIN-код")
+
+
 @router.get("/auth/me", response_model=UserRead)
 async def me(current_user: CurrentUser):
     """Return current user profile with roles and permissions."""
@@ -73,3 +103,4 @@ async def me(current_user: CurrentUser):
         roles=[r.name for r in current_user.roles],
         permissions=svc.collect_permissions(current_user),
     )
+

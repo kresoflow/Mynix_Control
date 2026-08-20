@@ -53,7 +53,7 @@ class AnalyticsFilterBar extends StatelessWidget {
                     ),
                     const SizedBox(width: 32),
                     SizedBox(
-                      width: 300,
+                      width: 440,
                       child: TabBar(
                         labelColor: AppColors.brandPrimary,
                         unselectedLabelColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
@@ -61,6 +61,7 @@ class AnalyticsFilterBar extends StatelessWidget {
                         tabs: const [
                           Tab(text: 'Дашборд'),
                           Tab(text: 'История заказов'),
+                          Tab(text: 'Кассовые смены'),
                         ],
                       ),
                     ),
@@ -118,6 +119,7 @@ class AnalyticsFilterBar extends StatelessWidget {
                   tabs: const [
                     Tab(text: 'Дашборд'),
                     Tab(text: 'История заказов'),
+                    Tab(text: 'Кассовые смены'),
                   ],
                 ),
                 const SizedBox(height: 16),

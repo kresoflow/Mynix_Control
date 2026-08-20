@@ -183,6 +183,11 @@ class PinLoginRequest(SQLModel):
     tenant_id: int
 
 
+class VerifyPinRequest(SQLModel):
+    """PIN verification request for protected actions."""
+    pin_code: str
+
+
 class UserRead(SQLModel):
     """Public user data returned by API."""
     id: int

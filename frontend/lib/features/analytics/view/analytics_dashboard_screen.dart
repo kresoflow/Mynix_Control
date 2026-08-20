@@ -6,6 +6,7 @@ import 'package:mynix_frontend/features/analytics/bloc/analytics_event.dart';
 import 'package:mynix_frontend/features/analytics/repository/analytics_repository.dart';
 import 'tabs/dashboard_summary_tab.dart';
 import 'tabs/order_history_tab.dart';
+import 'tabs/shift_history_analytics_tab.dart';
 import 'widgets/analytics_filter_bar.dart';
 
 class AnalyticsDashboardScreen extends StatefulWidget {
@@ -26,7 +27,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
       create: (context) => AnalyticsBloc(AnalyticsRepository(apiClient.dio))
         ..add(LoadAnalytics(period: _selectedPeriod)),
       child: DefaultTabController(
-        length: 2,
+        length: 3,
         child: Column(
           children: [
             AnalyticsFilterBar(
@@ -58,6 +59,11 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
                     endDate: _endDate,
                   ),
                   OrderHistoryTab(
+                    period: _selectedPeriod,
+                    startDate: _startDate,
+                    endDate: _endDate,
+                  ),
+                  ShiftHistoryAnalyticsTab(
                     period: _selectedPeriod,
                     startDate: _startDate,
                     endDate: _endDate,
