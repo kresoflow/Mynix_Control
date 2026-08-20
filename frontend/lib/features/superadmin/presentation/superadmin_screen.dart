@@ -6,9 +6,8 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/superadmin/domain/superadmin_repository.dart';
 import 'bloc/superadmin_bloc.dart';
-import 'bloc/tenant_explorer_bloc.dart';
-import 'tenant_explorer_screen.dart';
 import 'widgets/create_tenant_modal.dart';
+import 'widgets/tenant_card.dart';
 
 class SuperadminScreen extends StatefulWidget {
   final String systemToken;
@@ -41,275 +40,225 @@ class _SuperadminScreenState extends State<SuperadminScreen> {
     );
   }
 
-  Widget _buildTenantCard(Tenant t) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? AppColors.darkCard : AppColors.lightCard;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BlocProvider(
-                  create: (_) => TenantExplorerBloc(
-                    repository: context.read<SuperadminBloc>().repository,
-                    systemToken: widget.systemToken,
-                    schemaName: t.schemaName,
-                  ),
-                  child: TenantExplorerScreen(tenantName: t.name),
-                ),
-              ),
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '#${t.id}',
-                        style: AppTextStyles.h3.copyWith(color: AppColors.brandPrimary),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(t.name, style: AppTextStyles.h3.copyWith(fontSize: 16)),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              PhosphorIconsRegular.database,
-                              size: 14,
-                              color: AppColors.brandPrimary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              t.schemaName,
-                              style: AppTextStyles.caption.copyWith(
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Icon(
-                              PhosphorIconsRegular.mapPin,
-                              size: 14,
-                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                t.address.isNotEmpty ? t.address : 'Адрес не указан',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: t.isActive
-                          ? AppColors.success.withValues(alpha: 0.12)
-                          : AppColors.danger.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: t.isActive
-                            ? AppColors.success.withValues(alpha: 0.3)
-                            : AppColors.danger.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: t.isActive ? AppColors.success : AppColors.danger,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          t.isActive ? 'Активен' : 'Отключен',
-                          style: AppTextStyles.caption.copyWith(
-                            color: t.isActive ? AppColors.success : AppColors.danger,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    PhosphorIconsRegular.caretRight,
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    size: 18,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Icon(PhosphorIconsRegular.shieldCheck, color: AppColors.brandPrimary),
-            const SizedBox(width: 10),
-            Text(
-              'Панель Управления (Mynix System)',
-              style: AppTextStyles.h3.copyWith(
-                color: isDark ? AppColors.darkText : AppColors.lightText,
+      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      body: BlocConsumer<SuperadminBloc, SuperadminState>(
+        listener: (context, state) {
+          if (state is SuperadminError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: AppColors.danger,
               ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: BlocBuilder<SuperadminBloc, SuperadminState>(
+            );
+          }
+        },
         builder: (context, state) {
           if (state is SuperadminLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (state is SuperadminError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(PhosphorIconsRegular.warningCircle, color: AppColors.danger, size: 48),
-                  const SizedBox(height: 16),
-                  Text('Ошибка загрузки', style: AppTextStyles.h2),
-                  const SizedBox(height: 8),
-                  Text(state.message, style: AppTextStyles.body.copyWith(color: AppColors.danger)),
-                ],
-              ),
-            );
-          } else if (state is SuperadminLoaded) {
-            final tenants = state.tenants;
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Рестораны в сети',
-                              style: AppTextStyles.h2.copyWith(
-                                color: isDark ? AppColors.darkText : AppColors.lightText,
-                              ),
+          }
+
+          final tenants = state is SuperadminLoaded ? state.tenants : <Tenant>[];
+          final activeCount = tenants.where((t) => t.isActive).length;
+
+          return CustomScrollView(
+            slivers: [
+              // Top Bar
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 24, 28, 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Всего клиентов: ${tenants.length}',
-                              style: AppTextStyles.caption.copyWith(
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                              ),
+                            child: Icon(
+                              PhosphorIconsRegular.crown,
+                              color: AppColors.brandPrimary,
+                              size: 26,
                             ),
-                          ],
-                        ),
-                        AppPrimaryButton(
-                          label: 'Новый Ресторан',
-                          icon: PhosphorIconsRegular.plus,
-                          onPressed: _showCreateTenantModal,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    if (tenants.isEmpty)
-                      Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
+                          ),
+                          const SizedBox(width: 14),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                PhosphorIconsRegular.storefront,
-                                size: 64,
-                                color: (isDark ? AppColors.darkSubtext : AppColors.lightSubtext).withValues(alpha: 0.5),
-                              ),
-                              const SizedBox(height: 16),
+                              Text('Superadmin Console', style: AppTextStyles.h2),
                               Text(
-                                'Нет зарегистрированных ресторанов',
-                                style: AppTextStyles.h3.copyWith(
+                                'Управление мульти-тенант кластером и базами данных',
+                                style: AppTextStyles.caption.copyWith(
                                   color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      )
-                    else
-                      Expanded(
-                        child: ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: tenants.length,
-                          itemBuilder: (context, index) {
-                            return _buildTenantCard(tenants[index]);
-                          },
-                        ),
+                        ],
                       ),
-                  ],
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(PhosphorIconsRegular.arrowsClockwise),
+                            tooltip: 'Обновить список',
+                            onPressed: () => context.read<SuperadminBloc>().loadTenants(),
+                          ),
+                          const SizedBox(width: 8),
+                          AppPrimaryButton(
+                            label: 'Добавить ресторан',
+                            icon: PhosphorIconsRegular.plus,
+                            onPressed: _showCreateTenantModal,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            );
-          }
-          return const SizedBox.shrink();
+
+              // KPI Metrics Row
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
+                  child: Row(
+                    children: [
+                      _buildMetricCard(
+                        'Всего точек',
+                        '${tenants.length}',
+                        PhosphorIconsRegular.storefront,
+                        AppColors.brandPrimary,
+                        isDark,
+                      ),
+                      const SizedBox(width: 16),
+                      _buildMetricCard(
+                        'Активных точек',
+                        '$activeCount',
+                        PhosphorIconsRegular.checkCircle,
+                        AppColors.success,
+                        isDark,
+                      ),
+                      const SizedBox(width: 16),
+                      _buildMetricCard(
+                        'PostgreSQL Schemas',
+                        '${tenants.length}',
+                        PhosphorIconsRegular.database,
+                        Colors.blueAccent,
+                        isDark,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Tenants List Title
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 20, 28, 12),
+                  child: Row(
+                    children: [
+                      Text('Список заведений (Tenants)', style: AppTextStyles.h3),
+                      const Spacer(),
+                      Text(
+                        'Нажмите на заведение для инспекции БД',
+                        style: AppTextStyles.caption.copyWith(
+                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Tenants List or Empty State
+              if (tenants.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          PhosphorIconsRegular.buildings,
+                          size: 64,
+                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Нет зарегистрированных точек', style: AppTextStyles.h3),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Нажмите «Добавить ресторан», чтобы инициализировать тенант',
+                          style: AppTextStyles.caption.copyWith(
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => TenantCard(
+                        tenant: tenants[index],
+                        systemToken: widget.systemToken,
+                      ),
+                      childCount: tenants.length,
+                    ),
+                  ),
+                ),
+            ],
+          );
         },
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(String title, String val, IconData icon, Color color, bool isDark) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : AppColors.lightCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.caption.copyWith(
+                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(val, style: AppTextStyles.h2.copyWith(fontSize: 22)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

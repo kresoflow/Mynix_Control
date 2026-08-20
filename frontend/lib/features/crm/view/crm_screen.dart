@@ -8,6 +8,7 @@ import 'package:mynix_frontend/features/crm/bloc/crm_event.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_state.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/customer_kpi_cards.dart';
+import 'package:mynix_frontend/features/crm/view/widgets/customer_filter_bar.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/customer_table_header.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/customer_row.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_form_modal.dart';
@@ -186,43 +187,15 @@ class _CrmScreenState extends State<CrmScreen> {
                 const SizedBox(height: 14),
 
                 // Search and Filters
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: _onSearch,
-                        decoration: InputDecoration(
-                          hintText: 'Поиск по имени или телефону...',
-                          prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
-                          filled: true,
-                          fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildFilterPill('Все ($totalCount)', 'all', isDark),
-                          const SizedBox(width: 6),
-                          _buildFilterPill('🔥 VIP ($vipCount)', 'vip', isDark),
-                          const SizedBox(width: 6),
-                          _buildFilterPill('⚠️ Спящие', 'churn', isDark),
-                          const SizedBox(width: 6),
-                          _buildFilterPill('✨ Новички', 'new', isDark),
-                          const SizedBox(width: 6),
-                          _buildFilterPill('Должники ($debtorsCount)', 'debtors', isDark),
-                          const SizedBox(width: 6),
-                          _buildFilterPill('Депозиты ($depositsCount)', 'deposits', isDark),
-                        ],
-                      ),
-                    ),
-                  ],
+                CustomerFilterBar(
+                  searchController: _searchController,
+                  activeFilter: _activeFilter,
+                  totalCount: totalCount,
+                  vipCount: vipCount,
+                  debtorsCount: debtorsCount,
+                  depositsCount: depositsCount,
+                  onSearch: _onSearch,
+                  onFilterChanged: _onFilterChanged,
                 ),
                 const SizedBox(height: 12),
 
@@ -259,30 +232,6 @@ class _CrmScreenState extends State<CrmScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildFilterPill(String label, String value, bool isDark) {
-    final isSelected = _activeFilter == value;
-    return InkWell(
-      onTap: () => _onFilterChanged(value),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? Colors.black : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
-          ),
-        ),
       ),
     );
   }

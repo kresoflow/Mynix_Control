@@ -18,7 +18,7 @@ import 'receive_document/receive_document_table_header.dart';
 import 'receive_document/receive_document_footer.dart';
 import 'receive_document/receive_document_processor.dart';
 import 'receive_document/receive_document_items_list.dart';
-import 'receive_document/receive_document_unit_helper.dart';
+import 'receive_document/receive_document_row_callbacks.dart';
 
 class ReceiveDocumentDialog extends StatefulWidget {
   const ReceiveDocumentDialog({super.key});
@@ -83,15 +83,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
 
   void _addItem() {
     setState(() => _items.add(ReceiptRowData()));
-    _focusRow(_items.last.nameFocusNode);
-  }
-
-  void _focusRow(FocusNode node) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (node.canRequestFocus) {
-        node.requestFocus();
-      }
-    });
+    ReceiveDocumentRowCallbacks.focusRow(_items.last.nameFocusNode);
   }
 
   void _removeItem(int index) {
@@ -99,51 +91,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       _items[index].dispose();
       _items.removeAt(index);
     });
-  }
-
-  void _onRowIngredientSelected(int index, Ingredient selection) {
-    setState(() {
-      final item = _items[index];
-      item.ingredient = selection;
-      item.nameController.text = selection.name;
-      item.price = selection.costPerUnit;
-      item.priceController.text = selection.costPerUnit.toStringAsFixed(2);
-      item.selectedUnit = ReceiveDocumentUnitHelper.normalizeUnit(selection.unit);
-      item.minStockAlert = selection.minStockAlert;
-      item.minStockAlertController.text = selection.minStockAlert.toInt().toString();
-
-      if (selection.attributes != null) {
-        final flavor = selection.attributes!['Вкус'] ?? '';
-        final vol = selection.attributes!['Объем'] ?? '';
-        item.flavorController.text = flavor;
-        item.volumeController.text = vol.replaceAll(RegExp(r'[^0-9.]'), '');
-      }
-    });
-    _focusRow(_items[index].qtyFocusNode);
-  }
-
-  void _onRowNameChanged(int index, String val) {
-    final item = _items[index];
-    item.newName = val;
-    if (item.ingredient != null && item.ingredient!.name != val) {
-      setState(() => item.ingredient = null);
-    }
-  }
-
-  void _onRowNameSubmitted(int index) {
-    if (_tabIndex == 1) {
-      _focusRow(_items[index].flavorFocusNode);
-    } else {
-      _focusRow(_items[index].qtyFocusNode);
-    }
-  }
-
-  void _onRowSellPriceSubmitted(int index) {
-    if (index == _items.length - 1) {
-      _addItem();
-    } else {
-      _focusRow(_items[index + 1].nameFocusNode);
-    }
   }
 
   Future<void> _save({required bool complete}) async {
@@ -276,15 +223,28 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                         items: _items,
                         availableIngredients: _availableIngredients,
                         tabIndex: _tabIndex,
-                        onIngredientSelected: _onRowIngredientSelected,
-                        onNameChanged: _onRowNameChanged,
-                        onNameSubmitted: _onRowNameSubmitted,
-                        onFlavorSubmitted: (i) => _focusRow(_items[i].volumeFocusNode),
-                        onVolumeSubmitted: (i) => _focusRow(_items[i].qtyFocusNode),
-                        onQtySubmitted: (i) => _focusRow(_items[i].minStockAlertFocusNode),
-                        onMinStockAlertSubmitted: (i) => _focusRow(_items[i].priceFocusNode),
-                        onPriceSubmitted: (i) => _focusRow(_items[i].sellPriceFocusNode),
-                        onSellPriceSubmitted: _onRowSellPriceSubmitted,
+                        onIngredientSelected: (i, sel) => ReceiveDocumentRowCallbacks.onRowIngredientSelected(
+                          items: _items,
+                          index: i,
+                          selection: sel,
+                          onStateUpdate: () => setState(() {}),
+                        ),
+                        onNameChanged: (i, val) => ReceiveDocumentRowCallbacks.onRowNameChanged(
+                          _items[i],
+                          val,
+                          () => setState(() => _items[i].ingredient = null),
+                        ),
+                        onNameSubmitted: (i) => ReceiveDocumentRowCallbacks.onRowNameSubmitted(_items[i], _tabIndex),
+                        onFlavorSubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].volumeFocusNode),
+                        onVolumeSubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].qtyFocusNode),
+                        onQtySubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].minStockAlertFocusNode),
+                        onMinStockAlertSubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].priceFocusNode),
+                        onPriceSubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].sellPriceFocusNode),
+                        onSellPriceSubmitted: (i) => ReceiveDocumentRowCallbacks.onRowSellPriceSubmitted(
+                          items: _items,
+                          index: i,
+                          onAddItem: _addItem,
+                        ),
                         onUnitChanged: (i, val) { if (val != null) setState(() => _items[i].selectedUnit = val); },
                         onQtyChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].quantity = n); },
                         onMinStockAlertChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].minStockAlert = n); },
