@@ -70,4 +70,19 @@ class ShiftRepository {
       throw Exception('Failed to record cash expense: $e');
     }
   }
+
+  /// Fetch shifts history
+  Future<List<Map<String, dynamic>>> getShiftsHistory({int limit = 50, int offset = 0}) async {
+    try {
+      final response = await _dio.get(
+        '/shifts/history',
+        queryParameters: {'limit': limit, 'offset': offset},
+      );
+      final list = response.data['history'] as List<dynamic>? ?? [];
+      return list.map((e) => e as Map<String, dynamic>).toList();
+    } catch (e) {
+      throw Exception('Failed to load shifts history: $e');
+    }
+  }
 }
+

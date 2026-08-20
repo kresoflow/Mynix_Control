@@ -9,7 +9,8 @@ from app.pos.models import (
 )
 from app.pos.services.shift_service import (
     open_shift, close_shift, get_open_shift,
-    calculate_expected_cash, record_expense, get_x_report
+    calculate_expected_cash, record_expense, get_x_report,
+    get_shifts_history,
 )
 
 router = APIRouter(tags=["POS — Shifts, Cash"])
@@ -129,10 +130,39 @@ async def api_x_report(
     current_user: CurrentUser,
     session: TenantSession,
 ):
-    """Get real-time intermediate X-Report for current open shift."""
+    """Get real-time intermediate X-Report for current open shift (returns empty if closed)."""
     shift = await get_open_shift(session)
     if not shift:
-        raise HTTPException(status_code=404, detail="No active open shift found.")
+        return {
+            "is_open": False,
+            "shift_id": None,
+            "message": "No active open shift found",
+            "opening_cash": 0.0,
+            "cash_sales": 0.0,
+            "transfer_sales": 0.0,
+            "total_revenue": 0.0,
+            "orders_count": 0,
+            "cancelled_count": 0,
+            "average_check": 0.0,
+            "cash_expenses": 0.0,
+            "expected_cash": 0.0,
+        }
     
     report = await get_x_report(session, shift.id)
     return report
+
+
+@router.get(
+    "/shifts/history",
+    dependencies=[Depends(require_permission("shifts:view"))],
+)
+async def api_shifts_history(
+    current_user: CurrentUser,
+    session: TenantSession,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """Retrieve history of past and closed shifts for auditing."""
+    history = await get_shifts_history(session, limit=limit, offset=offset)
+    return {"history": history, "total": len(history)}
+

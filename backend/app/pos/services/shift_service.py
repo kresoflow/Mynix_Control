@@ -191,3 +191,51 @@ async def get_x_report(
         "cash_expenses": cash_expenses,
         "expected_cash": expected_cash,
     }
+
+
+async def get_shifts_history(
+    session: AsyncSession,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[dict]:
+    """Retrieve history of past and current shifts with revenue and discrepancy metrics."""
+    stmt_shifts = (
+        select(Shift)
+        .order_by(Shift.id.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    res_shifts = await session.execute(stmt_shifts)
+    shifts = res_shifts.scalars().all()
+
+    history = []
+    for shift in shifts:
+        stmt_sales = select(
+            func.coalesce(func.sum(Order.total), 0).label("total_rev"),
+            func.count(Order.id).label("orders_count"),
+        ).where(
+            Order.shift_id == shift.id,
+            Order.status != OrderStatus.CANCELLED.value,
+        )
+        res_sales = await session.execute(stmt_sales)
+        row = res_sales.one_or_none()
+        total_rev = float(row[0] if row else 0.0)
+        cnt = int(row[1] if row else 0)
+
+        history.append({
+            "id": shift.id,
+            "is_open": shift.is_open,
+            "opened_at": shift.opened_at.isoformat() if shift.opened_at else None,
+            "closed_at": shift.closed_at.isoformat() if shift.closed_at else None,
+            "opened_by": shift.opened_by,
+            "closed_by": shift.closed_by,
+            "opening_cash": shift.opening_cash,
+            "total_revenue": round(total_rev, 2),
+            "orders_count": cnt,
+            "closing_cash_expected": shift.closing_cash_expected,
+            "closing_cash_actual": shift.closing_cash_actual,
+            "discrepancy": shift.discrepancy,
+        })
+
+    return history
+

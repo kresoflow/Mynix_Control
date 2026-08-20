@@ -14,6 +14,7 @@ import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'icon_btn.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/open_shift_modal.dart';
 
 class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCashTap;
@@ -174,7 +175,12 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       onSelected: (value) {
         if (value == 'close_shift') {
-          showShiftHubModal(context, initialTab: 1);
+          final state = context.read<ShiftBloc>().state;
+          if (state is ShiftOpen) {
+            showShiftHubModal(context, initialTab: 1);
+          } else {
+            showOpenShiftDialog(context);
+          }
         } else if (value == 'logout') {
           context.read<AuthBloc>().add(LoggedOut());
         }

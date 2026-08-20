@@ -4,8 +4,63 @@ import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'dart:ui';
+
+void showOpenShiftDialog(BuildContext context) {
+  final controller = TextEditingController();
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+
+  showDialog(
+    context: context,
+    builder: (ctx) => MynixDialog(
+      title: 'Открытие смены',
+      icon: PhosphorIconsRegular.wallet,
+      width: 400,
+      actions: [
+        AppButton.secondary(
+          label: 'Отмена',
+          onPressed: () => Navigator.of(ctx).pop(),
+        ),
+        AppButton.primary(
+          label: 'Открыть смену',
+          onPressed: () {
+            final amount = double.tryParse(controller.text.replaceAll(',', '.')) ?? 0.0;
+            context.read<ShiftBloc>().add(OpenShiftRequested(amount));
+            Navigator.of(ctx).pop();
+          },
+        ),
+      ],
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Внесите разменный фонд в кассу для начала смены:',
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            autofocus: true,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            decoration: InputDecoration(
+              hintText: '0.00',
+              labelText: 'Разменный фонд (с)',
+              prefixIcon: const Icon(PhosphorIconsRegular.money),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
 class OpenShiftModal extends StatefulWidget {
   const OpenShiftModal({super.key});
