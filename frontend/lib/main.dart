@@ -35,6 +35,7 @@ import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:mynix_frontend/features/crm/repository/crm_repository.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_bloc.dart';
+import 'package:mynix_frontend/features/settings/repository/settings_repository.dart';
 
 
 
@@ -78,6 +79,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
   late final ShiftRepository _shiftRepository;
   late final InventoryRepository _inventoryRepository;
   late final CrmRepository _crmRepository;
+  late final SettingsRepository _settingsRepository;
   late final AuthBloc _authBloc;
   late final ThemeBloc _themeBloc;
   late final SettingsBloc _settingsBloc;
@@ -105,6 +107,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _shiftRepository = ShiftRepository(apiClient.dio);
     _inventoryRepository = InventoryRepository(apiClient.dio);
     _crmRepository = CrmRepository(apiClient.dio);
+    _settingsRepository = SettingsRepository(apiClient.dio);
     _authBloc = AuthBloc(_authRepository)..add(AppStarted());
     _themeBloc = ThemeBloc()..add(LoadSavedTheme());
     _settingsBloc = SettingsBloc();
@@ -155,6 +158,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
         RepositoryProvider.value(value: _inventoryRepository),
         RepositoryProvider.value(value: _ordersHistoryRepository),
         RepositoryProvider.value(value: _crmRepository),
+        RepositoryProvider.value(value: _settingsRepository),
       ],
       child: MultiBlocProvider(
         providers: [

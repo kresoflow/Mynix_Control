@@ -13,6 +13,7 @@ import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
 import 'supplier_row.dart';
+import 'suppliers_table_header.dart';
 
 export 'supplier_row.dart';
 
@@ -35,7 +36,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
       context: context,
       builder: (_) => const CreateSupplierDialog(),
     );
-    if (result != null && mounted) {
+    if (result != null && context.mounted) {
       context.read<DocumentBloc>().add(
         CreateSupplier(
           result['name'],
@@ -181,70 +182,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 44,
-                      child: Text(
-                        'ID',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        'Название',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        'Контактные данные',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        'Баланс / Долг',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 90,
-                      child: Text('Статус', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
-                    ),
-                    const SizedBox(width: 130),
-                  ],
-                ),
-              ),
-            ),
+            const SuppliersTableHeader(),
             Expanded(
               child: state.suppliers.isEmpty
                   ? Center(

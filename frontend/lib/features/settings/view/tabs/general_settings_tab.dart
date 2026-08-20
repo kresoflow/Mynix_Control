@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/settings/repository/settings_repository.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/theme_appearance_settings_card.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
@@ -25,43 +25,44 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
   @override
   void initState() {
     super.initState();
-    _fetchSettings();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchSettings());
   }
 
   Future<void> _fetchSettings() async {
+    if (!mounted) return;
     try {
-      final dio = apiClient.dio;
-      final response = await dio.get('/settings/');
-      setState(() {
-        _useKds = response.data['use_kds'];
-        _useOrders = response.data['use_orders'] ?? true;
-        _enableInventory = response.data['enable_inventory_deduction'];
-        _isLoading = false;
-      });
+      final repo = context.read<SettingsRepository>();
+      final data = await repo.getSettings();
       if (mounted) {
+        setState(() {
+          _useKds = data['use_kds'] ?? true;
+          _useOrders = data['use_orders'] ?? true;
+          _enableInventory = data['enable_inventory_deduction'] ?? true;
+          _isLoading = false;
+        });
         context.read<SettingsBloc>().add(
           UpdateFeatureFlags(useKds: _useKds, useOrders: _useOrders),
         );
       }
     } catch (e) {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _updateSettings(bool useKds, bool useOrders, bool enableInv) async {
     try {
-      final dio = apiClient.dio;
-      await dio.put('/settings/', data: {
+      final repo = context.read<SettingsRepository>();
+      await repo.updateSettings({
         'use_kds': useKds,
         'use_orders': useOrders,
         'enable_inventory_deduction': enableInv,
       });
-      setState(() {
-        _useKds = useKds;
-        _useOrders = useOrders;
-        _enableInventory = enableInv;
-      });
       if (mounted) {
+        setState(() {
+          _useKds = useKds;
+          _useOrders = useOrders;
+          _enableInventory = enableInv;
+        });
         context.read<SettingsBloc>().add(
           UpdateFeatureFlags(useKds: _useKds, useOrders: _useOrders),
         );
