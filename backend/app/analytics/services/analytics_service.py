@@ -3,7 +3,7 @@ from typing import Optional
 from collections import defaultdict
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import select, func
 
 from app.pos.models import Order, OrderItem, OrderStatus
 from app.analytics.models import (
@@ -32,16 +32,18 @@ async def get_analytics_metrics(
     total_revenue = sum(o.total for o in orders)
     average_check = total_revenue / total_orders if total_orders > 0 else 0.0
 
-    # Calculate COGS (Cost of Goods Sold)
-    total_cogs = 0.0
-    if total_orders > 0:
-        order_ids = [o.id for o in orders]
-        items_query = select(OrderItem).where(OrderItem.order_id.in_(order_ids))
-        items_result = await session.execute(items_query)
-        items = items_result.scalars().all()
-        
-        for item in items:
-            total_cogs += (item.unit_cost or 0.0) * item.quantity
+    # Calculate COGS (Cost of Goods Sold) via single SQL aggregate join
+    cogs_stmt = (
+        select(func.coalesce(func.sum(OrderItem.unit_cost * OrderItem.quantity), 0.0))
+        .join(Order, OrderItem.order_id == Order.id)
+        .where(
+            Order.created_at >= start_date,
+            Order.created_at <= end_date,
+            Order.status != OrderStatus.CANCELLED,
+        )
+    )
+    cogs_res = await session.execute(cogs_stmt)
+    total_cogs = float(cogs_res.scalar() or 0.0)
 
     net_profit = total_revenue - total_cogs
     margin_percentage = (net_profit / total_revenue * 100) if total_revenue > 0 else 0.0

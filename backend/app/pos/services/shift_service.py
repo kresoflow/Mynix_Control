@@ -198,7 +198,7 @@ async def get_shifts_history(
     limit: int = 50,
     offset: int = 0,
 ) -> list[dict]:
-    """Retrieve history of past and current shifts with revenue and discrepancy metrics."""
+    """Retrieve history of past and current shifts with revenue and discrepancy metrics in 2 queries."""
     stmt_shifts = (
         select(Shift)
         .order_by(Shift.id.desc())
@@ -206,22 +206,31 @@ async def get_shifts_history(
         .offset(offset)
     )
     res_shifts = await session.execute(stmt_shifts)
-    shifts = res_shifts.scalars().all()
+    shifts = list(res_shifts.scalars().all())
+    if not shifts:
+        return []
+
+    shift_ids = [s.id for s in shifts]
+
+    # Aggregated metrics for all shifts in a single query (prevents N+1)
+    stmt_sales = (
+        select(
+            Order.shift_id,
+            func.coalesce(func.sum(Order.total), 0).label("total_rev"),
+            func.count(Order.id).label("orders_count"),
+        )
+        .where(
+            Order.shift_id.in_(shift_ids),
+            Order.status != OrderStatus.CANCELLED.value,
+        )
+        .group_by(Order.shift_id)
+    )
+    res_sales = await session.execute(stmt_sales)
+    sales_map = {row[0]: (float(row[1]), int(row[2])) for row in res_sales.all()}
 
     history = []
     for shift in shifts:
-        stmt_sales = select(
-            func.coalesce(func.sum(Order.total), 0).label("total_rev"),
-            func.count(Order.id).label("orders_count"),
-        ).where(
-            Order.shift_id == shift.id,
-            Order.status != OrderStatus.CANCELLED.value,
-        )
-        res_sales = await session.execute(stmt_sales)
-        row = res_sales.one_or_none()
-        total_rev = float(row[0] if row else 0.0)
-        cnt = int(row[1] if row else 0)
-
+        total_rev, cnt = sales_map.get(shift.id, (0.0, 0))
         history.append({
             "id": shift.id,
             "is_open": shift.is_open,

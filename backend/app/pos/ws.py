@@ -99,7 +99,9 @@ async def kitchen_websocket(
             # Client can send "ping" to keep alive
             if data == "ping":
                 await websocket.send_text("pong")
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, Exception):
+        pass
+    finally:
         kitchen_manager.disconnect(websocket, tenant_id)
 
 
