@@ -27,17 +27,24 @@ class PosMenuGridView extends StatelessWidget {
 
     return GridView.builder(
       padding: EdgeInsets.fromLTRB(
-        isMobile ? 12 : 24,
-        isMobile ? 12 : 24,
-        isMobile ? 12 : 24,
+        isMobile ? 10 : 24,
+        isMobile ? 10 : 24,
+        isMobile ? 10 : 24,
         isMobile ? 120 : 24,
       ),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: isMobile ? (screenWidth / 2) - 16 : posSettings.cardSize,
-        childAspectRatio: isMobile ? 0.9 : 0.85,
-        crossAxisSpacing: isMobile ? 12 : 20,
-        mainAxisSpacing: isMobile ? 12 : 20,
-      ),
+      gridDelegate: isMobile
+          ? const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.88,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            )
+          : SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: posSettings.cardSize,
+              childAspectRatio: 0.85,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+            ),
       itemCount: categories.length + items.length,
       itemBuilder: (context, index) {
         if (index < categories.length) {

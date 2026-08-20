@@ -53,6 +53,9 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isMobile = screenWidth < 600;
     final orders = PosOutboxService.getPendingOrders();
     final totalAmount = PosOutboxService.pendingTotalAmount;
     final isLanRunning = LocalPosServer.isRunning;
@@ -61,11 +64,11 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: isMobile ? 16 : 24),
       child: Container(
-        width: 600,
-        constraints: const BoxConstraints(maxHeight: 700),
-        padding: const EdgeInsets.all(24),
+        width: isMobile ? screenWidth - 24 : 600,
+        constraints: BoxConstraints(maxHeight: screenHeight * 0.82),
+        padding: EdgeInsets.all(isMobile ? 16 : 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -216,11 +219,13 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
-                  flex: 2,
+                  flex: isMobile ? 1 : 2,
                   child: AppButton.primary(
-                    label: _isSyncing ? 'Синхронизация...' : 'Синхронизировать сейчас',
+                    label: _isSyncing
+                        ? 'Синхронизация...'
+                        : (isMobile ? 'Выгрузить' : 'Синхронизировать сейчас'),
                     icon: PhosphorIconsRegular.arrowsClockwise,
                     isLoading: _isSyncing,
                     onPressed: _handleManualSync,
