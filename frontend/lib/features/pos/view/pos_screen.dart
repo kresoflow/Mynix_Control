@@ -6,10 +6,12 @@ import 'package:mynix_frontend/core/widgets/responsive_layout.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/barcode_scanner_listener.dart';
 
 import 'widgets/pos_mobile_layout.dart';
@@ -31,6 +33,16 @@ class PosScreen extends StatefulWidget {
 
 class _PosScreenState extends State<PosScreen> {
   int _currentTab = 0; // 0: POS, 1: Orders, 2: KDS Kitchen
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MenuBloc>().add(LoadMenu());
+      context.read<CategoryBloc>().add(LoadCategories());
+      context.read<ShiftBloc>().add(CheckCurrentShift());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

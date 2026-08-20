@@ -6,6 +6,8 @@ import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_breadcrumb_bar.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_empty_state.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_menu_grid_view.dart';
@@ -59,6 +61,30 @@ class PosMenuGrid extends StatelessWidget {
                       builder: (context, menuState) {
                         if (catState is CategoryLoading || menuState is MenuLoading) {
                           return Center(child: CircularProgressIndicator(color: AppColors.brandPrimary));
+                        }
+
+                        if (catState is CategoryError || menuState is MenuError) {
+                          return Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(PhosphorIconsRegular.warningCircle, size: 44, color: AppColors.danger),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Ошибка загрузки меню',
+                                  style: AppTextStyles.h3.copyWith(color: AppColors.danger),
+                                ),
+                                const SizedBox(height: 12),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    context.read<MenuBloc>().add(LoadMenu());
+                                    context.read<CategoryBloc>().add(LoadCategories());
+                                  },
+                                  child: const Text('Повторить попытку'),
+                                ),
+                              ],
+                            ),
+                          );
                         }
 
                         List<dynamic> categories = [];
