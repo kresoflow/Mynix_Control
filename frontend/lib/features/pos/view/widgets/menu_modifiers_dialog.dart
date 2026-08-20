@@ -1,17 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'modifiers/mini_cart_item.dart';
-import 'modifiers/dialog_variations_list.dart';
-import 'modifiers/dialog_modifier_groups_list.dart';
-import 'modifiers/dialog_mini_cart_view.dart';
+import 'modifiers/modifiers_calculator.dart';
+import 'modifiers/dialog_modifiers_body.dart';
 
 export 'modifiers/mini_cart_item.dart';
 
@@ -76,53 +72,6 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
     }
   }
 
-  double _calculateModifiersPrice() {
-    double additional = 0.0;
-    for (int g = 0; g < _modifierGroups.length; g++) {
-      final mods = _modifierGroups[g]['modifiers'] as List<dynamic>;
-      for (int mIndex in (_selectedModifiers[g] ?? {})) {
-        additional += (mods[mIndex]['price'] as num?)?.toDouble() ?? 0.0;
-      }
-    }
-    return additional;
-  }
-
-  double _calculateAdditionalPrice(int? variationIndex) {
-    double additional = _calculateModifiersPrice();
-    if (variationIndex != null && _variations.isNotEmpty) {
-      final basePrice = widget.item.price;
-      final varPrice = (_variations[variationIndex]['price'] as num?)?.toDouble() ?? 0.0;
-      additional += (varPrice - basePrice);
-    }
-    return additional;
-  }
-
-  String _generateSelectedJson(int? variationIndex) {
-    final Map<String, dynamic> selected = {};
-    if (variationIndex != null && _variations.isNotEmpty) {
-      selected['variation'] = _variations[variationIndex]['name'];
-      if (_variations[variationIndex]['id'] != null) {
-        selected['child_item_id'] = _variations[variationIndex]['id'];
-      }
-    }
-    final List<Map<String, dynamic>> modsList = [];
-    for (int g = 0; g < _modifierGroups.length; g++) {
-      final group = _modifierGroups[g];
-      final mods = group['modifiers'] as List<dynamic>;
-      for (int mIndex in (_selectedModifiers[g] ?? {})) {
-        modsList.add({
-          'group': group['name'],
-          'name': mods[mIndex]['name'],
-          'price': mods[mIndex]['price'],
-        });
-      }
-    }
-    if (modsList.isNotEmpty) {
-      selected['modifiers'] = modsList;
-    }
-    return jsonEncode(selected);
-  }
-
   void _addToMiniCart(int? variationIndex) {
     if (widget.isReadOnly) return;
     for (int g = 0; g < _modifierGroups.length; g++) {
@@ -137,8 +86,19 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
       }
     }
 
-    final jsonStr = _generateSelectedJson(variationIndex);
-    final price = _calculateAdditionalPrice(variationIndex);
+    final jsonStr = ModifiersCalculator.generateSelectedJson(
+      variations: _variations,
+      modifierGroups: _modifierGroups,
+      selectedModifiers: _selectedModifiers,
+      variationIndex: variationIndex,
+    );
+    final price = ModifiersCalculator.calculateAdditionalPrice(
+      item: widget.item,
+      variations: _variations,
+      modifierGroups: _modifierGroups,
+      selectedModifiers: _selectedModifiers,
+      variationIndex: variationIndex,
+    );
     final existingIndex = _miniCart.indexWhere((item) => item.jsonStr == jsonStr);
 
     if (existingIndex >= 0) {
@@ -182,109 +142,49 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return MynixDialog(
       title: widget.item.cleanName,
       icon: PhosphorIconsRegular.hamburger,
       width: 850,
       content: Container(
         constraints: const BoxConstraints(maxHeight: 650),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 650;
-
-            final leftContent = SingleChildScrollView(
-              padding: const EdgeInsets.only(right: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  DialogVariationsList(
-                    variations: _variations,
-                    basePrice: widget.item.price,
-                    additionalModifiersPrice: _calculateModifiersPrice(),
-                    onSelectVariation: _addToMiniCart,
-                  ),
-                  if (_variations.isEmpty) ...[
-                    AppGhostButton(
-                      label: 'Добавить в корзину • ${(widget.item.price + _calculateModifiersPrice()).toCurrency(context)}',
-                      onPressed: () => _addToMiniCart(null),
-                      icon: PhosphorIconsRegular.plusCircle,
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  DialogModifierGroupsList(
-                    modifierGroups: _modifierGroups,
-                    selectedModifiers: _selectedModifiers,
-                    onToggleModifier: (g, mIndex, isSelected) {
-                      setState(() {
-                        if (isSelected) {
-                          final maxSel = _modifierGroups[g]['max_selections'] ?? 99;
-                          if ((_selectedModifiers[g] ?? {}).length < maxSel) {
-                            _selectedModifiers[g]?.add(mIndex);
-                          }
-                        } else {
-                          _selectedModifiers[g]?.remove(mIndex);
-                        }
-                      });
-                    },
-                  ),
-                ],
-              ),
-            );
-
-            final rightContent = DialogMiniCartView(
-              miniCart: _miniCart,
-              baseItemPrice: widget.item.price,
-              isMobile: isMobile,
-              isReadOnly: widget.isReadOnly,
-              hasVariations: _variations.isNotEmpty,
-              onClearCart: () => setState(() => _miniCart.clear()),
-              onIncrementQuantity: (i) => setState(() => _miniCart[i].quantity++),
-              onDecrementQuantity: (i) {
-                setState(() {
-                  if (_miniCart[i].quantity > 1) {
-                    _miniCart[i].quantity--;
-                  } else {
-                    _miniCart.removeAt(i);
-                  }
-                });
-              },
-              onRemoveItem: (i) => setState(() => _miniCart.removeAt(i)),
-              onSubmitCart: _submitCart,
-            );
-
-            if (isMobile) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: leftContent),
-                  Container(
-                    height: 1,
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                    margin: const EdgeInsets.only(top: 16, bottom: 8),
-                  ),
-                  Container(
-                    constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.3),
-                    child: rightContent,
-                  ),
-                ],
-              );
-            }
-
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(flex: 5, child: leftContent),
-                Container(
-                  width: 1,
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                Expanded(flex: 4, child: rightContent),
-              ],
-            );
+        child: DialogModifiersBody(
+          item: widget.item,
+          variations: _variations,
+          modifierGroups: _modifierGroups,
+          selectedModifiers: _selectedModifiers,
+          miniCart: _miniCart,
+          isReadOnly: widget.isReadOnly,
+          additionalModifiersPrice: ModifiersCalculator.calculateModifiersPrice(
+            modifierGroups: _modifierGroups,
+            selectedModifiers: _selectedModifiers,
+          ),
+          onSelectVariation: _addToMiniCart,
+          onToggleModifier: (g, mIndex, isSelected) {
+            setState(() {
+              if (isSelected) {
+                final maxSel = _modifierGroups[g]['max_selections'] ?? 99;
+                if ((_selectedModifiers[g] ?? {}).length < maxSel) {
+                  _selectedModifiers[g]?.add(mIndex);
+                }
+              } else {
+                _selectedModifiers[g]?.remove(mIndex);
+              }
+            });
           },
+          onClearCart: () => setState(() => _miniCart.clear()),
+          onIncrementQuantity: (i) => setState(() => _miniCart[i].quantity++),
+          onDecrementQuantity: (i) {
+            setState(() {
+              if (_miniCart[i].quantity > 1) {
+                _miniCart[i].quantity--;
+              } else {
+                _miniCart.removeAt(i);
+              }
+            });
+          },
+          onRemoveItem: (i) => setState(() => _miniCart.removeAt(i)),
+          onSubmitCart: _submitCart,
         ),
       ),
       actions: const [],
