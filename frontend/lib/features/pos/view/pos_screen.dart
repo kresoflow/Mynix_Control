@@ -15,7 +15,6 @@ import 'package:mynix_frontend/features/pos/view/widgets/barcode_scanner_listene
 import 'widgets/pos_mobile_layout.dart';
 import 'widgets/pos_desktop_layout.dart';
 import 'widgets/open_shift_modal.dart';
-import 'widgets/pos_shift_hub_modal.dart';
 
 import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
 import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
@@ -98,49 +97,6 @@ class _PosScreenState extends State<PosScreen> {
                           const SizedBox(width: 8),
                           _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
                         ],
-                        const Spacer(),
-
-                        // Single Unified Shift Hub Action Button
-                        InkWell(
-                          onTap: () => showShiftHubModal(context),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppColors.brandTertiary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.brandTertiary.withValues(alpha: 0.3)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.brandTertiary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Управление сменой',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(
-                                  PhosphorIconsRegular.caretRight,
-                                  size: 13,
-                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),

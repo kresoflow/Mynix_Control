@@ -76,14 +76,14 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
               final isOpen = state is ShiftOpen;
               final cash = isOpen
                   ? ((state.shiftDetails['current_cash_expected'] ?? state.shiftDetails['opening_cash'] ?? 0) as num).toCurrency(context)
-                  : 'Закрыто';
+                  : 'Смена закрыта';
 
               return GestureDetector(
                 onTap: onCashTap,
                 child: MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
                       color: isOpen
                           ? AppColors.brandTertiary.withValues(alpha: 0.12)
@@ -91,23 +91,26 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isOpen
-                            ? AppColors.brandTertiary.withValues(alpha: 0.3)
-                            : AppColors.danger.withValues(alpha: 0.3),
+                            ? AppColors.brandTertiary.withValues(alpha: 0.35)
+                            : AppColors.danger.withValues(alpha: 0.35),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          PhosphorIconsRegular.wallet,
-                          size: 16,
-                          color: isOpen ? AppColors.brandTertiary : AppColors.danger,
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: isOpen ? AppColors.brandTertiary : AppColors.danger,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          cash,
+                          isOpen ? 'Смена • $cash' : 'Смена закрыта',
                           style: GoogleFonts.jetBrainsMono(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: isOpen ? AppColors.brandTertiary : AppColors.danger,
                           ),
