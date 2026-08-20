@@ -13,11 +13,12 @@ class ShiftLoading extends ShiftState {}
 
 class ShiftOpen extends ShiftState {
   final Map<String, dynamic> shiftDetails;
+  final bool isFinancialsUnlocked;
 
-  const ShiftOpen(this.shiftDetails);
+  const ShiftOpen(this.shiftDetails, {this.isFinancialsUnlocked = false});
 
   @override
-  List<Object?> get props => [shiftDetails];
+  List<Object?> get props => [shiftDetails, isFinancialsUnlocked];
 }
 
 class ShiftClosed extends ShiftState {}

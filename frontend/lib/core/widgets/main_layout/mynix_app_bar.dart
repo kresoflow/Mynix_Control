@@ -75,6 +75,10 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
           BlocBuilder<ShiftBloc, ShiftState>(
             builder: (context, state) {
               final isOpen = state is ShiftOpen;
+              final isUnlocked = isOpen && state.isFinancialsUnlocked;
+              final cash = (isOpen && isUnlocked)
+                  ? ((state.shiftDetails['current_cash_expected'] ?? state.shiftDetails['opening_cash'] ?? 0) as num).toCurrency(context)
+                  : null;
 
               return GestureDetector(
                 onTap: onCashTap,
@@ -106,7 +110,9 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          isOpen ? 'Смена открыта' : 'Смена закрыта',
+                          isOpen
+                              ? (isUnlocked ? 'Смена • $cash' : 'Смена открыта')
+                              : 'Смена закрыта',
                           style: GoogleFonts.jetBrainsMono(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,

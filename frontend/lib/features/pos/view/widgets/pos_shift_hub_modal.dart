@@ -7,6 +7,7 @@ import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/features/pos/repository/shift_repository.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 
 import 'shift_hub/shift_x_report_tab.dart';
@@ -37,9 +38,6 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
   String? _reportError;
   Map<String, dynamic>? _report;
   
-  // Security PIN unlock status
-  bool _isPinUnlocked = false;
-
   @override
   void initState() {
     super.initState();
@@ -83,7 +81,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
   Future<void> _handleUnlockPin() async {
     final success = await showShiftPinDialog(context);
     if (success && mounted) {
-      setState(() => _isPinUnlocked = true);
+      context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: true));
     }
   }
 
@@ -94,6 +92,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
     return BlocBuilder<ShiftBloc, ShiftState>(
       builder: (context, shiftState) {
         final isOpen = shiftState is ShiftOpen;
+        final isUnlocked = isOpen && shiftState.isFinancialsUnlocked;
         double expectedCash = 0.0;
         String openedAtStr = '-';
 
@@ -143,12 +142,14 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
                   ),
                   IconButton(
                     icon: Icon(
-                      _isPinUnlocked ? PhosphorIconsRegular.lockOpen : PhosphorIconsRegular.lockKey,
+                      isUnlocked ? PhosphorIconsRegular.lockOpen : PhosphorIconsRegular.lockKey,
                       size: 16,
-                      color: _isPinUnlocked ? AppColors.success : AppColors.brandPrimary,
+                      color: isUnlocked ? AppColors.success : AppColors.brandPrimary,
                     ),
-                    tooltip: _isPinUnlocked ? 'Режим администратора активен' : 'Разблокировать суммы (PIN)',
-                    onPressed: _isPinUnlocked ? () => setState(() => _isPinUnlocked = false) : _handleUnlockPin,
+                    tooltip: isUnlocked ? 'Скрыть суммы (Заблокировать)' : 'Разблокировать суммы (PIN)',
+                    onPressed: isUnlocked
+                        ? () => context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: false))
+                        : _handleUnlockPin,
                   ),
                 ],
               ),
@@ -186,7 +187,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
                   report: _report,
                   isLoading: _isLoadingReport,
                   error: _reportError,
-                  hideAmounts: !_isPinUnlocked,
+                  hideAmounts: !isUnlocked,
                   expectedCash: expectedCash,
                   onUnlockPin: _handleUnlockPin,
                 )
@@ -194,7 +195,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
                 ShiftZCloseTab(
                   expectedCash: expectedCash,
                   onUnlockPin: _handleUnlockPin,
-                  isPinUnlocked: _isPinUnlocked,
+                  isPinUnlocked: isUnlocked,
                 )
               else
                 const ShiftHistoryTab(),

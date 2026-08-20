@@ -26,3 +26,12 @@ class CloseShiftRequested extends ShiftEvent {
   @override
   List<Object?> get props => [closingCashActual];
 }
+
+class ToggleFinancialsVisibility extends ShiftEvent {
+  final bool? unlock;
+
+  const ToggleFinancialsVisibility({this.unlock});
+
+  @override
+  List<Object?> get props => [unlock];
+}

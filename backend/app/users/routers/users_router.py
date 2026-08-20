@@ -76,7 +76,7 @@ async def update_user(
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
     """Update a staff user."""
-    user = await svc.get_user(session, user_id)
+    user = await svc.get_user_by_id(session, user_id)
     if not user or user.tenant_id != current_user.tenant_id:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -104,7 +104,7 @@ async def delete_user(
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
     """Deactivate a staff user."""
-    user = await svc.get_user(session, user_id)
+    user = await svc.get_user_by_id(session, user_id)
     if not user or user.tenant_id != current_user.tenant_id:
         raise HTTPException(status_code=404, detail="User not found")
 

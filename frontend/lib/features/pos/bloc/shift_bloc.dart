@@ -5,11 +5,21 @@ import '../repository/shift_repository.dart';
 
 class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
   final ShiftRepository repository;
+  bool _isFinancialsUnlocked = false;
 
   ShiftBloc(this.repository) : super(ShiftInitial()) {
     on<CheckCurrentShift>(_onCheckCurrentShift);
     on<OpenShiftRequested>(_onOpenShiftRequested);
     on<CloseShiftRequested>(_onCloseShiftRequested);
+    on<ToggleFinancialsVisibility>(_onToggleFinancialsVisibility);
+  }
+
+  void _onToggleFinancialsVisibility(ToggleFinancialsVisibility event, Emitter<ShiftState> emit) {
+    if (state is ShiftOpen) {
+      final current = state as ShiftOpen;
+      _isFinancialsUnlocked = event.unlock ?? !_isFinancialsUnlocked;
+      emit(ShiftOpen(current.shiftDetails, isFinancialsUnlocked: _isFinancialsUnlocked));
+    }
   }
 
   Future<void> _onCheckCurrentShift(CheckCurrentShift event, Emitter<ShiftState> emit) async {
@@ -17,8 +27,9 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
     try {
       final shift = await repository.getCurrentShift();
       if (shift != null) {
-        emit(ShiftOpen(shift));
+        emit(ShiftOpen(shift, isFinancialsUnlocked: _isFinancialsUnlocked));
       } else {
+        _isFinancialsUnlocked = false;
         emit(ShiftClosed());
       }
     } catch (e) {
@@ -42,6 +53,7 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
     emit(ShiftLoading());
     try {
       final result = await repository.closeShift(event.closingCashActual);
+      _isFinancialsUnlocked = false;
       emit(ShiftClosedSuccessfully(result));
       emit(ShiftClosed());
     } catch (e) {

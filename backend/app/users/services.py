@@ -145,6 +145,9 @@ async def get_user_by_id(
     return result.scalar_one_or_none()
 
 
+get_user = get_user_by_id
+
+
 async def list_users(
     session: AsyncSession,
     tenant_id: int,
