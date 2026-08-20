@@ -13,8 +13,6 @@ import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'icon_btn.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/open_shift_modal.dart';
 import 'package:mynix_frontend/core/widgets/profile/user_profile_modal.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 
@@ -187,13 +185,6 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
       onSelected: (value) {
         if (value == 'profile') {
           showUserProfileModal(context);
-        } else if (value == 'close_shift') {
-          final state = context.read<ShiftBloc>().state;
-          if (state is ShiftOpen) {
-            showShiftHubModal(context, initialTab: 1);
-          } else {
-            showOpenShiftDialog(context);
-          }
         } else if (value == 'logout') {
           context.read<AuthBloc>().add(LoggedOut());
         }
@@ -217,16 +208,6 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
               Icon(PhosphorIconsRegular.userCircle, color: AppColors.brandPrimary, size: 20),
               const SizedBox(width: 12),
               Text('Мой профиль и PIN', style: AppTextStyles.body),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'close_shift',
-          child: Row(
-            children: [
-              const Icon(PhosphorIconsRegular.lockKey, color: AppColors.danger, size: 20),
-              const SizedBox(width: 12),
-              Text('Управление сменой', style: AppTextStyles.body.copyWith(color: AppColors.danger)),
             ],
           ),
         ),

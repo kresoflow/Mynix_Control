@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 
 void showUserProfileModal(BuildContext context) {
   showDialog(
@@ -24,13 +21,13 @@ class UserProfileModal extends StatefulWidget {
 }
 
 class _UserProfileModalState extends State<UserProfileModal> {
+  final _nameController = TextEditingController();
   final _pinController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = true;
   bool _isSaving = false;
   bool _showPasswordInput = false;
 
-  String _fullName = 'Сотрудник';
   String _username = 'user';
   String _role = 'Персонал';
 
@@ -42,6 +39,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _pinController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -53,7 +51,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
       if (mounted) {
         final data = response.data;
         setState(() {
-          _fullName = data['full_name'] ?? 'Сотрудник';
+          _nameController.text = data['full_name'] ?? '';
           _username = data['username'] ?? 'user';
           final roles = data['roles'] as List? ?? [];
           _role = roles.isNotEmpty ? roles.first.toString() : 'Пользователь';
@@ -69,18 +67,20 @@ class _UserProfileModalState extends State<UserProfileModal> {
   }
 
   Future<void> _saveProfile() async {
+    final name = _nameController.text.trim();
     final pin = _pinController.text.trim();
     final password = _passwordController.text.trim();
 
     setState(() => _isSaving = true);
     try {
       final Map<String, dynamic> data = {};
+      if (name.isNotEmpty) data['full_name'] = name;
       if (pin.isNotEmpty) data['pin_code'] = pin;
       if (password.isNotEmpty) data['password'] = password;
 
       await apiClient.dio.put('/auth/me', data: data);
       if (mounted) {
-        AppToast.showSuccess(context, 'Профиль обновлен', subtitle: 'Новый PIN-код сохранен');
+        AppToast.showSuccess(context, 'Профиль сохранен', subtitle: 'Данные успешно обновлены');
         Navigator.of(context).pop();
       }
     } catch (e) {
@@ -104,6 +104,8 @@ class _UserProfileModalState extends State<UserProfileModal> {
       );
     }
 
+    final initial = _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'U';
+
     return MynixDialog(
       title: 'Мой профиль',
       icon: PhosphorIconsRegular.userCircle,
@@ -122,40 +124,45 @@ class _UserProfileModalState extends State<UserProfileModal> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── 1. User Info Header ─────────────────────────────────────
+          // ── 1. Read-Only System Identity Card ───────────────────────
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
             ),
             child: Row(
               children: [
                 CircleAvatar(
-                  radius: 26,
+                  radius: 20,
                   backgroundColor: AppColors.brandPrimary.withValues(alpha: 0.15),
                   child: Text(
-                    _fullName.isNotEmpty ? _fullName[0].toUpperCase() : 'U',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
+                    initial,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(_fullName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 2),
-                      Text('@$_username', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+                      Text(
+                        '@$_username',
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Системный логин',
+                        style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                      ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
                   ),
                   child: Text(
@@ -166,10 +173,26 @@ class _UserProfileModalState extends State<UserProfileModal> {
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
 
-          // ── 2. Security Section: PIN & Password ──────────────────────
-          Text('Безопасность и PIN-код', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+          // ── 2. Editable Full Name ───────────────────────────────────
+          TextField(
+            controller: _nameController,
+            decoration: InputDecoration(
+              labelText: 'ФИО сотрудника',
+              hintText: 'Например, Иванов Сергей',
+              prefixIcon: const Icon(PhosphorIconsRegular.user, size: 18),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // ── 3. Security Section: PIN & Password ──────────────────────
+          Text(
+            'Безопасность и PIN-код',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+          ),
           const SizedBox(height: 8),
 
           TextField(
@@ -178,14 +201,14 @@ class _UserProfileModalState extends State<UserProfileModal> {
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: 'Личный PIN-код (4-6 цифр)',
-              hintText: 'Например, 2222',
+              hintText: 'Например, 1234',
               counterText: '',
               prefixIcon: const Icon(PhosphorIconsRegular.lockKey, size: 18),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           if (!_showPasswordInput)
             Align(
@@ -208,23 +231,6 @@ class _UserProfileModalState extends State<UserProfileModal> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
             ),
-          const SizedBox(height: 14),
-
-          // ── 3. Fast Switch User ──────────────────────────────────────
-          OutlinedButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.read<AuthBloc>().add(LoggedOut());
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.danger,
-              side: BorderSide(color: AppColors.danger.withValues(alpha: 0.3)),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            icon: const Icon(PhosphorIconsRegular.signOut, size: 18),
-            label: const Text('Сменить пользователя / Выйти'),
-          ),
         ],
       ),
     );
