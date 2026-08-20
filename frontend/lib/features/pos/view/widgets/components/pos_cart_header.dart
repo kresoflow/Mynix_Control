@@ -13,13 +13,14 @@ class PosCartHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      height: 54,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         border: Border(
           bottom: BorderSide(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            width: 1,
           ),
         ),
       ),

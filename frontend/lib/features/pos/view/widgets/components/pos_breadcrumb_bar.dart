@@ -27,11 +27,11 @@ class PosBreadcrumbBar extends StatelessWidget {
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     return Container(
-      height: 52,
+      height: 54,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: bg,
-        border: Border(bottom: BorderSide(color: border)),
+        border: Border(bottom: BorderSide(color: border, width: 1)),
       ),
       child: Row(
         children: [
