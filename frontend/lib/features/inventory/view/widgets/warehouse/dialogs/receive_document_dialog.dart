@@ -18,6 +18,7 @@ import 'receive_document/receive_document_table_header.dart';
 import 'receive_document/receive_document_footer.dart';
 import 'receive_document/receive_document_processor.dart';
 import 'receive_document/receive_document_items_list.dart';
+import 'receive_document/receive_document_unit_helper.dart';
 
 class ReceiveDocumentDialog extends StatefulWidget {
   const ReceiveDocumentDialog({super.key});
@@ -33,8 +34,8 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   DateTime _documentDate = DateTime.now();
   int? _selectedSupplierId;
   bool _isAdHocPurchase = false;
-  String _paymentStatus = 'unpaid'; // 'unpaid', 'paid', 'partial'
-  String _paymentMethod = 'cash'; // 'cash', 'card', 'bank_transfer'
+  String _paymentStatus = 'unpaid';
+  String _paymentMethod = 'cash';
 
   int _tabIndex = 1; // 1 = Товары витрины, 2 = Сырье
   int? _selectedParentId;
@@ -100,35 +101,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     });
   }
 
-  static String _normalizeUnit(String? unit) {
-    if (unit == null) return 'шт';
-    switch (unit.toLowerCase().trim()) {
-      case 'pcs':
-      case 'pc':
-      case 'шт':
-        return 'шт';
-      case 'kg':
-      case 'кг':
-        return 'кг';
-      case 'g':
-      case 'г':
-      case 'gr':
-        return 'г';
-      case 'l':
-      case 'л':
-        return 'л';
-      case 'ml':
-      case 'мл':
-        return 'мл';
-      case 'portion':
-      case 'порц':
-      case 'порция':
-        return 'порц';
-      default:
-        return 'шт';
-    }
-  }
-
   void _onRowIngredientSelected(int index, Ingredient selection) {
     setState(() {
       final item = _items[index];
@@ -136,7 +108,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       item.nameController.text = selection.name;
       item.price = selection.costPerUnit;
       item.priceController.text = selection.costPerUnit.toStringAsFixed(2);
-      item.selectedUnit = _normalizeUnit(selection.unit);
+      item.selectedUnit = ReceiveDocumentUnitHelper.normalizeUnit(selection.unit);
       item.minStockAlert = selection.minStockAlert;
       item.minStockAlertController.text = selection.minStockAlert.toInt().toString();
 
@@ -263,18 +235,18 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                   children: [
                     ReceiveDocumentHeader(onClose: () => Navigator.of(context).pop()),
                     BlocBuilder<DocumentBloc, DocumentState>(
-                      builder: (context, state) {
+                      builder: (blocCtx, state) {
                         return ReceiveDocumentMetaRow(
                           suppliers: state.suppliers,
                           selectedSupplierId: _selectedSupplierId,
                           onSupplierChanged: (val) => setState(() => _selectedSupplierId = val),
                           onAddSupplier: () async {
                             final result = await showDialog<Map<String, dynamic>>(
-                              context: context,
-                              builder: (context) => const CreateSupplierDialog(),
+                              context: blocCtx,
+                              builder: (dialogCtx) => const CreateSupplierDialog(),
                             );
-                            if (result != null && mounted) {
-                              context.read<DocumentBloc>().add(
+                            if (result != null && blocCtx.mounted) {
+                              blocCtx.read<DocumentBloc>().add(
                                 CreateSupplier(result['name'], contactInfo: result['contact_info']),
                               );
                             }
