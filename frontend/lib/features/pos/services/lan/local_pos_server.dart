@@ -10,6 +10,7 @@ class LocalPosServer {
   static int port = 8080;
   static String? localIpAddress;
   static ValueChanged<OfflineOrderPayload>? onOrderReceived;
+  static final ValueNotifier<bool> isRunningNotifier = ValueNotifier<bool>(false);
 
   static bool get isRunning => _server != null;
 
@@ -41,8 +42,10 @@ class LocalPosServer {
 
       _server = await HttpServer.bind(InternetAddress.anyIPv4, port);
       _server!.listen(_handleRequest);
+      isRunningNotifier.value = true;
       return true;
     } catch (_) {
+      isRunningNotifier.value = false;
       return false;
     }
   }
@@ -52,6 +55,7 @@ class LocalPosServer {
     if (_server != null) {
       await _server!.close(force: true);
       _server = null;
+      isRunningNotifier.value = false;
     }
   }
 

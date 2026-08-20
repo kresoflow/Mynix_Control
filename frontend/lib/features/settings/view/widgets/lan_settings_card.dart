@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
@@ -67,38 +68,74 @@ class LanSettingsCard extends StatelessWidget {
 
               // Master section
               if (data.isMaster) ...[
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Локальный сервер приема заказов', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-                          Text(
-                            LocalPosServer.isRunning
-                                ? 'Адрес для официантов: http://${LocalPosServer.localIpAddress ?? "192.168.1.x"}:${data.port}'
-                                : 'Сервер отключен',
-                            style: AppTextStyles.caption.copyWith(
-                              color: LocalPosServer.isRunning ? AppColors.success : AppColors.warning,
-                              fontWeight: FontWeight.bold,
-                            ),
+                if (kIsWeb) ...[
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(PhosphorIconsRegular.info, color: AppColors.brandPrimary, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Режим Сервера в браузере', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Браузер (Web) работает в изолированной песочнице и не может напрямую слушать сетевой TCP-порт. Для работы в качестве сервера приема заказов запустите приложение на Windows (Desktop). В браузере используйте режим «Официант» или «Автономный».',
+                                style: AppTextStyles.caption,
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      Switch(
-                        value: data.isServerEnabled,
-                        activeThumbColor: AppColors.brandPrimary,
-                        onChanged: (val) => LanSettingsService.setServerEnabled(val),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ] else ...[
+                  ValueListenableBuilder<bool>(
+                    valueListenable: LocalPosServer.isRunningNotifier,
+                    builder: (context, isRunning, _) {
+                      return Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Локальный сервер приема заказов', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+                                Text(
+                                  isRunning
+                                      ? 'Адрес для официантов: http://${LocalPosServer.localIpAddress ?? "192.168.1.x"}:${data.port}'
+                                      : 'Сервер отключен',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: isRunning ? AppColors.success : AppColors.warning,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Switch(
+                              value: data.isServerEnabled,
+                              activeThumbColor: AppColors.brandPrimary,
+                              onChanged: (val) => LanSettingsService.setServerEnabled(val),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
 
               // Client section
