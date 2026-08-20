@@ -132,8 +132,9 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
           return const Center(child: CircularProgressIndicator());
         }
 
+        final isMobile = MediaQuery.of(context).size.width < 700;
         return ListView(
-          padding: const EdgeInsets.all(40),
+          padding: EdgeInsets.all(isMobile ? 16 : 32),
           children: [
             buildSettingsHeader('Функции заведения', isDark),
             const SizedBox(height: 32),

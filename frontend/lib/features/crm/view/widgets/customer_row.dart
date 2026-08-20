@@ -3,6 +3,8 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
+import 'customer_mobile_card.dart';
+import 'customer_balance_badge.dart';
 
 class CustomerRow extends StatefulWidget {
   final Customer customer;
@@ -29,6 +31,17 @@ class _CustomerRowState extends State<CustomerRow> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 700;
+    if (isMobile) {
+      return CustomerMobileCard(
+        customer: widget.customer,
+        onTap: widget.onTap,
+        onPay: widget.onPay,
+        onEdit: widget.onEdit,
+        onDelete: widget.onDelete,
+      );
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = _isHovered
         ? (isDark ? AppColors.darkCard : AppColors.lightCard)
@@ -175,7 +188,7 @@ class _CustomerRowState extends State<CustomerRow> {
                 width: 120,
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: _buildBalanceBadge(c.balance),
+                  child: CustomerBalanceBadge(balance: c.balance),
                 ),
               ),
               const SizedBox(width: 8),
@@ -210,7 +223,7 @@ class _CustomerRowState extends State<CustomerRow> {
                       itemBuilder: (_) => [
                         const PopupMenuItem(value: 'history', child: Text('История и бонусы')),
                         const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                        const PopupMenuItem(value: 'delete', child: Text('Удалить гостя', style: TextStyle(color: AppColors.error))),
+                        const PopupMenuItem(value: 'delete', child: Text('Удалить гостя', style: TextStyle(color: AppColors.danger))),
                       ],
                     ),
                   ],
@@ -220,32 +233,6 @@ class _CustomerRowState extends State<CustomerRow> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildBalanceBadge(double balance) {
-    Color bg;
-    Color fg;
-    String text;
-
-    if (balance < -0.01) {
-      bg = AppColors.error.withValues(alpha: 0.12);
-      fg = AppColors.error;
-      text = 'Долг: ${balance.abs().toStringAsFixed(0)} с';
-    } else if (balance > 0.01) {
-      bg = AppColors.success.withValues(alpha: 0.12);
-      fg = AppColors.success;
-      text = 'Депозит: +${balance.toStringAsFixed(0)} с';
-    } else {
-      bg = Colors.grey.withValues(alpha: 0.08);
-      fg = Colors.grey;
-      text = '0 с';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
-      child: Text(text, style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 11), maxLines: 1),
     );
   }
 }

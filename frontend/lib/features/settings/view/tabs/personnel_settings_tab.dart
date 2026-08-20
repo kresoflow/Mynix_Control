@@ -42,8 +42,9 @@ class _PersonnelSettingsView extends StatelessWidget {
           return !u.roles.any((r) => r.toLowerCase().contains('owner') || r.toLowerCase().contains('superadmin'));
         }).toList();
 
+        final isMobile = MediaQuery.of(context).size.width < 700;
         return ListView(
-          padding: const EdgeInsets.all(40),
+          padding: EdgeInsets.all(isMobile ? 16 : 32),
           children: [
             Text(
               'Управление персоналом',

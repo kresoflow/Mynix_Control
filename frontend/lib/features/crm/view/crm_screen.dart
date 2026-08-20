@@ -72,7 +72,7 @@ class _CrmScreenState extends State<CrmScreen> {
       builder: (_) => CustomerDetailsDialog(
         customer: customer,
         onEdit: () {
-          Navigator.of(context).pop();
+          Navigator.pop(context);
           _openEditModal(customer);
         },
       ),
@@ -90,19 +90,25 @@ class _CrmScreenState extends State<CrmScreen> {
   }
 
   void _confirmDelete(Customer customer) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Удаление гостя'),
-        content: Text('Вы уверены, что хотите удалить клиента «${customer.name}»?'),
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Удалить гостя?'),
+        content: Text('Вы уверены, что хотите удалить гостя "${customer.name}"? Это действие необратимо.'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Отмена')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Отмена', style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+          ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
             onPressed: () {
-              Navigator.of(ctx).pop();
+              Navigator.pop(ctx);
               context.read<CrmBloc>().add(DeleteCustomerEvent(customer.id));
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
             child: const Text('Удалить'),
           ),
         ],
@@ -113,18 +119,11 @@ class _CrmScreenState extends State<CrmScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkBg : AppColors.lightBg;
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
-      backgroundColor: bg,
-      body: BlocConsumer<CrmBloc, CrmState>(
-        listener: (context, state) {
-          if (state is CrmError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
-            );
-          }
-        },
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+      body: BlocBuilder<CrmBloc, CrmState>(
         builder: (context, state) {
           final customers = state is CrmLoaded ? state.customers : <Customer>[];
           final totalCount = customers.length;
@@ -137,7 +136,7 @@ class _CrmScreenState extends State<CrmScreen> {
           final vipCount = state is CrmLoaded ? state.vipCount : 0;
 
           return Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(isMobile ? 12 : 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -145,34 +144,38 @@ class _CrmScreenState extends State<CrmScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('CRM, LTV & Лояльность', style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 4),
-                        Text(
-                          'База гостей, история чеков, кешбэк-бонусы и RFM-сегментация',
-                          style: AppTextStyles.caption.copyWith(
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('CRM & Лояльность', style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.w800)),
+                          if (!isMobile) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'База гостей, история чеков, кешбэк-бонусы и RFM-сегментация',
+                              style: AppTextStyles.caption.copyWith(
+                                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                     ElevatedButton.icon(
                       onPressed: _openCreateModal,
                       icon: const Icon(PhosphorIconsRegular.plus, size: 18),
-                      label: const Text('Новый гость'),
+                      label: Text(isMobile ? 'Гость' : 'Новый гость'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.brandPrimary,
                         foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 18, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // KPI summary
                 CustomerKpiCards(
@@ -184,7 +187,7 @@ class _CrmScreenState extends State<CrmScreen> {
                   debtorsCount: debtorsCount,
                   vipCount: vipCount,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // Search and Filters
                 CustomerFilterBar(
@@ -197,11 +200,13 @@ class _CrmScreenState extends State<CrmScreen> {
                   onSearch: _onSearch,
                   onFilterChanged: _onFilterChanged,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
-                // Table Header
-                const CustomerTableHeader(),
-                const SizedBox(height: 4),
+                // Table Header (desktop only)
+                if (!isMobile) ...[
+                  const CustomerTableHeader(),
+                  const SizedBox(height: 4),
+                ],
 
                 // Customer List
                 Expanded(

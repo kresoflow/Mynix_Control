@@ -9,8 +9,9 @@ class HardwareSettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 700;
     return ListView(
-      padding: const EdgeInsets.all(40),
+      padding: EdgeInsets.all(isMobile ? 16 : 32),
       children: [
         buildSettingsHeader('Оборудование & Сеть', isDark),
         const SizedBox(height: 24),

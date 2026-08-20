@@ -30,6 +30,7 @@ class _KdsBoardState extends State<KdsBoard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     return BlocBuilder<KitchenBloc, KitchenState>(
       builder: (context, state) {
@@ -68,12 +69,12 @@ class _KdsBoardState extends State<KdsBoard> {
               else
                 Expanded(
                   child: GridView.builder(
-                    padding: const EdgeInsets.all(24),
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    padding: EdgeInsets.all(isMobile ? 12 : 24),
+                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 380,
-                      childAspectRatio: 0.85,
-                      crossAxisSpacing: 24,
-                      mainAxisSpacing: 24,
+                      childAspectRatio: isMobile ? 0.95 : 0.85,
+                      crossAxisSpacing: isMobile ? 12 : 24,
+                      mainAxisSpacing: isMobile ? 12 : 24,
                     ),
                     itemCount: orders.length,
                     itemBuilder: (context, index) {
