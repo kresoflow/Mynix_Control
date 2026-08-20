@@ -5,7 +5,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
+import 'package:mynix_frontend/features/auth/repository/auth_repository.dart';
 import 'package:mynix_frontend/core/utils/role_formatter.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
@@ -39,7 +39,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
   @override
   void initState() {
     super.initState();
-    _fetchProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchProfile());
   }
 
   @override
@@ -51,10 +51,11 @@ class _UserProfileModalState extends State<UserProfileModal> {
   }
 
   Future<void> _fetchProfile() async {
+    if (!mounted) return;
     try {
-      final response = await apiClient.dio.get('/auth/me');
+      final authRepo = context.read<AuthRepository>();
+      final data = await authRepo.getMe();
       if (mounted) {
-        final data = response.data;
         setState(() {
           _nameController.text = data['full_name'] ?? '';
           _username = data['username'] ?? 'user';
@@ -84,7 +85,8 @@ class _UserProfileModalState extends State<UserProfileModal> {
       if (pin.isNotEmpty) data['pin_code'] = pin;
       if (password.isNotEmpty) data['password'] = password;
 
-      await apiClient.dio.put('/auth/me', data: data);
+      final authRepo = context.read<AuthRepository>();
+      await authRepo.updateProfile(data);
       if (mounted) {
         context.read<AuthBloc>().add(RefreshProfile());
         AppToast.showSuccess(context, 'Профиль сохранен', subtitle: 'Данные успешно обновлены');
