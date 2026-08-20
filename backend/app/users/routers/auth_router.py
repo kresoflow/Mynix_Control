@@ -7,7 +7,7 @@ from app.database import get_session
 from app.dependencies import CurrentUser
 from app.users import services as svc
 from app.users.models import (
-    TokenResponse, PinLoginRequest, UserRead, VerifyPinRequest, User, UpdateProfileRequest
+    TokenResponse, PinLoginRequest, UserRead, VerifyPinRequest, User, UpdateProfileRequest, Tenant
 )
 from sqlmodel import select
 
