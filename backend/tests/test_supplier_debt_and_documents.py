@@ -117,7 +117,13 @@ async def test_supplier_debt_lifecycle_and_payments(async_client: AsyncClient, d
         headers=headers,
     )
     assert resp.status_code == 200, resp.text
-    assert resp.json()["balance"] == -5000.0
+    assert resp.json()["amount"] == 15000.0
+
+    # Verify Supplier balance is now -5,000 c
+    resp = await async_client.get("/api/v1/suppliers/", headers=headers)
+    suppliers = resp.json()
+    sup = next(s for s in suppliers if s["id"] == supplier_id)
+    assert sup["balance"] == -5000.0
 
     # 7. Create Receive Document with "paid" in full (10 kg * 400 c = 4,000 c)
     doc_paid_payload = {
@@ -182,4 +188,8 @@ async def test_supplier_debt_lifecycle_and_payments(async_client: AsyncClient, d
         headers=headers,
     )
     assert resp.status_code == 200
-    assert resp.json()["balance"] == 0.0
+    assert resp.json()["amount"] == 12000.0
+
+    resp = await async_client.get("/api/v1/suppliers/", headers=headers)
+    sup = next(s for s in resp.json() if s["id"] == supplier_id)
+    assert sup["balance"] == 0.0
