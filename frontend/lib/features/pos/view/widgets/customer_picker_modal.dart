@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
 import 'package:mynix_frontend/features/crm/repository/crm_repository.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_form_modal.dart';
@@ -30,7 +31,7 @@ class _CustomerPickerModalState extends State<CustomerPickerModal> {
   @override
   void initState() {
     super.initState();
-    _loadCustomers();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCustomers());
   }
 
   @override
@@ -40,34 +41,38 @@ class _CustomerPickerModalState extends State<CustomerPickerModal> {
   }
 
   Future<void> _loadCustomers([String query = '']) async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      final repo = CrmRepository(apiClient.dio);
+      final repo = context.read<CrmRepository>();
       final res = await repo.getCustomers(query: query);
-      setState(() {
-        _customers = res;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _customers = res;
+          _isLoading = false;
+        });
+      }
     } catch (_) {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _openCreateCustomer(BuildContext context) {
+    final crmRepo = context.read<CrmRepository>();
     showDialog(
       context: context,
-      builder: (_) => CustomerFormModal(
+      builder: (dialogCtx) => CustomerFormModal(
         initialPhone: _searchController.text.trim(),
         onSubmit: (data) async {
           try {
-            final repo = CrmRepository(apiClient.dio);
-            final newCust = await repo.createCustomer(data);
+            final newCust = await crmRepo.createCustomer(data);
             widget.onSelect(newCust);
-            if (mounted) Navigator.of(context).pop();
+            if (dialogCtx.mounted) Navigator.of(dialogCtx).pop();
+            if (context.mounted) Navigator.of(context).pop();
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Ошибка создания: $e'), backgroundColor: AppColors.error),
-            );
+            if (dialogCtx.mounted) {
+              AppToast.showError(dialogCtx, 'Ошибка создания', subtitle: e.toString());
+            }
           }
         },
       ),

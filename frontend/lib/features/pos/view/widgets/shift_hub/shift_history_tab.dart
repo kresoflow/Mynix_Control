@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/features/pos/repository/shift_repository.dart';
 
 class ShiftHistoryTab extends StatefulWidget {
@@ -14,7 +14,6 @@ class ShiftHistoryTab extends StatefulWidget {
 }
 
 class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
-  late final ShiftRepository _shiftRepository;
   bool _isLoading = true;
   String? _error;
   List<Map<String, dynamic>> _history = [];
@@ -22,17 +21,18 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
   @override
   void initState() {
     super.initState();
-    _shiftRepository = ShiftRepository(apiClient.dio);
-    _loadHistory();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadHistory());
   }
 
   Future<void> _loadHistory() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _error = null;
     });
     try {
-      final list = await _shiftRepository.getShiftsHistory();
+      final repo = context.read<ShiftRepository>();
+      final list = await repo.getShiftsHistory();
       if (mounted) {
         setState(() {
           _history = list;
