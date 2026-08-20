@@ -39,6 +39,7 @@ import 'package:mynix_frontend/features/settings/repository/settings_repository.
 import 'package:mynix_frontend/features/pos/services/pos_outbox_service.dart';
 import 'package:mynix_frontend/features/pos/services/pos_sync_service.dart';
 import 'package:mynix_frontend/features/pos/services/lan/local_pos_server.dart';
+import 'package:mynix_frontend/features/settings/services/lan_settings_service.dart';
 
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
 
@@ -61,7 +62,7 @@ void main() async {
       Hive.registerAdapter(CartItemAdapter());
 
       await PosOutboxService.init();
-      await LocalPosServer.start();
+      await LanSettingsService.init();
 
       runApp(const RetailOSApp());
     },

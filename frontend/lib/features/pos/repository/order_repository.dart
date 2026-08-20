@@ -4,6 +4,8 @@ import 'package:mynix_frontend/core/utils/uuid_helper.dart';
 import 'package:mynix_frontend/features/pos/models/cart_item.dart';
 import 'package:mynix_frontend/features/pos/models/offline_order_payload.dart';
 import 'package:mynix_frontend/features/pos/services/pos_outbox_service.dart';
+import 'package:mynix_frontend/features/pos/services/lan/local_pos_client.dart';
+import 'package:mynix_frontend/features/settings/services/lan_settings_service.dart';
 
 class OrderRepository {
   final Dio _dio;
@@ -59,7 +61,6 @@ class OrderRepository {
     try {
       await _dio.post('/orders/', data: orderData);
     } on DioException catch (e) {
-      // Check if this is a network/connectivity failure
       final isNetworkFailure = e.type == DioExceptionType.connectionError ||
           e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
@@ -67,25 +68,18 @@ class OrderRepository {
           e.response == null;
 
       if (isNetworkFailure) {
-        // Transparent Offline-First Fallback
-        final localOrderNumber = PosOutboxService.getNextLocalOrderNumber();
-        final offlinePayload = OfflineOrderPayload(
+        await _handleOfflineOrderFallback(
           clientUuid: clientUuid,
-          orderNumber: localOrderNumber,
-          items: orderItemsList,
-          paymentMethod: paymentMethod.toLowerCase(),
+          orderItemsList: orderItemsList,
+          paymentMethod: paymentMethod,
           totalAmount: totalAmount,
           customerId: customerId,
-          bonusSpent: bonusSpent ?? 0.0,
+          bonusSpent: bonusSpent,
           note: note,
-          createdAt: DateTime.now(),
         );
-
-        await PosOutboxService.saveOrder(offlinePayload);
-        return; // Order saved in offline storage, return successfully to Cashier
+        return;
       }
 
-      // If server responded with a 4xx/5xx business error, extract message
       final errorData = e.response?.data;
       String errorMsg = 'Ошибка при создании заказа';
       if (errorData is Map && errorData['detail'] != null) {
@@ -94,22 +88,55 @@ class OrderRepository {
         errorMsg = errorData.toString();
       }
       throw Exception(errorMsg);
-    } catch (e) {
-      // Fallback for socket exceptions
-      final localOrderNumber = PosOutboxService.getNextLocalOrderNumber();
-      final offlinePayload = OfflineOrderPayload(
+    } catch (_) {
+      await _handleOfflineOrderFallback(
         clientUuid: clientUuid,
-        orderNumber: localOrderNumber,
-        items: orderItemsList,
-        paymentMethod: paymentMethod.toLowerCase(),
+        orderItemsList: orderItemsList,
+        paymentMethod: paymentMethod,
         totalAmount: totalAmount,
         customerId: customerId,
-        bonusSpent: bonusSpent ?? 0.0,
+        bonusSpent: bonusSpent,
         note: note,
-        createdAt: DateTime.now(),
       );
-
-      await PosOutboxService.saveOrder(offlinePayload);
     }
+  }
+
+  Future<void> _handleOfflineOrderFallback({
+    required String clientUuid,
+    required List<Map<String, dynamic>> orderItemsList,
+    required String paymentMethod,
+    required double totalAmount,
+    int? customerId,
+    double? bonusSpent,
+    String? note,
+  }) async {
+    final localOrderNumber = PosOutboxService.getNextLocalOrderNumber();
+    final offlinePayload = OfflineOrderPayload(
+      clientUuid: clientUuid,
+      orderNumber: localOrderNumber,
+      items: orderItemsList,
+      paymentMethod: paymentMethod.toLowerCase(),
+      totalAmount: totalAmount,
+      customerId: customerId,
+      bonusSpent: bonusSpent ?? 0.0,
+      note: note,
+      createdAt: DateTime.now(),
+    );
+
+    // 1. If configured as Client / Waiter Phone -> try direct LAN dispatch to Master POS
+    final lan = LanSettingsService.current;
+    if (lan.isClient && lan.masterIp.isNotEmpty) {
+      final sentToMaster = await LocalPosClient.sendOrderToMaster(
+        lan.masterIp,
+        offlinePayload,
+        port: lan.port,
+      );
+      if (sentToMaster) {
+        return; // Successfully handed off to Master POS over Wi-Fi LAN
+      }
+    }
+
+    // 2. Otherwise store in local Hive Outbox
+    await PosOutboxService.saveOrder(offlinePayload);
   }
 }

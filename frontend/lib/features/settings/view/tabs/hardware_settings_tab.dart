@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
+import 'package:mynix_frontend/features/settings/view/widgets/lan_settings_card.dart';
 
 class HardwareSettingsTab extends StatelessWidget {
   final bool isDark;
@@ -11,8 +12,14 @@ class HardwareSettingsTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(40),
       children: [
-        buildSettingsHeader('Оборудование', isDark),
-        const SizedBox(height: 32),
+        buildSettingsHeader('Оборудование & Сеть', isDark),
+        const SizedBox(height: 24),
+
+        // 1. Dynamic Local LAN & Master POS Settings Card
+        LanSettingsCard(isDark: isDark),
+        const SizedBox(height: 24),
+
+        // 2. Receipt Printer Settings
         SettingsCard(
           isDark: isDark,
           children: [
@@ -32,6 +39,8 @@ class HardwareSettingsTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 24),
+
+        // 3. Barcode Scanner
         SettingsCard(
           isDark: isDark,
           children: [
