@@ -128,6 +128,7 @@ app.include_router(kitchen_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1", tags=["Analytics"])
 app.include_router(crm_router, prefix="/api/v1")
 app.include_router(system_router, prefix="/api/v1/system")
+app.include_router(system_router, prefix="/system")
 app.include_router(integrations_router, prefix="/api/v1")
 app.include_router(ws_router)  # WebSocket at root /ws/kitchen/{tenant_id}
 
