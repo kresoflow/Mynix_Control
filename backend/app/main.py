@@ -30,12 +30,15 @@ async def lifespan(app: FastAPI):
     print("  Database tables ready")
 
     # Run seed data
-    async with async_session_factory() as session:
-        from app.users.seed import seed_database
-        from app.inventory.seed import seed_inventory
+    try:
+        async with async_session_factory() as session:
+            from app.users.seed import seed_database
+            from app.inventory.seed import seed_inventory
 
-        await seed_database(session)
-        await seed_inventory(session)
+            await seed_database(session)
+            await seed_inventory(session)
+    except Exception as e:
+        print(f"  Seed note: {e}")
 
     print(f"{settings.app_name} is running!")
     print(f"Docs: http://localhost:8000/docs")
