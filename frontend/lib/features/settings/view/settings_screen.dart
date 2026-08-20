@@ -9,7 +9,7 @@ import 'package:mynix_frontend/features/settings/view/tabs/personnel_settings_ta
 import 'package:mynix_frontend/features/settings/view/tabs/tax_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/system_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/settings_category_tile.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/settings_profile_menu.dart';
+import 'package:mynix_frontend/features/settings/view/widgets/mobile_settings_user_header.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -46,14 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Настройки', style: AppTextStyles.h1.copyWith(color: isDark ? AppColors.darkText : AppColors.lightText)),
-                          SettingsProfileMenu(isDark: isDark),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+                      MobileSettingsUserHeader(isDark: isDark),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(

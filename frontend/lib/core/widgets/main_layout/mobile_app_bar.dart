@@ -8,9 +8,7 @@ import 'package:mynix_frontend/core/theme/theme_bloc.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/sync_status_badge.dart';
 
 class MobileAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final VoidCallback onOpenDrawer;
-
-  const MobileAppBar({super.key, required this.onOpenDrawer});
+  const MobileAppBar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(56);
@@ -27,24 +25,15 @@ class MobileAppBar extends StatelessWidget implements PreferredSizeWidget {
         color: bgColor,
         border: Border(bottom: BorderSide(color: borderColor, width: 1)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          IconButton(
-            icon: Icon(
-              PhosphorIconsRegular.list,
-              color: isDark ? AppColors.darkText : AppColors.lightText,
-              size: 22,
-            ),
-            onPressed: onOpenDrawer,
-          ),
-          const SizedBox(width: 4),
           Image.memory(
             AppLogoData.bytes,
-            height: 24,
+            height: 26,
             fit: BoxFit.contain,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Text(
             'Kreso Flow',
             style: AppTextStyles.h3.copyWith(fontSize: 15, fontWeight: FontWeight.bold),

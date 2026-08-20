@@ -12,6 +12,7 @@ import 'package:mynix_frontend/features/analytics/view/analytics_dashboard_scree
 import 'package:mynix_frontend/features/settings/view/settings_screen.dart';
 import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
 import 'package:mynix_frontend/features/crm/view/crm_screen.dart';
+import 'package:mynix_frontend/features/hub/view/hub_screen.dart';
 import 'package:mynix_frontend/core/widgets/main_layout.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -98,6 +99,10 @@ class AppRouter {
           GoRoute(
             path: '/analytics',
             builder: (context, state) => const AnalyticsDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/hub',
+            builder: (context, state) => const HubScreen(),
           ),
           GoRoute(
             path: '/settings',
