@@ -72,7 +72,7 @@ class ShiftXReportTab extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: onUnlockPin,
-                  child: const Text('Разблокировать (PIN)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.brandPrimary)),
+                  child: Text('Разблокировать (PIN)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.brandPrimary)),
                 ),
               ],
             ),

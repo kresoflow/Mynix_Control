@@ -105,7 +105,7 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
               if (_showDiscrepancyHint)
                 Text(
                   widget.expectedCash.toCurrency(context),
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
                 ),
             ],
           ),
