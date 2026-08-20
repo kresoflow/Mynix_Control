@@ -120,6 +120,7 @@ class Order(TenantModel, table=True):
     __tablename__ = "orders"
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    client_uuid: Optional[str] = Field(default=None, index=True, unique=True)
     shift_id: int = Field(foreign_key="shifts.id", index=True)
     created_by: int = Field(foreign_key="public.users.id")
     customer_id: Optional[int] = Field(default=None, foreign_key="customers.id", index=True)
@@ -211,6 +212,7 @@ class CreateOrderRequest(SQLModel):
     customer_id: Optional[int] = None
     bonus_spent: float = 0.0
     note: Optional[str] = None
+    client_uuid: Optional[str] = None
 
 
 class RecordExpenseRequest(SQLModel):
@@ -220,6 +222,7 @@ class RecordExpenseRequest(SQLModel):
 
 class OrderRead(SQLModel):
     id: int
+    client_uuid: Optional[str] = None
     order_number: int
     status: OrderStatus
     payment_method: PaymentMethod

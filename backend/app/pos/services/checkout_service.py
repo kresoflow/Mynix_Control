@@ -46,6 +46,17 @@ async def create_order(
     use_kds = tenant.use_kds if tenant else True
     enable_inventory = tenant.enable_inventory_deduction if tenant else True
 
+    # 0. Check idempotency if client_uuid is provided
+    if data.client_uuid:
+        existing_stmt = (
+            select(Order)
+            .where(Order.client_uuid == data.client_uuid)
+            .options(selectinload(Order.items))
+        )
+        existing_order = (await session.execute(existing_stmt)).scalar_one_or_none()
+        if existing_order:
+            return existing_order
+
     # 1. Validate shift
     shift = await get_open_shift(session)
     if not shift:
@@ -117,6 +128,7 @@ async def create_order(
         initial_status = OrderStatus.NEW
 
     order = Order(
+        client_uuid=data.client_uuid,
         shift_id=shift.id,
         created_by=user_id,
         customer_id=data.customer_id,
@@ -240,6 +252,7 @@ async def process_new_order(
 
     order_data = {
         "id": full_order.id,
+        "client_uuid": full_order.client_uuid,
         "order_number": full_order.order_number,
         "status": full_order.status,
         "payment_method": full_order.payment_method,
