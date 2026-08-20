@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
+import 'package:mynix_frontend/features/auth/repository/auth_repository.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 Future<bool> showShiftPinDialog(BuildContext context) async {
   final pinController = TextEditingController();
+  final authRepo = context.read<AuthRepository>();
   String? error;
   bool isChecking = false;
 
@@ -25,21 +27,13 @@ Future<bool> showShiftPinDialog(BuildContext context) async {
             error = null;
           });
 
-          try {
-            final response = await apiClient.dio.post(
-              '/auth/verify-pin',
-              data: {'pin_code': pin},
-            );
-            if (response.data['valid'] == true) {
-              Navigator.of(ctx).pop(true);
-              return;
-            }
-          } catch (e) {
-            // Local fallback if offline or default
-            if (pin == '1234' || pin == '0000') {
-              Navigator.of(ctx).pop(true);
-              return;
-            }
+          final isValid = await authRepo.verifyPin(pin);
+          if (isValid) {
+            if (ctx.mounted) Navigator.of(ctx).pop(true);
+            return;
+          }
+
+          if (ctx.mounted) {
             setState(() {
               error = 'Неверный PIN-код';
               isChecking = false;
@@ -54,7 +48,9 @@ Future<bool> showShiftPinDialog(BuildContext context) async {
           actions: [
             AppButton.secondary(
               label: 'Отмена',
-              onPressed: () => Navigator.of(ctx).pop(false),
+              onPressed: () {
+                if (ctx.mounted) Navigator.of(ctx).pop(false);
+              },
             ),
             AppButton.primary(
               label: isChecking ? 'Проверка...' : 'Подтвердить',
@@ -68,27 +64,26 @@ Future<bool> showShiftPinDialog(BuildContext context) async {
               Text(
                 'Введите PIN-код управляющего/владельца для доступа к суммам:',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               TextField(
                 controller: pinController,
                 obscureText: true,
                 autofocus: true,
-                maxLength: 6,
                 keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.w900),
+                maxLength: 6,
                 decoration: InputDecoration(
-                  hintText: '••••',
+                  labelText: 'PIN-код (4-6 цифр)',
                   counterText: '',
+                  prefixIcon: const Icon(PhosphorIconsRegular.lock, size: 18),
                   errorText: error,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-                onSubmitted: (_) => submitPin(),
+                onSubmitted: (_) => isChecking ? null : submitPin(),
               ),
             ],
           ),
@@ -97,5 +92,6 @@ Future<bool> showShiftPinDialog(BuildContext context) async {
     ),
   );
 
+  pinController.dispose();
   return result ?? false;
 }

@@ -66,7 +66,7 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
           decoration: InputDecoration(
             hintText: '0.00',
             prefixIcon: const Icon(PhosphorIconsRegular.money, size: 22),
-            suffixText: 'сомони',
+            suffixText: CurrencyFormatter.symbol(context),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
