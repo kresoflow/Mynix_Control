@@ -15,6 +15,8 @@ import 'icon_btn.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/open_shift_modal.dart';
+import 'package:mynix_frontend/core/widgets/profile/user_profile_modal.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 
 class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCashTap;
@@ -158,6 +160,12 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _buildProfileMenu(BuildContext context, bool isDark) {
+    final authState = context.watch<AuthBloc>().state;
+    String roleName = 'Персонал';
+    if (authState is AuthAuthenticated) {
+      roleName = authState.role;
+    }
+
     return PopupMenuButton<String>(
       tooltip: 'Профиль пользователя',
       offset: const Offset(0, 48),
@@ -177,7 +185,9 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       onSelected: (value) {
-        if (value == 'close_shift') {
+        if (value == 'profile') {
+          showUserProfileModal(context);
+        } else if (value == 'close_shift') {
           final state = context.read<ShiftBloc>().state;
           if (state is ShiftOpen) {
             showShiftHubModal(context, initialTab: 1);
@@ -194,19 +204,29 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Владелец платформы', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText)),
-              Text('Полный доступ', style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext)),
+              Text(roleName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText)),
+              Text('Активная сессия', style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext)),
             ],
           ),
         ),
         const PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'profile',
+          child: Row(
+            children: [
+              Icon(PhosphorIconsRegular.userCircle, color: AppColors.brandPrimary, size: 20),
+              const SizedBox(width: 12),
+              Text('Мой профиль и PIN', style: AppTextStyles.body),
+            ],
+          ),
+        ),
         PopupMenuItem(
           value: 'close_shift',
           child: Row(
             children: [
               const Icon(PhosphorIconsRegular.lockKey, color: AppColors.danger, size: 20),
               const SizedBox(width: 12),
-              Text('Закрыть смену', style: AppTextStyles.body.copyWith(color: AppColors.danger)),
+              Text('Управление сменой', style: AppTextStyles.body.copyWith(color: AppColors.danger)),
             ],
           ),
         ),

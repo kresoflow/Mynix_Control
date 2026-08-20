@@ -188,6 +188,13 @@ class VerifyPinRequest(SQLModel):
     pin_code: str
 
 
+class UpdateProfileRequest(SQLModel):
+    """Self-service profile update for current user."""
+    full_name: Optional[str] = None
+    pin_code: Optional[str] = None
+    password: Optional[str] = None
+
+
 class UserRead(SQLModel):
     """Public user data returned by API."""
     id: int

@@ -7,7 +7,7 @@ from app.database import get_session
 from app.dependencies import CurrentUser
 from app.users import services as svc
 from app.users.models import (
-    TokenResponse, PinLoginRequest, UserRead, VerifyPinRequest, User
+    TokenResponse, PinLoginRequest, UserRead, VerifyPinRequest, User, UpdateProfileRequest
 )
 from sqlmodel import select
 
@@ -94,6 +94,35 @@ async def verify_pin(
 @router.get("/auth/me", response_model=UserRead)
 async def me(current_user: CurrentUser):
     """Return current user profile with roles and permissions."""
+    return UserRead(
+        id=current_user.id,
+        tenant_id=current_user.tenant_id,
+        username=current_user.username,
+        full_name=current_user.full_name,
+        is_active=current_user.is_active,
+        pin_code=current_user.pin_code,
+        roles=[r.name for r in current_user.roles],
+        permissions=svc.collect_permissions(current_user),
+    )
+
+
+@router.put("/auth/me", response_model=UserRead)
+async def update_me(
+    data: UpdateProfileRequest,
+    current_user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
+):
+    """Allow logged-in employee to update their own full name, PIN code, or password."""
+    if data.full_name is not None and data.full_name.strip():
+        current_user.full_name = data.full_name.strip()
+    if data.pin_code is not None:
+        current_user.pin_code = data.pin_code.strip() if data.pin_code.strip() else None
+    if data.password is not None and data.password.strip():
+        current_user.hashed_password = svc.hash_password(data.password.strip())
+
+    session.add(current_user)
+    await session.flush()
+
     return UserRead(
         id=current_user.id,
         tenant_id=current_user.tenant_id,
