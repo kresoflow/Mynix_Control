@@ -2,7 +2,7 @@
 
 > **Дата аудита:** 2026-08-20  
 > **Метод:** Сплошной статический и семантический анализ всей кодовой базы `frontend/lib/`.  
-> **Статус:** 🟢 Группа HIGH (Касса, Оплата, Смены, Профиль) полностью отрефакторена!
+> **Статус:** 🟢 Группы HIGH и MEDIUM полностью отрефакторены!
 
 ---
 
@@ -20,13 +20,14 @@
 | **8** | `menu_modifiers_dialog.dart` | 2. Микроархитектура | MAJOR | **HIGH** | Превышение лимита (294 строки) | ✅ **ИСПРАВЛЕНО (`027c5a8`):** декомпозирован на `menu_modifiers_dialog.dart` (180 стр), `modifiers_calculator.dart`, `dialog_modifiers_body.dart`. |
 | **9** | `customer_payment_modal.dart` | 2. Микроархитектура | MAJOR | **HIGH** | Превышение лимита (314 строк) | ✅ **ИСПРАВЛЕНО (`2ced05d`):** декомпозирован до 200 строк с переходом на `MynixDialog` и `CurrencyFormatter`. |
 | **10** | `user_profile_modal.dart` | 1. Сеть / DI | CRITICAL | **HIGH** | Прямой вызов `apiClient.dio` | ✅ **ИСПРАВЛЕНО (`2ced05d`):** запросы переведены на методы `AuthRepository`. |
-| **11** | `bulk_add_modal.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (407 строк) | ⏳ Ожидает (Группа MEDIUM) |
-| **12** | `receive_document_dialog.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (339 строк) | ⏳ Ожидает (Группа MEDIUM) |
-| **13** | `catalog_browser_tab.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (334 строки) | ⏳ Ожидает (Группа MEDIUM) |
-| **14** | `customer_details_dialog.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (331 строка) | ⏳ Ожидает (Группа MEDIUM) |
-| **15** | `shift_history_analytics_tab.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (323 строки) | ⏳ Ожидает (Группа MEDIUM) |
-| **16** | `customer_form_modal.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (307 строк) | ⏳ Ожидает (Группа MEDIUM) |
-| **17** | `suppliers_tab.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Превышение лимита (291 строка) | ⏳ Ожидает (Группа MEDIUM) |
-| **18** | `general_settings_tab.dart` | 1. Сеть / DI | CRITICAL | **MEDIUM** | Прямой вызов `apiClient.dio` | ⏳ Ожидает (Группа MEDIUM) |
+| **11** | `bulk_add_modal.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (428 строк) | ✅ **ИСПРАВЛЕНО (`0530a3d`):** декомпозирован до 230 строк, пресеты вынесены в `bulk_add_presets.dart`. |
+| **12** | `receive_document_dialog.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (364 строки) | ✅ **ИСПРАВЛЕНО (`8743f85`):** сокращен до 250 строк, вынесен `receive_document_unit_helper.dart` и исправлен async gap. |
+| **13** | `catalog_browser_tab.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (353 строки) | ✅ **ИСПРАВЛЕНО (`09877a0`):** сокращен до 220 строк, диалоги удаления вынесены в `catalog_deletion_dialogs.dart`. |
+| **14** | `customer_details_dialog.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (351 строка) | ✅ **ИСПРАВЛЕНО (`7edad87`):** сокращен до 210 строк, вынесен `customer_ledger_tab.dart`. |
+| **15** | `shift_history_analytics_tab.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (343 строки) | ✅ **ИСПРАВЛЕНО (`a13bc36`):** сокращен до 150 строк, вынесены `analytics_kpi_card.dart` и `analytics_shift_row.dart`, репозиторий инжектирован. |
+| **16** | `customer_form_modal.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Файл-великан (326 строк) | ✅ **ИСПРАВЛЕНО (`47580ca`):** сокращен до 200 строк с переходом на `MynixDialog` и `CurrencyFormatter`. |
+| **17** | `suppliers_tab.dart` | 2. Микроархитектура | MAJOR | **MEDIUM** | Превышение лимита (303 строки) | ✅ **ИСПРАВЛЕНО (`bc7539f`):** сокращен до 190 строк, вынесен `suppliers_table_header.dart`, исправлен async gap. |
+| **18** | `general_settings_tab.dart` | 1. Сеть / DI | CRITICAL | **MEDIUM** | Прямой вызов `apiClient.dio` | ✅ **ИСПРАВЛЕНО (`bc7539f`):** создан `SettingsRepository`, вызовы инжектированы. |
 | **19** | `create_tenant_modal.dart` | 2. Микроархитектура | MAJOR | **LOW** | Файл-великан (439 строк) | ⏳ Ожидает (Группа LOW) |
 | **20** | `mynix_date_time_picker.dart` | 2. Микроархитектура | MAJOR | **LOW** | Файл-великан (402 строки) | ⏳ Ожидает (Группа LOW) |
+| **21** | `settings_screen.dart` | 2. Микроархитектура | MAJOR | **LOW** | Превышение лимита (275 строк) | ⏳ Ожидает (Группа LOW) |
