@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:convert';
 
-import 'package:mynix_frontend/core/widgets/responsive_layout.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
@@ -82,56 +81,56 @@ class _PosScreenState extends State<PosScreen> {
             return const OpenShiftModal();
           }
 
+          final posBody = isMobile
+              ? const PosMobileLayout()
+              : Column(
+                  children: [
+                    // Sub-tab Navigation Header (desktop/tablet only)
+                    if (useOrders || useKds)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            _buildTabButton(0, 'Касса', PhosphorIconsRegular.receipt, isDark),
+                            if (useOrders) ...[
+                              const SizedBox(width: 8),
+                              _buildTabButton(1, 'Заказы', PhosphorIconsRegular.listNumbers, isDark),
+                            ],
+                            if (useKds) ...[
+                              const SizedBox(width: 8),
+                              _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
+                            ],
+                          ],
+                        ),
+                      ),
+                    // Active Screen View
+                    Expanded(
+                      child: IndexedStack(
+                        index: _currentTab,
+                        children: [
+                          const PosDesktopLayout(),
+                          if (useOrders) const OrdersScreen() else const SizedBox.shrink(),
+                          if (useKds) const KitchenScreen() else const SizedBox.shrink(),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+
           return BlocProvider(
             create: (context) => PosNavCubit(),
             child: BarcodeScannerListener(
               onBarcodeScanned: (barcode) => _handleBarcode(context, barcode),
-              child: Column(
-                children: [
-                  // Sub-tab Navigation Header (desktop/tablet only)
-                  if (!isMobile && (useOrders || useKds))
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                        border: Border(
-                          bottom: BorderSide(
-                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          _buildTabButton(0, 'Касса', PhosphorIconsRegular.receipt, isDark),
-                          if (useOrders) ...[
-                            const SizedBox(width: 8),
-                            _buildTabButton(1, 'Заказы', PhosphorIconsRegular.listNumbers, isDark),
-                          ],
-                          if (useKds) ...[
-                            const SizedBox(width: 8),
-                            _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
-                          ],
-                        ],
-                      ),
-                    ),
-                  // Active Screen View
-                  Expanded(
-                    child: IndexedStack(
-                      index: _currentTab,
-                      children: [
-                        const ResponsiveLayout(
-                          mobile: PosMobileLayout(),
-                          tablet: PosDesktopLayout(),
-                          desktop: PosDesktopLayout(),
-                        ),
-                        if (useOrders) const OrdersScreen() else const SizedBox.shrink(),
-                        if (useKds) const KitchenScreen() else const SizedBox.shrink(),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              child: posBody,
             ),
           );
         },

@@ -14,10 +14,9 @@ class PosMobileLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
       children: [
-        const Positioned.fill(
-          child: PosMenuGrid(),
-        ),
+        const PosMenuGrid(),
         BlocBuilder<CartBloc, CartState>(
           builder: (context, state) {
             final itemCount = state.items.fold(0, (sum, item) => sum + item.quantity);
