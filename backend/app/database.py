@@ -97,6 +97,14 @@ async def auto_migrate_tenant_schemas() -> None:
                 await conn.execute(text(f'ALTER TABLE "{schema}".inventory_documents ADD COLUMN IF NOT EXISTS paid_amount FLOAT DEFAULT 0.0 NOT NULL'))
                 await conn.execute(text(f'ALTER TABLE "{schema}".inventory_documents ADD COLUMN IF NOT EXISTS payment_method VARCHAR(30) DEFAULT \'cash\''))
                 await conn.execute(text(f'ALTER TABLE "{schema}".inventory_document_items ADD COLUMN IF NOT EXISTS expected_quantity DOUBLE PRECISION'))
+                try:
+                    await conn.execute(text(f'ALTER TABLE "{schema}".orders ALTER COLUMN payment_method TYPE VARCHAR(30) USING payment_method::VARCHAR'))
+                except Exception:
+                    pass
+                try:
+                    await conn.execute(text(f'ALTER TABLE "{schema}".orders ALTER COLUMN status TYPE VARCHAR(30) USING status::VARCHAR'))
+                except Exception:
+                    pass
                 # supplier_transactions table
                 await conn.execute(text(f'''
                     CREATE TABLE IF NOT EXISTS "{schema}".supplier_transactions (

@@ -125,7 +125,14 @@ class Order(TenantModel, table=True):
     created_by: int = Field(foreign_key="public.users.id")
     customer_id: Optional[int] = Field(default=None, foreign_key="customers.id", index=True)
     order_number: int = Field(default=0)  # daily sequential number
-    status: OrderStatus = Field(default=OrderStatus.NEW)
+    status: OrderStatus = Field(
+        default=OrderStatus.NEW,
+        sa_column=Column(
+            SAEnum(OrderStatus, values_callable=lambda obj: [e.value for e in obj], native_enum=False),
+            nullable=False,
+            default=OrderStatus.NEW.value
+        )
+    )
     payment_method: PaymentMethod = Field(
         default=PaymentMethod.CASH,
         sa_column=Column(
