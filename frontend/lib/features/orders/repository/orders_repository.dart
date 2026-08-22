@@ -18,9 +18,13 @@ class OrdersRepository {
   }
 
   Future<void> cancelOrder(int orderId) async {
+    await updateOrderStatus(orderId, 'cancelled');
+  }
+
+  Future<void> updateOrderStatus(int orderId, String newStatus) async {
     await dio.patch(
       '/orders/$orderId/status',
-      queryParameters: {'new_status': 'cancelled'},
+      queryParameters: {'new_status': newStatus},
     );
   }
 }

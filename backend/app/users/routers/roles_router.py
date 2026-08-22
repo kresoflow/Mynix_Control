@@ -93,6 +93,19 @@ async def update_tenant_settings(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
+    # Auto-complete pending kitchen orders if KDS is being turned off
+    if not data.use_kds and tenant.use_kds:
+        from app.pos.models import Order, OrderStatus
+        from sqlalchemy import update, text
+        await session.execute(text(f'SET search_path TO "{tenant.schema_name}", public'))
+        active_statuses = [OrderStatus.NEW, OrderStatus.COOKING, OrderStatus.READY]
+        update_stmt = (
+            update(Order)
+            .where(Order.status.in_(active_statuses))
+            .values(status=OrderStatus.COMPLETED)
+        )
+        await session.execute(update_stmt)
+
     tenant.use_kds = data.use_kds
     tenant.use_orders = data.use_orders
     tenant.enable_inventory_deduction = data.enable_inventory_deduction

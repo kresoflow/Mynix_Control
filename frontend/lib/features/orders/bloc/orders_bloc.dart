@@ -28,6 +28,13 @@ class CancelOrder extends OrdersEvent {
   List<Object?> get props => [orderId];
 }
 
+class CompleteOrder extends OrdersEvent {
+  final int orderId;
+  const CompleteOrder(this.orderId);
+  @override
+  List<Object?> get props => [orderId];
+}
+
 // --- States ---
 abstract class OrdersState extends Equatable {
   const OrdersState();
@@ -60,6 +67,7 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
   OrdersBloc({required this.repository}) : super(OrdersInitial()) {
     on<LoadOrders>(_onLoadOrders);
     on<CancelOrder>(_onCancelOrder);
+    on<CompleteOrder>(_onCompleteOrder);
   }
 
   Future<void> _onLoadOrders(LoadOrders event, Emitter<OrdersState> emit) async {
@@ -98,6 +106,25 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
         emit(OrdersError(e.toString()));
         // Attempt to load original list
         emit(OrdersLoaded(currentState.orders)); 
+      }
+    }
+  }
+
+  Future<void> _onCompleteOrder(CompleteOrder event, Emitter<OrdersState> emit) async {
+    if (state is OrdersLoaded) {
+      final currentState = state as OrdersLoaded;
+      try {
+        await repository.updateOrderStatus(event.orderId, 'completed');
+        final updatedOrders = currentState.orders.map((o) {
+          if (o.id == event.orderId) {
+            return o.copyWith(status: 'completed');
+          }
+          return o;
+        }).toList();
+        emit(OrdersLoaded(updatedOrders));
+      } catch (e) {
+        emit(OrdersError(e.toString()));
+        emit(OrdersLoaded(currentState.orders));
       }
     }
   }

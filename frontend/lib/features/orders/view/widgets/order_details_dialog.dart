@@ -204,6 +204,19 @@ class OrderDetailsDialog extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         height: 46,
+                        child: AppPrimaryButton(
+                          label: 'Выдать заказ (Завершить)',
+                          icon: PhosphorIconsRegular.checkCircle,
+                          onPressed: () {
+                            context.read<OrdersBloc>().add(CompleteOrder(order.id));
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 42,
                         child: AppDangerButton(
                           label: 'Отменить этот чек',
                           icon: PhosphorIconsRegular.xCircle,
