@@ -23,7 +23,8 @@ async def get_analytics_metrics(
     orders_query = select(Order).where(
         Order.created_at >= start_date,
         Order.created_at <= end_date,
-        Order.status != OrderStatus.CANCELLED
+        Order.status != "cancelled",
+        Order.status != "CANCELLED",
     )
     orders_result = await session.execute(orders_query)
     orders = orders_result.scalars().all()
@@ -39,7 +40,8 @@ async def get_analytics_metrics(
         .where(
             Order.created_at >= start_date,
             Order.created_at <= end_date,
-            Order.status != OrderStatus.CANCELLED,
+            Order.status != "cancelled",
+            Order.status != "CANCELLED",
         )
     )
     cogs_res = await session.execute(cogs_stmt)
