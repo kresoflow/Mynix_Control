@@ -23,7 +23,9 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
   }
 
   Future<void> _onCheckCurrentShift(CheckCurrentShift event, Emitter<ShiftState> emit) async {
-    emit(ShiftLoading());
+    if (state is ShiftInitial) {
+      emit(ShiftLoading());
+    }
     try {
       final shift = await repository.getCurrentShift();
       if (shift != null) {
@@ -33,7 +35,9 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
         emit(ShiftClosed());
       }
     } catch (e) {
-      emit(ShiftError(e.toString()));
+      if (state is ShiftInitial || state is ShiftLoading) {
+        emit(ShiftError(e.toString()));
+      }
     }
   }
 

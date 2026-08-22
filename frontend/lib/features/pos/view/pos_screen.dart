@@ -39,7 +39,9 @@ class _PosScreenState extends State<PosScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MenuBloc>().add(LoadMenu());
       context.read<CategoryBloc>().add(LoadCategories());
-      context.read<ShiftBloc>().add(CheckCurrentShift());
+      if (context.read<ShiftBloc>().state is ShiftInitial) {
+        context.read<ShiftBloc>().add(CheckCurrentShift());
+      }
     });
   }
 

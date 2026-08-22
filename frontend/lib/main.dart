@@ -148,7 +148,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _posSettingsCubit = PosSettingsCubit();
     _appRouter = AppRouter(_authBloc);
 
-    // Automatically sync tenant feature flags into SettingsBloc on login/startup
+    // Automatically sync tenant feature flags and load shift status on login/startup
     _authBloc.stream.listen((authState) {
       if (authState is AuthAuthenticated) {
         _settingsBloc.add(
@@ -157,6 +157,7 @@ class _RetailOSAppState extends State<RetailOSApp> {
             useOrders: authState.useOrders,
           ),
         );
+        _shiftBloc.add(CheckCurrentShift());
       }
     });
   }
