@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
@@ -70,7 +72,7 @@ class PosCartHeader extends StatelessWidget {
                       icon: const Icon(PhosphorIconsRegular.trash, size: 20),
                       color: AppColors.darkSubtext,
                       tooltip: 'Очистить заказ',
-                      onPressed: () => context.read<CartBloc>().add(ClearCart()),
+                      onPressed: () => _confirmClearCart(context, state.items.length),
                     ),
                   ],
                   if (MediaQuery.of(context).size.width < 768) ...[
@@ -88,6 +90,40 @@ class PosCartHeader extends StatelessWidget {
                   ],
                 ],
               );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmClearCart(BuildContext context, int itemCount) {
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Очистить заказ?',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Вы действительно хотите удалить все $itemCount поз. из текущего чека?\nЭто действие нельзя отменить.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkSubtext
+                : AppColors.lightSubtext,
+          ),
+        ),
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          AppDangerButton(
+            label: 'Очистить чек',
+            icon: PhosphorIconsRegular.trash,
+            onPressed: () {
+              context.read<CartBloc>().add(ClearCart());
+              Navigator.pop(ctx);
             },
           ),
         ],

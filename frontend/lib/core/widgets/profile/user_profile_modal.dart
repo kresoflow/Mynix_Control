@@ -160,10 +160,23 @@ class _UserProfileModalState extends State<UserProfileModal> {
                         '@$_username',
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                      Text(
-                        _tenantName.isNotEmpty ? '🏢 $_tenantName' : 'Системный аккаунт',
-                        style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                      ),
+                      if (_tenantName.isNotEmpty)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(PhosphorIconsRegular.storefront, size: 12, color: AppColors.darkSubtext),
+                            const SizedBox(width: 4),
+                            Text(
+                              _tenantName,
+                              style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                            ),
+                          ],
+                        )
+                      else
+                        Text(
+                          'Системный аккаунт',
+                          style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                        ),
                     ],
                   ),
                 ),

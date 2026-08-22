@@ -67,9 +67,16 @@ class AppBarProfileMenu extends StatelessWidget {
               ),
               if (tenantName.isNotEmpty) ...[
                 const SizedBox(height: 2),
-                Text(
-                  '🏢 $tenantName',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext, fontSize: 11),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(PhosphorIconsRegular.storefront, size: 13, color: AppColors.darkSubtext),
+                    const SizedBox(width: 4),
+                    Text(
+                      tenantName,
+                      style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext, fontSize: 11),
+                    ),
+                  ],
                 ),
               ],
               const SizedBox(height: 6),

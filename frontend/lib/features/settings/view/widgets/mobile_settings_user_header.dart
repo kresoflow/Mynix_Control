@@ -69,14 +69,23 @@ class MobileSettingsUserHeader extends StatelessWidget {
                     ),
                     if (tenantName.isNotEmpty) ...[
                       const SizedBox(height: 2),
-                      Text(
-                        '🏢 $tenantName',
-                        style: AppTextStyles.caption.copyWith(
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          fontSize: 11,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(PhosphorIconsRegular.storefront, size: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              tenantName,
+                              style: AppTextStyles.caption.copyWith(
+                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                fontSize: 11,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                     const SizedBox(height: 4),

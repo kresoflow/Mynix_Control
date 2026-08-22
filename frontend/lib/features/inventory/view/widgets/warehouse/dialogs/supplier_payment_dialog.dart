@@ -156,10 +156,40 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
               fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            items: const [
-              DropdownMenuItem(value: 'cash', child: Text('💵 Наличные (Касса)')),
-              DropdownMenuItem(value: 'card', child: Text('💳 Банковская карта')),
-              DropdownMenuItem(value: 'bank_transfer', child: Text('🏦 Расчетный счет / Перевод')),
+            items: [
+              DropdownMenuItem(
+                value: 'cash',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(PhosphorIconsRegular.money, size: 16, color: AppColors.brandPrimary),
+                    const SizedBox(width: 8),
+                    const Text('Наличные (Касса)'),
+                  ],
+                ),
+              ),
+              DropdownMenuItem(
+                value: 'card',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(PhosphorIconsRegular.creditCard, size: 16, color: AppColors.brandPrimary),
+                    const SizedBox(width: 8),
+                    const Text('Банковская карта'),
+                  ],
+                ),
+              ),
+              DropdownMenuItem(
+                value: 'bank_transfer',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(PhosphorIconsRegular.bank, size: 16, color: AppColors.brandPrimary),
+                    const SizedBox(width: 8),
+                    const Text('Расчетный счет / Перевод'),
+                  ],
+                ),
+              ),
             ],
             onChanged: (val) {
               if (val != null) setState(() => _paymentMethod = val);

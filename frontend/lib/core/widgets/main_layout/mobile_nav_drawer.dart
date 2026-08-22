@@ -77,8 +77,24 @@ class MobileNavDrawer extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(fullName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold), maxLines: 1),
-                        if (tenantName.isNotEmpty)
-                          Text('🏢 $tenantName', style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext, fontSize: 11)),
+                        if (tenantName.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(PhosphorIconsRegular.storefront, size: 12, color: AppColors.darkSubtext),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  tenantName,
+                                  style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext, fontSize: 11),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: 4),
                         RoleFormatter.buildBadge(role),
                       ],

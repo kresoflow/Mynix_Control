@@ -138,10 +138,40 @@ class ReceiveDocumentFooter extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             color: isDark ? AppColors.darkText : AppColors.lightText,
                           ),
-                          items: const [
-                            DropdownMenuItem(value: 'cash', child: Text('💵 Наличные')),
-                            DropdownMenuItem(value: 'card', child: Text('💳 Карта')),
-                            DropdownMenuItem(value: 'bank_transfer', child: Text('🏦 Расчетный счет')),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'cash',
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(PhosphorIconsRegular.money, size: 14, color: AppColors.brandPrimary),
+                                  const SizedBox(width: 6),
+                                  const Text('Наличные'),
+                                ],
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'card',
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(PhosphorIconsRegular.creditCard, size: 14, color: AppColors.brandPrimary),
+                                  const SizedBox(width: 6),
+                                  const Text('Карта'),
+                                ],
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'bank_transfer',
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(PhosphorIconsRegular.bank, size: 14, color: AppColors.brandPrimary),
+                                  const SizedBox(width: 6),
+                                  const Text('Расчетный счет'),
+                                ],
+                              ),
+                            ),
                           ],
                           onChanged: (val) {
                             if (val != null) onPaymentMethodChanged(val);

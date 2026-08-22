@@ -142,7 +142,17 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
           ),
           if (bonus > 0) ...[
             const SizedBox(width: 4),
-            Text('🎁${bonus.toStringAsFixed(0)}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary)),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(PhosphorIconsRegular.gift, size: 11, color: AppColors.brandPrimary),
+                const SizedBox(width: 2),
+                Text(
+                  bonus.toStringAsFixed(0),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
+                ),
+              ],
+            ),
           ],
           const SizedBox(width: 4),
           InkWell(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class CustomerFilterBar extends StatelessWidget {
   final TextEditingController searchController;
@@ -24,25 +25,44 @@ class CustomerFilterBar extends StatelessWidget {
     required this.onFilterChanged,
   });
 
-  Widget _buildFilterPill(String label, String value, bool isDark) {
+  Widget _buildFilterPill(String label, String value, bool isDark, {IconData? icon}) {
     final isSelected = activeFilter == value;
+    final fgColor = isSelected
+        ? AppColors.darkBg
+        : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight);
+
     return InkWell(
       onTap: () => onFilterChanged(value),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      borderRadius: BorderRadius.circular(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? Colors.black : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+          color: isSelected
+              ? AppColors.brandPrimary
+              : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.brandPrimary
+                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 14, color: fgColor),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: fgColor,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -63,8 +83,14 @@ class CustomerFilterBar extends StatelessWidget {
               prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
               filled: true,
               fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+              ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             ),
           ),
@@ -76,11 +102,11 @@ class CustomerFilterBar extends StatelessWidget {
             children: [
               _buildFilterPill('Все ($totalCount)', 'all', isDark),
               const SizedBox(width: 6),
-              _buildFilterPill('🔥 VIP ($vipCount)', 'vip', isDark),
+              _buildFilterPill('VIP ($vipCount)', 'vip', isDark, icon: PhosphorIconsRegular.crown),
               const SizedBox(width: 6),
-              _buildFilterPill('⚠️ Спящие', 'churn', isDark),
+              _buildFilterPill('Спящие', 'churn', isDark, icon: PhosphorIconsRegular.moon),
               const SizedBox(width: 6),
-              _buildFilterPill('✨ Новички', 'new', isDark),
+              _buildFilterPill('Новички', 'new', isDark, icon: PhosphorIconsRegular.sparkle),
               const SizedBox(width: 6),
               _buildFilterPill('Должники ($debtorsCount)', 'debtors', isDark),
               const SizedBox(width: 6),
@@ -92,3 +118,4 @@ class CustomerFilterBar extends StatelessWidget {
     );
   }
 }
+

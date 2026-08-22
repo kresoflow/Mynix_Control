@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
 
@@ -105,19 +107,56 @@ class RecipeIngredientItemTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(PhosphorIconsRegular.trash, color: Colors.grey),
+              icon: Icon(PhosphorIconsRegular.trash, color: AppColors.darkSubtext),
               hoverColor: AppColors.danger.withValues(alpha: 0.1),
-              onPressed: () {
-                context.read<RecipeBloc>().add(
-                  RemoveIngredientFromRecipe(
-                    menuItemId: selectedMenuItemId,
-                    ingredientId: ingredientId,
-                  ),
-                );
-              },
+              tooltip: 'Удалить из техкарты',
+              onPressed: () => _confirmRemoveIngredient(
+                context,
+                ingredientId,
+                recipe['ingredient_name'] ?? 'ингредиент',
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmRemoveIngredient(BuildContext context, int ingredientId, String name) {
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Удалить из состава?',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Удалить «$name» из состава этого блюда?\nСебестоимость техкарты будет пересчитана автоматически.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkSubtext
+                : AppColors.lightSubtext,
+          ),
+        ),
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          AppDangerButton(
+            label: 'Удалить',
+            icon: PhosphorIconsRegular.trash,
+            onPressed: () {
+              context.read<RecipeBloc>().add(
+                RemoveIngredientFromRecipe(
+                  menuItemId: selectedMenuItemId,
+                  ingredientId: ingredientId,
+                ),
+              );
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
       ),
     );
   }

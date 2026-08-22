@@ -10,17 +10,41 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
 
   const DocumentDetailPaymentInfo({super.key, required this.doc});
 
-  String _getPaymentMethodLabel(String method) {
+  Widget _buildPaymentMethod(String method, bool isDark) {
+    IconData icon;
+    String label;
     switch (method) {
       case 'cash':
-        return '💵 Наличные';
+        icon = PhosphorIconsRegular.money;
+        label = 'Наличные';
+        break;
       case 'card':
-        return '💳 Банковская карта';
+        icon = PhosphorIconsRegular.creditCard;
+        label = 'Банковская карта';
+        break;
       case 'bank_transfer':
-        return '🏦 Расчетный счет / Перевод';
+        icon = PhosphorIconsRegular.bank;
+        label = 'Расчетный счет';
+        break;
       default:
-        return method;
+        icon = PhosphorIconsRegular.wallet;
+        label = method;
     }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: AppColors.brandPrimary),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            fontWeight: FontWeight.w600,
+            color: isDark ? AppColors.darkText : AppColors.lightText,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -93,13 +117,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
                   ],
                 ),
                 if (doc.paymentStatus != 'unpaid')
-                  Text(
-                    _getPaymentMethodLabel(doc.paymentMethod),
-                    style: AppTextStyles.caption.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
-                  ),
+                  _buildPaymentMethod(doc.paymentMethod, isDark),
               ],
             ),
           ],

@@ -59,9 +59,9 @@ class LanSettingsCard extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 children: [
-                  _buildRoleChoice('master', '🖥️ Касса-Сервер (Master)', data.role == 'master'),
-                  _buildRoleChoice('client', '📱 Официант (Client)', data.role == 'client'),
-                  _buildRoleChoice('standalone', '⚡ Автономный (Standalone)', data.role == 'standalone'),
+                  _buildRoleChoice('master', 'Касса-Сервер (Master)', PhosphorIconsRegular.desktop, data.role == 'master'),
+                  _buildRoleChoice('client', 'Официант (Client)', PhosphorIconsRegular.deviceMobile, data.role == 'client'),
+                  _buildRoleChoice('standalone', 'Автономный (Standalone)', PhosphorIconsRegular.lightning, data.role == 'standalone'),
                 ],
               ),
               const SizedBox(height: 16),
@@ -149,8 +149,9 @@ class LanSettingsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRoleChoice(String roleValue, String label, bool isSelected) {
+  Widget _buildRoleChoice(String roleValue, String label, IconData icon, bool isSelected) {
     return ChoiceChip(
+      avatar: Icon(icon, size: 16, color: isSelected ? AppColors.brandPrimary : null),
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => LanSettingsService.setRole(roleValue),

@@ -3,7 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/utils/role_formatter.dart';
+import 'package:mynix_frontend/features/settings/models/user_model.dart';
 import 'package:mynix_frontend/features/settings/bloc/user_bloc.dart';
 import 'package:mynix_frontend/features/settings/repository/user_repository.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
@@ -138,13 +141,13 @@ class _PersonnelSettingsView extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(PhosphorIconsRegular.plus, size: 16, color: Colors.white),
+                        Icon(PhosphorIconsRegular.plus, size: 16, color: AppColors.darkBg),
                         const SizedBox(width: 6),
                         Text(
                           'Добавить сотрудника',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
+                            color: AppColors.darkBg,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
@@ -192,11 +195,9 @@ class _PersonnelSettingsView extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                            icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                             tooltip: 'Удалить сотрудника',
-                            onPressed: () {
-                              context.read<UserBloc>().add(DeleteUser(staffUsers[i].id));
-                            },
+                            onPressed: () => _confirmDeleteUser(context, staffUsers[i]),
                           ),
                         ],
                       ),
@@ -209,6 +210,39 @@ class _PersonnelSettingsView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _confirmDeleteUser(BuildContext context, StaffUser user) {
+    final name = user.fullName.isNotEmpty ? user.fullName : '@${user.username}';
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Удалить сотрудника?',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Вы уверены, что хотите удалить сотрудника «$name»?\nДоступ к кассе и системе будет немедленно заблокирован.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
+        ),
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          AppDangerButton(
+            label: 'Удалить',
+            icon: PhosphorIconsRegular.trash,
+            onPressed: () {
+              context.read<UserBloc>().add(DeleteUser(user.id));
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
     );
   }
 }

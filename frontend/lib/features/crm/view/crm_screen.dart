@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_bloc.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_event.dart';
 import 'package:mynix_frontend/features/crm/bloc/crm_state.dart';
@@ -90,26 +92,33 @@ class _CrmScreenState extends State<CrmScreen> {
   }
 
   void _confirmDelete(Customer customer) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Удалить гостя?'),
-        content: Text('Вы уверены, что хотите удалить гостя "${customer.name}"? Это действие необратимо.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Отмена', style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+      builder: (ctx) => MynixDialog(
+        title: 'Удалить гостя?',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Вы уверены, что хотите удалить гостя «${customer.name}»?\nВся история заказов и накопленные бонусы будут безвозвратно удалены.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkSubtext
+                : AppColors.lightSubtext,
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
+        ),
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          AppDangerButton(
+            label: 'Удалить',
+            icon: PhosphorIconsRegular.trash,
             onPressed: () {
               Navigator.pop(ctx);
               context.read<CrmBloc>().add(DeleteCustomerEvent(customer.id));
             },
-            child: const Text('Удалить'),
           ),
         ],
       ),

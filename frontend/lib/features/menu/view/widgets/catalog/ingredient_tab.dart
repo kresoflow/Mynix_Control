@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_category_sidebar.dart';
@@ -35,16 +39,27 @@ class _IngredientTabState extends State<IngredientTab> {
   void _confirmDeleteSelected() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Массовое удаление'),
-        content: Text('Удалить выбранные элементы (${_selectedIngredients.length} шт.)?'),
+      builder: (ctx) => MynixDialog(
+        title: 'Массовое удаление',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Удалить выбранные элементы (${_selectedIngredients.length} шт.) со склада?\nЕсли позиции используются в техкартах, удаление будет отклонено.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkSubtext
+                : AppColors.lightSubtext,
+          ),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.danger,
-              foregroundColor: Colors.white,
-            ),
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          AppDangerButton(
+            label: 'Удалить',
+            icon: PhosphorIconsRegular.trash,
             onPressed: () {
               for (var itemId in _selectedIngredients) {
                 context.read<IngredientBloc>().add(DeleteIngredient(itemId));
@@ -55,7 +70,6 @@ class _IngredientTabState extends State<IngredientTab> {
               });
               Navigator.pop(ctx);
             },
-            child: const Text('Удалить'),
           ),
         ],
       ),

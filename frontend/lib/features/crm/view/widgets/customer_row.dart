@@ -102,17 +102,17 @@ class _CustomerRowState extends State<CustomerRow> {
                         if (c.tierLevel != 'standard') ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: (c.tierLevel == 'gold' ? Colors.amber : Colors.blueGrey).withValues(alpha: 0.2),
+                              color: (c.tierLevel == 'gold' ? AppColors.brandPrimary : AppColors.brandSecondary).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               c.tierLevel.toUpperCase(),
-                              style: TextStyle(
+                              style: AppTextStyles.caption.copyWith(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w800,
-                                color: c.tierLevel == 'gold' ? Colors.amber : Colors.blueGrey,
+                                color: c.tierLevel == 'gold' ? AppColors.brandPrimary : AppColors.brandSecondary,
                               ),
                             ),
                           ),
@@ -173,12 +173,21 @@ class _CustomerRowState extends State<CustomerRow> {
                               const SizedBox(width: 4),
                               Text(
                                 c.bonusBalance.toStringAsFixed(0),
-                                style: TextStyle(color: AppColors.brandPrimary, fontWeight: FontWeight.bold, fontSize: 11),
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.brandPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),
                         )
-                      : Text('0', style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, fontSize: 12)),
+                      : Text(
+                          '0',
+                          style: AppTextStyles.caption.copyWith(
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(width: 8),

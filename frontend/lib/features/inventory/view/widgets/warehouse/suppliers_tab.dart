@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
@@ -84,25 +87,31 @@ class _SuppliersTabState extends State<SuppliersTab> {
   void _confirmDelete(BuildContext ctx, Supplier supplier) {
     showDialog(
       context: ctx,
-      builder: (dCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Удалить поставщика?'),
+      builder: (dCtx) => MynixDialog(
+        title: 'Удалить поставщика?',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
         content: Text(
-          'Поставщик «${supplier.name}» будет удалён.\n'
-          'Если к нему привязаны накладные — система предложит деактивацию.',
+          'Поставщик «${supplier.name}» будет удалён.\nЕсли к нему привязаны накладные, история взаиморасчётов сохранится в архиве.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(ctx).brightness == Brightness.dark
+                ? AppColors.darkSubtext
+                : AppColors.lightSubtext,
+          ),
         ),
         actions: [
-          TextButton(
+          AppGhostButton(
+            label: 'Отмена',
             onPressed: () => Navigator.pop(dCtx),
-            child: const Text('Отмена'),
           ),
-          TextButton(
+          AppDangerButton(
+            label: 'Удалить',
+            icon: PhosphorIconsRegular.trash,
             onPressed: () {
               Navigator.pop(dCtx);
               ctx.read<DocumentBloc>().add(DeleteSupplier(supplier.id));
             },
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Удалить'),
           ),
         ],
       ),
