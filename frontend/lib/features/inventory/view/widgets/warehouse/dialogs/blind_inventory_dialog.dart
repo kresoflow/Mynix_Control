@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
@@ -49,10 +51,12 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
           final actualQty = double.tryParse(ctrl.text);
           if (actualQty != null) {
             final isRetail = item.attributes?['is_retail'] == true;
+            final itemTotal = actualQty * item.costPerUnit;
             items.add({
               if (isRetail) 'retail_product_id': item.id else 'ingredient_id': item.id,
               'quantity': actualQty,
               'price_per_unit': item.costPerUnit,
+              'total_price': itemTotal,
             });
           }
         }
@@ -77,6 +81,10 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
 
       if (mounted) {
         context.read<IngredientBloc>().add(LoadIngredients());
+        try {
+          context.read<DocumentBloc>().add(const LoadDocuments());
+        } catch (_) {}
+
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -112,47 +120,47 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
           const SizedBox(height: 16),
           ConstrainedBox(
             constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-        child: BlocBuilder<IngredientBloc, IngredientState>(
-          builder: (context, state) {
-            if (state is IngredientLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is IngredientLoaded) {
-              return ListView.separated(
-                shrinkWrap: true,
-                itemCount: state.ingredients.length,
-                separatorBuilder: (_, _) => Divider(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.5)),
-                itemBuilder: (context, index) {
-                  final item = state.ingredients[index];
-                  if (!_controllers.containsKey(item.id)) {
-                    _controllers[item.id] = TextEditingController();
-                  }
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(item.name, style: AppTextStyles.bodyMedium),
-                    subtitle: Text(
-                      item.attributes?['is_retail'] == true ? 'Витрина' : 'Сырье',
-                      style: AppTextStyles.caption.copyWith(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                    ),
-                    trailing: SizedBox(
-                      width: 150,
-                      child: TextField(
-                        controller: _controllers[item.id],
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: InputDecoration(
-                          labelText: 'Факт (${item.unit})',
-                          border: const OutlineInputBorder(),
-                          isDense: true,
+            child: BlocBuilder<IngredientBloc, IngredientState>(
+              builder: (context, state) {
+                if (state is IngredientLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is IngredientLoaded) {
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: state.ingredients.length,
+                    separatorBuilder: (_, _) => Divider(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.5)),
+                    itemBuilder: (context, index) {
+                      final item = state.ingredients[index];
+                      if (!_controllers.containsKey(item.id)) {
+                        _controllers[item.id] = TextEditingController();
+                      }
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(item.name, style: AppTextStyles.bodyMedium),
+                        subtitle: Text(
+                          item.attributes?['is_retail'] == true ? 'Витрина' : 'Сырье',
+                          style: AppTextStyles.caption.copyWith(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext),
                         ),
-                      ),
-                    ),
+                        trailing: SizedBox(
+                          width: 150,
+                          child: TextField(
+                            controller: _controllers[item.id],
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: InputDecoration(
+                              labelText: 'Факт (${item.unit})',
+                              border: const OutlineInputBorder(),
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   );
-                },
-              );
-            }
-            return const Center(child: Text('Ошибка загрузки'));
-          },
-        ),
-      ),
+                }
+                return const Center(child: Text('Ошибка загрузки'));
+              },
+            ),
+          ),
         ],
       ),
       actions: [

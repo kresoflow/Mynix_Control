@@ -41,16 +41,17 @@ async def create_document(
         if item_in.ingredient_id is None and item_in.retail_product_id is None:
             raise HTTPException(400, "Item must have ingredient_id or retail_product_id")
             
-        total_price = item_in.quantity * item_in.price_per_unit
-        total += total_price
+        unit_price = item_in.price_per_unit if item_in.price_per_unit is not None else 0.0
+        item_total = item_in.total_price if item_in.total_price is not None else round(item_in.quantity * unit_price, 2)
+        total += item_total
         
         item = InventoryDocumentItem(
             document_id=doc.id,
             ingredient_id=item_in.ingredient_id,
             retail_product_id=item_in.retail_product_id,
             quantity=item_in.quantity,
-            price_per_unit=item_in.price_per_unit,
-            total_price=total_price
+            price_per_unit=unit_price,
+            total_price=item_total
         )
         session.add(item)
         

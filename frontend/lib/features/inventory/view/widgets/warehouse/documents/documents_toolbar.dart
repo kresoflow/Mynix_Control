@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/app_text_field.dart';
 
 class DocumentsToolbar extends StatelessWidget {
   final String selectedFilter;
   final ValueChanged<String> onFilterChanged;
+  final String searchQuery;
+  final ValueChanged<String> onSearchChanged;
   final VoidCallback onReceiveDocument;
   final VoidCallback onWriteOff;
   final VoidCallback onBlindInventory;
@@ -14,6 +17,8 @@ class DocumentsToolbar extends StatelessWidget {
     super.key,
     required this.selectedFilter,
     required this.onFilterChanged,
+    required this.searchQuery,
+    required this.onSearchChanged,
     required this.onReceiveDocument,
     required this.onWriteOff,
     required this.onBlindInventory,
@@ -27,21 +32,26 @@ class DocumentsToolbar extends StatelessWidget {
       onTap: () => onFilterChanged(value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBg : AppColors.lightBg),
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected
+              ? AppColors.brandPrimary.withValues(alpha: 0.15)
+              : (isDark ? AppColors.darkCard : AppColors.lightCard),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            color: isSelected
+                ? AppColors.brandPrimary
+                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            width: isSelected ? 1.5 : 1,
           ),
-          boxShadow: isSelected
-              ? [BoxShadow(color: AppColors.brandPrimary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))]
-              : [],
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+            fontSize: 12,
+            color: isSelected
+                ? AppColors.brandPrimary
+                : (isDark ? AppColors.darkText : AppColors.lightText),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
         ),
@@ -51,39 +61,50 @@ class DocumentsToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Wrap(
-            spacing: 8.0,
-            children: [
-              _buildPill(context, 'Все', 'all'),
-              _buildPill(context, 'Приходы', 'receipt'),
-              _buildPill(context, 'Списания', 'write_off'),
-              _buildPill(context, 'Инвентаризации', 'inventory'),
-            ],
+    return Row(
+      children: [
+        // Filter pills
+        Wrap(
+          spacing: 8.0,
+          children: [
+            _buildPill(context, 'Все', 'all'),
+            _buildPill(context, 'Приходы', 'receipt'),
+            _buildPill(context, 'Списания', 'write_off'),
+            _buildPill(context, 'Инвентаризации', 'inventory'),
+          ],
+        ),
+        const SizedBox(width: 16),
+        // Search bar
+        Expanded(
+          child: SizedBox(
+            height: 36,
+            child: AppTextField(
+              hintText: 'Поиск по номеру, поставщику, примечанию...',
+              isCompact: true,
+              prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
+              onChanged: onSearchChanged,
+            ),
           ),
-          const Spacer(),
-          AppPrimaryButton(
-            label: 'Оформить приход',
-            icon: PhosphorIconsRegular.truck,
-            onPressed: onReceiveDocument,
-          ),
-          const SizedBox(width: 8),
-          AppSecondaryButton(
-            label: 'Списание',
-            icon: PhosphorIconsRegular.shoppingCart,
-            onPressed: onWriteOff,
-          ),
-          const SizedBox(width: 8),
-          AppSecondaryButton(
-            label: 'Инвентаризация',
-            icon: PhosphorIconsRegular.clipboardText,
-            onPressed: onBlindInventory,
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 16),
+        AppPrimaryButton(
+          label: 'Оформить приход',
+          icon: PhosphorIconsRegular.truck,
+          onPressed: onReceiveDocument,
+        ),
+        const SizedBox(width: 8),
+        AppSecondaryButton(
+          label: 'Списание',
+          icon: PhosphorIconsRegular.trashSimple,
+          onPressed: onWriteOff,
+        ),
+        const SizedBox(width: 8),
+        AppSecondaryButton(
+          label: 'Инвентаризация',
+          icon: PhosphorIconsRegular.clipboardText,
+          onPressed: onBlindInventory,
+        ),
+      ],
     );
   }
 }

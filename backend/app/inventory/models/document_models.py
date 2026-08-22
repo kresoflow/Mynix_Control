@@ -165,8 +165,8 @@ class InventoryDocumentItemCreate(SQLModel):
     ingredient_id: Optional[int] = None
     retail_product_id: Optional[int] = None
     quantity: float
-    price_per_unit: float
-    total_price: float
+    price_per_unit: Optional[float] = 0.0
+    total_price: Optional[float] = None
     sell_price: Optional[float] = None
     min_stock_alert: Optional[float] = None
 
