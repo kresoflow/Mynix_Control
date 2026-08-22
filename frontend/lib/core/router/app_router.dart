@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'package:mynix_frontend/features/auth/view/login_screen.dart';
+import 'package:mynix_frontend/features/auth/view/splash_screen.dart';
 import 'package:mynix_frontend/features/pos/view/pos_screen.dart';
 import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
 import 'package:mynix_frontend/features/menu/view/catalog_screen.dart';
@@ -25,43 +26,51 @@ class AppRouter {
 
   late final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/pos',
+    initialLocation: '/splash',
     refreshListenable: _GoRouterRefreshStream(authBloc.stream),
     redirect: (context, state) {
       final authState = authBloc.state;
-      final isGoingToLogin = state.uri.path == '/login';
+      final currentPath = state.uri.path;
+      final isGoingToLogin = currentPath == '/login';
+      final isGoingToSplash = currentPath == '/splash';
 
+      // 1. Checking session status: keep on splash without mounting protected screens
+      if (authState is AuthInitial || authState is AuthLoading) {
+        return isGoingToSplash ? null : '/splash';
+      }
+
+      // 2. Unauthenticated: redirect to login
       if (authState is AuthUnauthenticated && !isGoingToLogin) {
         return '/login';
       }
 
-      if (authState is AuthAuthenticated && isGoingToLogin) {
-        return '/pos';
-      }
-      
-      // If going to root, redirect to pos
-      if (authState is AuthAuthenticated && state.uri.path == '/') {
-        return '/pos';
-      }
-
-      // Role-based access control
+      // 3. Authenticated:
       if (authState is AuthAuthenticated) {
-        final role = authState.role.toLowerCase();
-        final path = state.uri.path;
-        
-        if (role.contains('cashier') && path != '/pos') {
+        if (isGoingToLogin || isGoingToSplash || currentPath == '/') {
+          final role = authState.role.toLowerCase();
+          if (role.contains('cook') || role.contains('kitchen')) {
+            return '/kitchen';
+          }
           return '/pos';
         }
-        
-        if ((role.contains('cook') || role.contains('kitchen')) && path != '/kitchen') {
+
+        // Role-based access control
+        final role = authState.role.toLowerCase();
+        if (role.contains('cashier') && currentPath != '/pos') {
+          return '/pos';
+        }
+        if ((role.contains('cook') || role.contains('kitchen')) && currentPath != '/kitchen') {
           return '/kitchen';
         }
-
       }
 
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
