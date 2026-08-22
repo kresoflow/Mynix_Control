@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/app_text_field.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 
 class IngredientHeaderBar extends StatelessWidget {
   final bool isManageMode;
   final bool isGridView;
+  final List<Ingredient> ingredients;
   final Set<int> selectedIngredients;
   final int? selectedCategoryId;
   final VoidCallback onToggleManageMode;
@@ -17,12 +19,12 @@ class IngredientHeaderBar extends StatelessWidget {
   final ValueChanged<bool> onToggleView;
   final VoidCallback onSelectAll;
   final VoidCallback onDeleteSelected;
-  final ValueChanged<String>? onSearchChanged;
 
   const IngredientHeaderBar({
     super.key,
     required this.isManageMode,
     this.isGridView = false,
+    required this.ingredients,
     required this.selectedIngredients,
     required this.selectedCategoryId,
     required this.onToggleManageMode,
@@ -30,15 +32,28 @@ class IngredientHeaderBar extends StatelessWidget {
     required this.onToggleView,
     required this.onSelectAll,
     required this.onDeleteSelected,
-    this.onSearchChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final raw = ingredients.where((i) => !i.isRetail).toList();
+
+    final int totalCount = raw.length;
+    int alertCount = 0;
+    double totalCost = 0.0;
+
+    for (final item in raw) {
+      if (item.isLowStock || item.currentStock <= item.minStockAlert) {
+        alertCount++;
+      }
+      if (item.currentStock > 0) {
+        totalCost += (item.currentStock * item.costPerUnit);
+      }
+    }
 
     return Container(
-      height: 60,
+      height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -50,6 +65,7 @@ class IngredientHeaderBar extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Title
           Text(
             'Сырье и заготовки',
             style: AppTextStyles.h3.copyWith(
@@ -57,19 +73,35 @@ class IngredientHeaderBar extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(width: 20),
-          if (onSearchChanged != null)
-            SizedBox(
-              width: 240,
-              child: AppTextField(
-                hintText: 'Поиск по названию...',
-                isCompact: true,
-                prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
-                onChanged: onSearchChanged,
-              ),
-            ),
+          const SizedBox(width: 24),
+
+          // ── 3 Center KPI Badges ─────────────────────────────────────
+          _buildKpiChip(
+            icon: PhosphorIconsRegular.package,
+            iconColor: AppColors.brandPrimary,
+            label: '$totalCount поз. сырья',
+            isDark: isDark,
+          ),
+          const SizedBox(width: 8),
+          _buildKpiChip(
+            icon: alertCount > 0 ? PhosphorIconsRegular.warningCircle : PhosphorIconsRegular.checkCircle,
+            iconColor: alertCount > 0 ? AppColors.danger : AppColors.success,
+            label: alertCount > 0 ? '$alertCount на исходе' : 'Запасы в норме',
+            isHighlighted: alertCount > 0,
+            highlightColor: AppColors.danger,
+            isDark: isDark,
+          ),
+          const SizedBox(width: 8),
+          _buildKpiChip(
+            icon: PhosphorIconsRegular.coins,
+            iconColor: AppColors.success,
+            label: 'На складе: ${totalCost.toCurrency(context)}',
+            isDark: isDark,
+          ),
+
           const Spacer(),
 
+          // Right Controls / Actions
           if (isManageMode) ...[
             AppGhostButton(
               label: 'Выбрать все',
@@ -123,7 +155,7 @@ class IngredientHeaderBar extends StatelessWidget {
             ),
             const SizedBox(width: 8),
 
-            // Actions Popover Menu (...)
+            // Actions Menu (...)
             PopupMenuButton<String>(
               icon: Container(
                 width: 36,
@@ -187,6 +219,48 @@ class IngredientHeaderBar extends StatelessWidget {
               },
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKpiChip({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    bool isHighlighted = false,
+    Color? highlightColor,
+    required bool isDark,
+  }) {
+    return Container(
+      height: 30,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: isHighlighted
+            ? (highlightColor ?? AppColors.danger).withValues(alpha: 0.12)
+            : (isDark ? AppColors.darkCard : AppColors.lightCard),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: isHighlighted
+              ? (highlightColor ?? AppColors.danger).withValues(alpha: 0.4)
+              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: iconColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: isHighlighted
+                  ? (highlightColor ?? AppColors.danger)
+                  : (isDark ? AppColors.darkText : AppColors.lightText),
+            ),
+          ),
         ],
       ),
     );

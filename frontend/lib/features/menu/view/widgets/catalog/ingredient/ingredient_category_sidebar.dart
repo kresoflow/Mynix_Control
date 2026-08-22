@@ -13,12 +13,14 @@ class IngredientCategorySidebar extends StatefulWidget {
   final int? selectedCategoryId;
   final bool isManageMode;
   final ValueChanged<int?> onCategorySelected;
+  final ValueChanged<String>? onSearchChanged;
 
   const IngredientCategorySidebar({
     super.key,
     required this.selectedCategoryId,
     this.isManageMode = false,
     required this.onCategorySelected,
+    this.onSearchChanged,
   });
 
   @override
@@ -114,15 +116,18 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
 
             return Column(
               children: [
-                // ── Top Toolbar: Search + Expand All (Exact copy of Recipes) ─
+                // ── Top Toolbar: Search + Expand All ─────────────────
                 Row(
                   children: [
                     Expanded(
                       child: AppTextField(
-                        hintText: 'Поиск полки...',
+                        hintText: 'Поиск сырья и полок...',
                         isCompact: true,
                         prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
-                        onChanged: (val) => setState(() => _searchQuery = val),
+                        onChanged: (val) {
+                          setState(() => _searchQuery = val);
+                          widget.onSearchChanged?.call(val);
+                        },
                       ),
                     ),
                     const SizedBox(width: 8),

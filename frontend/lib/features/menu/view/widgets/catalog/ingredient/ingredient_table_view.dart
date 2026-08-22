@@ -93,47 +93,44 @@ class IngredientTableView extends StatelessWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: ListView.builder(
-            padding: EdgeInsets.zero,
-            itemCount: filteredIngredients.length,
-            itemBuilder: (context, index) {
-              final item = filteredIngredients[index];
-
-              String? iconStr;
-              if (catState is CategoryLoaded) {
-                final cat = catState.categories.where((c) => c.id == item.categoryId).firstOrNull;
-                iconStr = cat?.getInheritedIcon(catState.categories);
-              }
-
-              return IngredientItemRow(
-                item: item,
-                categoryIcon: iconStr,
-                currency: currency,
-                isManageMode: isManageMode,
-                isSelected: selectedIngredients.contains(item.id),
-                onSelect: (val) => onToggleSelect(item.id, val == true),
-                onEdit: () => showAddIngredientDialog(context, itemToEdit: item),
-                onDelete: () => _confirmDeleteIngredient(context, item),
-              );
-            },
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: ListView.builder(
+          padding: EdgeInsets.zero,
+          itemCount: filteredIngredients.length,
+          itemBuilder: (context, index) {
+            final item = filteredIngredients[index];
+
+            String? iconStr;
+            if (catState is CategoryLoaded) {
+              final cat = catState.categories.where((c) => c.id == item.categoryId).firstOrNull;
+              iconStr = cat?.getInheritedIcon(catState.categories);
+            }
+
+            return IngredientItemRow(
+              item: item,
+              categoryIcon: iconStr,
+              currency: currency,
+              isManageMode: isManageMode,
+              isSelected: selectedIngredients.contains(item.id),
+              onSelect: (val) => onToggleSelect(item.id, val == true),
+              onEdit: () => showAddIngredientDialog(context, itemToEdit: item),
+              onDelete: () => _confirmDeleteIngredient(context, item),
+            );
+          },
         ),
       ),
     );
