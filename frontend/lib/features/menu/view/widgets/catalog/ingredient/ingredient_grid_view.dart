@@ -42,6 +42,14 @@ class IngredientGridView extends StatelessWidget {
     return result;
   }
 
+  String _formatStock(double val, String unit) {
+    if (val == val.roundToDouble()) {
+      return '${val.toInt()} $unit';
+    }
+    final formatted = val.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return '$formatted $unit';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -90,7 +98,7 @@ class IngredientGridView extends StatelessWidget {
         maxCrossAxisExtent: 260,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 1.08,
+        childAspectRatio: 1.15,
       ),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
@@ -211,11 +219,11 @@ class IngredientGridView extends StatelessWidget {
                       ],
                     ),
 
-                    // Middle Section: Icon (if category has icon) OR Initial + Name
+                    // Middle Section: Icon (if category has icon) OR Initial
                     Center(
                       child: Container(
-                        width: 44,
-                        height: 44,
+                        width: 42,
+                        height: 42,
                         decoration: BoxDecoration(
                           color: (hasIcon ? stockColor : AppColors.brandPrimary).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
@@ -224,13 +232,13 @@ class IngredientGridView extends StatelessWidget {
                         child: hasIcon
                             ? IconHelper.buildIcon(
                                 iconStr,
-                                size: 24,
+                                size: 22,
                                 color: stockColor,
                               )
                             : Text(
                                 item.name.isNotEmpty ? item.name[0].toUpperCase() : '?',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: isDark ? AppColors.darkText : AppColors.lightText,
                                 ),
@@ -265,27 +273,32 @@ class IngredientGridView extends StatelessWidget {
                       ],
                     ),
 
-                    // Bottom Row: Stock Badge + Price
+                    // Bottom Row: Stock Badge + Price (Overflow-Proof)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: stockColor.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            '${item.currentStock} ${item.unit}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: stockColor,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: stockColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              _formatStock(item.currentStock, item.unit),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: stockColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
+                        const SizedBox(width: 6),
                         Text(
-                          '${item.costPerUnit.toStringAsFixed(2)} $currency/${item.unit}',
+                          '${item.costPerUnit.toStringAsFixed(item.costPerUnit.truncateToDouble() == item.costPerUnit ? 0 : 2)} $currency/${item.unit}',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
