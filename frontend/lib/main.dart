@@ -41,41 +41,49 @@ import 'package:mynix_frontend/features/pos/services/pos_sync_service.dart';
 import 'package:mynix_frontend/features/pos/services/lan/local_pos_server.dart';
 import 'package:mynix_frontend/features/settings/services/lan_settings_service.dart';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
 import 'package:device_preview/device_preview.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+
+import 'package:mynix_frontend/core/utils/app_bloc_observer.dart';
 
 /// 📱 ФЛАГ ЭМУЛЯТОРА: Переключите в `true` для тестирования мобильных экранов (iPhone/iPad/Android)
 const bool kEnableDevicePreview = false;
 
 void main() async {
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = 'https://95ba1567f2be41c4645bc1942ff77bd5@o4511875643015168.ingest.de.sentry.io/4511875668050000';
-      options.tracesSampleRate = 1.0;
-      options.attachScreenshot = true;
-    },
-    appRunner: () async {
-      WidgetsFlutterBinding.ensureInitialized();
-      usePathUrlStrategy();
-      
-      // Initialize Hive & Offline Outbox
-      await Hive.initFlutter();
-      Hive.registerAdapter(MenuItemAdapter());
-      Hive.registerAdapter(CartItemAdapter());
+  WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
+  Bloc.observer = AppBlocObserver();
 
-      await PosOutboxService.init();
-      await LanSettingsService.init();
+  // Initialize Hive & Offline Outbox
+  await Hive.initFlutter();
+  Hive.registerAdapter(MenuItemAdapter());
+  Hive.registerAdapter(CartItemAdapter());
 
-      runApp(
-        DevicePreview(
-          enabled: kEnableDevicePreview,
-          builder: (context) => const RetailOSApp(),
-        ),
-      );
-    },
+  await PosOutboxService.init();
+  await LanSettingsService.init();
+
+  final appWidget = DevicePreview(
+    enabled: kEnableDevicePreview,
+    builder: (context) => const RetailOSApp(),
   );
+
+  if (kReleaseMode) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = 'https://95ba1567f2be41c4645bc1942ff77bd5@o4511875643015168.ingest.de.sentry.io/4511875668050000';
+        options.environment = 'production';
+        options.tracesSampleRate = 0.2;
+        options.attachScreenshot = true;
+      },
+      appRunner: () => runApp(appWidget),
+    );
+  } else {
+    runApp(appWidget);
+  }
 }
+
 
 class RetailOSApp extends StatefulWidget {
   const RetailOSApp({super.key});

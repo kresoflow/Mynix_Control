@@ -51,17 +51,20 @@ async def lifespan(app: FastAPI):
 
 # ── Create FastAPI App ───────────────────────────────────────────
 
-try:
-    import sentry_sdk
-
-    sentry_sdk.init(
-        dsn="https://ee579c86969f6643e4786fef0ebd98a6@o4511875643015168.ingest.de.sentry.io/4511875720544336",
-        send_default_pii=True,
-        traces_sample_rate=1.0,
-        profiles_sample_rate=1.0,
-    )
-except ImportError:
-    pass
+if not settings.debug and settings.sentry_dsn:
+    try:
+        import sentry_sdk
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            environment="production",
+            send_default_pii=True,
+            traces_sample_rate=0.2,
+        )
+        print("[Mynix] Sentry active (Production Mode)")
+    except Exception as _e:
+        print(f"[Mynix] Sentry init notice: {_e}")
+else:
+    print("[Mynix] Local Development Mode - Sentry disabled")
 
 app = FastAPI(
     title=settings.app_name,
@@ -74,27 +77,58 @@ app = FastAPI(
 )
 
 # ── Exception Handlers ───────────────────────────────────────────
+import asyncio
+from fastapi import Request
 from fastapi.responses import JSONResponse
 from app.exceptions import AppException
+from app.system.telegram_service import send_error_alert
 
 @app.exception_handler(AppException)
-async def app_exception_handler(request, exc: AppException):
+async def app_exception_handler(request: Request, exc: AppException):
+    if exc.status_code >= 500 and not settings.debug:
+        try:
+            import sentry_sdk
+            sentry_sdk.capture_exception(exc)
+        except Exception:
+            pass
+        asyncio.create_task(
+            send_error_alert(
+                title=f"Application Error [{exc.status_code}]",
+                error=exc.detail,
+                method=request.method,
+                path=request.url.path,
+            )
+        )
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail, "extra": exc.extra},
     )
 
 @app.exception_handler(ValueError)
-async def value_error_handler(request, exc: ValueError):
+async def value_error_handler(request: Request, exc: ValueError):
     return JSONResponse(
         status_code=400,
         content={"detail": str(exc)},
     )
 
 @app.exception_handler(Exception)
-async def generic_exception_handler(request, exc: Exception):
+async def generic_exception_handler(request: Request, exc: Exception):
     import traceback
     traceback.print_exc()
+    if not settings.debug:
+        try:
+            import sentry_sdk
+            sentry_sdk.capture_exception(exc)
+        except Exception:
+            pass
+        asyncio.create_task(
+            send_error_alert(
+                title="Server Internal Error [500]",
+                error=str(exc),
+                method=request.method,
+                path=request.url.path,
+            )
+        )
     return JSONResponse(
         status_code=500,
         content={"detail": f"Internal Server Error: {str(exc)}"},
@@ -130,14 +164,22 @@ app.include_router(crm_router, prefix="/api/v1")
 app.include_router(system_router, prefix="/api/v1/system")
 app.include_router(system_router, prefix="/system")
 app.include_router(integrations_router, prefix="/api/v1")
+app.include_router(integrations_router, prefix="/system")
 app.include_router(ws_router)  # WebSocket at root /ws/kitchen/{tenant_id}
 
 
-# ── Health Check ─────────────────────────────────────────────────
+# ── Health & Diagnostic Routes ───────────────────────────────────
 
 @app.get("/health", tags=["System"])
 async def health_check():
     return {"status": "ok", "service": settings.app_name}
+
+
+@app.get("/api/v1/system/test-error", tags=["System"])
+@app.get("/system/test-error", tags=["System"])
+async def trigger_test_error():
+    """Trigger intentional test error to verify Sentry and Telegram alerts."""
+    raise RuntimeError("🧪 Тестовая ошибка мониторинга Mynix Control")
 
 
 @app.get("/", tags=["System"])
@@ -148,3 +190,4 @@ async def root():
         "docs": "/docs",
         "health": "/health",
     }
+

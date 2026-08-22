@@ -38,5 +38,11 @@ class Settings(BaseSettings):
     # ── System Admin ─────────────────────────────────────────────
     system_admin_token: str = "super_secret_mynix_token_2026"
 
+    # ── Monitoring & Alerting (Sentry & Telegram) ────────────────
+    sentry_dsn: str = "https://ee579c86969f6643e4786fef0ebd98a6@o4511875643015168.ingest.de.sentry.io/4511875720544336"
+    telegram_bot_token: str | None = None
+    telegram_chat_id: str | None = None
+
 
 settings = Settings()
+

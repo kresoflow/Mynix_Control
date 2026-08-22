@@ -1,24 +1,33 @@
-import httpx
+from pydantic import BaseModel
 from fastapi import APIRouter, Request, BackgroundTasks
+from app.system.telegram_service import send_telegram_message, send_error_alert
 
 router = APIRouter(tags=["Integrations"])
 
-TELEGRAM_BOT_TOKEN = "8811624266:AAEKba2stMRaRTLGKrlHo1BjaO1A8SyejZA"
-TELEGRAM_CHAT_ID = "6968300145"
+
+class ClientErrorPayload(BaseModel):
+    bloc: str
+    error: str
+    stack_trace: str | None = None
+    tenant: str | None = None
 
 
-async def send_telegram_message(text: str):
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": text,
-        "parse_mode": "HTML"
-    }
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            await client.post(url, json=payload)
-    except Exception as e:
-        print(f"Failed to send telegram message: {e}")
+@router.post("/system/client-error")
+@router.post("/client-error")
+async def report_client_error(payload: ClientErrorPayload, background_tasks: BackgroundTasks):
+    """
+    Secure proxy for frontend crashes (Flutter Web / Mobile).
+    Safely alerts Telegram without exposing bot tokens on the client.
+    """
+    background_tasks.add_task(
+        send_error_alert,
+        title="Frontend App Crash",
+        error=f"[{payload.bloc}] {payload.error}",
+        method="UI",
+        path="Flutter Client",
+        tenant=payload.tenant,
+    )
+    return {"status": "received"}
 
 
 @router.post("/webhook/sentry")
@@ -49,3 +58,4 @@ async def sentry_webhook(request: Request, background_tasks: BackgroundTasks):
         print(f"Error parsing sentry webhook: {e}")
         
     return {"status": "ok"}
+
