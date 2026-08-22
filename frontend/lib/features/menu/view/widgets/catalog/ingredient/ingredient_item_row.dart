@@ -87,7 +87,8 @@ class IngredientItemRow extends StatelessWidget {
                     child: IconHelper.buildIcon(
                       categoryIcon,
                       color: isLowStock ? AppColors.danger : AppColors.brandPrimary,
-                      size: 24,
+                      size: 22,
+                      fallback: PhosphorIconsRegular.cookingPot,
                     ),
                   ),
 

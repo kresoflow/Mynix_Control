@@ -10,6 +10,7 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_category_sidebar.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_header_bar.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_grid_view.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 
@@ -23,6 +24,7 @@ class IngredientTab extends StatefulWidget {
 class _IngredientTabState extends State<IngredientTab> {
   int? _selectedCategoryId;
   bool _isManageMode = false;
+  bool _isGridView = false;
   final Set<int> _selectedIngredients = {};
   String _searchQuery = '';
 
@@ -83,6 +85,7 @@ class _IngredientTabState extends State<IngredientTab> {
         children: [
           IngredientHeaderBar(
             isManageMode: _isManageMode,
+            isGridView: _isGridView,
             selectedIngredients: _selectedIngredients,
             selectedCategoryId: _selectedCategoryId,
             onToggleManageMode: () => setState(() => _isManageMode = true),
@@ -90,6 +93,7 @@ class _IngredientTabState extends State<IngredientTab> {
               _isManageMode = false;
               _selectedIngredients.clear();
             }),
+            onToggleView: (val) => setState(() => _isGridView = val),
             onSelectAll: () {
               final state = context.read<IngredientBloc>().state;
               if (state is IngredientLoaded) _selectAll(state);
@@ -115,6 +119,15 @@ class _IngredientTabState extends State<IngredientTab> {
                       if (state is IngredientLoading || categoryState is CategoryLoading) {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is IngredientLoaded && categoryState is CategoryLoaded) {
+                        final filteredList = state.ingredients.where((i) {
+                          if (_searchQuery.isEmpty) return true;
+                          final q = _searchQuery.toLowerCase().trim();
+                          return i.name.toLowerCase().contains(q) ||
+                                 '#${i.id}'.contains(q) ||
+                                 '${i.id}' == q ||
+                                 (i.barcode != null && i.barcode!.toLowerCase().contains(q));
+                        }).toList();
+
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -124,28 +137,37 @@ class _IngredientTabState extends State<IngredientTab> {
                               onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
                             ),
                             Expanded(
-                              child: IngredientTableView(
-                                ingredients: state.ingredients.where((i) {
-                                  if (_searchQuery.isEmpty) return true;
-                                  final q = _searchQuery.toLowerCase().trim();
-                                  return i.name.toLowerCase().contains(q) ||
-                                         '#${i.id}'.contains(q) ||
-                                         '${i.id}' == q ||
-                                         (i.barcode != null && i.barcode!.toLowerCase().contains(q));
-                                }).toList(),
-                                selectedCategoryId: _selectedCategoryId,
-                                isManageMode: _isManageMode,
-                                selectedIngredients: _selectedIngredients,
-                                onToggleSelect: (id, sel) {
-                                  setState(() {
-                                    if (sel) {
-                                      _selectedIngredients.add(id);
-                                    } else {
-                                      _selectedIngredients.remove(id);
-                                    }
-                                  });
-                                },
-                              ),
+                              child: _isGridView
+                                  ? IngredientGridView(
+                                      ingredients: filteredList,
+                                      selectedCategoryId: _selectedCategoryId,
+                                      isManageMode: _isManageMode,
+                                      selectedIngredients: _selectedIngredients,
+                                      onToggleSelect: (id, sel) {
+                                        setState(() {
+                                          if (sel) {
+                                            _selectedIngredients.add(id);
+                                          } else {
+                                            _selectedIngredients.remove(id);
+                                          }
+                                        });
+                                      },
+                                    )
+                                  : IngredientTableView(
+                                      ingredients: filteredList,
+                                      selectedCategoryId: _selectedCategoryId,
+                                      isManageMode: _isManageMode,
+                                      selectedIngredients: _selectedIngredients,
+                                      onToggleSelect: (id, sel) {
+                                        setState(() {
+                                          if (sel) {
+                                            _selectedIngredients.add(id);
+                                          } else {
+                                            _selectedIngredients.remove(id);
+                                          }
+                                        });
+                                      },
+                                    ),
                             ),
                           ],
                         );
