@@ -1,6 +1,15 @@
 part of '../inventory_repository.dart';
 
 extension RecipesPart on InventoryRepository {
+  Future<List<Map<String, dynamic>>> getRecipesSummary() async {
+    try {
+      final response = await _dio.get('/recipes/summary');
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      throw Exception('Failed to load recipes summary: ${e.toString()}');
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getRecipe(int menuItemId) async {
     try {
       final response = await _dio.get('/menu/$menuItemId/recipe');

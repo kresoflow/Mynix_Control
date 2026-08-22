@@ -19,10 +19,21 @@ class RecipeEmptyDashboard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final menuState = context.watch<MenuBloc>().state;
     final catState = context.watch<CategoryBloc>().state;
+    final recipeState = context.watch<RecipeBloc>().state;
+    final summaryMap = recipeState.recipesSummary;
 
     final dishes = menuState is MenuLoaded 
         ? menuState.items.where((i) => !i.isRetail).toList() 
         : [];
+
+    final int totalDishes = dishes.length;
+    int configuredCount = 0;
+    for (final d in dishes) {
+      if (summaryMap[d.id]?['has_recipe'] == true) {
+        configuredCount++;
+      }
+    }
+    final int unconfiguredCount = totalDishes - configuredCount;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -82,7 +93,7 @@ class RecipeEmptyDashboard extends StatelessWidget {
               Expanded(
                 child: _buildMetricTile(
                   title: 'Всего блюд кухни',
-                  value: '${dishes.length}',
+                  value: '$totalDishes поз.',
                   icon: PhosphorIconsRegular.hamburger,
                   color: AppColors.brandPrimary,
                   isDark: isDark,
@@ -91,9 +102,9 @@ class RecipeEmptyDashboard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildMetricTile(
-                  title: 'Норма фудкоста (Target)',
-                  value: '28–35%',
-                  icon: PhosphorIconsRegular.target,
+                  title: 'С техкартой',
+                  value: '$configuredCount готово',
+                  icon: PhosphorIconsRegular.checkCircle,
                   color: AppColors.success,
                   isDark: isDark,
                 ),
@@ -101,10 +112,10 @@ class RecipeEmptyDashboard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildMetricTile(
-                  title: 'Автосписание склада',
-                  value: 'Активно',
-                  icon: PhosphorIconsRegular.arrowsClockwise,
-                  color: AppColors.info,
+                  title: 'Требуют техкарты',
+                  value: unconfiguredCount > 0 ? '$unconfiguredCount без состава' : 'Все настроены',
+                  icon: unconfiguredCount > 0 ? PhosphorIconsRegular.warningCircle : PhosphorIconsRegular.checkCircle,
+                  color: unconfiguredCount > 0 ? AppColors.warning : AppColors.success,
                   isDark: isDark,
                 ),
               ),
@@ -136,8 +147,14 @@ class RecipeEmptyDashboard extends StatelessWidget {
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final dish = dishes[index];
+                      final summary = summaryMap[dish.id];
+                      final bool hasRecipe = summary?['has_recipe'] == true;
+                      final double cost = (summary?['total_cost'] as num?)?.toDouble() ?? 0.0;
+                      final double marginPercent = dish.price > 0 && cost > 0
+                          ? ((dish.price - cost) / dish.price) * 100
+                          : 0.0;
 
-                      // Dynamic Icon resolution (dish.icon or category inherited icon)
+                      // Dynamic Icon resolution
                       String? iconStr = dish.icon;
                       if ((iconStr == null || iconStr.isEmpty) && catState is CategoryLoaded) {
                         final cat = catState.categories.where((c) => c.id.toString() == dish.categoryId).firstOrNull;
@@ -190,12 +207,50 @@ class RecipeEmptyDashboard extends StatelessWidget {
                                           color: isDark ? AppColors.darkText : AppColors.lightText,
                                         ),
                                       ),
-                                      Text(
-                                        dish.categoryName ?? 'Без категории',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                        ),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            dish.categoryName ?? 'Без категории',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          if (hasRecipe)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.success.withValues(alpha: 0.12),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                'Себестоимость: ${cost.toStringAsFixed(0)} с (${marginPercent.toStringAsFixed(0)}% маржа)',
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.success,
+                                                ),
+                                              ),
+                                            )
+                                          else
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.warning.withValues(alpha: 0.12),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: const Text(
+                                                '⚠️ Требуется состав',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.warning,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ],
                                   ),

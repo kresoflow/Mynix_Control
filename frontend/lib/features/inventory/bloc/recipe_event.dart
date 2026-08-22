@@ -7,6 +7,8 @@ abstract class RecipeEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class LoadRecipesSummary extends RecipeEvent {}
+
 class LoadRecipe extends RecipeEvent {
   final int menuItemId;
 
@@ -63,7 +65,10 @@ class SaveBulkRecipe extends RecipeEvent {
   final int menuItemId;
   final List<Map<String, dynamic>> recipes;
 
-  const SaveBulkRecipe({required this.menuItemId, required this.recipes});
+  const SaveBulkRecipe({
+    required this.menuItemId,
+    required this.recipes,
+  });
 
   @override
   List<Object?> get props => [menuItemId, recipes];

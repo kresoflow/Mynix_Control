@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'recipe_menu_list.dart';
 import 'recipe_details_panel.dart';
 import 'recipe/recipe_empty_dashboard.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
 
 class RecipeTab extends StatefulWidget {
   const RecipeTab({super.key});
@@ -15,6 +18,12 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
   @override
   bool get wantKeepAlive => true;
   int? _selectedMenuItemId;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<RecipeBloc>().add(LoadRecipesSummary());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +65,14 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
                             });
                           },
                         )
-                      : RecipeDetailsPanel(selectedMenuItemId: _selectedMenuItemId!),
+                      : RecipeDetailsPanel(
+                          selectedMenuItemId: _selectedMenuItemId!,
+                          onBackToSummary: () {
+                            setState(() {
+                              _selectedMenuItemId = null;
+                            });
+                          },
+                        ),
                 ),
               ],
             ),

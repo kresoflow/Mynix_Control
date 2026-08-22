@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
@@ -12,11 +13,17 @@ import 'recipe/recipe_ingredient_item_tile.dart';
 
 class RecipeDetailsPanel extends StatelessWidget {
   final int selectedMenuItemId;
+  final VoidCallback? onBackToSummary;
 
-  const RecipeDetailsPanel({super.key, required this.selectedMenuItemId});
+  const RecipeDetailsPanel({
+    super.key,
+    required this.selectedMenuItemId,
+    this.onBackToSummary,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final menuState = context.watch<MenuBloc>().state;
     final menuItem = menuState is MenuLoaded 
         ? menuState.items.where((i) => i.id == selectedMenuItemId).firstOrNull 
@@ -39,17 +46,67 @@ class RecipeDetailsPanel extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Top Bar: Back to Summary Button + Dish Clean Name
+              Row(
+                children: [
+                  if (onBackToSummary != null) ...[
+                    InkWell(
+                      onTap: onBackToSummary,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(PhosphorIconsRegular.arrowLeft, size: 14, color: isDark ? AppColors.darkText : AppColors.lightText),
+                            const SizedBox(width: 6),
+                            Text(
+                              'К сводке фудкоста',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? AppColors.darkText : AppColors.lightText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    child: Text(
+                      menuItem?.cleanName ?? 'Техкарта блюда',
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // KPI Strip (Cost, Selling Price, Margin)
               RecipeAnalyticsHeader(
                 totalCost: totalCost,
                 price: price,
                 currency: currency,
               ),
+
+              // Ingredients Header Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Ингредиенты (${state.recipes.length})',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   BlocBuilder<IngredientBloc, IngredientState>(
                     builder: (context, ingState) {
@@ -66,14 +123,14 @@ class RecipeDetailsPanel extends StatelessWidget {
                             );
                           }
                         },
-                        icon: const Icon(PhosphorIconsRegular.pencilSimple),
+                        icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 16),
                         label: const Text('Редактировать состав'),
                       );
                     },
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               if (state.recipes.isEmpty)
                 const Expanded(child: Center(child: Text('В техкарте пока нет ингредиентов.'))),
               if (state.recipes.isNotEmpty)
@@ -103,10 +160,8 @@ class RecipeDetailsPanel extends StatelessWidget {
                 ),
             ],
           );
-        } else if (state is RecipeError) {
-          return Center(child: Text('Ошибка: ${state.message}', style: const TextStyle(color: AppColors.danger)));
         }
-        return const Center(child: Text('Загрузка техкарты...'));
+        return const SizedBox.shrink();
       },
     );
   }

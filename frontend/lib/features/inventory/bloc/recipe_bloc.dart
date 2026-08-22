@@ -4,37 +4,50 @@ import 'package:mynix_frontend/features/inventory/repository/inventory_repositor
 import 'recipe_event.dart';
 
 abstract class RecipeState extends Equatable {
-  const RecipeState();
+  final Map<int, Map<String, dynamic>> recipesSummary;
+
+  const RecipeState({this.recipesSummary = const {}});
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [recipesSummary];
 }
 
-class RecipeInitial extends RecipeState {}
+class RecipeInitial extends RecipeState {
+  const RecipeInitial({super.recipesSummary});
+}
 
-class RecipeLoading extends RecipeState {}
+class RecipeLoading extends RecipeState {
+  const RecipeLoading({super.recipesSummary});
+}
 
 class RecipeLoaded extends RecipeState {
-  final int menuItemId;
+  final int? menuItemId;
   final List<Map<String, dynamic>> recipes;
 
-  const RecipeLoaded({required this.menuItemId, required this.recipes});
+  const RecipeLoaded({
+    this.menuItemId,
+    this.recipes = const [],
+    super.recipesSummary,
+  });
 
   @override
-  List<Object?> get props => [menuItemId, recipes];
+  List<Object?> get props => [menuItemId, recipes, recipesSummary];
 }
 
 class RecipeError extends RecipeState {
   final String message;
-  const RecipeError({required this.message});
+
+  const RecipeError({required this.message, super.recipesSummary});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, recipesSummary];
 }
 
 class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   final InventoryRepository repository;
 
-  RecipeBloc(this.repository) : super(RecipeInitial()) {
+  RecipeBloc(this.repository) : super(const RecipeInitial()) {
+    on<LoadRecipesSummary>(_onLoadRecipesSummary);
     on<LoadRecipe>(_onLoadRecipe);
     on<AddIngredientToRecipe>(_onAddIngredient);
     on<RemoveIngredientFromRecipe>(_onRemoveIngredient);
@@ -42,16 +55,48 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     on<SaveBulkRecipe>(_onSaveBulkRecipe);
   }
 
+  Future<void> _onLoadRecipesSummary(
+    LoadRecipesSummary event,
+    Emitter<RecipeState> emit,
+  ) async {
+    try {
+      final summaryList = await repository.getRecipesSummary();
+      final Map<int, Map<String, dynamic>> summaryMap = {
+        for (var item in summaryList) item['menu_item_id'] as int: item,
+      };
+      if (state is RecipeLoaded) {
+        final current = state as RecipeLoaded;
+        emit(RecipeLoaded(
+          menuItemId: current.menuItemId,
+          recipes: current.recipes,
+          recipesSummary: summaryMap,
+        ));
+      } else {
+        emit(RecipeLoaded(
+          menuItemId: null,
+          recipes: const [],
+          recipesSummary: summaryMap,
+        ));
+      }
+    } catch (e) {
+      // Keep existing state on error
+    }
+  }
+
   Future<void> _onLoadRecipe(
     LoadRecipe event,
     Emitter<RecipeState> emit,
   ) async {
-    emit(RecipeLoading());
+    emit(RecipeLoading(recipesSummary: state.recipesSummary));
     try {
       final data = await repository.getRecipe(event.menuItemId);
-      emit(RecipeLoaded(menuItemId: event.menuItemId, recipes: data));
+      emit(RecipeLoaded(
+        menuItemId: event.menuItemId,
+        recipes: data,
+        recipesSummary: state.recipesSummary,
+      ));
     } catch (e) {
-      emit(RecipeError(message: e.toString()));
+      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
     }
   }
 
@@ -66,8 +111,9 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         event.quantity,
       );
       add(LoadRecipe(event.menuItemId));
+      add(LoadRecipesSummary());
     } catch (e) {
-      emit(RecipeError(message: e.toString()));
+      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
     }
   }
 
@@ -81,8 +127,9 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         event.ingredientId,
       );
       add(LoadRecipe(event.menuItemId));
+      add(LoadRecipesSummary());
     } catch (e) {
-      emit(RecipeError(message: e.toString()));
+      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
     }
   }
 
@@ -97,8 +144,9 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         event.quantity,
       );
       add(LoadRecipe(event.menuItemId));
+      add(LoadRecipesSummary());
     } catch (e) {
-      emit(RecipeError(message: e.toString()));
+      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
     }
   }
 
@@ -106,12 +154,12 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     SaveBulkRecipe event,
     Emitter<RecipeState> emit,
   ) async {
-    emit(RecipeLoading());
     try {
       await repository.bulkUpdateRecipe(event.menuItemId, event.recipes);
       add(LoadRecipe(event.menuItemId));
+      add(LoadRecipesSummary());
     } catch (e) {
-      emit(RecipeError(message: e.toString()));
+      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
     }
   }
 }

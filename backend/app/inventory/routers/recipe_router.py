@@ -5,6 +5,10 @@ from app.inventory.services import recipe_service as svc
 
 router = APIRouter(tags=["Recipes"])
 
+@router.get("/recipes/summary", dependencies=[Depends(require_permission("menu:view"))])
+async def get_recipes_summary(session: TenantSession):
+    return await svc.get_all_recipes_summary(session)
+
 @router.get("/menu/{menu_item_id}/recipe", dependencies=[Depends(require_permission("menu:view"))])
 async def get_recipe(menu_item_id: int, session: TenantSession):
     recipe = await svc.get_recipe(session, menu_item_id)

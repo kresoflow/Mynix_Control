@@ -274,3 +274,65 @@ async def test_disabled_inventory_deduction_flag(async_client: AsyncClient, db_s
     # 4. Stock should NOT change
     await db_session.refresh(coffee_beans)
     assert coffee_beans.current_stock == 5.0
+
+@pytest.mark.asyncio
+async def test_get_recipes_summary(async_client: AsyncClient, db_session):
+    """
+    Test: GET /api/v1/inventory/recipes/summary returns correct aggregation.
+    """
+    tenant = Tenant(name="Recipe Summary Cafe", schema_name="public", is_active=True)
+    db_session.add(tenant)
+    await db_session.commit()
+    await db_session.refresh(tenant)
+
+    role = Role(name="Admin", is_superuser=True, tenant_id=tenant.id)
+    db_session.add(role)
+    await db_session.commit()
+    await db_session.refresh(role)
+
+    user = User(tenant_id=tenant.id, username="chef_summary", full_name="Chef", hashed_password="h", is_active=True)
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    user_role = UserRole(user_id=user.id, role_id=role.id)
+    db_session.add(user_role)
+    await db_session.commit()
+
+    token = user_svc.create_access_token(
+        user_id=user.id,
+        tenant_id=tenant.id,
+        permissions=["menu:view"],
+        is_superuser=True,
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+
+    cat = MenuCategory(name="Бургеры", category_type="dish")
+    db_session.add(cat)
+    await db_session.commit()
+    await db_session.refresh(cat)
+
+    meat = Ingredient(name="Мясо", unit="kg", current_stock=10.0, cost_per_unit=50.0)
+    db_session.add(meat)
+    await db_session.commit()
+    await db_session.refresh(meat)
+
+    burger = MenuItem(name="Чизбургер", price=200.0, type="dish", is_available=True, category_id=cat.id)
+    db_session.add(burger)
+    await db_session.commit()
+    await db_session.refresh(burger)
+
+    rec = Recipe(menu_item_id=burger.id, ingredient_id=meat.id, quantity_required=0.2)
+    db_session.add(rec)
+    await db_session.commit()
+
+    resp = await async_client.get("/api/v1/recipes/summary", headers=headers)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) >= 1
+    found = next((x for x in data if x["menu_item_id"] == burger.id), None)
+    assert found is not None
+    assert found["has_recipe"] is True
+    assert found["ingredients_count"] == 1
+    assert found["total_cost"] == 10.0
+

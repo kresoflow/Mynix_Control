@@ -23,6 +23,30 @@ async def get_recipe(session: AsyncSession, menu_item_id: int) -> list[RecipeRea
         for r in recipes
     ]
 
+async def get_all_recipes_summary(session: AsyncSession) -> list[dict]:
+    stmt = select(Recipe).options(selectinload(Recipe.ingredient))
+    result = await session.execute(stmt)
+    recipes = result.scalars().all()
+
+    summary: dict[int, dict] = {}
+    for r in recipes:
+        m_id = r.menu_item_id
+        if m_id not in summary:
+            summary[m_id] = {
+                "menu_item_id": m_id,
+                "ingredients_count": 0,
+                "total_cost": 0.0,
+                "has_recipe": True,
+            }
+        summary[m_id]["ingredients_count"] += 1
+        if r.ingredient and r.ingredient.cost_per_unit:
+            summary[m_id]["total_cost"] += (r.quantity_required * r.ingredient.cost_per_unit)
+
+    for item in summary.values():
+        item["total_cost"] = round(item["total_cost"], 2)
+
+    return list(summary.values())
+
 async def add_ingredient_to_recipe(session: AsyncSession, menu_item_id: int, data: dict) -> Recipe:
     ingredient_id = data["ingredient_id"]
     quantity = data["quantity_required"]
