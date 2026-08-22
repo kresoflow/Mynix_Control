@@ -11,6 +11,7 @@ import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ing
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_header_bar.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_grid_view.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_mini_kpi_bar.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 
@@ -137,37 +138,47 @@ class _IngredientTabState extends State<IngredientTab> {
                               onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
                             ),
                             Expanded(
-                              child: _isGridView
-                                  ? IngredientGridView(
-                                      ingredients: filteredList,
-                                      selectedCategoryId: _selectedCategoryId,
-                                      isManageMode: _isManageMode,
-                                      selectedIngredients: _selectedIngredients,
-                                      onToggleSelect: (id, sel) {
-                                        setState(() {
-                                          if (sel) {
-                                            _selectedIngredients.add(id);
-                                          } else {
-                                            _selectedIngredients.remove(id);
-                                          }
-                                        });
-                                      },
-                                    )
-                                  : IngredientTableView(
-                                      ingredients: filteredList,
-                                      selectedCategoryId: _selectedCategoryId,
-                                      isManageMode: _isManageMode,
-                                      selectedIngredients: _selectedIngredients,
-                                      onToggleSelect: (id, sel) {
-                                        setState(() {
-                                          if (sel) {
-                                            _selectedIngredients.add(id);
-                                          } else {
-                                            _selectedIngredients.remove(id);
-                                          }
-                                        });
-                                      },
-                                    ),
+                              child: Column(
+                                children: [
+                                  // ── Executive Mini-KPI Bar ──────────
+                                  IngredientMiniKpiBar(ingredients: state.ingredients),
+
+                                  // ── Grid or Table View ─────────────
+                                  Expanded(
+                                    child: _isGridView
+                                        ? IngredientGridView(
+                                            ingredients: filteredList,
+                                            selectedCategoryId: _selectedCategoryId,
+                                            isManageMode: _isManageMode,
+                                            selectedIngredients: _selectedIngredients,
+                                            onToggleSelect: (id, sel) {
+                                              setState(() {
+                                                if (sel) {
+                                                  _selectedIngredients.add(id);
+                                                } else {
+                                                  _selectedIngredients.remove(id);
+                                                }
+                                              });
+                                            },
+                                          )
+                                        : IngredientTableView(
+                                            ingredients: filteredList,
+                                            selectedCategoryId: _selectedCategoryId,
+                                            isManageMode: _isManageMode,
+                                            selectedIngredients: _selectedIngredients,
+                                            onToggleSelect: (id, sel) {
+                                              setState(() {
+                                                if (sel) {
+                                                  _selectedIngredients.add(id);
+                                                } else {
+                                                  _selectedIngredients.remove(id);
+                                                }
+                                              });
+                                            },
+                                          ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         );
