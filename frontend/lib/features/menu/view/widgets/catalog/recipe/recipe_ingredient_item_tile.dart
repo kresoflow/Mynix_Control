@@ -3,10 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 
 class RecipeIngredientItemTile extends StatelessWidget {
   final Map<String, dynamic> recipe;
@@ -28,21 +31,50 @@ class RecipeIngredientItemTile extends StatelessWidget {
     final costPerUnit = (recipe['cost_per_unit'] as num?)?.toDouble() ?? 0.0;
     final rowCost = qty * costPerUnit;
 
+    final ingState = context.watch<IngredientBloc>().state;
+    final ing = ingState is IngredientLoaded 
+        ? ingState.ingredients.where((i) => i.id == ingredientId).firstOrNull 
+        : null;
+    final catState = context.watch<CategoryBloc>().state;
+    final cat = (ing != null && catState is CategoryLoaded) 
+        ? catState.categories.where((c) => c.id == ing.categoryId).firstOrNull 
+        : null;
+    final iconStr = (cat != null && catState is CategoryLoaded) 
+        ? cat.getInheritedIcon(catState.categories) 
+        : null;
+    final String ingName = recipe['ingredient_name'] ?? 'Unknown';
+    final String initialLetter = ingName.isNotEmpty ? ingName.characters.first.toUpperCase() : '•';
+
     return Material(
       color: Colors.transparent,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            color: Colors.grey.withValues(alpha: 0.1),
+            color: AppColors.brandPrimary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Icon(PhosphorIconsRegular.cookingPot, color: Colors.grey),
+          alignment: Alignment.center,
+          child: (iconStr != null && iconStr.isNotEmpty)
+              ? IconHelper.buildIcon(
+                  iconStr,
+                  size: 18,
+                  color: AppColors.brandPrimary,
+                )
+              : Text(
+                  initialLetter,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.brandPrimary,
+                  ),
+                ),
         ),
         title: Text(
-          recipe['ingredient_name'] ?? 'Unknown',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ingName,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4.0),
@@ -52,12 +84,12 @@ class RecipeIngredientItemTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 80,
+              width: 90,
               alignment: Alignment.centerRight,
               child: Text(
                 '${rowCost.toStringAsFixed(2)} $currency',
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: AppColors.danger,
                 ),
@@ -107,56 +139,37 @@ class RecipeIngredientItemTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: Icon(PhosphorIconsRegular.trash, color: AppColors.darkSubtext),
-              hoverColor: AppColors.danger.withValues(alpha: 0.1),
-              tooltip: 'Удалить из техкарты',
-              onPressed: () => _confirmRemoveIngredient(
-                context,
-                ingredientId,
-                recipe['ingredient_name'] ?? 'ингредиент',
-              ),
+              icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
+              tooltip: 'Удалить из рецепта',
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => MynixDialog(
+                    title: 'Удаление ингредиента',
+                    icon: PhosphorIconsRegular.trash,
+                    isDestructive: true,
+                    content: Text('Удалить $ingName из рецепта?'),
+                    actions: [
+                      AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+                      AppDangerButton(
+                        label: 'Удалить',
+                        onPressed: () {
+                          context.read<RecipeBloc>().add(
+                            RemoveIngredientFromRecipe(
+                              menuItemId: selectedMenuItemId,
+                              ingredientId: ingredientId,
+                            ),
+                          );
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _confirmRemoveIngredient(BuildContext context, int ingredientId, String name) {
-    showDialog(
-      context: context,
-      builder: (ctx) => MynixDialog(
-        title: 'Удалить из состава?',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Удалить «$name» из состава этого блюда?\nСебестоимость техкарты будет пересчитана автоматически.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkSubtext
-                : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(ctx),
-          ),
-          AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<RecipeBloc>().add(
-                RemoveIngredientFromRecipe(
-                  menuItemId: selectedMenuItemId,
-                  ingredientId: ingredientId,
-                ),
-              );
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
       ),
     );
   }

@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 
 class RecipeEmptyDashboard extends StatelessWidget {
   final ValueChanged<int> onSelectDish;
@@ -16,6 +18,7 @@ class RecipeEmptyDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final menuState = context.watch<MenuBloc>().state;
+    final catState = context.watch<CategoryBloc>().state;
 
     final dishes = menuState is MenuLoaded 
         ? menuState.items.where((i) => !i.isRetail).toList() 
@@ -133,6 +136,18 @@ class RecipeEmptyDashboard extends StatelessWidget {
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final dish = dishes[index];
+
+                      // Dynamic Icon resolution (dish.icon or category inherited icon)
+                      String? iconStr = dish.icon;
+                      if ((iconStr == null || iconStr.isEmpty) && catState is CategoryLoaded) {
+                        final cat = catState.categories.where((c) => c.id.toString() == dish.categoryId).firstOrNull;
+                        iconStr = cat?.getInheritedIcon(catState.categories);
+                      }
+
+                      final String initialLetter = dish.cleanName.isNotEmpty 
+                          ? dish.cleanName.characters.first.toUpperCase() 
+                          : '•';
+
                       return Material(
                         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                         borderRadius: BorderRadius.circular(10),
@@ -154,11 +169,20 @@ class RecipeEmptyDashboard extends StatelessWidget {
                                     shape: BoxShape.circle,
                                   ),
                                   alignment: Alignment.center,
-                                  child: Icon(
-                                    PhosphorIconsRegular.cookingPot,
-                                    size: 16,
-                                    color: AppColors.brandPrimary,
-                                  ),
+                                  child: (iconStr != null && iconStr.isNotEmpty)
+                                      ? IconHelper.buildIcon(
+                                          iconStr,
+                                          size: 16,
+                                          color: AppColors.brandPrimary,
+                                        )
+                                      : Text(
+                                          initialLetter,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.brandPrimary,
+                                          ),
+                                        ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
