@@ -64,29 +64,33 @@ class DocumentsToolbar extends StatelessWidget {
     return Row(
       children: [
         // Filter pills
-        Wrap(
-          spacing: 8.0,
+        Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             _buildPill(context, 'Все', 'all'),
+            const SizedBox(width: 6),
             _buildPill(context, 'Приходы', 'receipt'),
+            const SizedBox(width: 6),
             _buildPill(context, 'Списания', 'write_off'),
+            const SizedBox(width: 6),
             _buildPill(context, 'Инвентаризации', 'inventory'),
           ],
         ),
-        const SizedBox(width: 16),
-        // Search bar
-        Expanded(
-          child: SizedBox(
-            height: 36,
-            child: AppTextField(
-              hintText: 'Поиск по номеру, поставщику, примечанию...',
-              isCompact: true,
-              prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
-              onChanged: onSearchChanged,
-            ),
+        const SizedBox(width: 12),
+
+        // Fixed comfortable width search bar without height constraint overflow
+        SizedBox(
+          width: 260,
+          child: AppTextField(
+            hintText: 'Поиск по номеру, поставщику...',
+            isCompact: true,
+            prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
+            onChanged: onSearchChanged,
           ),
         ),
-        const SizedBox(width: 16),
+
+        const Spacer(),
+
         AppPrimaryButton(
           label: 'Оформить приход',
           icon: PhosphorIconsRegular.truck,
