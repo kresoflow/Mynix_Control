@@ -91,7 +91,6 @@ class _OrderHistoryTabState extends State<OrderHistoryTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final currency = context.watch<SettingsBloc>().state.currency;
 
     return BlocProvider.value(
       value: _ordersBloc,

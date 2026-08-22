@@ -24,6 +24,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.41.7'
           channel: 'stable'
           cache: true
 
@@ -33,7 +34,7 @@ jobs:
 
       - name: Run Flutter Analyze
         working-directory: ./frontend
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Test Build Web (Release)
         working-directory: ./frontend

@@ -19,13 +19,6 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
     context: context,
     builder: (ctx) {
       int parsedCount = 0;
-      
-      void updateCount() {
-        final count = nameController.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).length;
-        if (count != parsedCount) {
-          parsedCount = count;
-        }
-      }
 
       return StatefulBuilder(
         builder: (context, setState) {

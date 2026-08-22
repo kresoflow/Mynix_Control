@@ -92,9 +92,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
