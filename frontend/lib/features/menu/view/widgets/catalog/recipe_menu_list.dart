@@ -224,6 +224,15 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                               final item = data['item'];
                               final isSelected = widget.selectedMenuItemId == item.id;
 
+                              String? iconStr = item.icon;
+                              if ((iconStr == null || iconStr.isEmpty) && catState is CategoryLoaded) {
+                                final cat = catState.categories.where((c) => c.id.toString() == item.categoryId).firstOrNull;
+                                iconStr = cat?.getInheritedIcon(catState.categories);
+                              }
+                              final bool hasIcon = iconStr != null &&
+                                  iconStr.isNotEmpty &&
+                                  (IconHelper.getIcon(iconStr) != null || iconStr.startsWith('svg:'));
+
                               return Material(
                                 color: isSelected
                                     ? AppColors.brandPrimary.withValues(alpha: 0.12)
@@ -249,9 +258,9 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                                     ),
                                     child: Row(
                                       children: [
-                                        if (item.icon != null && item.icon!.isNotEmpty) ...[
+                                        if (hasIcon) ...[
                                           IconHelper.buildIcon(
-                                            item.icon,
+                                            iconStr,
                                             size: 18,
                                             color: isSelected
                                                 ? AppColors.brandPrimary

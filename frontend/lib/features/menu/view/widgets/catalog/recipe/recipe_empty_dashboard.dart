@@ -144,9 +144,9 @@ class RecipeEmptyDashboard extends StatelessWidget {
                         iconStr = cat?.getInheritedIcon(catState.categories);
                       }
 
-                      final String initialLetter = dish.cleanName.isNotEmpty 
-                          ? dish.cleanName.characters.first.toUpperCase() 
-                          : '•';
+                      final bool hasIcon = iconStr != null &&
+                          iconStr.isNotEmpty &&
+                          (IconHelper.getIcon(iconStr) != null || iconStr.startsWith('svg:'));
 
                       return Material(
                         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -161,30 +161,23 @@ class RecipeEmptyDashboard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
+                                if (hasIcon) ...[
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: IconHelper.buildIcon(
+                                      iconStr,
+                                      size: 16,
+                                      color: AppColors.brandPrimary,
+                                    ),
                                   ),
-                                  alignment: Alignment.center,
-                                  child: (iconStr != null && iconStr.isNotEmpty)
-                                      ? IconHelper.buildIcon(
-                                          iconStr,
-                                          size: 16,
-                                          color: AppColors.brandPrimary,
-                                        )
-                                      : Text(
-                                          initialLetter,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.brandPrimary,
-                                          ),
-                                        ),
-                                ),
-                                const SizedBox(width: 12),
+                                  const SizedBox(width: 12),
+                                ],
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,

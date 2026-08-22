@@ -42,36 +42,33 @@ class RecipeIngredientItemTile extends StatelessWidget {
     final iconStr = (cat != null && catState is CategoryLoaded) 
         ? cat.getInheritedIcon(catState.categories) 
         : null;
+
+    final bool hasIcon = iconStr != null &&
+        iconStr.isNotEmpty &&
+        (IconHelper.getIcon(iconStr) != null || iconStr.startsWith('svg:'));
+
     final String ingName = recipe['ingredient_name'] ?? 'Unknown';
-    final String initialLetter = ingName.isNotEmpty ? ingName.characters.first.toUpperCase() : '•';
 
     return Material(
       color: Colors.transparent,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: AppColors.brandPrimary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          alignment: Alignment.center,
-          child: (iconStr != null && iconStr.isNotEmpty)
-              ? IconHelper.buildIcon(
+        leading: hasIcon
+            ? Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: IconHelper.buildIcon(
                   iconStr,
                   size: 18,
                   color: AppColors.brandPrimary,
-                )
-              : Text(
-                  initialLetter,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.brandPrimary,
-                  ),
                 ),
-        ),
+              )
+            : null,
         title: Text(
           ingName,
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
