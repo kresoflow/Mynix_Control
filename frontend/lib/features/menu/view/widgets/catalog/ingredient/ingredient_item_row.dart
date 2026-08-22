@@ -74,7 +74,7 @@ class IngredientItemRow extends StatelessWidget {
                       activeColor: AppColors.brandPrimary,
                     ),
                   )
-                else if (categoryIcon != null && categoryIcon!.isNotEmpty)
+                else if (categoryIcon != null && categoryIcon!.isNotEmpty && (IconHelper.getIcon(categoryIcon) != null || categoryIcon!.startsWith('svg:')))
                   Container(
                     margin: const EdgeInsets.only(right: 16.0),
                     width: 38,

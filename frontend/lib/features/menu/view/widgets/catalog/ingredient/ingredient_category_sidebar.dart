@@ -94,9 +94,8 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
         ? ingState.ingredients.where((i) => !i.isRetail).toList()
         : [];
 
-    return Container(
+    return SizedBox(
       width: 270,
-      margin: const EdgeInsets.only(left: 16, top: 12, bottom: 16, right: 12),
       child: BlocBuilder<CategoryBloc, CategoryState>(
         builder: (context, catState) {
           if (catState is CategoryLoading) {
