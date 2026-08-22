@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/widgets/app_text_field.dart';
 
 class DocumentsToolbar extends StatelessWidget {
@@ -9,9 +8,6 @@ class DocumentsToolbar extends StatelessWidget {
   final ValueChanged<String> onFilterChanged;
   final String searchQuery;
   final ValueChanged<String> onSearchChanged;
-  final VoidCallback onReceiveDocument;
-  final VoidCallback onWriteOff;
-  final VoidCallback onBlindInventory;
 
   const DocumentsToolbar({
     super.key,
@@ -19,9 +15,6 @@ class DocumentsToolbar extends StatelessWidget {
     required this.onFilterChanged,
     required this.searchQuery,
     required this.onSearchChanged,
-    required this.onReceiveDocument,
-    required this.onWriteOff,
-    required this.onBlindInventory,
   });
 
   Widget _buildPill(BuildContext context, String label, String value) {
@@ -76,37 +69,18 @@ class DocumentsToolbar extends StatelessWidget {
             _buildPill(context, 'Инвентаризации', 'inventory'),
           ],
         ),
-        const SizedBox(width: 12),
 
-        // Fixed comfortable width search bar without height constraint overflow
+        const Spacer(),
+
+        // Search bar on the right
         SizedBox(
-          width: 260,
+          width: 280,
           child: AppTextField(
             hintText: 'Поиск по номеру, поставщику...',
             isCompact: true,
             prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
             onChanged: onSearchChanged,
           ),
-        ),
-
-        const Spacer(),
-
-        AppPrimaryButton(
-          label: 'Оформить приход',
-          icon: PhosphorIconsRegular.truck,
-          onPressed: onReceiveDocument,
-        ),
-        const SizedBox(width: 8),
-        AppSecondaryButton(
-          label: 'Списание',
-          icon: PhosphorIconsRegular.trashSimple,
-          onPressed: onWriteOff,
-        ),
-        const SizedBox(width: 8),
-        AppSecondaryButton(
-          label: 'Инвентаризация',
-          icon: PhosphorIconsRegular.clipboardText,
-          onPressed: onBlindInventory,
         ),
       ],
     );

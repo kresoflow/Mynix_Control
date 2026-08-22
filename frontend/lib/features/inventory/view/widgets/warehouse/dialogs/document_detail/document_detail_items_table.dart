@@ -123,7 +123,9 @@ class DocumentDetailItemsTable extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'ИТОГО К ОПЛАТЕ:',
+                doc.type == 'receipt'
+                    ? 'ИТОГО К ОПЛАТЕ:'
+                    : (doc.type == 'write_off' ? 'ИТОГО СПИСАНИЕ:' : 'СТОИМОСТЬ ОСТАТКОВ:'),
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.5,
@@ -134,7 +136,7 @@ class DocumentDetailItemsTable extends StatelessWidget {
                 style: AppTextStyles.h2.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.brandPrimary,
+                  color: doc.type == 'write_off' ? AppColors.danger : AppColors.brandPrimary,
                 ),
               ),
             ],

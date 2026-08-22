@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
@@ -53,13 +55,41 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Журнал складских документов',
-            style: AppTextStyles.h2,
+          // Top Header Line: Title on Left, Action Buttons on Right
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Журнал складских документов',
+                style: AppTextStyles.h2,
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppPrimaryButton(
+                    label: 'Оформить приход',
+                    icon: PhosphorIconsRegular.truck,
+                    onPressed: () => _showReceiveDocumentDialog(context),
+                  ),
+                  const SizedBox(width: 8),
+                  AppSecondaryButton(
+                    label: 'Списание',
+                    icon: PhosphorIconsRegular.trashSimple,
+                    onPressed: () => WriteOffDocumentDialog.show(context),
+                  ),
+                  const SizedBox(width: 8),
+                  AppSecondaryButton(
+                    label: 'Инвентаризация',
+                    icon: PhosphorIconsRegular.clipboardText,
+                    onPressed: () => BlindInventoryDialog.show(context),
+                  ),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 16),
 
-          // Toolbar (Filter Pills + Search Bar + Action Buttons)
+          // Sub Toolbar (Filter Pills + Search Bar)
           DocumentsToolbar(
             selectedFilter: _selectedFilter,
             onFilterChanged: (val) {
@@ -70,9 +100,6 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
             },
             searchQuery: _searchQuery,
             onSearchChanged: (val) => setState(() => _searchQuery = val),
-            onReceiveDocument: () => _showReceiveDocumentDialog(context),
-            onWriteOff: () => WriteOffDocumentDialog.show(context),
-            onBlindInventory: () => BlindInventoryDialog.show(context),
           ),
           const SizedBox(height: 16),
 
