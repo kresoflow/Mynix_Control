@@ -34,7 +34,7 @@ class ShiftHistoryDetailsDialog extends StatelessWidget {
     final ordersCount = shift['orders_count'] ?? 0;
     final itemsCount = shift['items_sold_count'] ?? 0;
     final openedBy = shift['opened_by_name'] ?? 'Не указан';
-    final closedBy = shift['closed_by_name'] ?? (isOpen ? 'Смена еще открыта' : 'Не указан');
+    final closedBy = shift['closed_by_name'] ?? (isOpen ? 'Смена активна' : 'Не указан');
 
     String openedStr = '-';
     if (shift['opened_at'] != null) {
@@ -52,70 +52,76 @@ class ShiftHistoryDetailsDialog extends StatelessWidget {
       title: 'Z-Отчет: Смена #$shiftId',
       icon: PhosphorIconsRegular.receipt,
       width: 480,
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildInfoTile(
-            isDark,
-            [
-              _buildRow('Статус:', isOpen ? '🟢 Активна' : '⚪ Закрыта', isDark, isHighlight: true),
-              _buildRow('Открыта:', openedStr, isDark),
-              _buildRow('Открыл:', openedBy, isDark),
-              if (!isOpen) ...[
-                _buildRow('Закрыта:', closedStr, isDark),
-                _buildRow('Закрыл:', closedBy, isDark),
-              ],
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildInfoTile(
-            isDark,
-            [
-              _buildRow('Размен на начало:', openingCash.toCurrency(context), isDark),
-              _buildRow('Выручка (Наличные):', cashSales.toCurrency(context), isDark),
-              _buildRow('Выручка (Переводы):', transferSales.toCurrency(context), isDark),
-              const Divider(height: 14),
-              _buildRow('ИТОГО ВЫРУЧКА:', totalRev.toCurrency(context), isDark, isBold: true, color: AppColors.brandPrimary),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildInfoTile(
-            isDark,
-            [
-              _buildRow('Всего чеков:', '$ordersCount шт.', isDark),
-              _buildRow('Продано позиций:', '$itemsCount шт.', isDark, isBold: true),
-              _buildRow(
-                'Средний чек:',
-                ordersCount > 0 ? (totalRev / ordersCount).toCurrency(context) : '0 с',
+      content: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildInfoTile(
                 isDark,
+                [
+                  _buildStatusRow(isOpen, isDark),
+                  _buildRow('Открыта:', openedStr, isDark),
+                  _buildRow('Открыл:', openedBy, isDark, icon: PhosphorIconsRegular.user),
+                  if (!isOpen) ...[
+                    _buildRow('Закрыта:', closedStr, isDark),
+                    _buildRow('Закрыл:', closedBy, isDark, icon: PhosphorIconsRegular.userCheck),
+                  ],
+                ],
               ),
-            ],
-          ),
-          if (!isOpen && expectedCash != null) ...[
-            const SizedBox(height: 12),
-            _buildInfoTile(
-              isDark,
-              [
-                _buildRow('Ожидалось в кассе:', expectedCash.toCurrency(context), isDark),
-                if (actualCash != null)
-                  _buildRow('Фактически в кассе:', actualCash.toCurrency(context), isDark),
-                if (diff != null) ...[
-                  const Divider(height: 14),
+              const SizedBox(height: 10),
+              _buildInfoTile(
+                isDark,
+                [
+                  _buildRow('Размен на начало:', openingCash.toCurrency(context), isDark),
+                  _buildRow('Выручка (Наличные):', cashSales.toCurrency(context), isDark, icon: PhosphorIconsRegular.money),
+                  _buildRow('Выручка (Переводы):', transferSales.toCurrency(context), isDark, icon: PhosphorIconsRegular.creditCard),
+                  const Divider(height: 12),
                   _buildRow(
-                    'Результат кассы:',
-                    diff == 0
-                        ? '✓ Точно (0 с)'
-                        : (diff < 0 ? 'Недостача: ${diff.toCurrency(context)}' : 'Излишек: +${diff.toCurrency(context)}'),
+                    'ИТОГО ВЫРУЧКА:',
+                    totalRev.toCurrency(context),
                     isDark,
                     isBold: true,
-                    color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
+                    color: AppColors.brandPrimary,
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              _buildInfoTile(
+                isDark,
+                [
+                  _buildRow('Всего чеков:', '$ordersCount шт.', isDark),
+                  _buildRow('Продано позиций:', '$itemsCount шт.', isDark, isBold: true),
+                  _buildRow(
+                    'Средний чек:',
+                    ordersCount > 0 ? (totalRev / ordersCount).toCurrency(context) : '0 с',
+                    isDark,
+                  ),
+                ],
+              ),
+              if (!isOpen && expectedCash != null) ...[
+                const SizedBox(height: 10),
+                _buildInfoTile(
+                  isDark,
+                  [
+                    _buildRow('Ожидалось в кассе:', expectedCash.toCurrency(context), isDark),
+                    if (actualCash != null)
+                      _buildRow('Фактически в кассе:', actualCash.toCurrency(context), isDark),
+                    if (diff != null) ...[
+                      const Divider(height: 12),
+                      _buildDiscrepancyRow(diff, isDark, context),
+                    ],
+                  ],
+                ),
               ],
-            ),
-          ],
-        ],
+            ],
+          ),
+        ),
       ),
       actions: [
         AppButton.primary(
@@ -124,6 +130,92 @@ class ShiftHistoryDetailsDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ],
+    );
+  }
+
+  Widget _buildStatusRow(bool isOpen, bool isDark) {
+    final color = isOpen ? AppColors.success : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Статус:',
+            style: AppTextStyles.caption.copyWith(
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              fontSize: 12,
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                isOpen ? 'Активна' : 'Закрыта',
+                style: AppTextStyles.caption.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiscrepancyRow(double diff, bool isDark, BuildContext context) {
+    final color = diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning);
+    final text = diff == 0 ? 'Точно (0 с)' : (diff < 0 ? 'Недостача: ${diff.toCurrency(context)}' : 'Излишек: +${diff.toCurrency(context)}');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Результат кассы:',
+            style: AppTextStyles.caption.copyWith(
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              fontSize: 12,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  diff == 0 ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.warningCircle,
+                  size: 13,
+                  color: color,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -143,25 +235,46 @@ class ShiftHistoryDetailsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String label, String value, bool isDark, {bool isBold = false, bool isHighlight = false, Color? color}) {
+  Widget _buildRow(
+    String label,
+    String value,
+    bool isDark, {
+    bool isBold = false,
+    Color? color,
+    IconData? icon,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: AppTextStyles.caption.copyWith(
-              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              fontSize: 12,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 13, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-          Text(
-            value,
-            style: AppTextStyles.caption.copyWith(
-              color: color ?? (isDark ? AppColors.darkText : AppColors.lightText),
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-              fontSize: isBold ? 13 : 12,
+          Flexible(
+            child: Text(
+              value,
+              style: AppTextStyles.caption.copyWith(
+                color: color ?? (isDark ? AppColors.darkText : AppColors.lightText),
+                fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+                fontSize: isBold ? 13 : 12,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
             ),
           ),
         ],
