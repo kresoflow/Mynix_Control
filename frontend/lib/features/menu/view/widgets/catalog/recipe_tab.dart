@@ -33,8 +33,9 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 2,
+                // Left sidebar: compact 270px width
+                SizedBox(
+                  width: 270,
                   child: RecipeMenuList(
                     selectedMenuItemId: _selectedMenuItemId,
                     onMenuItemSelected: (id) {
@@ -45,8 +46,8 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
                   ),
                 ),
                 const SizedBox(width: 16),
+                // Right panel: Expanded to take full remaining width
                 Expanded(
-                  flex: 3,
                   child: _selectedMenuItemId == null
                       ? RecipeEmptyDashboard(
                           onSelectDish: (id) {

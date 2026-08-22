@@ -8,6 +8,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 class IngredientCategoryNode extends StatefulWidget {
   final MenuCategory category;
   final List<MenuCategory> allCategories;
+  final int itemCount;
   final int level;
   final int? selectedCategoryId;
   final bool isManageMode;
@@ -19,6 +20,7 @@ class IngredientCategoryNode extends StatefulWidget {
     super.key,
     required this.category,
     required this.allCategories,
+    required this.itemCount,
     required this.level,
     required this.selectedCategoryId,
     required this.isManageMode,
@@ -74,27 +76,32 @@ class _IngredientCategoryNodeState extends State<IngredientCategoryNode> with Si
 
     final Widget trailingWidget = widget.isManageMode
         ? IconButton(
-            icon: const Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
+            icon: const Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
             tooltip: 'Удалить категорию',
             onPressed: () => widget.onDelete(widget.category),
           )
-        : PopupMenuButton<String>(
-            icon: Icon(
-              PhosphorIconsRegular.dotsThreeVertical,
-              size: 18,
-              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+        : SizedBox(
+            width: 20,
+            height: 20,
+            child: PopupMenuButton<String>(
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                PhosphorIconsRegular.dotsThreeVertical,
+                size: 14,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
+              onSelected: (val) {
+                if (val == 'edit') {
+                  showAddCategoryDialog(context, itemToEdit: widget.category);
+                } else if (val == 'delete') {
+                  widget.onDelete(widget.category);
+                }
+              },
+              itemBuilder: (ctx) => [
+                const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
+                const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
+              ],
             ),
-            onSelected: (val) {
-              if (val == 'edit') {
-                showAddCategoryDialog(context, itemToEdit: widget.category);
-              } else if (val == 'delete') {
-                widget.onDelete(widget.category);
-              }
-            },
-            itemBuilder: (ctx) => [
-              const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-              const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
-            ],
           );
 
     return Column(
@@ -103,40 +110,57 @@ class _IngredientCategoryNodeState extends State<IngredientCategoryNode> with Si
       children: [
         Material(
           color: isSelected
-              ? AppColors.brandPrimary.withValues(alpha: 0.15)
+              ? AppColors.brandPrimary.withValues(alpha: 0.12)
               : Colors.transparent,
           child: InkWell(
             onTap: () => widget.onCategorySelected(widget.category.id),
-            child: Padding(
+            child: Container(
               padding: EdgeInsets.only(
-                left: 16.0 + (widget.level * 16.0),
+                left: 12.0 + (widget.level * 12.0),
                 right: 8.0,
-                top: 4.0,
-                bottom: 4.0,
+                top: 8.0,
+                bottom: 8.0,
+              ),
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: isSelected ? AppColors.brandPrimary : Colors.transparent,
+                    width: 3,
+                  ),
+                  bottom: BorderSide(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    width: 0.5,
+                  ),
+                ),
               ),
               child: Row(
                 children: [
                   if (hasChildren)
-                    IconButton(
-                      icon: Icon(
-                        _isExpanded ? PhosphorIconsRegular.caretDown : PhosphorIconsRegular.caretRight,
-                        size: 14,
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    InkWell(
+                      onTap: () => setState(() => _isExpanded = !_isExpanded),
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: AnimatedRotation(
+                          turns: _isExpanded ? 0.25 : 0.0,
+                          duration: const Duration(milliseconds: 150),
+                          child: Icon(
+                            PhosphorIconsRegular.caretRight,
+                            size: 12,
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          ),
+                        ),
                       ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () => setState(() => _isExpanded = !_isExpanded),
                     )
                   else
-                    const SizedBox(width: 14),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 4),
 
                   if (widget.category.icon != null && widget.category.icon!.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: const EdgeInsets.only(right: 6.0, left: 2.0),
                       child: IconHelper.buildIcon(
                         widget.category.icon,
-                        size: 16,
+                        size: 14,
                         color: isSelected
                             ? AppColors.brandPrimary
                             : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
@@ -147,16 +171,34 @@ class _IngredientCategoryNodeState extends State<IngredientCategoryNode> with Si
                     child: Text(
                       widget.category.name,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                         color: isSelected
-                            ? AppColors.brandPrimary
+                            ? (isDark ? AppColors.darkText : AppColors.lightText)
                             : (isDark ? AppColors.darkText : AppColors.lightText),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+
+                  if (widget.itemCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '${widget.itemCount}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                        ),
+                      ),
+                    ),
 
                   trailingWidget,
                 ],
@@ -168,6 +210,7 @@ class _IngredientCategoryNodeState extends State<IngredientCategoryNode> with Si
           ...children.map((child) => IngredientCategoryNode(
                 category: child,
                 allCategories: widget.allCategories,
+                itemCount: widget.itemCount,
                 level: widget.level + 1,
                 selectedCategoryId: widget.selectedCategoryId,
                 isManageMode: widget.isManageMode,

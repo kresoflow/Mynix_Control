@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -84,14 +85,19 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ingState = context.watch<IngredientBloc>().state;
+    final ingredients = ingState is IngredientLoaded
+        ? ingState.ingredients.where((i) => !i.isRetail).toList()
+        : [];
 
     return Container(
-      width: 250,
+      width: 220,
+      margin: const EdgeInsets.only(left: 16, top: 12, bottom: 16, right: 12),
       decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-          ),
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
       ),
       child: BlocBuilder<CategoryBloc, CategoryState>(
@@ -107,98 +113,155 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
             final rootCategories = ingredientCategories.where((c) => c.parentId == null).toList();
             final hasSubcategories = ingredientCategories.any((c) => c.parentId != null);
 
-            return Column(
-              children: [
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    children: [
-                      ListTile(
-                        title: Text(
-                          'Все сырье',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: widget.selectedCategoryId == null 
-                                ? AppColors.brandPrimary 
-                                : (isDark ? AppColors.darkText : AppColors.lightText),
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Column(
+                children: [
+                  // ── Top Header: All Ingredients ─────────────────────
+                  Material(
+                    color: widget.selectedCategoryId == null
+                        ? AppColors.brandPrimary.withValues(alpha: 0.12)
+                        : (isDark ? const Color(0xFF161B26) : const Color(0xFFF1F5F9)),
+                    child: InkWell(
+                      onTap: () => widget.onCategorySelected(null),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: widget.selectedCategoryId == null ? AppColors.brandPrimary : Colors.transparent,
+                              width: 3,
+                            ),
+                            bottom: BorderSide(
+                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                              width: 1,
+                            ),
                           ),
                         ),
-                        trailing: hasSubcategories
-                            ? InkWell(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'ВСЕ СЫРЬЕ',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                  color: widget.selectedCategoryId == null 
+                                      ? AppColors.brandPrimary 
+                                      : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${ingredients.length}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                ),
+                              ),
+                            ),
+                            if (hasSubcategories) ...[
+                              const SizedBox(width: 6),
+                              InkWell(
                                 onTap: () => setState(() => _forceExpanded = !(_forceExpanded ?? false)),
                                 borderRadius: BorderRadius.circular(4),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Icon(
-                                    (_forceExpanded == true)
-                                        ? PhosphorIconsRegular.caretUp
-                                        : PhosphorIconsRegular.caretDown,
-                                    size: 16,
-                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                  ),
+                                child: Icon(
+                                  (_forceExpanded == true)
+                                      ? PhosphorIconsRegular.caretUp
+                                      : PhosphorIconsRegular.caretDown,
+                                  size: 14,
+                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                                 ),
-                              )
-                            : null,
-                        selected: widget.selectedCategoryId == null,
-                        selectedTileColor: AppColors.brandPrimary.withValues(alpha: 0.1),
-                        onTap: () => widget.onCategorySelected(null),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
-                      const Divider(),
-                      ...rootCategories.map((rootCat) => IngredientCategoryNode(
+                    ),
+                  ),
+
+                  // ── Category List ───────────────────────────────────
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        ...rootCategories.map((rootCat) {
+                          final count = ingredients.where((i) => i.categoryId == rootCat.id).length;
+                          return IngredientCategoryNode(
                             category: rootCat,
                             allCategories: ingredientCategories,
+                            itemCount: count,
                             level: 0,
                             selectedCategoryId: widget.selectedCategoryId,
                             isManageMode: widget.isManageMode,
                             forceExpanded: _forceExpanded,
                             onCategorySelected: widget.onCategorySelected,
                             onDelete: (cat) => _confirmDeleteCategory(context, cat),
-                          )),
-                    ],
+                          );
+                        }),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            showAddCategoryDialog(context, type: 'ingredient');
-                          },
-                          icon: const Icon(PhosphorIconsRegular.folderPlus),
-                          label: const Text('Создать категорию'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+
+                  // ── Bottom Create Category Button ───────────────────
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                          width: 0.5,
                         ),
                       ),
-                      if (widget.isManageMode && ingredientCategories.isNotEmpty) ...[
-                        const SizedBox(height: 8),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         SizedBox(
                           width: double.infinity,
-                          child: TextButton.icon(
-                            onPressed: () => _confirmDeleteAllCategories(context, ingredientCategories),
-                            icon: const Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
-                            label: Text(
-                              'Удалить все полки (${ingredientCategories.length})',
-                              style: const TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.w600),
-                            ),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 10),
+                          height: 34,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              showAddCategoryDialog(context, type: 'ingredient');
+                            },
+                            icon: const Icon(PhosphorIconsRegular.folderPlus, size: 14),
+                            label: const Text('Создать полку', style: TextStyle(fontSize: 12)),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                           ),
                         ),
+                        if (widget.isManageMode && ingredientCategories.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 30,
+                            child: TextButton.icon(
+                              onPressed: () => _confirmDeleteAllCategories(context, ingredientCategories),
+                              icon: const Icon(PhosphorIconsRegular.trash, size: 14, color: AppColors.danger),
+                              label: Text(
+                                'Удалить все (${ingredientCategories.length})',
+                                style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           }
           return const SizedBox();
