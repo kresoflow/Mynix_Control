@@ -3,10 +3,12 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select, func
+from sqlalchemy import case
 
 from app.pos.models import (
-    Shift, CashTransaction, CashTransactionType, Order, PaymentMethod, OrderStatus
+    Shift, CashTransaction, CashTransactionType, Order, OrderItem, PaymentMethod, OrderStatus
 )
+from app.users.models import User
 
 
 async def get_open_shift(
@@ -120,8 +122,8 @@ async def get_x_report(
     shift_id: int,
 ) -> dict:
     """
-    Generate X-Report statistics for a shift.
-    Includes revenue by payment method (cash vs transfer), expected cash, orders count, average check.
+    Generate X/Z-Report statistics for any shift.
+    Includes revenue by payment method, expected cash, employee names, orders and items sold count.
     """
     stmt_shift = select(Shift).where(Shift.id == shift_id)
     res_shift = await session.execute(stmt_shift)
@@ -155,6 +157,19 @@ async def get_x_report(
     res_count = await session.execute(stmt_count)
     orders_count = int(res_count.scalar() or 0)
 
+    # Total Items Sold Count
+    stmt_items = (
+        select(func.coalesce(func.sum(OrderItem.quantity), 0))
+        .select_from(OrderItem)
+        .join(Order, Order.id == OrderItem.order_id)
+        .where(
+            Order.shift_id == shift_id,
+            Order.status != OrderStatus.CANCELLED.value,
+        )
+    )
+    res_items = await session.execute(stmt_items)
+    items_sold_count = int(res_items.scalar() or 0)
+
     # Cancelled Orders Count
     stmt_cancelled = select(func.count(Order.id)).where(
         Order.shift_id == shift_id,
@@ -177,19 +192,38 @@ async def get_x_report(
     # Expected Cash in drawer unified with calculate_expected_cash
     expected_cash = await calculate_expected_cash(session, shift.id, shift.opening_cash)
 
+    # Fetch User Names
+    user_ids = [uid for uid in (shift.opened_by, shift.closed_by) if uid]
+    users_map = {}
+    if user_ids:
+        res_users = await session.execute(
+            select(User.id, User.full_name, User.username).where(User.id.in_(user_ids))
+        )
+        for uid, full_name, username in res_users.all():
+            users_map[uid] = full_name or f"@{username}"
+
     return {
         "shift_id": shift.id,
         "is_open": shift.is_open,
         "opened_at": shift.opened_at.isoformat() if shift.opened_at else None,
+        "closed_at": shift.closed_at.isoformat() if shift.closed_at else None,
+        "opened_by": shift.opened_by,
+        "opened_by_name": users_map.get(shift.opened_by, f"Сотрудник #{shift.opened_by}"),
+        "closed_by": shift.closed_by,
+        "closed_by_name": users_map.get(shift.closed_by, f"Сотрудник #{shift.closed_by}") if shift.closed_by else None,
         "opening_cash": shift.opening_cash,
         "cash_sales": cash_sales,
         "transfer_sales": transfer_sales,
         "total_revenue": round(total_revenue, 2),
         "orders_count": orders_count,
+        "items_sold_count": items_sold_count,
         "cancelled_count": cancelled_count,
         "average_check": avg_check,
         "cash_expenses": cash_expenses,
         "expected_cash": expected_cash,
+        "closing_cash_actual": shift.closing_cash_actual,
+        "closing_cash_expected": shift.closing_cash_expected,
+        "discrepancy": shift.discrepancy,
     }
 
 
@@ -198,7 +232,7 @@ async def get_shifts_history(
     limit: int = 50,
     offset: int = 0,
 ) -> list[dict]:
-    """Retrieve history of past and current shifts with revenue and discrepancy metrics in 2 queries."""
+    """Retrieve history of past and current shifts with revenue, items sold, employee names, and discrepancy."""
     stmt_shifts = (
         select(Shift)
         .order_by(Shift.id.desc())
@@ -212,11 +246,17 @@ async def get_shifts_history(
 
     shift_ids = [s.id for s in shifts]
 
-    # Aggregated metrics for all shifts in a single query (prevents N+1)
+    # Query 1: Orders and Revenue breakdown per shift
     stmt_sales = (
         select(
             Order.shift_id,
             func.coalesce(func.sum(Order.total), 0).label("total_rev"),
+            func.coalesce(
+                func.sum(case((Order.payment_method == PaymentMethod.CASH.value, Order.total), else_=0)), 0
+            ).label("cash_sales"),
+            func.coalesce(
+                func.sum(case((Order.payment_method.in_([PaymentMethod.TRANSFER.value, PaymentMethod.CARD.value]), Order.total), else_=0)), 0
+            ).label("transfer_sales"),
             func.count(Order.id).label("orders_count"),
         )
         .where(
@@ -226,25 +266,74 @@ async def get_shifts_history(
         .group_by(Order.shift_id)
     )
     res_sales = await session.execute(stmt_sales)
-    sales_map = {row[0]: (float(row[1]), int(row[2])) for row in res_sales.all()}
+    sales_map = {
+        row[0]: {
+            "total_rev": float(row[1]),
+            "cash_sales": float(row[2]),
+            "transfer_sales": float(row[3]),
+            "orders_count": int(row[4]),
+        }
+        for row in res_sales.all()
+    }
+
+    # Query 2: Items sold count per shift
+    stmt_items = (
+        select(
+            Order.shift_id,
+            func.coalesce(func.sum(OrderItem.quantity), 0).label("items_count"),
+        )
+        .select_from(OrderItem)
+        .join(Order, Order.id == OrderItem.order_id)
+        .where(
+            Order.shift_id.in_(shift_ids),
+            Order.status != OrderStatus.CANCELLED.value,
+        )
+        .group_by(Order.shift_id)
+    )
+    res_items = await session.execute(stmt_items)
+    items_map = {row[0]: int(row[1]) for row in res_items.all()}
+
+    # Query 3: Employee names
+    user_ids = set()
+    for s in shifts:
+        if s.opened_by:
+            user_ids.add(s.opened_by)
+        if s.closed_by:
+            user_ids.add(s.closed_by)
+
+    users_map = {}
+    if user_ids:
+        res_users = await session.execute(
+            select(User.id, User.full_name, User.username).where(User.id.in_(user_ids))
+        )
+        for uid, full_name, username in res_users.all():
+            users_map[uid] = full_name or f"@{username}"
 
     history = []
     for shift in shifts:
-        total_rev, cnt = sales_map.get(shift.id, (0.0, 0))
+        s_data = sales_map.get(
+            shift.id,
+            {"total_rev": 0.0, "cash_sales": 0.0, "transfer_sales": 0.0, "orders_count": 0}
+        )
+        items_cnt = items_map.get(shift.id, 0)
         history.append({
             "id": shift.id,
             "is_open": shift.is_open,
             "opened_at": shift.opened_at.isoformat() if shift.opened_at else None,
             "closed_at": shift.closed_at.isoformat() if shift.closed_at else None,
             "opened_by": shift.opened_by,
+            "opened_by_name": users_map.get(shift.opened_by, f"Сотрудник #{shift.opened_by}"),
             "closed_by": shift.closed_by,
+            "closed_by_name": users_map.get(shift.closed_by, f"Сотрудник #{shift.closed_by}") if shift.closed_by else None,
             "opening_cash": shift.opening_cash,
-            "total_revenue": round(total_rev, 2),
-            "orders_count": cnt,
+            "total_revenue": round(s_data["total_rev"], 2),
+            "cash_sales": round(s_data["cash_sales"], 2),
+            "transfer_sales": round(s_data["transfer_sales"], 2),
+            "orders_count": s_data["orders_count"],
+            "items_sold_count": items_cnt,
             "closing_cash_expected": shift.closing_cash_expected,
             "closing_cash_actual": shift.closing_cash_actual,
             "discrepancy": shift.discrepancy,
         })
 
     return history
-

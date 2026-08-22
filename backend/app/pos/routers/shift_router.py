@@ -166,3 +166,20 @@ async def api_shifts_history(
     history = await get_shifts_history(session, limit=limit, offset=offset)
     return {"history": history, "total": len(history)}
 
+
+@router.get(
+    "/shifts/{shift_id}/details",
+    dependencies=[Depends(require_permission("shifts:view"))],
+)
+async def api_shift_details(
+    shift_id: int,
+    current_user: CurrentUser,
+    session: TenantSession,
+):
+    """Retrieve full detailed Z-report for any specific past shift."""
+    try:
+        report = await get_x_report(session, shift_id)
+        return report
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
