@@ -85,12 +85,12 @@ class IngredientGridView extends StatelessWidget {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 240,
-        mainAxisSpacing: 14,
-        crossAxisSpacing: 14,
-        childAspectRatio: 0.9,
+        maxCrossAxisExtent: 260,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.08,
       ),
       itemCount: filtered.length,
       itemBuilder: (context, index) {
@@ -104,6 +104,7 @@ class IngredientGridView extends StatelessWidget {
           if (cat != null) catName = cat.name;
         }
 
+        final hasIcon = iconStr != null && iconStr.isNotEmpty;
         final isLow = item.isLowStock;
         final isCritical = item.currentStock <= 0;
         final stockColor = isCritical ? AppColors.danger : (isLow ? AppColors.warning : AppColors.success);
@@ -128,11 +129,12 @@ class IngredientGridView extends StatelessWidget {
                   ? () => onToggleSelect(item.id, !isSelected)
                   : () => showAddIngredientDialog(context, itemToEdit: item),
               child: Padding(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Top Row: Code Badge + Checkbox / Actions
+                    // Top Row: Code Badge + Actions / Checkbox
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -155,99 +157,115 @@ class IngredientGridView extends StatelessWidget {
                           ),
                         ),
                         if (isManageMode)
-                          Checkbox(
-                            value: isSelected,
-                            onChanged: (val) => onToggleSelect(item.id, val == true),
-                            activeColor: AppColors.brandPrimary,
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Checkbox(
+                              value: isSelected,
+                              onChanged: (val) => onToggleSelect(item.id, val == true),
+                              activeColor: AppColors.brandPrimary,
+                            ),
                           )
                         else
-                          PopupMenuButton<String>(
-                            icon: Icon(
-                              PhosphorIconsRegular.dotsThreeVertical,
-                              size: 18,
-                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: PopupMenuButton<String>(
+                              padding: EdgeInsets.zero,
+                              icon: Icon(
+                                PhosphorIconsRegular.dotsThreeVertical,
+                                size: 16,
+                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                              ),
+                              onSelected: (val) {
+                                if (val == 'edit') {
+                                  showAddIngredientDialog(context, itemToEdit: item);
+                                } else if (val == 'delete') {
+                                  _confirmDelete(context, item);
+                                }
+                              },
+                              itemBuilder: (ctx) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(PhosphorIconsRegular.pencilSimple, size: 16),
+                                      SizedBox(width: 8),
+                                      Text('Редактировать'),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
+                                      SizedBox(width: 8),
+                                      Text('Удалить', style: TextStyle(color: AppColors.danger)),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            onSelected: (val) {
-                              if (val == 'edit') {
-                                showAddIngredientDialog(context, itemToEdit: item);
-                              } else if (val == 'delete') {
-                                _confirmDelete(context, item);
-                              }
-                            },
-                            itemBuilder: (ctx) => [
-                              const PopupMenuItem(
-                                value: 'edit',
-                                child: Row(
-                                  children: [
-                                    Icon(PhosphorIconsRegular.pencilSimple, size: 16),
-                                    SizedBox(width: 8),
-                                    Text('Редактировать'),
-                                  ],
-                                ),
-                              ),
-                              const PopupMenuItem(
-                                value: 'delete',
-                                child: Row(
-                                  children: [
-                                    Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
-                                    SizedBox(width: 8),
-                                    Text('Удалить', style: TextStyle(color: AppColors.danger)),
-                                  ],
-                                ),
-                              ),
-                            ],
                           ),
                       ],
                     ),
 
-                    const Spacer(),
-
-                    // Center: Category Icon
+                    // Middle Section: Icon (if category has icon) OR Initial + Name
                     Center(
                       child: Container(
-                        width: 48,
-                        height: 48,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: stockColor.withValues(alpha: 0.12),
+                          color: (hasIcon ? stockColor : AppColors.brandPrimary).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         alignment: Alignment.center,
-                        child: IconHelper.buildIcon(
-                          iconStr,
-                          size: 26,
-                          color: stockColor,
-                          fallback: PhosphorIconsRegular.cookingPot,
+                        child: hasIcon
+                            ? IconHelper.buildIcon(
+                                iconStr,
+                                size: 24,
+                                color: stockColor,
+                              )
+                            : Text(
+                                item.name.isNotEmpty ? item.name[0].toUpperCase() : '?',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                                ),
+                              ),
+                      ),
+                    ),
+
+                    // Name & Category Subtitle
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.name,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                        const SizedBox(height: 1),
+                        Text(
+                          catName,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
 
-                    const Spacer(),
-
-                    // Name & Category
-                    Text(
-                      item.name,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.darkText : AppColors.lightText,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      catName,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Bottom Row: Stock Badge & Cost
+                    // Bottom Row: Stock Badge + Price
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

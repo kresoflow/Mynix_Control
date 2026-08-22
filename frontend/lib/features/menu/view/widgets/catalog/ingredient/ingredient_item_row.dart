@@ -74,11 +74,11 @@ class IngredientItemRow extends StatelessWidget {
                       activeColor: AppColors.brandPrimary,
                     ),
                   )
-                else
+                else if (categoryIcon != null && categoryIcon!.isNotEmpty)
                   Container(
                     margin: const EdgeInsets.only(right: 16.0),
-                    width: 40,
-                    height: 40,
+                    width: 38,
+                    height: 38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: (isLowStock ? AppColors.danger : AppColors.brandPrimary).withValues(alpha: 0.1),
@@ -88,7 +88,6 @@ class IngredientItemRow extends StatelessWidget {
                       categoryIcon,
                       color: isLowStock ? AppColors.danger : AppColors.brandPrimary,
                       size: 22,
-                      fallback: PhosphorIconsRegular.cookingPot,
                     ),
                   ),
 
