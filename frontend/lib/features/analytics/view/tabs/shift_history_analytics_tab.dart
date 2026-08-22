@@ -194,15 +194,18 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
 
           // ── Table Column Headers (CRM Style) ────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                const SizedBox(width: 52), // Space for avatar badge
-                Expanded(flex: 3, child: _buildHeaderLabel('СМЕНА / КАССИР', isDark)),
-                Expanded(flex: 2, child: _buildHeaderLabel('РАЗМЕН / ПРОДАЖИ', isDark)),
+                const SizedBox(width: 52), // Space for avatar badge (38 + 14)
+                Expanded(flex: 4, child: _buildHeaderLabel('СМЕНА / КАССИР', isDark)),
+                Expanded(flex: 3, child: _buildHeaderLabel('РАЗМЕН / ПРОДАЖИ', isDark)),
                 Expanded(flex: 2, child: _buildHeaderLabel('ВЫРУЧКА', isDark)),
-                _buildHeaderLabel('РЕЗУЛЬТАТ КАССЫ', isDark),
-                const SizedBox(width: 30), // Caret space
+                SizedBox(
+                  width: 170,
+                  child: _buildHeaderLabel('РЕЗУЛЬТАТ КАССЫ', isDark),
+                ),
+                const SizedBox(width: 24), // Caret space (8 + 16)
               ],
             ),
           ),

@@ -66,7 +66,7 @@ class _AnalyticsShiftRowState extends State<AnalyticsShiftRow> {
           ),
           child: Row(
             children: [
-              // Avatar Badge
+              // Avatar Badge: 38px
               Container(
                 width: 38,
                 height: 38,
@@ -74,7 +74,9 @@ class _AnalyticsShiftRowState extends State<AnalyticsShiftRow> {
                   color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isOpen ? AppColors.success.withValues(alpha: 0.5) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                    color: isOpen
+                        ? AppColors.success.withValues(alpha: 0.5)
+                        : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                   ),
                 ),
                 alignment: Alignment.center,
@@ -87,11 +89,11 @@ class _AnalyticsShiftRowState extends State<AnalyticsShiftRow> {
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 14), // 38 + 14 = 52px
 
-              // Shift & Cashier Column
+              // Shift & Cashier Column: flex: 4
               Expanded(
-                flex: 3,
+                flex: 4,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -130,9 +132,9 @@ class _AnalyticsShiftRowState extends State<AnalyticsShiftRow> {
                 ),
               ),
 
-              // Float & Sales Column
+              // Float & Sales Column: flex: 3
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -156,7 +158,7 @@ class _AnalyticsShiftRowState extends State<AnalyticsShiftRow> {
                 ),
               ),
 
-              // Revenue Column
+              // Revenue Column: flex: 2
               Expanded(
                 flex: 2,
                 child: Text(
@@ -169,58 +171,63 @@ class _AnalyticsShiftRowState extends State<AnalyticsShiftRow> {
                 ),
               ),
 
-              // Discrepancy Result Badge
-              if (!isOpen && diff != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: diff == 0
-                        ? AppColors.success.withValues(alpha: 0.1)
-                        : (diff < 0 ? AppColors.danger.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1)),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        diff == 0 ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.warningCircle,
-                        size: 12,
-                        color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        diff == 0
-                            ? 'Точно (0 с)'
-                            : (diff < 0 ? 'Недостача: ${diff.toCurrency(context)}' : 'Излишек: +${diff.toCurrency(context)}'),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
+              // Discrepancy Result Badge: exactly 170px
+              SizedBox(
+                width: 170,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: !isOpen && diff != null
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: diff == 0
+                                ? AppColors.success.withValues(alpha: 0.1)
+                                : (diff < 0 ? AppColors.danger.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1)),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                diff == 0 ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.warningCircle,
+                                size: 12,
+                                color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                diff == 0
+                                    ? 'Точно (0 с)'
+                                    : (diff < 0 ? 'Недостача: ${diff.toCurrency(context)}' : 'Излишек: +${diff.toCurrency(context)}'),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
+                          ),
+                          child: const Text(
+                            'Активна',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
-                  ),
-                  child: const Text(
-                    'Активна',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
-                  ),
                 ),
+              ),
 
-              const SizedBox(width: 14),
+              const SizedBox(width: 8),
 
-              // Right Action Caret
+              // Right Action Caret: 16px (8 + 16 = 24px)
               Icon(
                 PhosphorIconsRegular.caretRight,
                 size: 16,

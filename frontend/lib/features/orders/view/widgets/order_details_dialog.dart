@@ -128,40 +128,44 @@ class OrderDetailsDialog extends StatelessWidget {
                   separatorBuilder: (_, _) => const SizedBox(height: 14),
                   itemBuilder: (context, index) {
                     final item = order.items[index];
-                    return Row(
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
+                        Text(
+                          item.menuItemName,
+                          style: AppTextStyles.body.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
                           ),
-                          child: Text(
-                            '${item.quantity}x',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.brandPrimary,
-                              fontWeight: FontWeight.bold,
+                        ),
+                        if (item.selectedOptions != null && item.selectedOptions!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'С модификаторами',
+                            style: AppTextStyles.caption.copyWith(color: subtext, fontSize: 11),
+                          ),
+                        ],
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${item.quantity} × ${item.unitPrice.toCurrency(context)}',
+                              style: AppTextStyles.caption.copyWith(
+                                color: subtext,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13,
+                              ),
                             ),
-                          ),
+                            Text(
+                              item.subtotal.toCurrency(context),
+                              style: AppTextStyles.body.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.darkText : AppColors.lightText,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.menuItemName, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
-                              if (item.selectedOptions != null && item.selectedOptions!.isNotEmpty) ...[
-                                const SizedBox(height: 2),
-                                Text('С модификаторами', style: AppTextStyles.caption.copyWith(color: subtext, fontSize: 11)),
-                              ],
-                              const SizedBox(height: 2),
-                              Text('${item.unitPrice.toCurrency(context)} за шт.', style: AppTextStyles.caption.copyWith(color: subtext)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(item.subtotal.toCurrency(context), style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
                       ],
                     );
                   },
