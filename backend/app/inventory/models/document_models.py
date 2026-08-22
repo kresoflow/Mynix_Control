@@ -92,6 +92,7 @@ class InventoryDocumentItem(TenantModel, table=True):
     ingredient_id: Optional[int] = Field(default=None, foreign_key="ingredients.id", index=True)
     retail_product_id: Optional[int] = Field(default=None, foreign_key="retail_products.id", index=True)
     quantity: float
+    expected_quantity: Optional[float] = Field(default=None)
     price_per_unit: float
     total_price: float
     
@@ -158,6 +159,7 @@ class InventoryDocumentItemRead(SQLModel):
     retail_product_id: Optional[int] = None
     retail_product_name: Optional[str] = None
     quantity: float
+    expected_quantity: Optional[float] = None
     price_per_unit: float
     total_price: float
 
@@ -165,6 +167,7 @@ class InventoryDocumentItemCreate(SQLModel):
     ingredient_id: Optional[int] = None
     retail_product_id: Optional[int] = None
     quantity: float
+    expected_quantity: Optional[float] = None
     price_per_unit: Optional[float] = 0.0
     total_price: Optional[float] = None
     sell_price: Optional[float] = None

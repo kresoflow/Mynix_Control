@@ -45,11 +45,21 @@ async def create_document(
         item_total = item_in.total_price if item_in.total_price is not None else round(item_in.quantity * unit_price, 2)
         total += item_total
         
+        expected_qty = item_in.expected_quantity
+        if expected_qty is None and doc_in.type == DocumentType.INVENTORY:
+            if item_in.ingredient_id:
+                ing_lookup = await session.get(Ingredient, item_in.ingredient_id)
+                expected_qty = ing_lookup.current_stock if ing_lookup else 0.0
+            elif item_in.retail_product_id:
+                ret_lookup = await session.get(RetailProduct, item_in.retail_product_id)
+                expected_qty = ret_lookup.current_stock if ret_lookup else 0.0
+
         item = InventoryDocumentItem(
             document_id=doc.id,
             ingredient_id=item_in.ingredient_id,
             retail_product_id=item_in.retail_product_id,
             quantity=item_in.quantity,
+            expected_quantity=expected_qty,
             price_per_unit=unit_price,
             total_price=item_total
         )
@@ -144,6 +154,7 @@ async def get_document(
                 retail_product_id=item.retail_product_id,
                 retail_product_name=item.retail_product.name if item.retail_product else None,
                 quantity=item.quantity,
+                expected_quantity=item.expected_quantity,
                 price_per_unit=item.price_per_unit,
                 total_price=item.total_price,
             )

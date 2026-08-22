@@ -10,6 +10,7 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class BlindInventoryDialog extends StatefulWidget {
@@ -55,6 +56,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
             items.add({
               if (isRetail) 'retail_product_id': item.id else 'ingredient_id': item.id,
               'quantity': actualQty,
+              'expected_quantity': item.currentStock,
               'price_per_unit': item.costPerUnit,
               'total_price': itemTotal,
             });
@@ -63,9 +65,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
       }
 
       if (items.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Вы не ввели ни одного остатка')),
-        );
+        AppToast.showWarning(context, 'Внимание', subtitle: 'Вы не ввели ни одного остатка');
         setState(() => _isLoading = false);
         return;
       }
@@ -86,18 +86,11 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
         } catch (_) {}
 
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Инвентаризация успешно проведена!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        AppToast.showSuccess(context, 'Инвентаризация успешно проведена!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: ${e.toString()}'), backgroundColor: AppColors.danger),
-        );
+        AppToast.showError(context, 'Ошибка проведения', subtitle: e.toString());
       }
     } finally {
       if (mounted) {

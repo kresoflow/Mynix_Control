@@ -6,6 +6,7 @@ class InventoryDocumentItem {
   final int? retailProductId;
   final String? retailProductName;
   final double quantity;
+  final double? expectedQuantity;
   final double pricePerUnit;
   final double totalPrice;
 
@@ -17,6 +18,7 @@ class InventoryDocumentItem {
     this.retailProductId,
     this.retailProductName,
     required this.quantity,
+    this.expectedQuantity,
     required this.pricePerUnit,
     required this.totalPrice,
   });
@@ -30,6 +32,7 @@ class InventoryDocumentItem {
       retailProductId: json['retail_product_id'],
       retailProductName: json['retail_product_name'],
       quantity: (json['quantity'] ?? 0).toDouble(),
+      expectedQuantity: (json['expected_quantity'] as num?)?.toDouble(),
       pricePerUnit: (json['price_per_unit'] ?? 0).toDouble(),
       totalPrice: (json['total_price'] ?? 0).toDouble(),
     );
@@ -40,6 +43,7 @@ class InventoryDocumentItem {
       'ingredient_id': ingredientId,
       'retail_product_id': retailProductId,
       'quantity': quantity,
+      'expected_quantity': expectedQuantity,
       'price_per_unit': pricePerUnit,
       'total_price': totalPrice,
     };
@@ -48,7 +52,7 @@ class InventoryDocumentItem {
 
 class InventoryDocument {
   final int id;
-  final String type; // 'receipt', 'write_off'
+  final String type; // 'receipt', 'write_off', 'inventory'
   final String status; // 'draft', 'completed'
   final DateTime date;
   final int? supplierId;
