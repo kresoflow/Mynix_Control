@@ -13,6 +13,7 @@ class AppTextField extends StatelessWidget {
   final bool autofocus;
   final bool readOnly;
   final bool isCompact;
+  final bool obscureText;
   final TextInputType keyboardType;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
@@ -30,6 +31,7 @@ class AppTextField extends StatelessWidget {
     this.autofocus = false,
     this.readOnly = false,
     this.isCompact = false,
+    this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.onChanged,
     this.onTap,
@@ -64,6 +66,7 @@ class AppTextField extends StatelessWidget {
             focusNode: focusNode,
             autofocus: autofocus,
             readOnly: readOnly,
+            obscureText: obscureText,
             keyboardType: keyboardType,
             onChanged: onChanged,
             onTap: onTap,

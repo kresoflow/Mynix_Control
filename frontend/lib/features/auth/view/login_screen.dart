@@ -12,6 +12,9 @@ import 'package:mynix_frontend/features/superadmin/domain/superadmin_repository.
 import 'package:mynix_frontend/features/superadmin/presentation/bloc/superadmin_bloc.dart';
 import 'package:mynix_frontend/features/superadmin/presentation/superadmin_screen.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/app_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -55,19 +58,43 @@ class _LoginScreenState extends State<LoginScreen> {
     String token = '';
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('System Admin Access'),
-        content: TextField(
-          obscureText: true,
-          decoration: const InputDecoration(labelText: 'Admin Token'),
-          onChanged: (val) => token = val,
+      builder: (ctx) => MynixDialog(
+        title: 'Супер-администратор',
+        icon: PhosphorIconsRegular.shieldCheck,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Введите мастер-токен для доступа к платформе:',
+              style: AppTextStyles.caption.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkSubtext
+                    : AppColors.lightSubtext,
+              ),
+            ),
+            const SizedBox(height: 12),
+            AppTextField(
+              labelText: 'Мастер-токен',
+              hintText: 'токен доступа...',
+              obscureText: true,
+              prefixIcon: const Icon(PhosphorIconsRegular.key, size: 18),
+              onChanged: (val) => token = val.trim(),
+            ),
+          ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          AppPrimaryButton(
+            label: 'Войти',
+            icon: PhosphorIconsRegular.signIn,
             onPressed: () {
               Navigator.pop(ctx);
               if (token.isNotEmpty) {
+                final apiClient = context.read<ApiClient>();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -83,7 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               }
             },
-            child: const Text('Enter'),
           ),
         ],
       ),

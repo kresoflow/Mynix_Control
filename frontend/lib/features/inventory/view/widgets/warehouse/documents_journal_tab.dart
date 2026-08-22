@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
@@ -33,16 +34,10 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> {
   }
 
   void _showWriteOffNotice(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Раздел массового списания находится в разработке.'),
-        backgroundColor: Theme.of(context).brightness == Brightness.dark 
-            ? AppColors.darkCard 
-            : AppColors.darkBg,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    AppToast.showInfo(
+      context,
+      'Раздел списания',
+      subtitle: 'Массовое списание находится в разработке.',
     );
   }
 

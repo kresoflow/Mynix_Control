@@ -34,13 +34,22 @@ class AppRouter {
       final isGoingToLogin = currentPath == '/login';
       final isGoingToSplash = currentPath == '/splash';
 
-      // 1. Checking session status: keep on splash without mounting protected screens
-      if (authState is AuthInitial || authState is AuthLoading) {
+      // 1. Initial cold startup check: keep on splash
+      if (authState is AuthInitial) {
         return isGoingToSplash ? null : '/splash';
       }
 
-      // 2. Unauthenticated: redirect to login
-      if (authState is AuthUnauthenticated && !isGoingToLogin) {
+      // 2. Loading state:
+      // If we are already on splash during initial app startup, stay on splash.
+      // If we are submitting login form on /login, stay on login so button shows spinner.
+      if (authState is AuthLoading) {
+        if (isGoingToSplash) return null;
+        if (isGoingToLogin) return null;
+        return '/splash';
+      }
+
+      // 3. Unauthenticated or Error: redirect to login
+      if ((authState is AuthUnauthenticated || authState is AuthError || authState is AuthFailure) && !isGoingToLogin) {
         return '/login';
       }
 
