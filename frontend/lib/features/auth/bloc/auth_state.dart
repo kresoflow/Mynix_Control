@@ -19,6 +19,9 @@ class AuthAuthenticated extends AuthState {
   final String username;
   final String tenantName;
   final String? tenantAddress;
+  final bool useKds;
+  final bool useOrders;
+  final bool enableInventoryDeduction;
 
   const AuthAuthenticated({
     required this.tenantId,
@@ -28,6 +31,9 @@ class AuthAuthenticated extends AuthState {
     this.username = '',
     this.tenantName = '',
     this.tenantAddress,
+    this.useKds = true,
+    this.useOrders = true,
+    this.enableInventoryDeduction = true,
   });
 
   bool hasPermission(String permission) {
@@ -36,7 +42,18 @@ class AuthAuthenticated extends AuthState {
   }
 
   @override
-  List<Object?> get props => [tenantId, role, permissions, fullName, username, tenantName, tenantAddress];
+  List<Object?> get props => [
+        tenantId,
+        role,
+        permissions,
+        fullName,
+        username,
+        tenantName,
+        tenantAddress,
+        useKds,
+        useOrders,
+        enableInventoryDeduction,
+      ];
 }
 
 class AuthUnauthenticated extends AuthState {}

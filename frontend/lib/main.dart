@@ -147,6 +147,18 @@ class _RetailOSAppState extends State<RetailOSApp> {
     _crmBloc = CrmBloc(_crmRepository);
     _posSettingsCubit = PosSettingsCubit();
     _appRouter = AppRouter(_authBloc);
+
+    // Automatically sync tenant feature flags into SettingsBloc on login/startup
+    _authBloc.stream.listen((authState) {
+      if (authState is AuthAuthenticated) {
+        _settingsBloc.add(
+          UpdateFeatureFlags(
+            useKds: authState.useKds,
+            useOrders: authState.useOrders,
+          ),
+        );
+      }
+    });
   }
 
   @override

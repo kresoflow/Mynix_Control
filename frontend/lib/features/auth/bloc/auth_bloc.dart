@@ -27,6 +27,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       username: profile['username']?.toString() ?? '',
       tenantName: profile['tenant_name']?.toString() ?? 'Kreso Flow Point',
       tenantAddress: profile['tenant_address']?.toString(),
+      useKds: profile['use_kds'] as bool? ?? true,
+      useOrders: profile['use_orders'] as bool? ?? true,
+      enableInventoryDeduction: profile['enable_inventory_deduction'] as bool? ?? true,
     );
   }
 

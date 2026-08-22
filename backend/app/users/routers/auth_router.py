@@ -108,6 +108,9 @@ async def me(
         permissions=svc.collect_permissions(current_user),
         tenant_name=tenant_name,
         tenant_address=tenant_address,
+        use_kds=tenant.use_kds if tenant else True,
+        use_orders=tenant.use_orders if tenant else True,
+        enable_inventory_deduction=tenant.enable_inventory_deduction if tenant else True,
     )
 
 
@@ -149,5 +152,8 @@ async def update_me(
         permissions=svc.collect_permissions(current_user),
         tenant_name=tenant_name,
         tenant_address=tenant_address,
+        use_kds=tenant.use_kds if tenant else True,
+        use_orders=tenant.use_orders if tenant else True,
+        enable_inventory_deduction=tenant.enable_inventory_deduction if tenant else True,
     )
 

@@ -123,7 +123,7 @@ class OrderRepository {
       createdAt: DateTime.now(),
     );
 
-    // 1. If configured as Client / Waiter Phone -> try direct LAN dispatch to Master POS
+    // 1. If configured as Client / Waiter Phone and LAN is enabled -> try direct LAN dispatch to Master POS
     final lan = LanSettingsService.current;
     if (lan.isClient && lan.masterIp.isNotEmpty) {
       final sentToMaster = await LocalPosClient.sendOrderToMaster(
@@ -136,7 +136,14 @@ class OrderRepository {
       }
     }
 
-    // 2. Otherwise store in local Hive Outbox
+    // 2. If emergency local DB (offline storage) is disabled -> throw clear error
+    if (!lan.isOfflineStorageEnabled) {
+      throw Exception(
+        'Офлайн-режим отключен. Для проведения оплаты требуется активное подключение к интернету.',
+      );
+    }
+
+    // 3. Otherwise store in local Hive Outbox
     await PosOutboxService.saveOrder(offlinePayload);
   }
 }

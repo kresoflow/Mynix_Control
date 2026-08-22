@@ -13,6 +13,7 @@ import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/open_shift_modal.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 
 class MobileNavDrawer extends StatelessWidget {
   final String location;
@@ -45,6 +46,16 @@ class MobileNavDrawer extends StatelessWidget {
       role = authState.role;
       tenantName = authState.tenantName;
     }
+
+    final settingsState = context.watch<SettingsBloc>().state;
+    final showKds = settingsState.useKds && settingsState.showKdsInNav;
+    final showOrders = settingsState.useOrders;
+
+    final visibleNavItems = _navItems.where((item) {
+      if (item.route == '/kitchen' && !showKds) return false;
+      if (item.route == '/orders' && !showOrders) return false;
+      return true;
+    }).toList();
 
     return Drawer(
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -150,9 +161,9 @@ class MobileNavDrawer extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                itemCount: _navItems.length,
+                itemCount: visibleNavItems.length,
                 itemBuilder: (context, index) {
-                  final item = _navItems[index];
+                  final item = visibleNavItems[index];
                   final isSelected = location.startsWith(item.route);
 
                   return ListTile(

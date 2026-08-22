@@ -208,6 +208,9 @@ class UserRead(SQLModel):
     permissions: List[str] = []  # permission codes
     tenant_name: Optional[str] = None
     tenant_address: Optional[str] = None
+    use_kds: bool = True
+    use_orders: bool = True
+    enable_inventory_deduction: bool = True
 
 
 class UserCreate(SQLModel):
