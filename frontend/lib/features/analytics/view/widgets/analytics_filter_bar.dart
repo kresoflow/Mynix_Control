@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/analytics/bloc/analytics_bloc.dart';
 import 'package:mynix_frontend/features/analytics/bloc/analytics_event.dart';
 
@@ -23,12 +24,10 @@ class AnalyticsFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final isDesktop = MediaQuery.of(context).size.width > 800;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         border: Border(
@@ -37,171 +36,151 @@ class AnalyticsFilterBar extends StatelessWidget {
           ),
         ),
       ),
-      child: isDesktop
-          ? Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 960;
+
+          if (isWide) {
+            return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Аналитика',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                      style: AppTextStyles.h3.copyWith(
                         color: isDark ? AppColors.darkText : AppColors.lightText,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 32),
-                    SizedBox(
-                      width: 440,
-                      child: TabBar(
-                        labelColor: AppColors.brandPrimary,
-                        unselectedLabelColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                        indicatorColor: AppColors.brandPrimary,
-                        tabs: const [
-                          Tab(text: 'Дашборд'),
-                          Tab(text: 'История заказов'),
-                          Tab(text: 'Кассовые смены'),
-                        ],
-                      ),
-                    ),
+                    const SizedBox(width: 20),
+                    _buildTabs(isDark),
                   ],
                 ),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildFilterButton('today', 'Сегодня', context),
+                    _buildPeriodPills(context, isDark),
                     const SizedBox(width: 8),
-                    _buildFilterButton('week', 'Неделя', context),
+                    _buildCalendarButton(context, isDark),
                     const SizedBox(width: 8),
-                    _buildFilterButton('month', 'Месяц', context),
-                    const SizedBox(width: 8),
-                    _buildFilterButton('year', 'Год', context),
-                    const SizedBox(width: 8),
-                    _buildCalendarButton(context),
-                    const SizedBox(width: 16),
-                    IconButton(
-                      icon: Icon(
-                        PhosphorIconsRegular.arrowsClockwise,
-                        color: isDark ? AppColors.darkText : AppColors.lightText,
-                      ),
-                      tooltip: 'Обновить',
-                      onPressed: () {
-                        context.read<AnalyticsBloc>().add(
-                              LoadAnalytics(
-                                period: selectedPeriod,
-                                startDate: startDate,
-                                endDate: endDate,
-                              ),
-                            );
-                      },
+                    _buildRefreshButton(context, isDark),
+                  ],
+                ),
+              ],
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Аналитика',
+                    style: AppTextStyles.h3.copyWith(
+                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  _buildRefreshButton(context, isDark),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _buildTabs(isDark),
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildPeriodPills(context, isDark),
+                    const SizedBox(width: 8),
+                    _buildCalendarButton(context, isDark),
                   ],
                 ),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Аналитика',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TabBar(
-                  labelColor: AppColors.brandPrimary,
-                  unselectedLabelColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  indicatorColor: AppColors.brandPrimary,
-                  isScrollable: true,
-                  tabs: const [
-                    Tab(text: 'Дашборд'),
-                    Tab(text: 'История заказов'),
-                    Tab(text: 'Кассовые смены'),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildFilterButton('today', 'Сегодня', context),
-                      const SizedBox(width: 8),
-                      _buildFilterButton('week', 'Неделя', context),
-                      const SizedBox(width: 8),
-                      _buildFilterButton('month', 'Месяц', context),
-                      const SizedBox(width: 8),
-                      _buildFilterButton('year', 'Год', context),
-                      const SizedBox(width: 8),
-                      _buildCalendarButton(context),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        icon: Icon(
-                          PhosphorIconsRegular.arrowsClockwise,
-                          color: isDark ? AppColors.darkText : AppColors.lightText,
-                        ),
-                        tooltip: 'Обновить',
-                        onPressed: () {
-                          context.read<AnalyticsBloc>().add(
-                                LoadAnalytics(
-                                  period: selectedPeriod,
-                                  startDate: startDate,
-                                  endDate: endDate,
-                                ),
-                              );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildFilterButton(String period, String label, BuildContext context) {
-    final isSelected = selectedPeriod == period;
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return InkWell(
-      onTap: () {
-        onPeriodChanged(period);
-        context.read<AnalyticsBloc>().add(LoadAnalytics(period: period));
-      },
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandPrimary
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.brandPrimary
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            fontSize: 13,
-          ),
-        ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildCalendarButton(BuildContext context) {
+  Widget _buildTabs(bool isDark) {
+    return SizedBox(
+      height: 36,
+      child: TabBar(
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        labelColor: AppColors.brandPrimary,
+        unselectedLabelColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+        indicatorColor: AppColors.brandPrimary,
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 13),
+        tabs: const [
+          Tab(text: 'Дашборд'),
+          Tab(text: 'История заказов'),
+          Tab(text: 'Кассовые смены'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeriodPills(BuildContext context, bool isDark) {
+    final periods = [
+      ('today', 'Сегодня'),
+      ('week', 'Неделя'),
+      ('month', 'Месяц'),
+      ('year', 'Год'),
+    ];
+
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: periods.map((p) {
+          final isSelected = selectedPeriod == p.$1;
+          return InkWell(
+            onTap: () {
+              onPeriodChanged(p.$1);
+              context.read<AnalyticsBloc>().add(LoadAnalytics(period: p.$1));
+            },
+            borderRadius: BorderRadius.circular(6),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.brandPrimary : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                p.$2,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCalendarButton(BuildContext context, bool isDark) {
     final isSelected = selectedPeriod == 'custom';
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return InkWell(
       onTap: () async {
@@ -214,7 +193,7 @@ class AnalyticsFilterBar extends StatelessWidget {
               : null,
           builder: (context, child) {
             return Theme(
-              data: theme.copyWith(
+              data: Theme.of(context).copyWith(
                 colorScheme: isDark
                     ? ColorScheme.dark(primary: AppColors.brandPrimary)
                     : ColorScheme.light(primary: AppColors.brandPrimary),
@@ -237,26 +216,21 @@ class AnalyticsFilterBar extends StatelessWidget {
           }
         }
       },
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandPrimary
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.brandPrimary
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-          ),
+          color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               PhosphorIconsRegular.calendar,
-              size: 16,
+              size: 14,
               color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
             ),
             const SizedBox(width: 6),
@@ -264,12 +238,37 @@ class AnalyticsFilterBar extends StatelessWidget {
               'Период',
               style: TextStyle(
                 color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 12,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildRefreshButton(BuildContext context, bool isDark) {
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        icon: Icon(
+          PhosphorIconsRegular.arrowsClockwise,
+          size: 18,
+          color: isDark ? AppColors.darkText : AppColors.lightText,
+        ),
+        tooltip: 'Обновить',
+        onPressed: () {
+          context.read<AnalyticsBloc>().add(
+                LoadAnalytics(
+                  period: selectedPeriod,
+                  startDate: startDate,
+                  endDate: endDate,
+                ),
+              );
+        },
       ),
     );
   }

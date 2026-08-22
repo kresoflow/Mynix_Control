@@ -57,12 +57,12 @@ class DashboardSummaryTab extends StatelessWidget {
             color: AppColors.brandPrimary,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(isDesktop ? 24 : 16),
+              padding: EdgeInsets.all(isDesktop ? 16 : 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   DashboardKpiGrid(metrics: metrics),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
                   if (isDesktop)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +71,7 @@ class DashboardSummaryTab extends StatelessWidget {
                           flex: 2,
                           child: RevenueChartCard(timeSeries: metrics.timeSeries),
                         ),
-                        const SizedBox(width: 24),
+                        const SizedBox(width: 14),
                         Expanded(
                           flex: 1,
                           child: CategoryPieChartCard(categories: xray.categories),
@@ -80,12 +80,12 @@ class DashboardSummaryTab extends StatelessWidget {
                     )
                   else ...[
                     RevenueChartCard(timeSeries: metrics.timeSeries),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 14),
                     CategoryPieChartCard(categories: xray.categories),
                   ],
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
                   XRayTableCard(items: xray.items),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
                 ],
               ),
             ),

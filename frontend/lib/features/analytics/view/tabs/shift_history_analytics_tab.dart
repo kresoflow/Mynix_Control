@@ -160,7 +160,7 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _history.length,
-              separatorBuilder: (_, __) => Divider(
+              separatorBuilder: (_, _) => Divider(
                 height: 1,
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),

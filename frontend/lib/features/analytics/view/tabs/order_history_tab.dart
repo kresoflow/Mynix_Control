@@ -7,7 +7,6 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:mynix_frontend/features/orders/repository/orders_repository.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/features/orders/view/widgets/order_card.dart';
 
 class OrderHistoryTab extends StatefulWidget {

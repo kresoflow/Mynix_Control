@@ -19,11 +19,11 @@ class RevenueChartCard extends StatelessWidget {
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return Container(
-      height: isDesktop ? 400 : 320,
-      padding: EdgeInsets.all(isDesktop ? 24 : 16),
+      height: isDesktop ? 260 : 230,
+      padding: EdgeInsets.all(isDesktop ? 16 : 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Column(
@@ -31,11 +31,12 @@ class RevenueChartCard extends StatelessWidget {
         children: [
           Text(
             'Динамика выручки',
-            style: AppTextStyles.h3.copyWith(
+            style: AppTextStyles.bodyMedium.copyWith(
               color: isDark ? AppColors.darkText : AppColors.lightText,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 14),
           Expanded(
             child: timeSeries.isEmpty
                 ? Center(

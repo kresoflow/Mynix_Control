@@ -34,35 +34,34 @@ class _DashboardMetricCardState extends State<DashboardMetricCard> {
       onExit: (_) => setState(() => _isHovered = false),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isCompact = constraints.maxWidth < 220;
-          
+          final isCompact = constraints.maxWidth < 180;
+
           final iconBox = Container(
-            padding: EdgeInsets.all(isCompact ? 10 : 14),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: activeGradient,
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: activeGradient[1].withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+                  color: activeGradient[1].withValues(alpha: 0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Icon(widget.icon, color: Colors.white, size: isCompact ? 22 : 28),
+            child: Icon(widget.icon, color: Colors.white, size: 18),
           );
 
           final titleText = Text(
             widget.title,
-            style: AppTextStyles.bodyMedium.copyWith(
+            style: AppTextStyles.caption.copyWith(
               color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
               fontWeight: FontWeight.w600,
-              letterSpacing: 0.3,
-              fontSize: isCompact ? 13 : null,
+              fontSize: 11,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -73,77 +72,58 @@ class _DashboardMetricCardState extends State<DashboardMetricCard> {
             alignment: Alignment.centerLeft,
             child: Text(
               widget.value,
-              style: AppTextStyles.display.copyWith(
+              style: AppTextStyles.h2.copyWith(
                 color: isDark ? AppColors.darkText : AppColors.lightText,
-                fontSize: isCompact ? 22 : 28,
+                fontSize: isCompact ? 18 : 22,
                 fontWeight: FontWeight.w800,
               ),
               maxLines: 1,
             ),
           );
 
-          Widget innerContent;
-          if (isCompact) {
-            innerContent = Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                iconBox,
-                const SizedBox(height: 12),
-                titleText,
-                const SizedBox(height: 4),
-                valueText,
-              ],
-            );
-          } else {
-            innerContent = Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                iconBox,
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      titleText,
-                      const SizedBox(height: 6),
-                      valueText,
-                    ],
-                  ),
-                ),
-              ],
-            );
-          }
-
           return AnimatedScale(
-            scale: _isHovered ? 1.02 : 1.0,
-            duration: const Duration(milliseconds: 200),
+            scale: _isHovered ? 1.015 : 1.0,
+            duration: const Duration(milliseconds: 150),
             curve: Curves.easeOutBack,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: EdgeInsets.symmetric(
-                  horizontal: isCompact ? 16 : 20, vertical: isCompact ? 16 : 20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: _isHovered
                       ? activeGradient[0].withValues(alpha: 0.5)
                       : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                  width: 1.5,
+                  width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: _isHovered
-                        ? activeGradient[1].withValues(alpha: 0.15)
-                        : Colors.black.withValues(alpha: 0.05),
-                    blurRadius: _isHovered ? 16 : 8,
-                    offset: const Offset(0, 4),
+                        ? activeGradient[1].withValues(alpha: 0.12)
+                        : Colors.black.withValues(alpha: 0.04),
+                    blurRadius: _isHovered ? 12 : 4,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: innerContent,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  iconBox,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        titleText,
+                        const SizedBox(height: 2),
+                        valueText,
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
