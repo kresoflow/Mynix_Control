@@ -114,7 +114,48 @@ class Shift(TenantModel, table=True):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-from sqlalchemy import Enum as SAEnum
+from sqlalchemy.types import TypeDecorator, String
+
+class OrderStatusType(TypeDecorator):
+    impl = String(30)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if isinstance(value, OrderStatus):
+            return value.value
+        return str(value).lower()
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        val_lower = str(value).lower()
+        for member in OrderStatus:
+            if member.value == val_lower or member.name.lower() == val_lower:
+                return member
+        return OrderStatus.NEW
+
+class PaymentMethodType(TypeDecorator):
+    impl = String(30)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if isinstance(value, PaymentMethod):
+            return value.value
+        return str(value).lower()
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        val_lower = str(value).lower()
+        for member in PaymentMethod:
+            if member.value == val_lower or member.name.lower() == val_lower:
+                return member
+        return PaymentMethod.CASH
+
 
 class Order(TenantModel, table=True):
     __tablename__ = "orders"
@@ -127,19 +168,11 @@ class Order(TenantModel, table=True):
     order_number: int = Field(default=0)  # daily sequential number
     status: OrderStatus = Field(
         default=OrderStatus.NEW,
-        sa_column=Column(
-            SAEnum(OrderStatus, values_callable=lambda obj: [e.value for e in obj], native_enum=False),
-            nullable=False,
-            default=OrderStatus.NEW.value
-        )
+        sa_column=Column(OrderStatusType(), nullable=False, default=OrderStatus.NEW)
     )
     payment_method: PaymentMethod = Field(
         default=PaymentMethod.CASH,
-        sa_column=Column(
-            SAEnum(PaymentMethod, values_callable=lambda obj: [e.value for e in obj], native_enum=False),
-            nullable=False,
-            default=PaymentMethod.CASH.value
-        )
+        sa_column=Column(PaymentMethodType(), nullable=False, default=PaymentMethod.CASH)
     )
     bonus_spent: float = Field(default=0.0)
     total: float = Field(default=0.0)

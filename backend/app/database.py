@@ -99,10 +99,12 @@ async def auto_migrate_tenant_schemas() -> None:
                 await conn.execute(text(f'ALTER TABLE "{schema}".inventory_document_items ADD COLUMN IF NOT EXISTS expected_quantity DOUBLE PRECISION'))
                 try:
                     await conn.execute(text(f'ALTER TABLE "{schema}".orders ALTER COLUMN payment_method TYPE VARCHAR(30) USING payment_method::VARCHAR'))
+                    await conn.execute(text(f'UPDATE "{schema}".orders SET payment_method = LOWER(payment_method) WHERE payment_method IS NOT NULL'))
                 except Exception:
                     pass
                 try:
                     await conn.execute(text(f'ALTER TABLE "{schema}".orders ALTER COLUMN status TYPE VARCHAR(30) USING status::VARCHAR'))
+                    await conn.execute(text(f'UPDATE "{schema}".orders SET status = LOWER(status) WHERE status IS NOT NULL'))
                 except Exception:
                     pass
                 # supplier_transactions table
