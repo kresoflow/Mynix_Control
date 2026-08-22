@@ -11,6 +11,7 @@ class IngredientCategoryNode extends StatefulWidget {
   final int level;
   final int? selectedCategoryId;
   final bool isManageMode;
+  final bool? forceExpanded;
   final ValueChanged<int?> onCategorySelected;
   final ValueChanged<MenuCategory> onDelete;
 
@@ -21,6 +22,7 @@ class IngredientCategoryNode extends StatefulWidget {
     required this.level,
     required this.selectedCategoryId,
     required this.isManageMode,
+    this.forceExpanded,
     required this.onCategorySelected,
     required this.onDelete,
   });
@@ -35,13 +37,15 @@ class _IngredientCategoryNodeState extends State<IngredientCategoryNode> with Si
   @override
   void initState() {
     super.initState();
-    _isExpanded = _hasSelectedDescendant();
+    _isExpanded = widget.forceExpanded ?? _hasSelectedDescendant();
   }
 
   @override
   void didUpdateWidget(covariant IngredientCategoryNode oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedCategoryId != oldWidget.selectedCategoryId) {
+    if (widget.forceExpanded != null && widget.forceExpanded != oldWidget.forceExpanded) {
+      _isExpanded = widget.forceExpanded!;
+    } else if (widget.selectedCategoryId != oldWidget.selectedCategoryId) {
       if (_hasSelectedDescendant() && !_isExpanded) {
         _isExpanded = true;
       }
@@ -98,79 +102,79 @@ class _IngredientCategoryNodeState extends State<IngredientCategoryNode> with Si
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected
+              ? AppColors.brandPrimary.withValues(alpha: 0.15)
+              : Colors.transparent,
           child: InkWell(
             onTap: () => widget.onCategorySelected(widget.category.id),
             child: Padding(
               padding: EdgeInsets.only(
-                left: 12.0 + (widget.level * 16.0),
-                right: 4.0,
-                top: 8.0,
-                bottom: 8.0,
+                left: 16.0 + (widget.level * 16.0),
+                right: 8.0,
+                top: 4.0,
+                bottom: 4.0,
               ),
               child: Row(
                 children: [
-                  IconHelper.buildIcon(
-                    widget.category.getInheritedIcon(widget.allCategories),
-                    size: 22,
-                    color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                  ),
-                  const SizedBox(width: 10),
+                  if (hasChildren)
+                    IconButton(
+                      icon: Icon(
+                        _isExpanded ? PhosphorIconsRegular.caretDown : PhosphorIconsRegular.caretRight,
+                        size: 14,
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                    )
+                  else
+                    const SizedBox(width: 14),
+                  const SizedBox(width: 8),
+
+                  if (widget.category.icon != null && widget.category.icon!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: IconHelper.buildIcon(
+                        widget.category.icon,
+                        size: 16,
+                        color: isSelected
+                            ? AppColors.brandPrimary
+                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                      ),
+                    ),
+
                   Expanded(
                     child: Text(
                       widget.category.name,
                       style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
+                        fontSize: 14,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isSelected
+                            ? AppColors.brandPrimary
+                            : (isDark ? AppColors.darkText : AppColors.lightText),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (hasChildren) ...[
-                    GestureDetector(
-                      onTap: () => setState(() => _isExpanded = !_isExpanded),
-                      behavior: HitTestBehavior.opaque,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
-                        child: AnimatedRotation(
-                          turns: _isExpanded ? 0.25 : 0,
-                          duration: const Duration(milliseconds: 200),
-                          child: Icon(
-                            PhosphorIconsRegular.caretRight,
-                            size: 16,
-                            color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+
                   trailingWidget,
                 ],
               ),
             ),
           ),
         ),
-        if (hasChildren)
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: SizedBox(
-              height: _isExpanded ? null : 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: children.map((childCat) => IngredientCategoryNode(
-                  category: childCat,
-                  allCategories: widget.allCategories,
-                  level: widget.level + 1,
-                  selectedCategoryId: widget.selectedCategoryId,
-                  isManageMode: widget.isManageMode,
-                  onCategorySelected: widget.onCategorySelected,
-                  onDelete: widget.onDelete,
-                )).toList(),
-              ),
-            ),
-          ),
+        if (hasChildren && _isExpanded)
+          ...children.map((child) => IngredientCategoryNode(
+                category: child,
+                allCategories: widget.allCategories,
+                level: widget.level + 1,
+                selectedCategoryId: widget.selectedCategoryId,
+                isManageMode: widget.isManageMode,
+                forceExpanded: widget.forceExpanded,
+                onCategorySelected: widget.onCategorySelected,
+                onDelete: widget.onDelete,
+              )),
       ],
     );
   }

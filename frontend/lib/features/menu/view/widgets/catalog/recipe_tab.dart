@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'recipe_menu_list.dart';
 import 'recipe_details_panel.dart';
+import 'recipe/recipe_empty_dashboard.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 class RecipeTab extends StatefulWidget {
@@ -19,7 +20,7 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
   Widget build(BuildContext context) {
     super.build(context);
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -27,13 +28,13 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
             'Настройка технологических карт',
             style: AppTextStyles.h2,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: RecipeMenuList(
                     selectedMenuItemId: _selectedMenuItemId,
                     onMenuItemSelected: (id) {
@@ -43,15 +44,16 @@ class RecipeTabState extends State<RecipeTab> with AutomaticKeepAliveClientMixin
                     },
                   ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 16),
                 Expanded(
-                  flex: 2,
+                  flex: 3,
                   child: _selectedMenuItemId == null
-                      ? const Center(
-                          child: Text(
-                            'Выберите блюдо для редактирования техкарты',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
+                      ? RecipeEmptyDashboard(
+                          onSelectDish: (id) {
+                            setState(() {
+                              _selectedMenuItemId = id;
+                            });
+                          },
                         )
                       : RecipeDetailsPanel(selectedMenuItemId: _selectedMenuItemId!),
                 ),

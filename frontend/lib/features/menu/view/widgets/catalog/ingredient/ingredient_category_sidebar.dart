@@ -7,7 +7,7 @@ import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'ingredient_category_node.dart';
 
-class IngredientCategorySidebar extends StatelessWidget {
+class IngredientCategorySidebar extends StatefulWidget {
   final int? selectedCategoryId;
   final bool isManageMode;
   final ValueChanged<int?> onCategorySelected;
@@ -18,6 +18,13 @@ class IngredientCategorySidebar extends StatelessWidget {
     this.isManageMode = false,
     required this.onCategorySelected,
   });
+
+  @override
+  State<IngredientCategorySidebar> createState() => _IngredientCategorySidebarState();
+}
+
+class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
+  bool? _forceExpanded;
 
   void _confirmDeleteCategory(BuildContext context, MenuCategory category) {
     showDialog(
@@ -98,6 +105,7 @@ class IngredientCategorySidebar extends StatelessWidget {
                 .toList();
 
             final rootCategories = ingredientCategories.where((c) => c.parentId == null).toList();
+            final hasSubcategories = ingredientCategories.any((c) => c.parentId != null);
 
             return Column(
               children: [
@@ -110,23 +118,40 @@ class IngredientCategorySidebar extends StatelessWidget {
                           'Все сырье',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: selectedCategoryId == null 
+                            color: widget.selectedCategoryId == null 
                                 ? AppColors.brandPrimary 
                                 : (isDark ? AppColors.darkText : AppColors.lightText),
                           ),
                         ),
-                        selected: selectedCategoryId == null,
+                        trailing: hasSubcategories
+                            ? InkWell(
+                                onTap: () => setState(() => _forceExpanded = !(_forceExpanded ?? false)),
+                                borderRadius: BorderRadius.circular(4),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Icon(
+                                    (_forceExpanded == true)
+                                        ? PhosphorIconsRegular.caretUp
+                                        : PhosphorIconsRegular.caretDown,
+                                    size: 16,
+                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                  ),
+                                ),
+                              )
+                            : null,
+                        selected: widget.selectedCategoryId == null,
                         selectedTileColor: AppColors.brandPrimary.withValues(alpha: 0.1),
-                        onTap: () => onCategorySelected(null),
+                        onTap: () => widget.onCategorySelected(null),
                       ),
                       const Divider(),
                       ...rootCategories.map((rootCat) => IngredientCategoryNode(
                             category: rootCat,
                             allCategories: ingredientCategories,
                             level: 0,
-                            selectedCategoryId: selectedCategoryId,
-                            isManageMode: isManageMode,
-                            onCategorySelected: onCategorySelected,
+                            selectedCategoryId: widget.selectedCategoryId,
+                            isManageMode: widget.isManageMode,
+                            forceExpanded: _forceExpanded,
+                            onCategorySelected: widget.onCategorySelected,
                             onDelete: (cat) => _confirmDeleteCategory(context, cat),
                           )),
                     ],
@@ -153,7 +178,7 @@ class IngredientCategorySidebar extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (isManageMode && ingredientCategories.isNotEmpty) ...[
+                      if (widget.isManageMode && ingredientCategories.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         SizedBox(
                           width: double.infinity,
