@@ -25,11 +25,12 @@ from app.base_model import TenantModel
 
 
 class OrderStatus(str, Enum):
-    NEW = "new"               # Just created
-    COOKING = "cooking"       # Sent to kitchen
-    READY = "ready"           # Ready for pickup
-    COMPLETED = "completed"   # Handed to customer
-    CANCELLED = "cancelled"   # Cancelled
+    PENDING_APPROVAL = "pending_approval"  # Created from hall/waiter/QR, waiting for cashier approval
+    NEW = "new"                            # Just created / approved
+    COOKING = "cooking"                    # Sent to kitchen
+    READY = "ready"                        # Ready for pickup
+    COMPLETED = "completed"                # Handed to customer
+    CANCELLED = "cancelled"                # Cancelled / Rejected
 
     @classmethod
     def _missing_(cls, value):
@@ -166,6 +167,8 @@ class Order(TenantModel, table=True):
     created_by: int = Field(foreign_key="public.users.id")
     customer_id: Optional[int] = Field(default=None, foreign_key="customers.id", index=True)
     order_number: int = Field(default=0)  # daily sequential number
+    table_number: Optional[str] = Field(default=None, max_length=50)
+    order_source: str = Field(default="pos", max_length=30)
     status: OrderStatus = Field(
         default=OrderStatus.NEW,
         sa_column=Column(OrderStatusType(), nullable=False, default=OrderStatus.NEW)
@@ -253,6 +256,8 @@ class CreateOrderRequest(SQLModel):
     bonus_spent: float = 0.0
     note: Optional[str] = None
     client_uuid: Optional[str] = None
+    table_number: Optional[str] = None
+    order_source: Optional[str] = "pos"
 
 
 class RecordExpenseRequest(SQLModel):
@@ -264,6 +269,8 @@ class OrderRead(SQLModel):
     id: int
     client_uuid: Optional[str] = None
     order_number: int
+    table_number: Optional[str] = None
+    order_source: Optional[str] = "pos"
     status: OrderStatus
     payment_method: PaymentMethod
     customer_id: Optional[int] = None

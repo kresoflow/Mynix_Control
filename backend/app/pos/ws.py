@@ -132,3 +132,20 @@ async def notify_inventory_updated(tenant_id: int):
         "event": "inventory_updated",
     })
 
+
+async def notify_pos_incoming_order(tenant_id: int, order_data: dict):
+    """Broadcast incoming hall/waiter order waiting for cashier approval."""
+    await kitchen_manager.broadcast_to_tenant(tenant_id, {
+        "event": "incoming_order",
+        "order": order_data,
+    })
+
+
+async def notify_pos_incoming_resolved(tenant_id: int, order_data: dict):
+    """Broadcast that incoming order was approved or rejected."""
+    await kitchen_manager.broadcast_to_tenant(tenant_id, {
+        "event": "incoming_order_resolved",
+        "order": order_data,
+    })
+
+

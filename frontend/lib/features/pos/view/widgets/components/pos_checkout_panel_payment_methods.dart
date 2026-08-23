@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/customer_picker_modal.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/table_picker_modal.dart';
 
 class PosCheckoutPanelPaymentMethods extends StatelessWidget {
   final String paymentMethod;
@@ -45,6 +46,8 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              _buildTableChip(context),
+              const SizedBox(width: 8),
               _buildGuestChip(context),
               const SizedBox(width: 8),
               _buildMethodTab('CASH', 'Наличные', PhosphorIconsRegular.money),
@@ -66,6 +69,81 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
           _buildTransferBanksRow(),
         ],
       ],
+    );
+  }
+
+  Widget _buildTableChip(BuildContext context) {
+    final table = cartState.tableNumber;
+    if (table == null || table.isEmpty) {
+      return InkWell(
+        onTap: () {
+          TablePickerModal.show(
+            context,
+            currentTable: null,
+            onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
+          );
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          height: 32,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkCard : AppColors.lightCard,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.chair, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              const SizedBox(width: 6),
+              Text(
+                'Столик',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 9),
+      decoration: BoxDecoration(
+        color: AppColors.brandPrimary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(PhosphorIconsBold.chair, size: 14, color: AppColors.brandPrimary),
+          const SizedBox(width: 6),
+          InkWell(
+            onTap: () {
+              TablePickerModal.show(
+                context,
+                currentTable: table,
+                onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
+              );
+            },
+            child: Text(
+              table,
+              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+            ),
+          ),
+          const SizedBox(width: 6),
+          InkWell(
+            onTap: () => context.read<CartBloc>().add(const SetTableNumber(null)),
+            child: Icon(PhosphorIconsRegular.xCircle, size: 14, color: AppColors.danger),
+          ),
+        ],
+      ),
     );
   }
 

@@ -56,13 +56,28 @@ class SetBonusToSpend extends CartEvent {
   List<Object?> get props => [amount];
 }
 
+class SetTableNumber extends CartEvent {
+  final String? tableNumber;
+  const SetTableNumber(this.tableNumber);
+
+  @override
+  List<Object?> get props => [tableNumber];
+}
+
 class CheckoutCart extends CartEvent {
   final String paymentMethod;
   final String? note;
-  const CheckoutCart({this.paymentMethod = 'CASH', this.note});
+  final String? tableNumber;
+  final String? orderSource;
+  const CheckoutCart({
+    this.paymentMethod = 'CASH',
+    this.note,
+    this.tableNumber,
+    this.orderSource,
+  });
   
   @override
-  List<Object?> get props => [paymentMethod, note];
+  List<Object?> get props => [paymentMethod, note, tableNumber, orderSource];
 }
 
 class HoldCurrentCart extends CartEvent {
@@ -85,6 +100,7 @@ class CartState extends Equatable {
   final int holdCounter;
   final dynamic selectedCustomer;
   final double bonusToSpend;
+  final String? tableNumber;
   final bool isSubmitting;
   final String? submitError;
   final bool submitSuccess;
@@ -95,6 +111,7 @@ class CartState extends Equatable {
     this.holdCounter = 1,
     this.selectedCustomer,
     this.bonusToSpend = 0.0,
+    this.tableNumber,
     this.isSubmitting = false,
     this.submitError,
     this.submitSuccess = false,
@@ -110,6 +127,8 @@ class CartState extends Equatable {
     dynamic selectedCustomer,
     bool clearCustomer = false,
     double? bonusToSpend,
+    String? tableNumber,
+    bool clearTableNumber = false,
     bool? isSubmitting,
     String? submitError,
     bool? submitSuccess,
@@ -120,6 +139,7 @@ class CartState extends Equatable {
       holdCounter: holdCounter ?? this.holdCounter,
       selectedCustomer: clearCustomer ? null : (selectedCustomer ?? this.selectedCustomer),
       bonusToSpend: clearCustomer ? 0.0 : (bonusToSpend ?? this.bonusToSpend),
+      tableNumber: clearTableNumber ? null : (tableNumber ?? this.tableNumber),
       isSubmitting: isSubmitting ?? this.isSubmitting,
       submitError: submitError,
       submitSuccess: submitSuccess ?? false,
@@ -133,6 +153,7 @@ class CartState extends Equatable {
         holdCounter,
         selectedCustomer,
         bonusToSpend,
+        tableNumber,
         isSubmitting,
         submitError,
         submitSuccess,
@@ -150,6 +171,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<ClearCart>(_onClearCart);
     on<SelectCustomer>(_onSelectCustomer);
     on<SetBonusToSpend>(_onSetBonusToSpend);
+    on<SetTableNumber>(_onSetTableNumber);
     on<CheckoutCart>(_onCheckoutCart);
     on<HoldCurrentCart>(_onHoldCurrentCart);
     on<ResumeHeldCart>(_onResumeHeldCart);
@@ -167,24 +189,35 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     emit(state.copyWith(bonusToSpend: event.amount.clamp(0.0, state.total)));
   }
 
+  void _onSetTableNumber(SetTableNumber event, Emitter<CartState> emit) {
+    emit(state.copyWith(
+      tableNumber: event.tableNumber,
+      clearTableNumber: event.tableNumber == null,
+    ));
+  }
+
   void _onAddItemToCart(AddItemToCart event, Emitter<CartState> emit) {
-    final existingIndex = state.items.indexWhere((i) => i.menuItem.id == event.item.id && i.selectedOptionsJson == event.selectedOptionsJson);
+    final existingIndex = state.items.indexWhere(
+      (item) => item.menuItem.id == event.item.id && 
+                item.selectedOptionsJson == event.selectedOptionsJson
+    );
     
+    List<CartItem> updatedItems;
     if (existingIndex >= 0) {
-      final updatedItems = List<CartItem>.from(state.items);
-      final existingItem = updatedItems[existingIndex];
-      updatedItems[existingIndex] = existingItem.copyWith(quantity: existingItem.quantity + 1);
-      emit(state.copyWith(items: updatedItems));
+      updatedItems = List.from(state.items);
+      final current = updatedItems[existingIndex];
+      updatedItems[existingIndex] = current.copyWith(quantity: current.quantity + 1);
     } else {
-      final newItem = CartItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        menuItem: event.item,
-        quantity: 1,
-        selectedOptionsJson: event.selectedOptionsJson,
-        selectedOptionsPrice: event.selectedOptionsPrice,
+      updatedItems = List.from(state.items)..add(
+        CartItem(
+          menuItem: event.item, 
+          quantity: 1,
+          selectedOptionsJson: event.selectedOptionsJson,
+          selectedOptionsPrice: event.selectedOptionsPrice,
+        )
       );
-      emit(state.copyWith(items: [...state.items, newItem]));
     }
+    emit(state.copyWith(items: updatedItems));
   }
 
   void _onRemoveItemFromCart(RemoveItemFromCart event, Emitter<CartState> emit) {
@@ -193,9 +226,14 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   void _onUpdateQuantity(UpdateCartItemQuantity event, Emitter<CartState> emit) {
+    if (event.quantity <= 0) {
+      add(RemoveItemFromCart(event.cartItemId));
+      return;
+    }
+    
     final updatedItems = state.items.map((item) {
       if (item.id == event.cartItemId) {
-        return item.copyWith(quantity: event.quantity.clamp(1, 99));
+        return item.copyWith(quantity: event.quantity);
       }
       return item;
     }).toList();
@@ -203,7 +241,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   void _onClearCart(ClearCart event, Emitter<CartState> emit) {
-    emit(state.copyWith(items: const [], clearCustomer: true));
+    emit(state.copyWith(items: const [], clearCustomer: true, clearTableNumber: true));
   }
 
   Future<void> _onCheckoutCart(CheckoutCart event, Emitter<CartState> emit) async {
@@ -218,8 +256,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         customerId: customerId,
         bonusSpent: state.bonusToSpend > 0 ? state.bonusToSpend : null,
         note: event.note,
+        tableNumber: event.tableNumber ?? state.tableNumber,
+        orderSource: event.orderSource,
       );
-      emit(state.copyWith(items: const [], clearCustomer: true, isSubmitting: false, submitSuccess: true));
+      emit(state.copyWith(items: const [], clearCustomer: true, clearTableNumber: true, isSubmitting: false, submitSuccess: true));
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, submitError: e.toString()));
     }

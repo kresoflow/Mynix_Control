@@ -107,6 +107,8 @@ async def auto_migrate_tenant_schemas() -> None:
                     await conn.execute(text(f'UPDATE "{schema}".orders SET status = LOWER(status) WHERE status IS NOT NULL'))
                 except Exception:
                     pass
+                await conn.execute(text(f'ALTER TABLE "{schema}".orders ADD COLUMN IF NOT EXISTS table_number VARCHAR(50)'))
+                await conn.execute(text(f'ALTER TABLE "{schema}".orders ADD COLUMN IF NOT EXISTS order_source VARCHAR(30) DEFAULT \'pos\''))
                 # supplier_transactions table
                 await conn.execute(text(f'''
                     CREATE TABLE IF NOT EXISTS "{schema}".supplier_transactions (

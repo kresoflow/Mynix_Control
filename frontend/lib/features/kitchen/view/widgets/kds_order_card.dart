@@ -57,6 +57,7 @@ class _KdsOrderCardState extends State<KdsOrderCard> {
               KdsCardHeader(
                 orderNumber: widget.order['order_number'],
                 orderId: orderId,
+                tableNumber: widget.order['table_number']?.toString(),
                 status: status.toString(),
                 statusColor: statusColor,
                 isDark: widget.isDark,

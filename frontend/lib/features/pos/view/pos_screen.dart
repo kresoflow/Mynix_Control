@@ -1,27 +1,33 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:convert';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/core/utils/audio_helper.dart';
+import 'package:mynix_frontend/core/network/api_client.dart';
+import 'package:mynix_frontend/core/network/websocket_service.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
+
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:mynix_frontend/features/pos/repository/order_repository.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/barcode_scanner_listener.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
+import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
 
 import 'widgets/pos_mobile_layout.dart';
 import 'widgets/pos_desktop_layout.dart';
 import 'widgets/open_shift_modal.dart';
-
-import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
-import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'widgets/barcode_scanner_listener.dart';
+import 'widgets/dialogs/incoming_orders_dialog.dart';
 
 class PosScreen extends StatefulWidget {
   const PosScreen({super.key});
@@ -31,7 +37,10 @@ class PosScreen extends StatefulWidget {
 }
 
 class _PosScreenState extends State<PosScreen> {
+  final OrderRepository _orderRepo = OrderRepository(apiClient.dio);
   int _currentTab = 0; // 0: POS, 1: Orders, 2: KDS Kitchen
+  int _incomingCount = 0;
+  StreamSubscription? _wsSubscription;
 
   @override
   void initState() {
@@ -42,19 +51,46 @@ class _PosScreenState extends State<PosScreen> {
       if (context.read<ShiftBloc>().state is ShiftInitial) {
         context.read<ShiftBloc>().add(CheckCurrentShift());
       }
+      _initIncomingOrders();
     });
+  }
+
+  void _initIncomingOrders() {
+    _refreshIncomingCount();
+    _wsSubscription = webSocketService.messages.listen((msg) {
+      final event = msg['event'];
+      if (event == 'incoming_order') {
+        AudioHelper.playNewOrderSound();
+        _refreshIncomingCount();
+        final order = msg['order'] ?? {};
+        final table = order['table_number'] ?? 'Зал';
+        AppToast.showInfo(context, 'Новый заказ с зала', subtitle: '$table (нажмите на колокольчик)');
+      } else if (event == 'incoming_order_resolved') {
+        _refreshIncomingCount();
+      }
+    });
+  }
+
+  Future<void> _refreshIncomingCount() async {
+    try {
+      final orders = await _orderRepo.fetchPendingOrders();
+      if (mounted) setState(() => _incomingCount = orders.length);
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _wsSubscription?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Listen to settings for feature toggles
     final settingsState = context.watch<SettingsBloc>().state;
     final useOrders = settingsState.useOrders;
     final useKds = settingsState.useKds;
 
-    // Ensure _currentTab is valid if a tab was hidden
     if (_currentTab == 1 && !useOrders) _currentTab = 0;
     if (_currentTab == 2 && !useKds) _currentTab = 0;
 
@@ -78,7 +114,6 @@ class _PosScreenState extends State<PosScreen> {
           if (state is ShiftLoading || state is ShiftInitial) {
             return const Center(child: CircularProgressIndicator());
           }
-
           if (state is ShiftClosed) {
             return const OpenShiftModal();
           }
@@ -87,34 +122,33 @@ class _PosScreenState extends State<PosScreen> {
               ? const PosMobileLayout()
               : Column(
                   children: [
-                    // Sub-tab Navigation Header (desktop/tablet only)
-                    if (useOrders || useKds)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                          border: Border(
-                            bottom: BorderSide(
-                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                              width: 1,
-                            ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                        border: Border(
+                          bottom: BorderSide(
+                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                            width: 1,
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            _buildTabButton(0, 'Касса', PhosphorIconsRegular.receipt, isDark),
-                            if (useOrders) ...[
-                              const SizedBox(width: 8),
-                              _buildTabButton(1, 'Заказы', PhosphorIconsRegular.listNumbers, isDark),
-                            ],
-                            if (useKds) ...[
-                              const SizedBox(width: 8),
-                              _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
-                            ],
-                          ],
-                        ),
                       ),
-                    // Active Screen View
+                      child: Row(
+                        children: [
+                          _buildTabButton(0, 'Касса', PhosphorIconsRegular.receipt, isDark),
+                          if (useOrders) ...[
+                            const SizedBox(width: 8),
+                            _buildTabButton(1, 'Заказы', PhosphorIconsRegular.listNumbers, isDark),
+                          ],
+                          if (useKds) ...[
+                            const SizedBox(width: 8),
+                            _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
+                          ],
+                          const Spacer(),
+                          _buildIncomingOrdersBadge(isDark),
+                        ],
+                      ),
+                    ),
                     Expanded(
                       child: IndexedStack(
                         index: _currentTab,
@@ -140,6 +174,44 @@ class _PosScreenState extends State<PosScreen> {
     );
   }
 
+  Widget _buildIncomingOrdersBadge(bool isDark) {
+    final hasPending = _incomingCount > 0;
+    return InkWell(
+      onTap: () => IncomingOrdersDialog.show(context).then((_) => _refreshIncomingCount()),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: hasPending ? Colors.amber.withValues(alpha: 0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: hasPending ? Colors.amber.withValues(alpha: 0.6) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell,
+              size: 17,
+              color: hasPending ? Colors.amber : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Входящие ($_incomingCount)',
+              style: TextStyle(
+                color: hasPending ? Colors.amber : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                fontWeight: hasPending ? FontWeight.w800 : FontWeight.w500,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTabButton(int index, String label, IconData icon, bool isDark) {
     final isSelected = _currentTab == index;
     final activeColor = AppColors.brandPrimary;
@@ -151,21 +223,13 @@ class _PosScreenState extends State<PosScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? activeColor.withValues(alpha: 0.15) 
-              : Colors.transparent,
+          color: isSelected ? activeColor.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          border: isSelected 
-              ? Border.all(color: activeColor.withValues(alpha: 0.4)) 
-              : null,
+          border: isSelected ? Border.all(color: activeColor.withValues(alpha: 0.4)) : null,
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? activeColor : inactiveColor,
-            ),
+            Icon(icon, size: 18, color: isSelected ? activeColor : inactiveColor),
             const SizedBox(width: 8),
             Text(
               label,
@@ -191,10 +255,7 @@ class _PosScreenState extends State<PosScreen> {
       if (parent != null) {
         context.read<CartBloc>().add(AddItemToCart(
           parent,
-          selectedOptionsJson: jsonEncode({
-            'variation': child.cleanName,
-            'child_item_id': child.id,
-          }),
+          selectedOptionsJson: jsonEncode({'variation': child.cleanName, 'child_item_id': child.id}),
           selectedOptionsPrice: child.price - parent.price,
         ));
         AppToast.showCart(context, '${parent.cleanName} (${child.cleanName})');

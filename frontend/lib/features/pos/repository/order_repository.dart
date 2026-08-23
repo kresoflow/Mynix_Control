@@ -18,6 +18,8 @@ class OrderRepository {
     int? customerId,
     double? bonusSpent,
     String? note,
+    String? tableNumber,
+    String? orderSource,
   }) async {
     final clientUuid = UuidHelper.generate();
 
@@ -55,6 +57,8 @@ class OrderRepository {
       if (customerId != null) 'customer_id': customerId,
       if (bonusSpent != null && bonusSpent > 0) 'bonus_spent': bonusSpent,
       if (note != null && note.isNotEmpty) 'note': note,
+      if (tableNumber != null && tableNumber.isNotEmpty) 'table_number': tableNumber,
+      if (orderSource != null && orderSource.isNotEmpty) 'order_source': orderSource,
       'items': orderItemsList,
     };
 
@@ -101,6 +105,49 @@ class OrderRepository {
     }
   }
 
+  /// Fetches incoming orders waiting for cashier approval
+  Future<List<Map<String, dynamic>>> fetchPendingOrders() async {
+    try {
+      final response = await _dio.get('/orders/', queryParameters: {'status': 'pending_approval'});
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      throw Exception('Не удалось загрузить входящие заказы: $e');
+    }
+  }
+
+  /// Approves incoming hall order -> triggers stock deduction and sends to KDS
+  Future<Map<String, dynamic>> approveOrder(
+    int orderId, {
+    String? paymentMethod,
+    bool isPaid = false,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/orders/$orderId/approve',
+        data: {
+          if (paymentMethod != null) 'payment_method': paymentMethod,
+          'is_paid': isPaid,
+        },
+      );
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      throw Exception('Ошибка при подтверждении заказа: $e');
+    }
+  }
+
+  /// Rejects incoming hall order without stock deduction
+  Future<Map<String, dynamic>> rejectOrder(int orderId, {String? reason}) async {
+    try {
+      final response = await _dio.post(
+        '/orders/$orderId/reject',
+        data: {if (reason != null) 'reason': reason},
+      );
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      throw Exception('Ошибка при отклонении заказа: $e');
+    }
+  }
+
   Future<void> _handleOfflineOrderFallback({
     required String clientUuid,
     required List<Map<String, dynamic>> orderItemsList,
@@ -123,7 +170,6 @@ class OrderRepository {
       createdAt: DateTime.now(),
     );
 
-    // 1. If configured as Client / Waiter Phone and LAN is enabled -> try direct LAN dispatch to Master POS
     final lan = LanSettingsService.current;
     if (lan.isClient && lan.masterIp.isNotEmpty) {
       final sentToMaster = await LocalPosClient.sendOrderToMaster(
@@ -131,19 +177,15 @@ class OrderRepository {
         offlinePayload,
         port: lan.port,
       );
-      if (sentToMaster) {
-        return; // Successfully handed off to Master POS over Wi-Fi LAN
-      }
+      if (sentToMaster) return;
     }
 
-    // 2. If emergency local DB (offline storage) is disabled -> throw clear error
     if (!lan.isOfflineStorageEnabled) {
       throw Exception(
         'Офлайн-режим отключен. Для проведения оплаты требуется активное подключение к интернету.',
       );
     }
 
-    // 3. Otherwise store in local Hive Outbox
     await PosOutboxService.saveOrder(offlinePayload);
   }
 }
