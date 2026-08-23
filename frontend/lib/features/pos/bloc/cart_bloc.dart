@@ -102,6 +102,7 @@ class CartState extends Equatable {
   final dynamic selectedCustomer;
   final double bonusToSpend;
   final String? tableNumber;
+  final String? lastSubmittedSource;
   final bool isSubmitting;
   final String? submitError;
   final bool submitSuccess;
@@ -113,6 +114,7 @@ class CartState extends Equatable {
     this.selectedCustomer,
     this.bonusToSpend = 0.0,
     this.tableNumber,
+    this.lastSubmittedSource,
     this.isSubmitting = false,
     this.submitError,
     this.submitSuccess = false,
@@ -130,6 +132,7 @@ class CartState extends Equatable {
     double? bonusToSpend,
     String? tableNumber,
     bool clearTableNumber = false,
+    String? lastSubmittedSource,
     bool? isSubmitting,
     String? submitError,
     bool? submitSuccess,
@@ -141,6 +144,7 @@ class CartState extends Equatable {
       selectedCustomer: clearCustomer ? null : (selectedCustomer ?? this.selectedCustomer),
       bonusToSpend: clearCustomer ? 0.0 : (bonusToSpend ?? this.bonusToSpend),
       tableNumber: clearTableNumber ? null : (tableNumber ?? this.tableNumber),
+      lastSubmittedSource: lastSubmittedSource ?? this.lastSubmittedSource,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       submitError: submitError,
       submitSuccess: submitSuccess ?? false,
@@ -261,7 +265,14 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         tableNumber: event.tableNumber ?? state.tableNumber,
         orderSource: event.orderSource,
       );
-      emit(state.copyWith(items: const [], clearCustomer: true, clearTableNumber: true, isSubmitting: false, submitSuccess: true));
+      emit(state.copyWith(
+        items: const [],
+        clearCustomer: true,
+        clearTableNumber: true,
+        lastSubmittedSource: event.orderSource,
+        isSubmitting: false,
+        submitSuccess: true,
+      ));
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, submitError: e.toString()));
     }

@@ -24,14 +24,23 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
         ? 'Перевод: ${_getProviderLabel(_transferProvider)}'
         : null;
     context.read<CartBloc>().add(
-          CheckoutCart(paymentMethod: _paymentMethod, note: note),
+          CheckoutCart(paymentMethod: _paymentMethod, note: note, orderSource: 'pos'),
+        );
+  }
+
+  void _handleSendToBooth(BuildContext context) {
+    context.read<CartBloc>().add(
+          const CheckoutCart(
+            paymentMethod: 'CASH',
+            orderSource: 'waiter',
+          ),
         );
   }
 
   String _getProviderLabel(String id) {
     switch (id) {
       case 'dc':
-        return 'Dushanbe City';
+        return 'DC';
       case 'alif':
         return 'Alif Mobi';
       case 'spitamen':
@@ -66,11 +75,19 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             (previous.submitError != current.submitError && current.submitError != null),
         listener: (context, state) {
           if (state.submitSuccess) {
-            AppToast.showSuccess(
-              context,
-              'Заказ успешно оформлен',
-              subtitle: 'Чек сохранен в истории',
-            );
+            if (state.lastSubmittedSource == 'waiter') {
+              AppToast.showInfo(
+                context,
+                'Заказ передан в будку',
+                subtitle: 'Кассир оповещен и видит счет столика',
+              );
+            } else {
+              AppToast.showSuccess(
+                context,
+                'Заказ успешно оформлен',
+                subtitle: 'Чек закрыт и сохранен в истории',
+              );
+            }
           } else if (state.submitError != null) {
             AppToast.showError(
               context,
@@ -124,6 +141,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                 transferProvider: _transferProvider,
                 payableTotal: state.payableTotal,
                 onCheckout: () => _handleCheckout(context),
+                onSendToBooth: () => _handleSendToBooth(context),
                 isDark: isDark,
               ),
             ],
