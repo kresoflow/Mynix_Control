@@ -54,6 +54,23 @@ class MobileNavDrawer extends StatelessWidget {
     final visibleNavItems = _navItems.where((item) {
       if (item.route == '/kitchen' && !showKds) return false;
       if (item.route == '/orders' && !showOrders) return false;
+
+      final r = role.toLowerCase();
+      if (r.contains('owner') || r.contains('superadmin') || r.contains('admin') || r.contains('manager')) {
+        return true;
+      }
+      if (r.contains('waiter')) {
+        return item.route == '/pos';
+      }
+      if (r.contains('cashier')) {
+        return item.route == '/pos' || item.route == '/orders' || item.route == '/crm' || item.route == '/kitchen';
+      }
+      if (r.contains('cook') || r.contains('kitchen')) {
+        return item.route == '/kitchen' || item.route == '/orders';
+      }
+      if (r.contains('warehouse')) {
+        return item.route == '/catalog' || item.route == '/warehouse';
+      }
       return true;
     }).toList();
 

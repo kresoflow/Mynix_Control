@@ -54,6 +54,9 @@ class MynixNavRail extends StatelessWidget {
           if (role.contains('warehouse')) {
             return item.route == '/catalog' || item.route == '/warehouse';
           }
+          if (role.contains('waiter')) {
+            return item.route == '/pos';
+          }
           if (role.contains('cashier')) {
             return item.route == '/pos' || item.route == '/crm' || item.route == '/kitchen';
           }
