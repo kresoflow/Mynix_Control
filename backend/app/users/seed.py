@@ -60,6 +60,22 @@ ROLE_TEMPLATES = {
         "is_superuser": True,
         "permissions": [],  # superuser bypasses all checks
     },
+    "manager": {
+        "description": "Store manager — operations, staff, analytics, CRM",
+        "is_superuser": False,
+        "permissions": [
+            "orders:create", "orders:view", "orders:cancel", "orders:update_status",
+            "cashbox:operate", "cashbox:view", "cashbox:expense",
+            "shifts:open", "shifts:close", "shifts:view",
+            "kitchen:view",
+            "inventory:manage", "inventory:view",
+            "users:manage", "roles:manage",
+            "analytics:view",
+            "menu:manage", "menu:view",
+            "settings:manage",
+            "crm:manage", "crm:view",
+        ],
+    },
     "cashier": {
         "description": "Cashier — POS, payments, shifts",
         "is_superuser": False,
@@ -69,6 +85,15 @@ ROLE_TEMPLATES = {
             "shifts:open", "shifts:close", "shifts:view",
             "menu:view",
             "crm:view", "crm:manage",
+        ],
+    },
+    "waiter": {
+        "description": "Waiter — hall orders, table service, quick submit",
+        "is_superuser": False,
+        "permissions": [
+            "orders:create", "orders:view",
+            "menu:view",
+            "crm:view",
         ],
     },
     "cook": {
@@ -82,7 +107,7 @@ ROLE_TEMPLATES = {
         ],
     },
     "universal_worker": {
-        "description": "Universal — cashier + cook combined",
+        "description": "Universal — cashier + cook combined (street booth)",
         "is_superuser": False,
         "permissions": [
             "orders:create", "orders:view", "orders:cancel", "orders:update_status",
@@ -92,6 +117,14 @@ ROLE_TEMPLATES = {
             "inventory:view",
             "menu:view",
             "crm:view", "crm:manage",
+        ],
+    },
+    "warehouse_manager": {
+        "description": "Warehouse manager — inventory, stock documents, supplies",
+        "is_superuser": False,
+        "permissions": [
+            "inventory:manage", "inventory:view",
+            "menu:view",
         ],
     },
 }

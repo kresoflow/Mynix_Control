@@ -81,6 +81,21 @@ async def auto_migrate_tenant_schemas() -> None:
             await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS pin_code VARCHAR(10) DEFAULT \'1234\''))
             await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS phone VARCHAR(50)'))
             await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS email VARCHAR(255)'))
+            # Ensure standard roles exist in public.roles
+            for role_name, desc in [
+                ('waiter', 'Waiter — hall orders, table service, quick submit'),
+                ('manager', 'Store manager — operations, staff, analytics, CRM'),
+                ('warehouse_manager', 'Warehouse manager — inventory, stock documents, supplies'),
+                ('cook', 'Cook — kitchen screen, order status updates'),
+                ('cashier', 'Cashier — POS, payments, shifts'),
+                ('universal_worker', 'Universal — cashier + cook combined'),
+                ('owner', 'Business owner — full access')
+            ]:
+                await conn.execute(text(f'''
+                    INSERT INTO public.roles (name, description, is_superuser, created_at, updated_at)
+                    SELECT '{role_name}', '{desc}', { 'TRUE' if role_name == 'owner' else 'FALSE' }, NOW(), NOW()
+                    WHERE NOT EXISTS (SELECT 1 FROM public.roles WHERE name = '{role_name}')
+                '''))
 
         async with async_session_factory() as session:
             await session.execute(text("SET search_path TO public"))
