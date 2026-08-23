@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:mynix_frontend/core/utils/uuid_helper.dart';
 import 'package:mynix_frontend/features/pos/models/cart_item.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 import 'package:mynix_frontend/features/pos/repository/order_repository.dart';
@@ -210,6 +211,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     } else {
       updatedItems = List.from(state.items)..add(
         CartItem(
+          id: UuidHelper.generate(),
           menuItem: event.item, 
           quantity: 1,
           selectedOptionsJson: event.selectedOptionsJson,
