@@ -4,7 +4,7 @@ extension DocumentsPart on InventoryRepository {
   Future<List<InventoryDocument>> getDocuments({String? type}) async {
     try {
       final response = await _dio.get('/documents/', queryParameters: {
-        'type': ?type,
+        if (type != null) 'type': type,
       });
       final data = response.data as List;
       return data.map((json) => InventoryDocument.fromJson(json)).toList();

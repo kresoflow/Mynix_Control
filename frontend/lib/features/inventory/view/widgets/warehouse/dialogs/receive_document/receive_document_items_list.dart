@@ -56,7 +56,7 @@ class ReceiveDocumentItemsList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       itemCount: items.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 6),
+      separatorBuilder: (_, __) => const SizedBox(height: 6),
       itemBuilder: (context, index) {
         final item = items[index];
         return ReceiveDocumentItemRow(

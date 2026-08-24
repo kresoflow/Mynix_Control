@@ -121,7 +121,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
                   return ListView.separated(
                     shrinkWrap: true,
                     itemCount: state.ingredients.length,
-                    separatorBuilder: (_, _) => Divider(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.5)),
+                    separatorBuilder: (_, __) => Divider(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.5)),
                     itemBuilder: (context, index) {
                       final item = state.ingredients[index];
                       if (!_controllers.containsKey(item.id)) {

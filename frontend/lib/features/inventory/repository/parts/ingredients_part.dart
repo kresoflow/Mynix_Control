@@ -31,8 +31,8 @@ extension IngredientsPart on InventoryRepository {
           'cost_per_unit': costPerUnit,
           'initial_stock': initialStock,
           'sort_order': sortOrder,
-          'category_id': ?categoryId,
-          'barcode': ?barcode,
+          if (categoryId != null) 'category_id': categoryId,
+          if (barcode != null) 'barcode': barcode,
         },
       );
       return response.data['id'] as int;

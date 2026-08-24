@@ -125,7 +125,7 @@ class OrderDetailsDialog extends StatelessWidget {
                 child: ListView.separated(
                   padding: const EdgeInsets.all(24),
                   itemCount: order.items.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 14),
+                  separatorBuilder: (_, __) => const SizedBox(height: 14),
                   itemBuilder: (context, index) {
                     final item = order.items[index];
                     return Column(

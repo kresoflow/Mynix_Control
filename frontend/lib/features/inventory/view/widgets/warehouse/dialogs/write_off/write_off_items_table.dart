@@ -65,7 +65,7 @@ class WriteOffItemsTable extends StatelessWidget {
       child: ListView.separated(
         shrinkWrap: true,
         itemCount: items.length,
-        separatorBuilder: (_, _) => Divider(
+        separatorBuilder: (_, __) => Divider(
           height: 1,
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
