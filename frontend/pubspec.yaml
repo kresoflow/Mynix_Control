@@ -58,7 +58,7 @@ dependencies:
   sentry_flutter: ^8.14.2
   sentry_dio: ^8.14.2
   pdf: 3.11.1
-  printing: 5.13.2
+  printing: ^5.14.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
