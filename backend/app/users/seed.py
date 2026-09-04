@@ -91,9 +91,10 @@ ROLE_TEMPLATES = {
         "description": "Waiter — hall orders, table service, quick submit",
         "is_superuser": False,
         "permissions": [
-            "orders:create", "orders:view",
+            "orders:create", "orders:view", "orders:cancel",
             "menu:view",
             "crm:view",
+            "shifts:view",
         ],
     },
     "cook": {
