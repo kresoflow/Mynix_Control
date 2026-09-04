@@ -120,7 +120,7 @@ async def api_get_order(
 
 @router.post(
     "/orders/{order_id}/approve",
-    dependencies=[Depends(require_permission("orders:edit"))],
+    dependencies=[Depends(require_permission("orders:create"))],
 )
 async def api_approve_order(
     order_id: int,
