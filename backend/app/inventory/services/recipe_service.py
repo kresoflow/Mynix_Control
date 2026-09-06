@@ -42,6 +42,23 @@ async def get_all_recipes_summary(session: AsyncSession) -> list[dict]:
         if r.ingredient and r.ingredient.cost_per_unit:
             summary[m_id]["total_cost"] += (r.quantity_required * r.ingredient.cost_per_unit)
 
+    # If recipes are attached to child MenuItem rows, mark the parent item as having a recipe too
+    if summary:
+        from app.inventory.models import MenuItem
+        child_stmt = select(MenuItem).where(MenuItem.id.in_(list(summary.keys())), MenuItem.parent_id.is_not(None))
+        child_res = await session.execute(child_stmt)
+        children = child_res.scalars().all()
+        for child in children:
+            p_id = child.parent_id
+            if p_id and p_id not in summary:
+                child_sum = summary.get(child.id)
+                summary[p_id] = {
+                    "menu_item_id": p_id,
+                    "ingredients_count": child_sum["ingredients_count"] if child_sum else 0,
+                    "total_cost": child_sum["total_cost"] if child_sum else 0.0,
+                    "has_recipe": True,
+                }
+
     for item in summary.values():
         item["total_cost"] = round(item["total_cost"], 2)
 
@@ -105,7 +122,20 @@ async def calc_food_cost(session: AsyncSession, menu_item_id: int) -> float:
     result = await session.execute(stmt)
     recipes = result.scalars().all()
 
+    if not recipes:
+        from app.inventory.models import MenuItem
+        item = await session.get(MenuItem, menu_item_id)
+        if item and item.parent_id:
+            stmt_parent = (
+                select(Recipe)
+                .where(Recipe.menu_item_id == item.parent_id)
+                .options(selectinload(Recipe.ingredient))
+            )
+            res_parent = await session.execute(stmt_parent)
+            recipes = res_parent.scalars().all()
+
     total_cost = 0.0
     for recipe in recipes:
-        total_cost += recipe.ingredient.cost_per_unit * recipe.quantity_required
+        if recipe.ingredient and recipe.ingredient.cost_per_unit:
+            total_cost += recipe.ingredient.cost_per_unit * recipe.quantity_required
     return round(total_cost, 2)

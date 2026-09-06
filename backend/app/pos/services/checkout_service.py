@@ -92,16 +92,6 @@ async def create_order(
 
         actual_price = item_req.unit_price_override if item_req.unit_price_override is not None else menu_item.price
 
-        unit_cost = 0.0
-        if menu_item.type == "retail" and menu_item.retail_product:
-            unit_cost = menu_item.retail_product.cost
-        elif enable_inventory:
-            from app.inventory.services.recipe_service import calc_food_cost
-            unit_cost = await calc_food_cost(session, menu_item.id)
-
-        subtotal = actual_price * item_req.quantity
-        total += subtotal
-
         selected_options = {}
         if item_req.options_json:
             try:
@@ -110,6 +100,19 @@ async def create_order(
                 selected_options = {}
         elif item_req.selected_options:
             selected_options = item_req.selected_options
+
+        child_item_id = selected_options.get("child_item_id") if isinstance(selected_options, dict) else None
+
+        unit_cost = 0.0
+        if menu_item.type == "retail" and menu_item.retail_product:
+            unit_cost = menu_item.retail_product.cost
+        elif enable_inventory:
+            from app.inventory.services.recipe_service import calc_food_cost
+            target_cost_id = child_item_id if child_item_id else menu_item.id
+            unit_cost = await calc_food_cost(session, target_cost_id)
+
+        subtotal = actual_price * item_req.quantity
+        total += subtotal
 
         order_items_data.append({
             "menu_item_id": menu_item.id,
@@ -161,7 +164,14 @@ async def create_order(
 
     if not is_hall_order:
         if enable_inventory:
-            inventory_items = [{"menu_item_id": oi["menu_item_id"], "quantity": oi["quantity"]} for oi in order_items_data]
+            inventory_items = [
+                {
+                    "menu_item_id": oi["menu_item_id"],
+                    "quantity": oi["quantity"],
+                    "selected_options": oi["selected_options"],
+                }
+                for oi in order_items_data
+            ]
             await inventory_svc.deduct_ingredients(session, inventory_items, user_id)
         await process_customer_checkout(session, data, total, order, user_id)
         await process_cash_income(session, shift, user_id, order_number, total, data)
@@ -218,7 +228,14 @@ async def approve_order(
     session.add(order)
 
     if enable_inventory:
-        inventory_items = [{"menu_item_id": oi.menu_item_id, "quantity": oi.quantity} for oi in order.items]
+        inventory_items = [
+            {
+                "menu_item_id": oi.menu_item_id,
+                "quantity": oi.quantity,
+                "selected_options": oi.selected_options,
+            }
+            for oi in order.items
+        ]
         await inventory_svc.deduct_ingredients(session, inventory_items, current_user.id)
 
     if is_paid and str(order.payment_method).lower() == "cash":

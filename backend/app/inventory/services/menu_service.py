@@ -9,6 +9,88 @@ from app.inventory.models import (
 )
 from app.pos.models import OrderItem
 
+async def _sync_child_variations(session: AsyncSession, parent_item: MenuItem, variations: list[dict]) -> list[dict]:
+    """
+    Syncs child MenuItem rows with the parent's variations list.
+    - Creates or updates child MenuItems (parent_id = parent_item.id).
+    - If a child variant is removed, checks OrderItem: if ordered -> sets is_available=False; else deletes.
+    - Attaches child.id into each variation dict so the frontend receives it.
+    """
+    if not variations:
+        stmt = select(MenuItem).where(MenuItem.parent_id == parent_item.id)
+        res = await session.execute(stmt)
+        for child in res.scalars().all():
+            order_res = await session.execute(select(OrderItem).where(OrderItem.menu_item_id == child.id).limit(1))
+            if order_res.scalars().first() is not None:
+                child.is_available = False
+                session.add(child)
+            else:
+                await session.delete(child)
+        return []
+
+    stmt = select(MenuItem).where(MenuItem.parent_id == parent_item.id)
+    res = await session.execute(stmt)
+    existing_children = {c.name: c for c in res.scalars().all()}
+    
+    updated_variations = []
+    seen_child_ids = set()
+
+    for idx, var in enumerate(variations):
+        var_name = str(var.get("name", "")).strip()
+        var_price = float(var.get("price", 0.0))
+        var_barcode = var.get("barcode")
+        child_full_name = f"{parent_item.name} ({var_name})"
+
+        child = existing_children.get(child_full_name) or existing_children.get(var_name)
+        if child:
+            child.name = child_full_name
+            child.price = var_price
+            child.category_id = parent_item.category_id
+            child.is_available = parent_item.is_available
+            child.sort_order = idx
+            if var_barcode:
+                child.barcode = var_barcode
+            session.add(child)
+        else:
+            child = MenuItem(
+                name=child_full_name,
+                category_id=parent_item.category_id,
+                price=var_price,
+                parent_id=parent_item.id,
+                is_available=parent_item.is_available,
+                sort_order=idx,
+                barcode=var_barcode,
+                type="dish",
+            )
+            session.add(child)
+        
+        await session.flush()
+        seen_child_ids.add(child.id)
+        
+        var_dict = dict(var)
+        var_dict["id"] = child.id
+        var_dict["price"] = var_price
+        updated_variations.append(var_dict)
+
+    for child in list(existing_children.values()):
+        if child.id not in seen_child_ids:
+            order_res = await session.execute(select(OrderItem).where(OrderItem.menu_item_id == child.id).limit(1))
+            if order_res.scalars().first() is not None:
+                child.is_available = False
+                session.add(child)
+            else:
+                recipe_stmt = select(Recipe).where(Recipe.menu_item_id == child.id)
+                r_res = await session.execute(recipe_stmt)
+                for r in r_res.scalars().all():
+                    await session.delete(r)
+                await session.delete(child)
+
+    await session.flush()
+    return updated_variations
+
+
+from sqlalchemy.orm.attributes import flag_modified
+
 async def create_menu_item(session: AsyncSession, data: dict) -> MenuItem:
     menu_item = MenuItem(
         name=data["name"],
@@ -30,8 +112,14 @@ async def create_menu_item(session: AsyncSession, data: dict) -> MenuItem:
     await session.flush()
 
     attributes = data.get("attributes")
-    # Variations are now exclusively read from the JSON attributes by the frontend,
-    # so we no longer generate child MenuItem rows in the database.
+    if attributes and isinstance(attributes, dict) and "variations" in attributes and attributes["variations"]:
+        updated_vars = await _sync_child_variations(session, menu_item, attributes.get("variations", []))
+        new_attrs = dict(attributes)
+        new_attrs["variations"] = updated_vars
+        menu_item.attributes = new_attrs
+        flag_modified(menu_item, "attributes")
+        session.add(menu_item)
+        await session.flush()
 
     return menu_item
 
@@ -60,86 +148,28 @@ async def delete_menu_item(session: AsyncSession, item_id: int) -> dict:
     await session.flush()
     return {"status": "deleted", "message": "Товар успешно удален."}
 
-async def create_retail_product(session: AsyncSession, data: dict, user_id: int = 1) -> MenuItem:
-    initial_stock = data.get("initial_stock", 0.0)
-
-    retail_product = RetailProduct(
-        name=data["name"],
-        category_id=data["category_id"],
-        price=data["selling_price"],
-        cost=data["purchase_price"],
-        unit=data["unit"],
-        min_stock_alert=data.get("min_stock_alert", 0.0),
-        barcode=data.get("barcode"),
-        current_stock=initial_stock,
-        is_available=True,
-        attributes=data.get("attributes"),
-        sort_order=data.get("sort_order", 0),
-    )
-    session.add(retail_product)
-    await session.flush()
-
-    if initial_stock > 0:
-        txn = StockTransaction(
-            retail_product_id=retail_product.id,
-            type=StockTransactionType.RECEIPT,
-            quantity=initial_stock,
-            reason="Начальный остаток при создании",
-            created_by=user_id,
-        )
-        session.add(txn)
-        await session.flush()
-
-    menu_item = MenuItem(
-        name=data["name"],
-        short_name=data.get("short_name"),
-        tags=data.get("tags", []),
-        category_id=data["category_id"],
-        retail_product_id=retail_product.id,
-        price=data["selling_price"],
-        type="retail",
-        barcode=data.get("barcode"),
-        sort_order=data.get("sort_order", 0),
-        is_available=True,
-        attributes=data.get("attributes"),
-        parent_id=data.get("parent_id"),
-    )
-    session.add(menu_item)
-    await session.flush()
-
-    attributes = data.get("attributes")
-    # Variations are now exclusively read from the JSON attributes by the frontend,
-    # so we no longer generate child MenuItem rows in the database.
-
-    return menu_item
-
-async def list_retail_products(session: AsyncSession) -> list[RetailProductRead]:
-    stmt = select(RetailProduct).options(selectinload(RetailProduct.category)).order_by(RetailProduct.sort_order, RetailProduct.id)
-    result = await session.execute(stmt)
-    products = result.scalars().all()
-    return [
-        RetailProductRead(
-            id=p.id,
-            name=p.name,
-            category_id=p.category_id,
-            category_name=p.category.name if p.category else None,
-            price=p.price,
-            cost=p.cost,
-            unit=p.unit,
-            current_stock=p.current_stock,
-            min_stock_alert=p.min_stock_alert,
-            is_available=p.is_available,
-            barcode=p.barcode,
-            attributes=p.attributes,
-            is_low_stock=p.current_stock <= p.min_stock_alert,
-        )
-        for p in products
-    ]
-
 async def list_menu_items(session: AsyncSession) -> list[MenuItemRead]:
-    stmt = select(MenuItem).options(selectinload(MenuItem.category)).order_by(MenuItem.sort_order, MenuItem.id)
+    stmt = (
+        select(MenuItem)
+        .where(MenuItem.parent_id.is_(None))
+        .options(selectinload(MenuItem.category))
+        .order_by(MenuItem.sort_order, MenuItem.id)
+    )
     result = await session.execute(stmt)
     items = result.scalars().all()
+
+    modified = False
+    for m in items:
+        if m.attributes and isinstance(m.attributes, dict) and m.attributes.get("variations"):
+            variations = m.attributes.get("variations")
+            if any(not v.get("id") for v in variations if isinstance(v, dict)):
+                updated_vars = await _sync_child_variations(session, m, variations)
+                m.attributes["variations"] = updated_vars
+                session.add(m)
+                modified = True
+    if modified:
+        await session.flush()
+
     return [
         MenuItemRead(
             id=m.id,
@@ -173,32 +203,15 @@ async def update_menu_item(session: AsyncSession, menu_item_id: int, data: dict)
     
     session.add(item)
     await session.flush()
+
+    attributes = item.attributes
+    if attributes and isinstance(attributes, dict) and "variations" in attributes:
+        updated_vars = await _sync_child_variations(session, item, attributes.get("variations", []))
+        new_attrs = dict(attributes)
+        new_attrs["variations"] = updated_vars
+        item.attributes = new_attrs
+        flag_modified(item, "attributes")
+        session.add(item)
+        await session.flush()
+
     return item
-
-async def update_retail_product(session: AsyncSession, product_id: int, data: dict) -> RetailProduct:
-    stmt = select(RetailProduct).where(RetailProduct.id == product_id)
-    result = await session.execute(stmt)
-    product = result.scalar_one_or_none()
-    if not product:
-        raise ValueError("Retail product not found")
-
-    for key, value in data.items():
-        if hasattr(product, key) and value is not None:
-            setattr(product, key, value)
-    
-    session.add(product)
-    
-    stmt_menu = select(MenuItem).where(MenuItem.retail_product_id == product_id)
-    res_menu = await session.execute(stmt_menu)
-    menu_item = res_menu.scalar_one_or_none()
-    if menu_item:
-        if "name" in data and data["name"] is not None:
-            menu_item.name = data["name"]
-        if "price" in data and data["price"] is not None:
-            menu_item.price = data["price"]
-        if "category_id" in data and data["category_id"] is not None:
-            menu_item.category_id = data["category_id"]
-        session.add(menu_item)
-
-    await session.flush()
-    return product

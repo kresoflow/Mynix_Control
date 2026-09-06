@@ -336,3 +336,128 @@ async def test_get_recipes_summary(async_client: AsyncClient, db_session):
     assert found["ingredients_count"] == 1
     assert found["total_cost"] == 10.0
 
+
+@pytest.mark.asyncio
+async def test_dish_variation_independent_recipe_deduction(async_client: AsyncClient, db_session):
+    """
+    E2E Test: Ordering a specific variation (e.g. S vs L) deducts the exact recipe
+    configured for that variation's child MenuItem.
+    """
+    from app.inventory.services.menu_service import create_menu_item
+
+    # 1. Setup Tenant & User
+    tenant = Tenant(name="Coffee Shop", schema_name="public", is_active=True, enable_inventory_deduction=True)
+    db_session.add(tenant)
+    await db_session.commit()
+    await db_session.refresh(tenant)
+
+    role = Role(name="Admin", is_superuser=True, tenant_id=tenant.id)
+    db_session.add(role)
+    await db_session.commit()
+    await db_session.refresh(role)
+
+    user = User(tenant_id=tenant.id, username="barista_dan", full_name="Dan Barista", hashed_password="h", is_active=True)
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    user_role = UserRole(user_id=user.id, role_id=role.id)
+    db_session.add(user_role)
+    await db_session.commit()
+
+    token = user_svc.create_access_token(
+        user_id=user.id,
+        tenant_id=tenant.id,
+        permissions=["orders:create", "orders:view", "menu:view"],
+        is_superuser=True,
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 2. Setup Category & Raw Ingredients
+    cat = MenuCategory(name="Кофе", category_type="dish")
+    db_session.add(cat)
+    await db_session.commit()
+    await db_session.refresh(cat)
+
+    coffee_beans = Ingredient(name="Зерно Бразилия", unit="kg", current_stock=10.0, cost_per_unit=100.0)
+    milk = Ingredient(name="Молоко", unit="l", current_stock=10.0, cost_per_unit=10.0)
+    db_session.add(coffee_beans)
+    db_session.add(milk)
+    await db_session.commit()
+    await db_session.refresh(coffee_beans)
+    await db_session.refresh(milk)
+
+    # 3. Create Dish with Variations (S and L)
+    parent_dish = await create_menu_item(db_session, {
+        "name": "Капучино",
+        "category_id": cat.id,
+        "price": 15.0,
+        "type": "dish",
+        "attributes": {
+            "variations": [
+                {"name": "S", "price": 15.0},
+                {"name": "L", "price": 25.0},
+            ]
+        }
+    })
+    await db_session.commit()
+    await db_session.refresh(parent_dish)
+
+    variations = parent_dish.attributes["variations"]
+    assert len(variations) == 2
+    s_child_id = variations[0]["id"]
+    l_child_id = variations[1]["id"]
+    assert s_child_id is not None
+    assert l_child_id is not None
+
+    # 4. Attach independent Recipes to child variations
+    # S Recipe: 0.010 kg beans + 0.100 L milk
+    r_s1 = Recipe(menu_item_id=s_child_id, ingredient_id=coffee_beans.id, quantity_required=0.01)
+    r_s2 = Recipe(menu_item_id=s_child_id, ingredient_id=milk.id, quantity_required=0.10)
+    # L Recipe: 0.020 kg beans + 0.250 L milk
+    r_l1 = Recipe(menu_item_id=l_child_id, ingredient_id=coffee_beans.id, quantity_required=0.02)
+    r_l2 = Recipe(menu_item_id=l_child_id, ingredient_id=milk.id, quantity_required=0.25)
+    db_session.add_all([r_s1, r_s2, r_l1, r_l2])
+    await db_session.commit()
+
+    # 5. Open Shift
+    shift = Shift(opened_by=user.id, opening_cash=50.0)
+    db_session.add(shift)
+    await db_session.commit()
+
+    # 6. Order 2 Cappuccino L size
+    import json
+    order_payload = {
+        "payment_method": "cash",
+        "items": [
+            {
+                "menu_item_id": parent_dish.id,
+                "quantity": 2,
+                "options_json": json.dumps({
+                    "variation": "L",
+                    "child_item_id": l_child_id
+                }),
+                "unit_price_override": 25.0
+            }
+        ]
+    }
+    resp = await async_client.post("/api/v1/orders/", json=order_payload, headers=headers)
+    assert resp.status_code == 201, f"Failed: {resp.text}"
+    assert resp.json()["total"] == 50.0
+
+    # 7. Verify Exact Stock Deduction for Size L:
+    # Expected beans: 10.0 - (0.02 * 2) = 9.96 kg
+    # Expected milk: 10.0 - (0.25 * 2) = 9.50 L
+    await db_session.refresh(coffee_beans)
+    await db_session.refresh(milk)
+    assert round(coffee_beans.current_stock, 4) == 9.96
+    assert round(milk.current_stock, 4) == 9.50
+
+    # 8. Check Recipe Summary maps has_recipe: True to parent dish
+    summary_resp = await async_client.get("/api/v1/recipes/summary", headers=headers)
+    assert summary_resp.status_code == 200
+    summary_list = summary_resp.json()
+    parent_summary = next((x for x in summary_list if x["menu_item_id"] == parent_dish.id), None)
+    assert parent_summary is not None
+    assert parent_summary["has_recipe"] is True
+

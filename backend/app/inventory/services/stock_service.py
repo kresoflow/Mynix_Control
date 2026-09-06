@@ -20,8 +20,15 @@ async def deduct_ingredients(
     for item in order_items:
         menu_item_id = item["menu_item_id"]
         order_qty = item["quantity"]
+        selected_options = item.get("selected_options") or {}
+        child_item_id = selected_options.get("child_item_id") if isinstance(selected_options, dict) else None
 
-        menu_item = await session.get(MenuItem, menu_item_id)
+        target_item_id = child_item_id if child_item_id else menu_item_id
+        menu_item = await session.get(MenuItem, target_item_id)
+        if not menu_item and target_item_id != menu_item_id:
+            menu_item = await session.get(MenuItem, menu_item_id)
+            target_item_id = menu_item_id
+
         if not menu_item:
             continue
 
@@ -35,7 +42,7 @@ async def deduct_ingredients(
                     retail_product_id=retail_product.id,
                     type=StockTransactionType.AUTO_DEDUCTION,
                     quantity=-float(order_qty),
-                    reason=f"Order auto-deduction: retail_item={menu_item_id} x{order_qty}",
+                    reason=f"Order auto-deduction: retail_item={target_item_id} x{order_qty}",
                     created_by=user_id,
                 )
                 session.add(txn)
@@ -43,11 +50,20 @@ async def deduct_ingredients(
         else:
             stmt = (
                 select(Recipe)
-                .where(Recipe.menu_item_id == menu_item_id)
+                .where(Recipe.menu_item_id == target_item_id)
                 .options(selectinload(Recipe.ingredient))
             )
             result = await session.execute(stmt)
             recipes = result.scalars().all()
+
+            if not recipes and target_item_id != menu_item_id:
+                stmt_parent = (
+                    select(Recipe)
+                    .where(Recipe.menu_item_id == menu_item_id)
+                    .options(selectinload(Recipe.ingredient))
+                )
+                res_parent = await session.execute(stmt_parent)
+                recipes = res_parent.scalars().all()
 
             for recipe in recipes:
                 deduction = recipe.quantity_required * order_qty
@@ -60,7 +76,7 @@ async def deduct_ingredients(
                     ingredient_id=ingredient.id,
                     type=StockTransactionType.AUTO_DEDUCTION,
                     quantity=-deduction,
-                    reason=f"Order auto-deduction: menu_item={menu_item_id} x{order_qty}",
+                    reason=f"Order auto-deduction: menu_item={target_item_id} x{order_qty}",
                     created_by=user_id,
                 )
                 session.add(txn)

@@ -115,5 +115,19 @@ class MenuItem extends Equatable {
     }
     return null;
   }
+
+  List<Map<String, dynamic>>? get variations {
+    if (attributesJson != null && attributesJson!.isNotEmpty) {
+      try {
+        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
+        if (attrs['variations'] != null && attrs['variations'] is List) {
+          return List<Map<String, dynamic>>.from(
+            (attrs['variations'] as List).whereType<Map>().map((m) => Map<String, dynamic>.from(m)),
+          );
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
 }
 
