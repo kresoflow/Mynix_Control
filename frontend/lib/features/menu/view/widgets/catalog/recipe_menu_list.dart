@@ -402,10 +402,10 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                                                     if (hasRecipe)
                                                       Text(
                                                         '${cost.toStringAsFixed(0)} с • ${marginPercent.toStringAsFixed(0)}% маржа',
-                                                        style: const TextStyle(
+                                                        style: TextStyle(
                                                           fontSize: 10,
                                                           fontWeight: FontWeight.w600,
-                                                          color: AppColors.success,
+                                                          color: marginPercent >= 0 ? AppColors.success : AppColors.danger,
                                                         ),
                                                       )
                                                     else

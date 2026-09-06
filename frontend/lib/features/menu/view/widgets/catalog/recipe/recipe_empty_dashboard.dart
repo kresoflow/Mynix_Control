@@ -222,15 +222,15 @@ class RecipeEmptyDashboard extends StatelessWidget {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                               decoration: BoxDecoration(
-                                                color: AppColors.success.withValues(alpha: 0.12),
+                                                color: (marginPercent >= 0 ? AppColors.success : AppColors.danger).withValues(alpha: 0.12),
                                                 borderRadius: BorderRadius.circular(4),
                                               ),
                                               child: Text(
                                                 'Себестоимость: ${cost.toStringAsFixed(0)} с (${marginPercent.toStringAsFixed(0)}% маржа)',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.bold,
-                                                  color: AppColors.success,
+                                                  color: marginPercent >= 0 ? AppColors.success : AppColors.danger,
                                                 ),
                                               ),
                                             )

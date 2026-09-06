@@ -98,148 +98,202 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
 
     return BlocBuilder<RecipeBloc, RecipeState>(
       builder: (context, state) {
-        if (state is RecipeLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is RecipeLoaded && state.menuItemId == activeTargetId) {
-          double totalCost = 0.0;
-          for (var r in state.recipes) {
-            final double costPerUnit = (r['cost_per_unit'] as num?)?.toDouble() ?? 0.0;
-            final double qty = (r['quantity_required'] as num?)?.toDouble() ?? 0.0;
-            totalCost += (costPerUnit * qty);
-          }
+        final bool isCurrentLoading = state is RecipeLoading || (state is RecipeLoaded && state.menuItemId != activeTargetId);
+        final List<Map<String, dynamic>> currentRecipes = (state is RecipeLoaded && state.menuItemId == activeTargetId)
+            ? state.recipes
+            : const [];
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Bar: Back to Summary Button + Dish Clean Name
-              Row(
-                children: [
-                  if (widget.onBackToSummary != null) ...[
-                    InkWell(
-                      onTap: widget.onBackToSummary,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(PhosphorIconsRegular.arrowLeft, size: 14, color: isDark ? AppColors.darkText : AppColors.lightText),
-                            const SizedBox(width: 6),
-                            Text(
-                              'К сводке фудкоста',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? AppColors.darkText : AppColors.lightText,
-                              ),
-                            ),
-                          ],
+        double totalCost = 0.0;
+        for (var r in currentRecipes) {
+          final double costPerUnit = (r['cost_per_unit'] as num?)?.toDouble() ?? 0.0;
+          final double qty = (r['quantity_required'] as num?)?.toDouble() ?? 0.0;
+          totalCost += (costPerUnit * qty);
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Bar: Back to Summary Button + Dish Clean Name
+            Row(
+              children: [
+                if (widget.onBackToSummary != null) ...[
+                  InkWell(
+                    onTap: widget.onBackToSummary,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                  Expanded(
-                    child: Text(
-                      displayName,
-                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(PhosphorIconsRegular.arrowLeft, size: 14, color: isDark ? AppColors.darkText : AppColors.lightText),
+                          const SizedBox(width: 6),
+                          Text(
+                            'К сводке фудкоста',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? AppColors.darkText : AppColors.lightText,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 12),
                 ],
-              ),
-              const SizedBox(height: 12),
+                Expanded(
+                  child: Text(
+                    displayName,
+                    style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
 
-              // Variation Switcher Tabs (if dish has size options S/M/L)
-              if (hasVariations)
-                RecipeVariationTabs(
-                  variations: variations,
-                  selectedIndex: safeVarIdx,
-                  currency: currency,
-                  onSelectVariation: (idx) {
-                    setState(() => _selectedVariationIndex = idx);
-                    final targetChildId = (variations[idx]['id'] as int?) ?? widget.selectedMenuItemId;
-                    context.read<RecipeBloc>().add(LoadRecipe(targetChildId));
+            // Variation Switcher Tabs (if dish has size options S/M/L)
+            if (hasVariations)
+              RecipeVariationTabs(
+                variations: variations,
+                selectedIndex: safeVarIdx,
+                currency: currency,
+                onSelectVariation: (idx) {
+                  setState(() => _selectedVariationIndex = idx);
+                  final targetChildId = (variations[idx]['id'] as int?) ?? widget.selectedMenuItemId;
+                  context.read<RecipeBloc>().add(LoadRecipe(targetChildId));
+                },
+              ),
+
+            // KPI Strip (Cost, Active Selling Price, Margin)
+            RecipeAnalyticsHeader(
+              totalCost: totalCost,
+              price: activePrice,
+              currency: currency,
+            ),
+
+            // Ingredients Header Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Ингредиенты (${currentRecipes.length})',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                BlocBuilder<IngredientBloc, IngredientState>(
+                  builder: (context, ingState) {
+                    return ElevatedButton.icon(
+                      onPressed: () {
+                        if (ingState is IngredientLoaded) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => RecipeBulkEditDialog(
+                              menuItemId: activeTargetId,
+                              availableIngredients: ingState.ingredients.where((i) => !i.isRetail).toList(),
+                              currentRecipes: currentRecipes,
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 16),
+                      label: const Text('Редактировать состав'),
+                    );
                   },
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
 
-              // KPI Strip (Cost, Active Selling Price, Margin)
-              RecipeAnalyticsHeader(
-                totalCost: totalCost,
-                price: activePrice,
-                currency: currency,
-              ),
-
-              // Ingredients Header Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Ингредиенты (${state.recipes.length})',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  BlocBuilder<IngredientBloc, IngredientState>(
-                    builder: (context, ingState) {
-                      return ElevatedButton.icon(
-                        onPressed: () {
-                          if (ingState is IngredientLoaded) {
-                            showDialog(
-                              context: context,
-                              builder: (_) => RecipeBulkEditDialog(
-                                menuItemId: activeTargetId,
-                                availableIngredients: ingState.ingredients.where((i) => !i.isRetail).toList(),
-                                currentRecipes: state.recipes,
+            // Ingredients List Body
+            Expanded(
+              child: isCurrentLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : state is RecipeError
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(PhosphorIconsRegular.warningCircle, size: 40, color: AppColors.danger),
+                              const SizedBox(height: 8),
+                              Text('Ошибка загрузки техкарты', style: AppTextStyles.h3),
+                              const SizedBox(height: 12),
+                              ElevatedButton.icon(
+                                onPressed: () => context.read<RecipeBloc>().add(LoadRecipe(activeTargetId)),
+                                icon: const Icon(PhosphorIconsRegular.arrowsClockwise, size: 16),
+                                label: const Text('Повторить'),
                               ),
-                            );
-                          }
-                        },
-                        icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 16),
-                        label: const Text('Редактировать состав'),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (state.recipes.isEmpty)
-                const Expanded(child: Center(child: Text('В техкарте пока нет ингредиентов.'))),
-              if (state.recipes.isNotEmpty)
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: ListView.separated(
-                        padding: EdgeInsets.zero,
-                        itemCount: state.recipes.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          return RecipeIngredientItemTile(
-                            recipe: state.recipes[index],
-                            selectedMenuItemId: activeTargetId,
-                            currency: currency,
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          );
-        }
-        return const SizedBox.shrink();
+                            ],
+                          ),
+                        )
+                      : currentRecipes.isEmpty
+                          ? Container(
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.15)),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    PhosphorIconsRegular.cookingPot,
+                                    size: 48,
+                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'В техкарте пока нет ингредиентов',
+                                    style: AppTextStyles.h3.copyWith(
+                                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Нажмите «Редактировать состав», чтобы настроить рецептуру и калькуляцию.',
+                                    style: TextStyle(
+                                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                      fontSize: 13,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: ListView.separated(
+                                  padding: EdgeInsets.zero,
+                                  itemCount: currentRecipes.length,
+                                  separatorBuilder: (context, index) => const Divider(height: 1),
+                                  itemBuilder: (context, index) {
+                                    return RecipeIngredientItemTile(
+                                      recipe: currentRecipes[index],
+                                      selectedMenuItemId: activeTargetId,
+                                      currency: currency,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+            ),
+          ],
+        );
       },
     );
   }
