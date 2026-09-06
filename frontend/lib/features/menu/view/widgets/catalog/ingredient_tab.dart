@@ -316,6 +316,28 @@ class _IngredientTabState extends State<IngredientTab> {
                             ),
                           ],
                         );
+                      } else if (state is IngredientError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(PhosphorIconsRegular.warningCircle, size: 48, color: AppColors.danger),
+                              const SizedBox(height: 12),
+                              Text('Не удалось загрузить сырье', style: AppTextStyles.h3),
+                              const SizedBox(height: 6),
+                              Text(state.message.replaceAll('Exception: ', ''), style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  context.read<IngredientBloc>().add(LoadIngredients());
+                                  context.read<CategoryBloc>().add(LoadCategories());
+                                },
+                                icon: const Icon(PhosphorIconsRegular.arrowsClockwise, size: 16),
+                                label: const Text('Повторить попытку'),
+                              ),
+                            ],
+                          ),
+                        );
                       }
                       return const Center(child: Text('Ошибка загрузки склада'));
                     },

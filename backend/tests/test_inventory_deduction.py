@@ -200,6 +200,12 @@ async def test_retail_product_auto_deduction(async_client: AsyncClient, db_sessi
     assert txns[0].quantity == -3.0
     assert txns[0].type == StockTransactionType.AUTO_DEDUCTION
 
+    # 7. Verify GET /api/v1/inventory/retail/ endpoint
+    retail_resp = await async_client.get("/api/v1/inventory/retail/", headers=headers)
+    assert retail_resp.status_code == 200
+    retail_list = retail_resp.json()
+    assert any(p["name"] == "Coca-Cola 0.5" and p["current_stock"] == 21.0 for p in retail_list)
+
 
 @pytest.mark.asyncio
 async def test_disabled_inventory_deduction_flag(async_client: AsyncClient, db_session):

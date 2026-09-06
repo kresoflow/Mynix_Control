@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_pill_filters.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
@@ -84,6 +88,25 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
       builder: (context, state) {
         if (state is IngredientLoading) {
           return const SkeletonList();
+        } else if (state is IngredientError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(PhosphorIconsRegular.warningCircle, size: 48, color: AppColors.danger),
+                const SizedBox(height: 12),
+                Text('Не удалось загрузить остатки склада', style: AppTextStyles.h3),
+                const SizedBox(height: 6),
+                Text(state.message.replaceAll('Exception: ', ''), style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => context.read<IngredientBloc>().add(LoadIngredients()),
+                  icon: const Icon(PhosphorIconsRegular.arrowsClockwise, size: 16),
+                  label: const Text('Повторить попытку'),
+                ),
+              ],
+            ),
+          );
         } else if (state is! IngredientLoaded) {
           return const SizedBox.shrink();
         }
