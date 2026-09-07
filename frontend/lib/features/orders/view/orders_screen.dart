@@ -16,13 +16,11 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  String get _todayStr {
-    final now = DateTime.now();
-    return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-  }
-
   void _loadTodayOrders() {
-    context.read<OrdersBloc>().add(LoadOrders(startDate: _todayStr, endDate: _todayStr));
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
+    final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
+    context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class IncomingOrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
+  final bool useKds;
   final VoidCallback onApprove;
   final VoidCallback onPayAndApprove;
   final VoidCallback onReject;
@@ -12,6 +13,7 @@ class IncomingOrderCard extends StatelessWidget {
   const IncomingOrderCard({
     super.key,
     required this.order,
+    this.useKds = true,
     required this.onApprove,
     required this.onPayAndApprove,
     required this.onReject,
@@ -160,11 +162,14 @@ class IncomingOrderCard extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onReject,
-                  icon: const Icon(PhosphorIconsBold.x, size: 14, color: Colors.redAccent),
-                  label: const Text('Отклонить', style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+                  icon: const Icon(PhosphorIconsBold.x, size: 14, color: AppColors.danger),
+                  label: const Text(
+                    'Отклонить',
+                    style: TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.redAccent, width: 1),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    side: const BorderSide(color: AppColors.danger, width: 1.2),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
@@ -174,10 +179,13 @@ class IncomingOrderCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onPayAndApprove,
                   icon: Icon(PhosphorIconsBold.creditCard, size: 14, color: AppColors.brandPrimary),
-                  label: Text('Оплатить', style: TextStyle(color: AppColors.brandPrimary, fontSize: 12)),
+                  label: Text(
+                    'Оплатить',
+                    style: TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w700),
+                  ),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.brandPrimary, width: 1),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    side: BorderSide(color: AppColors.brandPrimary, width: 1.2),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
@@ -187,12 +195,20 @@ class IncomingOrderCard extends StatelessWidget {
                 flex: 2,
                 child: ElevatedButton.icon(
                   onPressed: onApprove,
-                  icon: const Icon(PhosphorIconsBold.check, size: 14, color: Colors.white),
-                  label: const Text('В цех (KDS)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12)),
+                  icon: Icon(
+                    useKds ? PhosphorIconsBold.cookingPot : PhosphorIconsBold.checkCircle,
+                    size: 15,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    useKds ? 'В цех (KDS)' : 'Принять заказ',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
+                  ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    backgroundColor: useKds ? const Color(0xFF10B981) : AppColors.brandPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 11),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
                   ),
                 ),
               ),

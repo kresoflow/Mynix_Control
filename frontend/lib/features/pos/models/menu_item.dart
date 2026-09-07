@@ -129,5 +129,18 @@ class MenuItem extends Equatable {
     }
     return null;
   }
+
+  bool get hasVariations => variations != null && variations!.isNotEmpty;
+
+  bool get hasModifiers {
+    if (attributesJson != null && attributesJson!.isNotEmpty) {
+      try {
+        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
+        final groups = attrs['modifier_groups'] as List?;
+        return groups != null && groups.isNotEmpty;
+      } catch (_) {}
+    }
+    return false;
+  }
 }
 

@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/features/pos/repository/order_repository.dart';
+import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'incoming_order_card.dart';
+import 'incoming_order_payment_modal.dart';
+import 'incoming_order_reject_modal.dart';
 
 class IncomingOrdersDialog extends StatefulWidget {
   const IncomingOrdersDialog({super.key});
@@ -32,6 +39,15 @@ class _IncomingOrdersDialogState extends State<IncomingOrdersDialog> {
     _loadPendingOrders();
   }
 
+  void _notifyStateUpdates() {
+    if (!mounted) return;
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
+    final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
+    context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
+    context.read<ShiftBloc>().add(CheckCurrentShift());
+  }
+
   Future<void> _loadPendingOrders() async {
     setState(() => _isLoading = true);
     try {
@@ -50,11 +66,15 @@ class _IncomingOrdersDialogState extends State<IncomingOrdersDialog> {
     }
   }
 
-  Future<void> _approveOrder(int orderId) async {
+  Future<void> _approveOrder(int orderId, bool useKds) async {
     try {
       await _orderRepo.approveOrder(orderId);
       if (mounted) {
-        AppToast.showSuccess(context, 'Заказ отправлен на кухню');
+        AppToast.showSuccess(
+          context,
+          useKds ? 'Заказ отправлен на кухню' : 'Заказ принят',
+        );
+        _notifyStateUpdates();
         _loadPendingOrders();
       }
     } catch (e) {
@@ -64,101 +84,49 @@ class _IncomingOrdersDialogState extends State<IncomingOrdersDialog> {
 
   Future<void> _payAndApproveOrder(Map<String, dynamic> order) async {
     final orderId = order['id'] as int;
-    final total = (order['total'] as num?)?.toDouble() ?? 0.0;
-
-    String selectedMethod = 'cash';
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text('Оплата заказа #${order['order_number']}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Сумма к оплате: $total сом', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 16),
-              RadioListTile<String>(
-                title: const Text('Наличные'),
-                value: 'cash',
-                groupValue: selectedMethod,
-                onChanged: (val) => setDialogState(() => selectedMethod = val!),
-              ),
-              RadioListTile<String>(
-                title: const Text('Карта / Терминал'),
-                value: 'card',
-                groupValue: selectedMethod,
-                onChanged: (val) => setDialogState(() => selectedMethod = val!),
-              ),
-              RadioListTile<String>(
-                title: const Text('Перевод (Mbank / Optima)'),
-                value: 'transfer',
-                groupValue: selectedMethod,
-                onChanged: (val) => setDialogState(() => selectedMethod = val!),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                try {
-                  await _orderRepo.approveOrder(orderId, paymentMethod: selectedMethod, isPaid: true);
-                  if (mounted) {
-                    AppToast.showSuccess(context, 'Оплачено и отправлено в цех');
-                    _loadPendingOrders();
-                  }
-                } catch (e) {
-                  if (mounted) AppToast.showError(context, 'Ошибка', subtitle: e.toString());
-                }
-              },
-              child: const Text('Подтвердить оплату'),
-            ),
-          ],
-        ),
-      ),
+    await IncomingOrderPaymentModal.show(
+      context,
+      order: order,
+      onConfirm: (paymentMethod) async {
+        try {
+          await _orderRepo.approveOrder(orderId, paymentMethod: paymentMethod, isPaid: true);
+          if (mounted) {
+            AppToast.showSuccess(context, 'Заказ оплачен и подтвержден');
+            _notifyStateUpdates();
+            _loadPendingOrders();
+          }
+        } catch (e) {
+          if (mounted) AppToast.showError(context, 'Ошибка', subtitle: e.toString());
+        }
+      },
     );
   }
 
-  Future<void> _rejectOrder(int orderId) async {
-    final reasonController = TextEditingController();
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Отклонить заказ?'),
-        content: TextField(
-          controller: reasonController,
-          decoration: const InputDecoration(
-            hintText: 'Причина (например: блюдо закончилось)',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Назад')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                await _orderRepo.rejectOrder(orderId, reason: reasonController.text);
-                if (mounted) {
-                  AppToast.showWarning(context, 'Заказ отклонен');
-                  _loadPendingOrders();
-                }
-              } catch (e) {
-                if (mounted) AppToast.showError(context, 'Ошибка', subtitle: e.toString());
-              }
-            },
-            child: const Text('Отклонить', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+  Future<void> _rejectOrder(Map<String, dynamic> order) async {
+    final orderId = order['id'] as int;
+    final orderNum = (order['order_number'] as num?)?.toInt() ?? orderId;
+    await IncomingOrderRejectModal.show(
+      context,
+      orderNumber: orderNum,
+      onConfirm: (reason) async {
+        try {
+          await _orderRepo.rejectOrder(orderId, reason: reason);
+          if (mounted) {
+            AppToast.showWarning(context, 'Заказ отклонен');
+            _notifyStateUpdates();
+            _loadPendingOrders();
+          }
+        } catch (e) {
+          if (mounted) AppToast.showError(context, 'Ошибка', subtitle: e.toString());
+        }
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final useKds = context.watch<SettingsBloc>().state.useKds;
 
     return Dialog(
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -241,9 +209,10 @@ class _IncomingOrdersDialogState extends State<IncomingOrdersDialog> {
                             final orderId = order['id'] as int;
                             return IncomingOrderCard(
                               order: order,
-                              onApprove: () => _approveOrder(orderId),
+                              useKds: useKds,
+                              onApprove: () => _approveOrder(orderId, useKds),
                               onPayAndApprove: () => _payAndApproveOrder(order),
-                              onReject: () => _rejectOrder(orderId),
+                              onReject: () => _rejectOrder(order),
                             );
                           },
                         ),

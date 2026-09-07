@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/customer_picker_modal.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/table_picker_modal.dart';
+import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'pos_checkout_chips.dart';
 
 class PosCheckoutPanelPaymentMethods extends StatelessWidget {
   final String paymentMethod;
@@ -37,6 +39,27 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showGuest = context.watch<PosSettingsCubit>().state.showGuestOption;
+    final authState = context.watch<AuthBloc>().state;
+    final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
+
+    // In Waiter mode: Only show Table selection (and Guest if enabled), hide payment tabs
+    if (isWaiter) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            PosTableChip(cartState: cartState, isDark: isDark, border: border),
+            if (showGuest || customer != null) ...[
+              const SizedBox(width: 8),
+              PosGuestChip(customer: customer, isDark: isDark, border: border),
+            ],
+          ],
+        ),
+      );
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -46,9 +69,11 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildTableChip(context),
-              const SizedBox(width: 8),
-              _buildGuestChip(context),
+              PosTableChip(cartState: cartState, isDark: isDark, border: border),
+              if (showGuest || customer != null) ...[
+                const SizedBox(width: 8),
+                PosGuestChip(customer: customer, isDark: isDark, border: border),
+              ],
               const SizedBox(width: 8),
               _buildMethodTab('CASH', 'Наличные', PhosphorIconsRegular.money),
               const SizedBox(width: 8),
@@ -69,176 +94,6 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
           _buildTransferBanksRow(),
         ],
       ],
-    );
-  }
-
-  Widget _buildTableChip(BuildContext context) {
-    final table = cartState.tableNumber;
-    if (table == null || table.isEmpty) {
-      return InkWell(
-        onTap: () {
-          TablePickerModal.show(
-            context,
-            currentTable: null,
-            onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
-          );
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(PhosphorIconsRegular.chair, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              const SizedBox(width: 6),
-              Text(
-                'Столик',
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 9),
-      decoration: BoxDecoration(
-        color: AppColors.brandPrimary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(PhosphorIconsBold.chair, size: 14, color: AppColors.brandPrimary),
-          const SizedBox(width: 6),
-          InkWell(
-            onTap: () {
-              TablePickerModal.show(
-                context,
-                currentTable: table,
-                onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
-              );
-            },
-            child: Text(
-              table,
-              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
-            ),
-          ),
-          const SizedBox(width: 6),
-          InkWell(
-            onTap: () => context.read<CartBloc>().add(const SetTableNumber(null)),
-            child: Icon(PhosphorIconsRegular.xCircle, size: 14, color: AppColors.danger),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGuestChip(BuildContext context) {
-    if (customer == null) {
-      return InkWell(
-        onTap: () {
-          showDialog(
-            context: context,
-            builder: (_) => CustomerPickerModal(
-              selectedCustomer: null,
-              onSelect: (c) => context.read<CartBloc>().add(SelectCustomer(c)),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(PhosphorIconsRegular.userPlus, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              const SizedBox(width: 6),
-              Text(
-                'Гость',
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final bonus = (customer.bonusBalance as num?)?.toDouble() ?? 0.0;
-    return Container(
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 9),
-      decoration: BoxDecoration(
-        color: AppColors.brandPrimary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(PhosphorIconsRegular.userCheck, size: 14, color: AppColors.brandPrimary),
-          const SizedBox(width: 6),
-          InkWell(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (_) => CustomerPickerModal(
-                  selectedCustomer: customer,
-                  onSelect: (c) => context.read<CartBloc>().add(SelectCustomer(c)),
-                ),
-              );
-            },
-            child: Text(
-              customer.name.toString(),
-              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          if (bonus > 0) ...[
-            const SizedBox(width: 4),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(PhosphorIconsRegular.gift, size: 11, color: AppColors.brandPrimary),
-                const SizedBox(width: 2),
-                Text(
-                  bonus.toStringAsFixed(0),
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(width: 4),
-          InkWell(
-            onTap: () => context.read<CartBloc>().add(const SelectCustomer(null)),
-            child: Icon(PhosphorIconsRegular.xCircle, size: 14, color: AppColors.danger),
-          ),
-        ],
-      ),
     );
   }
 

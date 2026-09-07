@@ -43,6 +43,18 @@ class PosOrder {
   }
 
   factory PosOrder.fromJson(Map<String, dynamic> json) {
+    final rawDate = json['created_at'] as String?;
+    DateTime parsedDate;
+    if (rawDate != null) {
+      if (!rawDate.endsWith('Z') && !rawDate.contains('+')) {
+        parsedDate = DateTime.parse('${rawDate}Z').toLocal();
+      } else {
+        parsedDate = DateTime.parse(rawDate).toLocal();
+      }
+    } else {
+      parsedDate = DateTime.now();
+    }
+
     return PosOrder(
       id: json['id'] as int,
       orderNumber: json['order_number'] as int,
@@ -50,7 +62,7 @@ class PosOrder {
       paymentMethod: json['payment_method'] as String,
       total: (json['total'] as num).toDouble(),
       note: json['note'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: parsedDate,
       items: (json['items'] as List<dynamic>?)
               ?.map((e) => PosOrderItem.fromJson(e as Map<String, dynamic>))
               .toList() ??

@@ -1,6 +1,6 @@
 import json
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -41,7 +41,7 @@ def format_order_dict(order: Order, created_by_name: str) -> dict:
         "total": order.total,
         "note": order.note,
         "created_by": created_by_name,
-        "created_at": order.created_at.isoformat() if order.created_at else None,
+        "created_at": f"{order.created_at.isoformat()}Z" if order.created_at else None,
         "items": [
             {
                 "menu_item_name": oi.menu_item_name,
@@ -77,8 +77,37 @@ async def create_order(
     if not shift:
         raise ValueError("Смена закрыта. Откройте смену в кассе для создания заказов.")
 
+    # ── Auto-Merge: If table already has an active open order in shift, append items ──
+    if data.table_number:
+        active_statuses = [
+            OrderStatus.PENDING_APPROVAL,
+            OrderStatus.NEW,
+            OrderStatus.COOKING,
+            OrderStatus.READY,
+        ]
+        existing_table_stmt = (
+            select(Order)
+            .where(Order.table_number == data.table_number)
+            .where(Order.status.in_(active_statuses))
+            .where(Order.shift_id == shift.id)
+            .options(selectinload(Order.items))
+        )
+        existing_table_order = (await session.execute(existing_table_stmt)).scalars().first()
+        if existing_table_order:
+            from app.pos.services.order_table_service import append_items_to_table_order
+            class _SimpleUser:
+                def __init__(self, uid, tid):
+                    self.id = uid
+                    self.tenant_id = tid
+                    self.full_name = "Кассир"
+            await append_items_to_table_order(
+                session, _SimpleUser(user_id, tenant_id), existing_table_order.id, data.items
+            )
+            return existing_table_order
+
     order_items_data = []
     total = 0.0
+
 
     for item_req in data.items:
         stmt = select(MenuItem).where(MenuItem.id == item_req.menu_item_id).options(selectinload(MenuItem.retail_product))
@@ -220,7 +249,11 @@ async def approve_order(
     enable_inventory = tenant.enable_inventory_deduction if tenant else True
 
     has_dish = any(oi.item_type == "dish" for oi in order.items)
-    new_status = OrderStatus.COOKING if (has_dish and use_kds) else OrderStatus.COMPLETED
+    if is_paid:
+        new_status = OrderStatus.COOKING if (has_dish and use_kds) else OrderStatus.COMPLETED
+    else:
+        # Unpaid dine-in table order waiting for post-payment
+        new_status = OrderStatus.COOKING if (has_dish and use_kds) else OrderStatus.READY
 
     order.status = new_status
     if payment_method:
@@ -238,15 +271,21 @@ async def approve_order(
         ]
         await inventory_svc.deduct_ingredients(session, inventory_items, current_user.id)
 
-    if is_paid and str(order.payment_method).lower() == "cash":
-        tx = CashTransaction(
-            shift_id=order.shift_id,
-            user_id=current_user.id,
-            type=CashTransactionType.INCOME,
-            amount=order.total,
-            description=f"Оплата заказа #{order.order_number} ({order.table_number or 'Зал'})",
-        )
-        session.add(tx)
+    if is_paid:
+        if not order.shift_id:
+            open_shift = await get_open_shift(session, current_user.id)
+            if open_shift:
+                order.shift_id = open_shift.id
+
+        if str(order.payment_method).lower() == "cash" and order.shift_id:
+            tx = CashTransaction(
+                shift_id=order.shift_id,
+                user_id=current_user.id,
+                type=CashTransactionType.INCOME,
+                amount=order.total,
+                description=f"Оплата заказа #{order.order_number} ({order.table_number or 'Зал'})",
+            )
+            session.add(tx)
 
     await session.commit()
     order_data = format_order_dict(order, current_user.full_name)
@@ -278,6 +317,18 @@ async def reject_order(session: AsyncSession, current_user, order_id: int, reaso
     return order_data
 
 
+def parse_filter_dt(val: str, is_end: bool = False) -> datetime:
+    val = val.strip()
+    if "T" in val:
+        clean_val = val.replace("Z", "+00:00")
+        dt = datetime.fromisoformat(clean_val)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
+    time_str = "23:59:59" if is_end else "00:00:00"
+    return datetime.strptime(f"{val} {time_str}", "%Y-%m-%d %H:%M:%S")
+
+
 async def list_orders(
     session: AsyncSession,
     shift_id: Optional[int] = None,
@@ -292,11 +343,17 @@ async def list_orders(
     if status_filter:
         stmt = stmt.where(Order.status == status_filter)
     if start_date:
-        start_dt = datetime.strptime(f"{start_date} 00:00:00", "%Y-%m-%d %H:%M:%S")
-        stmt = stmt.where(Order.created_at >= start_dt)
+        try:
+            start_dt = parse_filter_dt(start_date, is_end=False)
+            stmt = stmt.where(Order.created_at >= start_dt)
+        except Exception:
+            pass
     if end_date:
-        end_dt = datetime.strptime(f"{end_date} 23:59:59", "%Y-%m-%d %H:%M:%S")
-        stmt = stmt.where(Order.created_at <= end_dt)
+        try:
+            end_dt = parse_filter_dt(end_date, is_end=True)
+            stmt = stmt.where(Order.created_at <= end_dt)
+        except Exception:
+            pass
 
     result = await session.execute(stmt)
     return list(result.scalars().all())

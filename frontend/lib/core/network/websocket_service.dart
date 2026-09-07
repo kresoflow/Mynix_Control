@@ -51,8 +51,11 @@ class WebSocketService {
           }
           
           try {
-            final data = jsonDecode(message);
-            _messageController.add(data);
+            final raw = jsonDecode(message);
+            if (raw is Map) {
+              final data = Map<String, dynamic>.from(raw);
+              _messageController.add(data);
+            }
           } catch (e) {
             if (kDebugMode) print('<!> [WebSocket] JSON Decode error: $e');
           }

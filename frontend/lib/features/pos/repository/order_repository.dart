@@ -148,7 +148,105 @@ class OrderRepository {
     }
   }
 
+  /// Marks a table order as served in the hall
+  Future<Map<String, dynamic>> markOrderServed(int orderId) async {
+    try {
+      final response = await _dio.post('/orders/$orderId/serve');
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      throw Exception('Ошибка обновления статуса: $e');
+    }
+  }
+
+  /// Fetches active open dine-in tables
+  Future<List<Map<String, dynamic>>> fetchActiveTables() async {
+    try {
+      final response = await _dio.get('/tables/active');
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      throw Exception('Не удалось загрузить столики: $e');
+    }
+  }
+
+  /// Settles a table order (post-payment)
+  Future<Map<String, dynamic>> settleTableOrder(
+    int orderId,
+    String paymentMethod, {
+    String? note,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/orders/$orderId/settle',
+        data: {
+          'payment_method': paymentMethod.toLowerCase(),
+          if (note != null && note.isNotEmpty) 'note': note,
+        },
+      );
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      throw Exception('Ошибка расчета столика: $e');
+    }
+  }
+
+  /// Appends additional items (дозаказ) to an active table order
+  Future<Map<String, dynamic>> appendItemsToTable(
+    int orderId,
+    List<CartItem> items,
+  ) async {
+    final orderItemsList = items.map((item) {
+      int menuItemId = item.menuItem.id;
+      if (item.selectedOptionsJson != null) {
+        try {
+          final parsed = jsonDecode(item.selectedOptionsJson!);
+          if (parsed['child_item_id'] != null) {
+            menuItemId = parsed['child_item_id'] as int;
+          }
+        } catch (_) {}
+      }
+      return {
+        'menu_item_id': menuItemId,
+        'quantity': item.quantity,
+        'unit_price_override': item.menuItem.price + item.selectedOptionsPrice,
+        if (item.selectedOptionsJson != null) 'options_json': item.selectedOptionsJson,
+      };
+    }).toList();
+
+    try {
+      final response = await _dio.post(
+        '/orders/$orderId/append',
+        data: {'items': orderItemsList},
+      );
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      throw Exception('Ошибка добавления к столику: $e');
+    }
+  }
+
+  /// Splits selected items from an active table order and completes payment
+  Future<Map<String, dynamic>> splitOrder(
+    int orderId,
+    List<Map<String, dynamic>> splitItems,
+    String paymentMethod, {
+    String? note,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/orders/$orderId/split',
+        data: {
+          'items': splitItems,
+          'payment_method': paymentMethod.toLowerCase(),
+          if (note != null && note.isNotEmpty) 'note': note,
+        },
+      );
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      throw Exception('Ошибка разделения чека: $e');
+    }
+  }
+
   Future<void> _handleOfflineOrderFallback({
+
+
     required String clientUuid,
     required List<Map<String, dynamic>> orderItemsList,
     required String paymentMethod,

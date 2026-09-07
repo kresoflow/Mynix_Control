@@ -59,7 +59,18 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
             if (state is MenuLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is MenuLoaded) {
-              final rawItems = state.items.where((i) => !i.isRetail).toList();
+              final activeCatMap = catState is CategoryLoaded
+                  ? {for (var c in catState.categories.where((c) => c.isVisible)) c.id.toString(): c}
+                  : <String, dynamic>{};
+
+              final rawItems = state.items.where((i) {
+                if (i.isRetail) return false;
+                if (!i.isAvailable) return false;
+                final catId = i.categoryId.toString();
+                final isRoot = catId == '0' || catId == 'null' || catId == '' || catId == 'uncategorized';
+                return isRoot || activeCatMap.containsKey(catId);
+              }).toList();
+
               if (rawItems.isEmpty) {
                 return const Center(child: Text('Нет доступных блюд для техкарт'));
               }
@@ -88,12 +99,12 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
 
               final Map<String, List<dynamic>> groupedItems = {};
               for (var item in filteredItems) {
-                String catName = item.categoryName ?? 'Без категории';
-                if ((item.categoryName == null || item.categoryName!.isEmpty) && catState is CategoryLoaded) {
-                  final cat = catState.categories.where((c) => c.id.toString() == item.categoryId).firstOrNull;
-                  if (cat != null) {
-                    catName = cat.name;
-                  }
+                final catId = item.categoryId.toString();
+                String catName = 'Без категории';
+                if (activeCatMap.containsKey(catId)) {
+                  catName = activeCatMap[catId].name;
+                } else if (item.categoryName != null && item.categoryName!.isNotEmpty) {
+                  catName = item.categoryName!;
                 }
                 groupedItems.putIfAbsent(catName, () => []).add(item);
               }

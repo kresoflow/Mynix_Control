@@ -72,6 +72,9 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
         listeners: [
           BlocListener<CategoryBloc, CategoryState>(
             listener: (context, state) {
+              if (state is CategoryLoaded) {
+                context.read<MenuBloc>().add(LoadMenu());
+              }
               if (state is CategoryError) {
                 AppToast.showError(
                   context,
@@ -198,20 +201,31 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               onItemToggle: (item, val) => setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id)),
                               onItemEdit: (item) => showAddMenuItemDialog(context, itemToEdit: item, currentCategoryId: _currentCategoryId),
                               onItemDelete: (item) => CatalogDeletionDialogs.confirmDeleteItem(context, item),
-                              onItemRestore: (item) => context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_active': true})),
+                              onItemRestore: (item) {
+                                context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true}));
+                                context.read<CategoryBloc>().add(LoadCategories());
+                              },
                               onItemTap: (item) {
                                 if (_manageMode == CategoryManageMode.delete) {
                                   setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id));
                                 } else {
                                   final children = (menuState as MenuLoaded).items.where((i) => i.parentId == item.id).toList();
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => MenuModifiersDialog(
-                                      item: item,
-                                      childrenItems: children.isNotEmpty ? children : null,
-                                      isReadOnly: true,
-                                    ),
-                                  );
+                                  final bool hasOptions = item.hasVariations || item.hasModifiers || children.isNotEmpty;
+                                  if (hasOptions) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => MenuModifiersDialog(
+                                        item: item,
+                                        childrenItems: children.isNotEmpty ? children : null,
+                                        isReadOnly: true,
+                                      ),
+                                    );
+                                  } else {
+                                    AppToast.showInfo(
+                                      context,
+                                      'У блюда нет опций',
+                                    );
+                                  }
                                 }
                               },
                             ),

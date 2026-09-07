@@ -35,6 +35,7 @@ class CatalogDeletionDialogs {
             icon: PhosphorIconsRegular.trash,
             onPressed: () {
               context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'all'));
+              context.read<MenuBloc>().add(LoadMenu());
               Navigator.pop(ctx);
             },
           ),
@@ -64,6 +65,7 @@ class CatalogDeletionDialogs {
             icon: PhosphorIconsRegular.trash,
             onPressed: () {
               context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'hard'));
+              context.read<MenuBloc>().add(LoadMenu());
               Navigator.pop(ctx);
             },
           ),
@@ -73,6 +75,7 @@ class CatalogDeletionDialogs {
   }
 
   static void confirmDeleteItem(BuildContext context, dynamic item) {
+    final displayName = item.cleanName ?? item.name;
     showDialog(
       context: context,
       builder: (ctx) => MynixDialog(
@@ -81,7 +84,7 @@ class CatalogDeletionDialogs {
         isDestructive: true,
         width: 420,
         content: Text(
-          'Архивировать позицию «${item.name}»?\nОна исчезнет с кассы, но сохранится в отчетах.',
+          'Архивировать позицию «$displayName»?\nОна исчезнет с кассы, но сохранится в отчетах.',
           style: AppTextStyles.bodyMedium.copyWith(
             color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
@@ -131,6 +134,7 @@ class CatalogDeletionDialogs {
               for (var catId in selectedCategories) {
                 context.read<CategoryBloc>().add(DeleteCategory(catId, mode: 'all'));
               }
+              context.read<MenuBloc>().add(LoadMenu());
               Navigator.pop(ctx);
               onCleared();
             },

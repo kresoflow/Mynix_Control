@@ -3,10 +3,14 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from app.dependencies import require_permission, CurrentUser, TenantSession
-from app.pos.models import CreateOrderRequest, OrderStatus
+from app.pos.models import CreateOrderRequest, OrderStatus, OrderItemCreate
 from app.pos.services.checkout_service import (
     create_order, list_orders, get_order_by_id, update_order_status,
     process_new_order, approve_order, reject_order
+)
+from app.pos.services.order_table_service import (
+    get_active_tables_orders, settle_table_order, append_items_to_table_order,
+    split_table_order, serve_table_order
 )
 from app.pos.ws import notify_kitchen_status_update
 
@@ -20,6 +24,31 @@ class ApproveOrderRequest(BaseModel):
 
 class RejectOrderRequest(BaseModel):
     reason: Optional[str] = None
+
+
+class SettleOrderRequest(BaseModel):
+    payment_method: str = "cash"
+    note: Optional[str] = None
+
+
+class AppendOrderItemsRequest(BaseModel):
+    items: list[OrderItemCreate]
+
+
+class SplitOrderItemRequest(BaseModel):
+    menu_item_id: int
+    menu_item_name: str
+    quantity: int = 1
+    unit_price: float
+    item_type: Optional[str] = "dish"
+    selected_options: Optional[dict] = None
+
+
+class SplitOrderRequest(BaseModel):
+    items: list[SplitOrderItemRequest]
+    payment_method: str = "cash"
+    note: Optional[str] = None
+
 
 
 @router.post(
@@ -64,7 +93,7 @@ async def api_list_orders(
             "payment_method": o.payment_method,
             "total": o.total,
             "note": o.note,
-            "created_at": o.created_at.isoformat() if o.created_at else None,
+            "created_at": f"{o.created_at.isoformat()}Z" if o.created_at else None,
             "items": [
                 {
                     "menu_item_name": oi.menu_item_name,
@@ -103,7 +132,7 @@ async def api_get_order(
         "payment_method": order.payment_method,
         "total": order.total,
         "note": order.note,
-        "created_at": order.created_at.isoformat() if order.created_at else None,
+        "created_at": f"{order.created_at.isoformat()}Z" if order.created_at else None,
         "items": [
             {
                 "menu_item_name": oi.menu_item_name,
@@ -171,3 +200,84 @@ async def api_update_status(
         return {"status": "ok", "order_id": order.id, "new_status": order.status}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get(
+    "/tables/active",
+    dependencies=[Depends(require_permission("orders:view"))],
+)
+async def api_get_active_tables(
+    current_user: CurrentUser,
+    session: TenantSession,
+):
+    """Returns active hall orders grouped by table with elapsed time and items."""
+    return await get_active_tables_orders(session)
+
+
+@router.post(
+    "/orders/{order_id}/settle",
+    dependencies=[Depends(require_permission("orders:create"))],
+)
+async def api_settle_table_order(
+    order_id: int,
+    body: SettleOrderRequest,
+    current_user: CurrentUser,
+    session: TenantSession,
+):
+    """Settles and completes a dine-in table order with post-payment."""
+    return await settle_table_order(
+        session, current_user, order_id,
+        payment_method=body.payment_method,
+        note=body.note,
+    )
+
+
+@router.post(
+    "/orders/{order_id}/append",
+    dependencies=[Depends(require_permission("orders:create"))],
+)
+async def api_append_table_order(
+    order_id: int,
+    body: AppendOrderItemsRequest,
+    current_user: CurrentUser,
+    session: TenantSession,
+):
+    """Appends additional items (дозаказ) to an active table order."""
+    return await append_items_to_table_order(
+        session, current_user, order_id, body.items
+    )
+
+
+@router.post(
+    "/orders/{order_id}/split",
+    dependencies=[Depends(require_permission("orders:create"))],
+)
+async def api_split_table_order(
+    order_id: int,
+    body: SplitOrderRequest,
+    current_user: CurrentUser,
+    session: TenantSession,
+):
+    """Splits selected items from active table order and completes their payment."""
+    split_dicts = [item.model_dump() for item in body.items]
+    return await split_table_order(
+        session, current_user, order_id, split_dicts,
+        payment_method=body.payment_method,
+        note=body.note,
+    )
+
+
+@router.post(
+    "/orders/{order_id}/serve",
+    dependencies=[Depends(require_permission("orders:create"))],
+)
+async def api_serve_table_order(
+    order_id: int,
+    current_user: CurrentUser,
+    session: TenantSession,
+):
+    """Marks a dine-in table order as served (status: ready, clears dozakaz flag)."""
+    return await serve_table_order(session, current_user, order_id)
+
+
+

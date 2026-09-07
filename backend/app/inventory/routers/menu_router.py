@@ -27,8 +27,8 @@ async def update_menu_item(item_id: int, current_user: CurrentUser, session: Ten
     return await menu_service.update_menu_item(session, item_id, data)
 
 @router.delete("/menu/{item_id}", dependencies=[Depends(require_permission("menu:manage"))])
-async def delete_menu_item(item_id: int, current_user: CurrentUser, session: TenantSession):
-    return await menu_service.delete_menu_item(session, item_id)
+async def delete_menu_item(item_id: int, current_user: CurrentUser, session: TenantSession, mode: str = "soft"):
+    return await menu_service.delete_menu_item(session, item_id, mode=mode)
 
 @router.post("/retail-product/", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission("menu:manage"))])
 async def create_retail_product(data: RetailProductCreate, current_user: CurrentUser, session: TenantSession):

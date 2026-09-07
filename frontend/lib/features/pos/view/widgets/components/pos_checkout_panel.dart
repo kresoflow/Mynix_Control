@@ -5,6 +5,9 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 import 'pos_checkout_panel_payment_methods.dart';
 import 'pos_checkout_panel_action_button.dart';
 
@@ -75,6 +78,12 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             (previous.submitError != current.submitError && current.submitError != null),
         listener: (context, state) {
           if (state.submitSuccess) {
+            final now = DateTime.now();
+            final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
+            final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
+            context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
+            context.read<ShiftBloc>().add(CheckCurrentShift());
+
             if (state.lastSubmittedSource == 'waiter') {
               AppToast.showInfo(
                 context,

@@ -20,6 +20,7 @@ import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:mynix_frontend/features/pos/repository/order_repository.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
 import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
 
@@ -28,6 +29,7 @@ import 'widgets/pos_desktop_layout.dart';
 import 'widgets/open_shift_modal.dart';
 import 'widgets/barcode_scanner_listener.dart';
 import 'widgets/dialogs/incoming_orders_dialog.dart';
+import 'widgets/tables/pos_active_tables_dialog.dart';
 
 class PosScreen extends StatefulWidget {
   const PosScreen({super.key});
@@ -40,7 +42,9 @@ class _PosScreenState extends State<PosScreen> {
   final OrderRepository _orderRepo = OrderRepository(apiClient.dio);
   int _currentTab = 0; // 0: POS, 1: Orders, 2: KDS Kitchen
   int _incomingCount = 0;
+  int _activeTablesCount = 0;
   StreamSubscription? _wsSubscription;
+
 
   @override
   void initState() {
@@ -56,27 +60,43 @@ class _PosScreenState extends State<PosScreen> {
   }
 
   void _initIncomingOrders() {
-    _refreshIncomingCount();
+    _refreshCounts();
     _wsSubscription = webSocketService.messages.listen((msg) {
       final event = msg['event'];
       if (event == 'incoming_order') {
         AudioHelper.playNewOrderSound();
-        _refreshIncomingCount();
+        _refreshCounts();
         final order = msg['order'] ?? {};
         final table = order['table_number'] ?? 'Зал';
-        AppToast.showInfo(context, 'Новый заказ с зала', subtitle: '$table (нажмите на колокольчик)');
-      } else if (event == 'incoming_order_resolved') {
-        _refreshIncomingCount();
+        if (mounted) {
+          AppToast.showInfo(context, 'Новый заказ с зала', subtitle: '$table (нажмите на колокольчик)');
+        }
+      } else if (event == 'new_order' || event == 'incoming_order_resolved' || event == 'status_update') {
+        _refreshCounts();
+        if (mounted) {
+          final now = DateTime.now();
+          final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
+          final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
+          context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
+          context.read<ShiftBloc>().add(CheckCurrentShift());
+        }
       }
     });
   }
 
-  Future<void> _refreshIncomingCount() async {
+  Future<void> _refreshCounts() async {
     try {
-      final orders = await _orderRepo.fetchPendingOrders();
-      if (mounted) setState(() => _incomingCount = orders.length);
+      final pending = await _orderRepo.fetchPendingOrders();
+      final tables = await _orderRepo.fetchActiveTables();
+      if (mounted) {
+        setState(() {
+          _incomingCount = pending.length;
+          _activeTablesCount = tables.length;
+        });
+      }
     } catch (_) {}
   }
+
 
   @override
   void dispose() {
@@ -145,6 +165,8 @@ class _PosScreenState extends State<PosScreen> {
                             _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
                           ],
                           const Spacer(),
+                          _buildActiveTablesBadge(isDark),
+                          const SizedBox(width: 8),
                           _buildIncomingOrdersBadge(isDark),
                         ],
                       ),
@@ -174,10 +196,48 @@ class _PosScreenState extends State<PosScreen> {
     );
   }
 
+  Widget _buildActiveTablesBadge(bool isDark) {
+    final hasTables = _activeTablesCount > 0;
+    return InkWell(
+      onTap: () => PosActiveTablesDialog.show(context).then((_) => _refreshCounts()),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: hasTables ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: hasTables ? AppColors.brandPrimary.withValues(alpha: 0.5) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              hasTables ? PhosphorIconsBold.chair : PhosphorIconsRegular.chair,
+              size: 17,
+              color: hasTables ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Столики ($_activeTablesCount)',
+              style: TextStyle(
+                color: hasTables ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                fontWeight: hasTables ? FontWeight.w800 : FontWeight.w500,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildIncomingOrdersBadge(bool isDark) {
     final hasPending = _incomingCount > 0;
     return InkWell(
-      onTap: () => IncomingOrdersDialog.show(context).then((_) => _refreshIncomingCount()),
+      onTap: () => IncomingOrdersDialog.show(context).then((_) => _refreshCounts()),
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 
 class PosCheckoutPanelActionButton extends StatelessWidget {
   final bool isEmpty;
@@ -57,101 +60,209 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final role = authState is AuthAuthenticated ? authState.role.toLowerCase() : '';
+    final isWaiter = role == 'waiter';
+    final isCashier = role == 'cashier';
+
+    // 1. Waiter mode: Solid primary full-width "Оформить заказ"
+    if (isWaiter) {
+      return _buildWaiterPrimaryButton(context);
+    }
+
+    // 2. Cashier mode: Only "Оплатить" full-width
+    if (isCashier) {
+      return _buildCheckoutButton(context, isFullWidth: true);
+    }
+
+    // 3. Owner / Universal Worker / Admin mode: Dual Action
     return Row(
       children: [
-        // 1. Send to Booth / Cashier button (Официант / Зал -> Кассиру в будку)
         Expanded(
           flex: 4,
-          child: OutlinedButton.icon(
-            onPressed: isEmpty || isSubmitting ? null : onSendToBooth,
-            icon: const Icon(PhosphorIconsBold.paperPlaneTilt, size: 16, color: Colors.amber),
-            label: const Text(
-              'В будку',
-              style: TextStyle(
-                color: Colors.amber,
-                fontWeight: FontWeight.w800,
-                fontSize: 13,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: isEmpty
-                    ? (isDark ? Colors.white12 : Colors.black12)
-                    : Colors.amber.withValues(alpha: 0.8),
-                width: 1.5,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-          ),
+          child: _buildSendToBoothButton(context),
         ),
         const SizedBox(width: 8),
-        // 2. Direct Pay & Close (Оплатить на месте / Закрыть заказ)
         Expanded(
           flex: 6,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: isEmpty || isSubmitting ? null : onCheckout,
-              borderRadius: BorderRadius.circular(14),
-              child: Ink(
-                height: 52,
-                decoration: BoxDecoration(
-                  color: isEmpty
-                      ? (isDark ? Colors.white10 : Colors.black12)
-                      : AppColors.brandPrimary,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: isEmpty
-                      ? null
-                      : [
-                          BoxShadow(
-                            color: AppColors.brandPrimary.withValues(alpha: 0.35),
-                            offset: const Offset(0, 4),
-                            blurRadius: 12,
-                          ),
-                        ],
-                ),
-                child: Center(
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              _getButtonIcon(),
-                              size: 18,
-                              color: isEmpty
-                                  ? (isDark ? Colors.white24 : Colors.black26)
-                                  : Colors.black,
-                            ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                _getButtonLabel(),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.4,
-                                  color: isEmpty
-                                      ? (isDark ? Colors.white24 : Colors.black26)
-                                      : Colors.black,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ),
-          ),
+          child: _buildCheckoutButton(context, isFullWidth: false),
         ),
       ],
     );
   }
+
+  Widget _buildWaiterPrimaryButton(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isEmpty || isSubmitting ? null : onSendToBooth,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          height: 52,
+          decoration: BoxDecoration(
+            color: isEmpty
+                ? (isDark ? Colors.white10 : Colors.black12)
+                : AppColors.brandPrimary,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: isEmpty
+                ? null
+                : [
+                    BoxShadow(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.35),
+                      offset: const Offset(0, 4),
+                      blurRadius: 12,
+                    ),
+                  ],
+          ),
+          child: Center(
+            child: isSubmitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        PhosphorIconsBold.paperPlaneTilt,
+                        size: 18,
+                        color: isEmpty
+                            ? (isDark ? Colors.white24 : Colors.black26)
+                            : Colors.black,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Оформить заказ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.4,
+                          color: isEmpty
+                              ? (isDark ? Colors.white24 : Colors.black26)
+                              : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSendToBoothButton(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isEmpty || isSubmitting ? null : onSendToBooth,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: isEmpty
+                ? Colors.transparent
+                : Colors.amber.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isEmpty
+                  ? (isDark ? Colors.white12 : Colors.black12)
+                  : Colors.amber.withValues(alpha: 0.7),
+              width: 1.5,
+            ),
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  PhosphorIconsBold.paperPlaneTilt,
+                  size: 16,
+                  color: isEmpty
+                      ? (isDark ? Colors.white24 : Colors.black26)
+                      : Colors.amber,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'В зал',
+                  style: TextStyle(
+                    color: isEmpty
+                        ? (isDark ? Colors.white24 : Colors.black26)
+                        : Colors.amber,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCheckoutButton(BuildContext context, {required bool isFullWidth}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isEmpty || isSubmitting ? null : onCheckout,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          height: 52,
+          decoration: BoxDecoration(
+            color: isEmpty
+                ? (isDark ? Colors.white10 : Colors.black12)
+                : AppColors.brandPrimary,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: isEmpty
+                ? null
+                : [
+                    BoxShadow(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.35),
+                      offset: const Offset(0, 4),
+                      blurRadius: 12,
+                    ),
+                  ],
+          ),
+          child: Center(
+            child: isSubmitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _getButtonIcon(),
+                        size: 18,
+                        color: isEmpty
+                            ? (isDark ? Colors.white24 : Colors.black26)
+                            : Colors.black,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          _getButtonLabel(),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.4,
+                            color: isEmpty
+                                ? (isDark ? Colors.white24 : Colors.black26)
+                                : Colors.black,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
 }
+

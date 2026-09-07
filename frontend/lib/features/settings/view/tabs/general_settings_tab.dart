@@ -7,6 +7,7 @@ import 'package:mynix_frontend/features/settings/repository/settings_repository.
 import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/theme_appearance_settings_card.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 
 class GeneralSettingsTab extends StatefulWidget {
   final bool isDark;
@@ -185,6 +186,21 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                     activeThumbColor: AppColors.brandPrimary,
                     onChanged: (val) => _updateSettings(_useKds, _useOrders, val),
                   ),
+                ),
+                SettingsDivider(isDark: isDark),
+                BlocBuilder<PosSettingsCubit, PosSettingsState>(
+                  builder: (context, posState) {
+                    return SettingsRow(
+                      isDark: isDark,
+                      title: 'Кнопка «Гость» на кассе',
+                      subtitle: 'Прикрепление клиента и бонусной программы к чеку',
+                      trailing: Switch(
+                        value: posState.showGuestOption,
+                        activeThumbColor: AppColors.brandPrimary,
+                        onChanged: (_) => context.read<PosSettingsCubit>().toggleShowGuestOption(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

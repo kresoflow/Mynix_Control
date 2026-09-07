@@ -43,7 +43,7 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
     on<DeleteIngredient>(_onDeleteIngredient);
 
     _wsSubscription = webSocketService.messages.listen((data) {
-      if (data['event'] == 'inventory_updated') {
+      if (data['event'] == 'inventory_updated' && state is IngredientLoaded) {
         add(LoadIngredients());
       }
     });

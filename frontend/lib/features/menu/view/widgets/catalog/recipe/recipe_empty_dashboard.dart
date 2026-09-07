@@ -22,8 +22,18 @@ class RecipeEmptyDashboard extends StatelessWidget {
     final recipeState = context.watch<RecipeBloc>().state;
     final summaryMap = recipeState.recipesSummary;
 
+    final activeCatMap = catState is CategoryLoaded
+        ? {for (var c in catState.categories.where((c) => c.isVisible)) c.id.toString(): c}
+        : <String, dynamic>{};
+
     final dishes = menuState is MenuLoaded 
-        ? menuState.items.where((i) => !i.isRetail).toList() 
+        ? menuState.items.where((i) {
+            if (i.isRetail) return false;
+            if (!i.isAvailable) return false;
+            final catId = i.categoryId.toString();
+            final isRoot = catId == '0' || catId == 'null' || catId == '' || catId == 'uncategorized';
+            return isRoot || activeCatMap.containsKey(catId);
+          }).toList() 
         : [];
 
     final int totalDishes = dishes.length;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'tables/pos_active_tables_dialog.dart';
 
 class TablePickerModal extends StatefulWidget {
   final String? currentTable;
@@ -188,9 +189,21 @@ class _TablePickerModalState extends State<TablePickerModal> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            Center(
+              child: TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  PosActiveTablesDialog.show(context);
+                },
+                icon: const Icon(PhosphorIconsBold.chair, size: 14),
+                label: const Text('Открыть табло занятых столиков', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+

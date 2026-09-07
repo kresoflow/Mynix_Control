@@ -7,7 +7,9 @@ abstract class IngredientEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadIngredients extends IngredientEvent {}
+class LoadIngredients extends IngredientEvent {
+  const LoadIngredients();
+}
 
 class CreateIngredient extends IngredientEvent {
   final String name;

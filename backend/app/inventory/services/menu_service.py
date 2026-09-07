@@ -123,7 +123,7 @@ async def create_menu_item(session: AsyncSession, data: dict) -> MenuItem:
 
     return menu_item
 
-async def delete_menu_item(session: AsyncSession, item_id: int) -> dict:
+async def delete_menu_item(session: AsyncSession, item_id: int, mode: str = "soft") -> dict:
     stmt = select(MenuItem).order_by(MenuItem.sort_order, MenuItem.id).where(MenuItem.id == item_id)
     result = await session.execute(stmt)
     item = result.scalars().first()
@@ -133,20 +133,43 @@ async def delete_menu_item(session: AsyncSession, item_id: int) -> dict:
         
     order_stmt = select(OrderItem).where(OrderItem.menu_item_id == item_id).limit(1)
     order_res = await session.execute(order_stmt)
-    if order_res.scalars().first() is not None:
-        item.is_available = False
-        session.add(item)
+    has_orders = order_res.scalars().first() is not None
+
+    if mode == "hard":
+        if has_orders:
+            raise HTTPException(
+                status_code=400,
+                detail="Невозможно удалить товар навсегда: по нему есть история продаж. Товар будет заархивирован."
+            )
+        recipe_stmt = select(Recipe).where(Recipe.menu_item_id == item_id)
+        recipe_res = await session.execute(recipe_stmt)
+        for r in recipe_res.scalars().all():
+            await session.delete(r)
+        
+        child_stmt = select(MenuItem).where(MenuItem.parent_id == item_id)
+        child_res = await session.execute(child_stmt)
+        for c in child_res.scalars().all():
+            c_r_stmt = select(Recipe).where(Recipe.menu_item_id == c.id)
+            c_r_res = await session.execute(c_r_stmt)
+            for cr in c_r_res.scalars().all():
+                await session.delete(cr)
+            await session.delete(c)
+
+        await session.delete(item)
         await session.flush()
-        return {"status": "archived", "message": "Товар участвовал в заказах и был скрыт (отправлен в архив)."}
-        
-    recipe_stmt = select(Recipe).where(Recipe.menu_item_id == item_id)
-    recipe_res = await session.execute(recipe_stmt)
-    for r in recipe_res.scalars().all():
-        await session.delete(r)
-        
-    await session.delete(item)
+        return {"status": "deleted", "message": "Товар успешно удален."}
+
+    # Soft delete (archive)
+    item.is_available = False
+    session.add(item)
+    child_stmt = select(MenuItem).where(MenuItem.parent_id == item_id)
+    child_res = await session.execute(child_stmt)
+    for c in child_res.scalars().all():
+        c.is_available = False
+        session.add(c)
+
     await session.flush()
-    return {"status": "deleted", "message": "Товар успешно удален."}
+    return {"status": "archived", "message": "Товар заархивирован."}
 
 async def list_menu_items(session: AsyncSession) -> list[MenuItemRead]:
     stmt = (

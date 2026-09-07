@@ -222,9 +222,11 @@ class _RetailOSAppState extends State<RetailOSApp> {
               webSocketService.connect(state.tenantId);
               context.read<MenuBloc>().add(LoadMenu());
               context.read<ShiftBloc>().add(CheckCurrentShift());
-              context.read<IngredientBloc>().add(LoadIngredients());
               context.read<CategoryBloc>().add(LoadCategories());
-              context.read<DocumentBloc>().add(const LoadDocuments());
+              if (state.hasPermission('inventory:view')) {
+                context.read<IngredientBloc>().add(LoadIngredients());
+                context.read<DocumentBloc>().add(const LoadDocuments());
+              }
             } else if (state is AuthUnauthenticated) {
               webSocketService.disconnect();
             }
