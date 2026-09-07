@@ -6,17 +6,19 @@ import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 class IncomingOrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
   final bool useKds;
-  final VoidCallback onApprove;
-  final VoidCallback onPayAndApprove;
-  final VoidCallback onReject;
+  final bool isReadOnly;
+  final VoidCallback? onApprove;
+  final VoidCallback? onPayAndApprove;
+  final VoidCallback? onReject;
 
   const IncomingOrderCard({
     super.key,
     required this.order,
     this.useKds = true,
-    required this.onApprove,
-    required this.onPayAndApprove,
-    required this.onReject,
+    this.isReadOnly = false,
+    this.onApprove,
+    this.onPayAndApprove,
+    this.onReject,
   });
 
   @override
@@ -156,64 +158,90 @@ class IncomingOrderCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 14),
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onReject,
-                  icon: const Icon(PhosphorIconsBold.x, size: 14, color: AppColors.danger),
-                  label: const Text(
-                    'Отклонить',
-                    style: TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.w700),
+          // Action Buttons or Read-Only Status
+          if (isReadOnly)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(PhosphorIconsRegular.clockCountdown, size: 16, color: AppColors.warning),
+                  SizedBox(width: 8),
+                  Text(
+                    'Ожидает подтверждения кассы',
+                    style: TextStyle(
+                      color: AppColors.warning,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.danger, width: 1.2),
-                    padding: const EdgeInsets.symmetric(vertical: 11),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ],
+              ),
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onReject,
+                    icon: const Icon(PhosphorIconsBold.x, size: 14, color: AppColors.danger),
+                    label: const Text(
+                      'Отклонить',
+                      style: TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.w700),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.danger, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onPayAndApprove,
-                  icon: Icon(PhosphorIconsBold.creditCard, size: 14, color: AppColors.brandPrimary),
-                  label: Text(
-                    'Оплатить',
-                    style: TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w700),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.brandPrimary, width: 1.2),
-                    padding: const EdgeInsets.symmetric(vertical: 11),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton.icon(
-                  onPressed: onApprove,
-                  icon: Icon(
-                    useKds ? PhosphorIconsBold.cookingPot : PhosphorIconsBold.checkCircle,
-                    size: 15,
-                    color: Colors.white,
-                  ),
-                  label: Text(
-                    useKds ? 'В цех (KDS)' : 'Принять заказ',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: useKds ? const Color(0xFF10B981) : AppColors.brandPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 11),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 0,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onPayAndApprove,
+                    icon: Icon(PhosphorIconsBold.creditCard, size: 14, color: AppColors.brandPrimary),
+                    label: Text(
+                      'Оплатить',
+                      style: TextStyle(color: AppColors.brandPrimary, fontSize: 12, fontWeight: FontWeight.w700),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.brandPrimary, width: 1.2),
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: onApprove,
+                    icon: Icon(
+                      useKds ? PhosphorIconsBold.cookingPot : PhosphorIconsBold.checkCircle,
+                      size: 15,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      useKds ? 'В цех (KDS)' : 'Принять заказ',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: useKds ? const Color(0xFF10B981) : AppColors.brandPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

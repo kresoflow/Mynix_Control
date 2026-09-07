@@ -9,6 +9,8 @@ import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'incoming_order_card.dart';
 import 'incoming_order_payment_modal.dart';
 import 'incoming_order_reject_modal.dart';
@@ -127,6 +129,8 @@ class _IncomingOrdersDialogState extends State<IncomingOrdersDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final useKds = context.watch<SettingsBloc>().state.useKds;
+    final authState = context.watch<AuthBloc>().state;
+    final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
 
     return Dialog(
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -146,19 +150,25 @@ class _IncomingOrdersDialogState extends State<IncomingOrdersDialog> {
                     color: AppColors.brandPrimary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(PhosphorIconsBold.bellRinging, color: AppColors.brandPrimary, size: 20),
+                  child: Icon(
+                    isWaiter ? PhosphorIconsBold.receipt : PhosphorIconsBold.bellRinging,
+                    color: AppColors.brandPrimary,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Входящие заказы с зала',
-                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                      Text(
+                        isWaiter ? 'Мои отправленные заказы' : 'Входящие заказы с зала',
+                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
                       ),
                       Text(
-                        'Ожидают подтверждения кассира (${_orders.length})',
+                        isWaiter
+                            ? 'Заказы в обработке (${_orders.length})'
+                            : 'Ожидают подтверждения кассира (${_orders.length})',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
@@ -188,16 +198,27 @@ class _IncomingOrdersDialogState extends State<IncomingOrdersDialog> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(PhosphorIconsRegular.checkCircle, size: 48, color: Colors.green.withValues(alpha: 0.6)),
+                              Icon(
+                                isWaiter ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.bellSlash,
+                                size: 48,
+                                color: isWaiter
+                                    ? AppColors.brandPrimary.withValues(alpha: 0.6)
+                                    : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                              ),
                               const SizedBox(height: 12),
-                              const Text(
-                                'Нет новых входящих заказов',
-                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                              Text(
+                                isWaiter ? 'Все ваши заказы обработаны' : 'Нет новых входящих заказов',
+                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Заказы от официантов появятся здесь',
-                                style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, fontSize: 13),
+                                isWaiter
+                                    ? 'Новые отправленные заказы появятся здесь'
+                                    : 'Заказы от официантов появятся здесь',
+                                style: TextStyle(
+                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -210,6 +231,7 @@ class _IncomingOrdersDialogState extends State<IncomingOrdersDialog> {
                             return IncomingOrderCard(
                               order: order,
                               useKds: useKds,
+                              isReadOnly: isWaiter,
                               onApprove: () => _approveOrder(orderId, useKds),
                               onPayAndApprove: () => _payAndApproveOrder(order),
                               onReject: () => _rejectOrder(order),

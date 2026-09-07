@@ -23,6 +23,8 @@ import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
 import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 
 import 'widgets/pos_mobile_layout.dart';
 import 'widgets/pos_desktop_layout.dart';
@@ -45,7 +47,6 @@ class _PosScreenState extends State<PosScreen> {
   int _activeTablesCount = 0;
   StreamSubscription? _wsSubscription;
 
-
   @override
   void initState() {
     super.initState();
@@ -62,26 +63,61 @@ class _PosScreenState extends State<PosScreen> {
   void _initIncomingOrders() {
     _refreshCounts();
     _wsSubscription = webSocketService.messages.listen((msg) {
+      if (!mounted) return;
       final event = msg['event'];
+      final authState = context.read<AuthBloc>().state;
+      final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
+
       if (event == 'incoming_order') {
-        AudioHelper.playNewOrderSound();
+        _refreshCounts();
+        if (!isWaiter) {
+          AudioHelper.playNewOrderSound();
+          final order = msg['order'] ?? {};
+          final table = order['table_number'] ?? 'Зал';
+          if (mounted) {
+            AppToast.showInfo(context, 'Новый заказ с зала', subtitle: '$table (нажмите на колокольчик)');
+          }
+        }
+      } else if (event == 'incoming_order_resolved') {
         _refreshCounts();
         final order = msg['order'] ?? {};
-        final table = order['table_number'] ?? 'Зал';
+        final orderNum = order['order_number'] ?? order['id'] ?? '';
+        final status = order['status']?.toString().toUpperCase();
         if (mounted) {
-          AppToast.showInfo(context, 'Новый заказ с зала', subtitle: '$table (нажмите на колокольчик)');
+          if (isWaiter) {
+            if (status == 'CANCELLED' || status == 'REJECTED') {
+              AppToast.showWarning(context, 'Заказ #$orderNum отклонен', subtitle: 'Кассир отклонил заказ');
+            } else {
+              AppToast.showSuccess(context, 'Заказ #$orderNum принят', subtitle: 'Кассир подтвердил заказ');
+            }
+          }
+          _updateOrdersAndShift();
         }
-      } else if (event == 'new_order' || event == 'incoming_order_resolved' || event == 'status_update') {
+      } else if (event == 'status_update') {
+        _refreshCounts();
+        final orderId = msg['order_id'];
+        final status = msg['status']?.toString().toUpperCase();
+        if (mounted) {
+          if (status == 'READY') {
+            AppToast.showSuccess(context, 'Заказ готов к выдаче!', subtitle: 'Заказ #$orderId');
+          }
+          _updateOrdersAndShift();
+        }
+      } else if (event == 'new_order') {
         _refreshCounts();
         if (mounted) {
-          final now = DateTime.now();
-          final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
-          final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
-          context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
-          context.read<ShiftBloc>().add(CheckCurrentShift());
+          _updateOrdersAndShift();
         }
       }
     });
+  }
+
+  void _updateOrdersAndShift() {
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
+    final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
+    context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
+    context.read<ShiftBloc>().add(CheckCurrentShift());
   }
 
   Future<void> _refreshCounts() async {
@@ -235,17 +271,25 @@ class _PosScreenState extends State<PosScreen> {
   }
 
   Widget _buildIncomingOrdersBadge(bool isDark) {
+    final authState = context.watch<AuthBloc>().state;
+    final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
     final hasPending = _incomingCount > 0;
+    final badgeColor = isWaiter ? AppColors.brandPrimary : Colors.amber;
+    final label = isWaiter ? 'Мои заказы ($_incomingCount)' : 'Входящие ($_incomingCount)';
+    final icon = isWaiter
+        ? (hasPending ? PhosphorIconsBold.receipt : PhosphorIconsRegular.receipt)
+        : (hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell);
+
     return InkWell(
       onTap: () => IncomingOrdersDialog.show(context).then((_) => _refreshCounts()),
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: hasPending ? Colors.amber.withValues(alpha: 0.15) : Colors.transparent,
+          color: hasPending ? badgeColor.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: hasPending ? Colors.amber.withValues(alpha: 0.6) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            color: hasPending ? badgeColor.withValues(alpha: 0.6) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             width: 1.2,
           ),
         ),
@@ -253,15 +297,15 @@ class _PosScreenState extends State<PosScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell,
+              icon,
               size: 17,
-              color: hasPending ? Colors.amber : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              color: hasPending ? badgeColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
             ),
             const SizedBox(width: 6),
             Text(
-              'Входящие ($_incomingCount)',
+              label,
               style: TextStyle(
-                color: hasPending ? Colors.amber : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                color: hasPending ? badgeColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                 fontWeight: hasPending ? FontWeight.w800 : FontWeight.w500,
                 fontSize: 13,
               ),
