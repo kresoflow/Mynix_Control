@@ -136,8 +136,6 @@ class _IncomingOrderPaymentModalState extends State<IncomingOrderPaymentModal> {
           // Method Options
           _buildMethodTile('cash', 'Наличные', PhosphorIconsBold.money, isDark),
           const SizedBox(height: 8),
-          _buildMethodTile('card', 'Банковская карта / Терминал', PhosphorIconsBold.creditCard, isDark),
-          const SizedBox(height: 8),
           _buildMethodTile('transfer', 'Безналичный перевод (QR)', PhosphorIconsBold.qrCode, isDark),
           if (_selectedMethod == 'transfer') ...[
             const SizedBox(height: 10),
