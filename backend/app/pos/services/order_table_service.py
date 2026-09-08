@@ -148,7 +148,8 @@ async def settle_table_order(
             session.add(tx)
 
     await session.commit()
-    order_data = format_order_dict(order, current_user.full_name)
+    full_order = await get_order_by_id(session, order.id)
+    order_data = format_order_dict(full_order or order, current_user.full_name)
 
     await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
     await notify_kitchen_status_update(current_user.tenant_id, order.id, OrderStatus.COMPLETED)
@@ -353,7 +354,8 @@ async def split_table_order(
     session.add(order)
     await session.commit()
 
-    order_data = format_order_dict(child_order, current_user.full_name)
+    full_child = await get_order_by_id(session, child_order.id)
+    order_data = format_order_dict(full_child or child_order, current_user.full_name)
     await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
     await notify_inventory_updated(current_user.tenant_id)
 
@@ -388,7 +390,8 @@ async def serve_table_order(
     session.add(order)
     await session.commit()
 
-    order_data = format_order_dict(order, current_user.full_name)
+    full_order = await get_order_by_id(session, order.id)
+    order_data = format_order_dict(full_order or order, current_user.full_name)
     await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
     await notify_kitchen_status_update(current_user.tenant_id, order.id, OrderStatus.READY)
     return order_data

@@ -10,6 +10,7 @@ import 'package:mynix_frontend/features/pos/repository/order_repository.dart';
 import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
+import 'package:mynix_frontend/features/pos/view/widgets/dialogs/incoming_order_payment_modal.dart';
 
 class SplitBillDialog extends StatefulWidget {
   final Map<String, dynamic> tableData;
@@ -79,41 +80,56 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
     });
   }
 
-  Future<void> _processGuestPayment(int guestIndex, List<Map<String, dynamic>> items, String paymentMethod) async {
+  Future<void> _payGuestBill(int guestIndex, List<Map<String, dynamic>> items) async {
     if (items.isEmpty || _isProcessing) return;
     final orderId = widget.tableData['order_id'] as int? ?? widget.tableData['id'] as int;
+    final guestTotal = _calcTotal(items);
 
-    setState(() => _isProcessing = true);
-    try {
-      await _orderRepo.splitOrder(orderId, items, paymentMethod);
-      if (mounted) {
-        AppToast.showSuccess(context, 'Чек гостя $guestIndex оплачен');
-        final now = DateTime.now();
-        final start = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
-        final end = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
-        context.read<OrdersBloc>().add(LoadOrders(startDate: start, endDate: end));
-        context.read<ShiftBloc>().add(CheckCurrentShift());
+    final mockOrderPayload = {
+      'order_id': orderId,
+      'order_number': widget.tableData['order_number'],
+      'table_number': widget.tableData['table_number'],
+      'total': guestTotal,
+      'items': items,
+    };
 
-        setState(() {
-          _isProcessing = false;
-          if (guestIndex == 1) {
-            _guest1Items.clear();
-          } else {
-            _guest2Items.clear();
+    await IncomingOrderPaymentModal.show(
+      context,
+      order: mockOrderPayload,
+      onConfirm: (paymentMethod) async {
+        setState(() => _isProcessing = true);
+        try {
+          await _orderRepo.splitOrder(orderId, items, paymentMethod);
+          if (mounted) {
+            AppToast.showSuccess(context, 'Чек гостя $guestIndex оплачен');
+            final now = DateTime.now();
+            final start = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
+            final end = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
+            context.read<OrdersBloc>().add(LoadOrders(startDate: start, endDate: end));
+            context.read<ShiftBloc>().add(CheckCurrentShift());
+
+            setState(() {
+              _isProcessing = false;
+              if (guestIndex == 1) {
+                _guest1Items.clear();
+              } else {
+                _guest2Items.clear();
+              }
+            });
+
+            widget.onUpdated();
+            if (_guest1Items.isEmpty && _guest2Items.isEmpty) {
+              Navigator.pop(context);
+            }
           }
-        });
-
-        widget.onUpdated();
-        if (_guest1Items.isEmpty && _guest2Items.isEmpty) {
-          Navigator.pop(context);
+        } catch (e) {
+          if (mounted) {
+            setState(() => _isProcessing = false);
+            AppToast.showError(context, 'Ошибка оплаты', subtitle: e.toString());
+          }
         }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-        AppToast.showError(context, 'Ошибка оплаты', subtitle: e.toString());
-      }
-    }
+      },
+    );
   }
 
   @override
@@ -249,43 +265,14 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
                   ),
           ),
           const SizedBox(height: 10),
-          _buildPaymentActionRow(index, items, total, isDark),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentActionRow(int index, List<Map<String, dynamic>> items, double total, bool isDark) {
-    if (items.isEmpty) {
-      return Container(
-        height: 44,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          'Оплачен или пуст',
-          style: TextStyle(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      );
-    }
-
-    return Row(
-      children: [
-        // 1. Наличные
-        Expanded(
-          flex: 5,
-          child: ElevatedButton.icon(
-            onPressed: _isProcessing ? null : () => _processGuestPayment(index, items, 'cash'),
-            icon: const Icon(PhosphorIconsBold.money, size: 15),
-            label: const Text(
-              'Наличные',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+          ElevatedButton.icon(
+            onPressed: items.isEmpty || _isProcessing ? null : () => _payGuestBill(index, items),
+            icon: const Icon(PhosphorIconsBold.creditCard, size: 15),
+            label: Text(
+              items.isEmpty
+                  ? 'Чек оплачен или пуст'
+                  : 'Оплатить Чек $index (${total.toCurrency(context)})',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.brandPrimary,
@@ -295,86 +282,8 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
               elevation: 0,
             ),
           ),
-        ),
-        const SizedBox(width: 8),
-        // 2. Перевод (QR)
-        Expanded(
-          flex: 5,
-          child: PopupMenuButton<String>(
-            tooltip: 'Выбрать перевод',
-            enabled: !_isProcessing,
-            onSelected: (provider) => _processGuestPayment(index, items, 'transfer_$provider'),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            itemBuilder: (ctx) => [
-              const PopupMenuItem(
-                value: 'dc',
-                child: Row(
-                  children: [
-                    Icon(PhosphorIconsBold.qrCode, size: 16, color: Colors.blueAccent),
-                    SizedBox(width: 8),
-                    Text('DC Pay', style: TextStyle(fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'alif',
-                child: Row(
-                  children: [
-                    Icon(PhosphorIconsBold.qrCode, size: 16, color: Colors.green),
-                    SizedBox(width: 8),
-                    Text('Alif Mobi', style: TextStyle(fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'spitamen',
-                child: Row(
-                  children: [
-                    Icon(PhosphorIconsBold.qrCode, size: 16, color: Colors.orange),
-                    SizedBox(width: 8),
-                    Text('Spitamen Pay', style: TextStyle(fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'other',
-                child: Row(
-                  children: [
-                    Icon(PhosphorIconsBold.qrCode, size: 16, color: Colors.grey),
-                    SizedBox(width: 8),
-                    Text('Другой перевод', style: TextStyle(fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              ),
-            ],
-            child: Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.blue.withValues(alpha: 0.4)),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(PhosphorIconsBold.qrCode, size: 15, color: Colors.blueAccent),
-                  SizedBox(width: 6),
-                  Text(
-                    'Перевод',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                  SizedBox(width: 2),
-                  Icon(PhosphorIconsBold.caretDown, size: 12, color: Colors.blueAccent),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
