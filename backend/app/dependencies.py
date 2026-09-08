@@ -80,6 +80,34 @@ def require_permission(*required_codes: str):
     return checker
 
 
+def require_any_permission(*required_codes: str):
+    """
+    Factory that returns a FastAPI dependency checking
+    that the current user has AT LEAST ONE of the specified permission codes.
+
+    Usage:
+        @router.patch("/orders/{order_id}/status", dependencies=[Depends(require_any_permission("orders:update_status", "orders:create", "orders:view"))])
+
+    Owner (superuser) bypasses all checks automatically.
+    """
+    async def checker(
+        current_user: Annotated[User, Depends(get_current_user)],
+    ) -> User:
+        # Superuser bypass
+        if user_svc.is_superuser(current_user):
+            return current_user
+
+        user_perms = set(user_svc.collect_permissions(current_user))
+        if not user_perms.intersection(set(required_codes)):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Missing any of permissions: {', '.join(sorted(required_codes))}",
+            )
+        return current_user
+
+    return checker
+
+
 # ── Convenience aliases ──────────────────────────────────────────
 
 CurrentUser = Annotated[User, Depends(get_current_user)]

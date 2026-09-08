@@ -8,6 +8,9 @@ import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import '../table_picker_modal.dart';
 import 'pos_checkout_panel_payment_methods.dart';
 import 'pos_checkout_panel_action_button.dart';
 
@@ -32,10 +35,37 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
   }
 
   void _handleSendToBooth(BuildContext context) {
+    final authState = context.read<AuthBloc>().state;
+    final role = authState is AuthAuthenticated ? authState.role.toLowerCase() : '';
+    final isWaiter = role == 'waiter';
+    final targetSource = isWaiter ? 'waiter' : 'dine_in';
+
+    final cartState = context.read<CartBloc>().state;
+    if (cartState.tableNumber == null || cartState.tableNumber!.trim().isEmpty) {
+      TablePickerModal.show(
+        context,
+        currentTable: cartState.tableNumber,
+        onSelect: (table) {
+          if (table != null && table.trim().isNotEmpty) {
+            context.read<CartBloc>().add(SetTableNumber(table));
+            context.read<CartBloc>().add(
+                  CheckoutCart(
+                    paymentMethod: 'CASH',
+                    tableNumber: table,
+                    orderSource: targetSource,
+                  ),
+                );
+          }
+        },
+      );
+      return;
+    }
+
     context.read<CartBloc>().add(
-          const CheckoutCart(
+          CheckoutCart(
             paymentMethod: 'CASH',
-            orderSource: 'waiter',
+            tableNumber: cartState.tableNumber,
+            orderSource: targetSource,
           ),
         );
   }
@@ -89,6 +119,12 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                 context,
                 'Заказ передан в будку',
                 subtitle: 'Кассир оповещен и видит счет столика',
+              );
+            } else if (state.lastSubmittedSource == 'dine_in' || state.lastSubmittedSource == 'hall') {
+              AppToast.showSuccess(
+                context,
+                'Заказ передан на столик',
+                subtitle: 'Открыт счет на постоплату в «Столики»',
               );
             } else {
               AppToast.showSuccess(
@@ -149,6 +185,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                 paymentMethod: _paymentMethod,
                 transferProvider: _transferProvider,
                 payableTotal: state.payableTotal,
+                tableNumber: state.tableNumber,
                 onCheckout: () => _handleCheckout(context),
                 onSendToBooth: () => _handleSendToBooth(context),
                 isDark: isDark,

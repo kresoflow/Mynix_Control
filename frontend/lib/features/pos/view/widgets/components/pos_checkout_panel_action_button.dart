@@ -11,6 +11,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
   final String paymentMethod;
   final String transferProvider;
   final double payableTotal;
+  final String? tableNumber;
   final VoidCallback onCheckout;
   final VoidCallback onSendToBooth;
   final bool isDark;
@@ -22,6 +23,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
     required this.paymentMethod,
     required this.transferProvider,
     required this.payableTotal,
+    this.tableNumber,
     required this.onCheckout,
     required this.onSendToBooth,
     required this.isDark,
@@ -40,15 +42,17 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
     }
   }
 
-  String _getButtonLabel() {
+  String _getButtonLabel({bool isTableSelected = false}) {
     if (paymentMethod == 'TRANSFER') {
-      return 'Оплатить (${_getProviderLabel(transferProvider)})';
+      return isTableSelected
+          ? 'Сразу (${_getProviderLabel(transferProvider)})'
+          : 'Оплатить (${_getProviderLabel(transferProvider)})';
     } else if (paymentMethod == 'DEBT') {
       return 'В долг';
     } else if (paymentMethod == 'DEPOSIT') {
       return 'С депозита';
     }
-    return 'Оплатить';
+    return isTableSelected ? 'Оплатить сразу' : 'Оплатить';
   }
 
   IconData _getButtonIcon() {
@@ -63,29 +67,29 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
     final authState = context.watch<AuthBloc>().state;
     final role = authState is AuthAuthenticated ? authState.role.toLowerCase() : '';
     final isWaiter = role == 'waiter';
-    final isCashier = role == 'cashier';
+    final hasTable = tableNumber != null && tableNumber!.trim().isNotEmpty;
 
     // 1. Waiter mode: Solid primary full-width "Оформить заказ"
     if (isWaiter) {
       return _buildWaiterPrimaryButton(context);
     }
 
-    // 2. Cashier mode: Only "Оплатить" full-width
-    if (isCashier) {
+    // 2. Default Rush/Counter Mode (No table selected): Solid full-width "Оплатить"
+    if (!hasTable) {
       return _buildCheckoutButton(context, isFullWidth: true);
     }
 
-    // 3. Owner / Universal Worker / Admin mode: Dual Action
+    // 3. Table Selected Mode (Cashier / Admin / Owner): Adaptive Dual Action
     return Row(
       children: [
         Expanded(
-          flex: 4,
+          flex: 5,
           child: _buildSendToBoothButton(context),
         ),
         const SizedBox(width: 8),
         Expanded(
-          flex: 6,
-          child: _buildCheckoutButton(context, isFullWidth: false),
+          flex: 5,
+          child: _buildCheckoutButton(context, isFullWidth: false, hasTable: true),
         ),
       ],
     );
@@ -152,6 +156,9 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
   }
 
   Widget _buildSendToBoothButton(BuildContext context) {
+    final hasTable = tableNumber != null && tableNumber!.trim().isNotEmpty;
+    final buttonLabel = hasTable ? 'В зал ($tableNumber)' : 'В зал';
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -159,6 +166,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: Container(
           height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: isEmpty
                 ? Colors.transparent
@@ -176,21 +184,25 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  PhosphorIconsBold.paperPlaneTilt,
+                  hasTable ? PhosphorIconsBold.chair : PhosphorIconsBold.paperPlaneTilt,
                   size: 16,
                   color: isEmpty
                       ? (isDark ? Colors.white24 : Colors.black26)
                       : Colors.amber,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  'В зал',
-                  style: TextStyle(
-                    color: isEmpty
-                        ? (isDark ? Colors.white24 : Colors.black26)
-                        : Colors.amber,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
+                Flexible(
+                  child: Text(
+                    buttonLabel,
+                    style: TextStyle(
+                      color: isEmpty
+                          ? (isDark ? Colors.white24 : Colors.black26)
+                          : Colors.amber,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -201,7 +213,11 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
     );
   }
 
-  Widget _buildCheckoutButton(BuildContext context, {required bool isFullWidth}) {
+  Widget _buildCheckoutButton(
+    BuildContext context, {
+    required bool isFullWidth,
+    bool hasTable = false,
+  }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -244,7 +260,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
-                          _getButtonLabel(),
+                          _getButtonLabel(isTableSelected: hasTable),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w900,

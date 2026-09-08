@@ -157,10 +157,14 @@ async def create_order(
     order_number = await get_next_order_number(session, shift.id)
     has_dish = any(oi["item_type"] == "dish" for oi in order_items_data)
     all_retail = all(oi["item_type"] == "retail" for oi in order_items_data)
-    is_hall_order = (data.order_source or "").lower() in ("waiter", "qr_guest")
+    source_lower = (data.order_source or "").lower()
+    is_waiter_order = source_lower in ("waiter", "qr_guest")
+    is_dine_in_order = source_lower in ("dine_in", "hall")
 
-    if is_hall_order:
+    if is_waiter_order:
         initial_status = OrderStatus.PENDING_APPROVAL
+    elif is_dine_in_order:
+        initial_status = OrderStatus.COOKING if (has_dish and use_kds) else OrderStatus.READY
     elif not use_kds:
         initial_status = OrderStatus.COMPLETED
     elif has_dish:
@@ -179,7 +183,7 @@ async def create_order(
         table_number=data.table_number,
         order_source=data.order_source or "pos",
         status=initial_status,
-        payment_method=data.payment_method,
+        payment_method="unpaid" if (is_waiter_order or is_dine_in_order) else data.payment_method,
         bonus_spent=round(data.bonus_spent or 0.0, 2),
         total=round(total, 2),
         note=data.note,
@@ -191,7 +195,7 @@ async def create_order(
         oi = OrderItem(order_id=order.id, **oi_data)
         session.add(oi)
 
-    if not is_hall_order:
+    if not is_waiter_order and not is_dine_in_order:
         if enable_inventory:
             inventory_items = [
                 {
@@ -204,6 +208,16 @@ async def create_order(
             await inventory_svc.deduct_ingredients(session, inventory_items, user_id)
         await process_customer_checkout(session, data, total, order, user_id)
         await process_cash_income(session, shift, user_id, order_number, total, data)
+    elif is_dine_in_order and enable_inventory:
+        inventory_items = [
+            {
+                "menu_item_id": oi["menu_item_id"],
+                "quantity": oi["quantity"],
+                "selected_options": oi["selected_options"],
+            }
+            for oi in order_items_data
+        ]
+        await inventory_svc.deduct_ingredients(session, inventory_items, user_id)
 
     await session.flush()
     return order

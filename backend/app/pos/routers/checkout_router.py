@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
-from app.dependencies import require_permission, CurrentUser, TenantSession
+from app.dependencies import require_permission, require_any_permission, CurrentUser, TenantSession
 from app.pos.models import CreateOrderRequest, OrderStatus, OrderItemCreate
 from app.pos.services.checkout_service import (
     create_order, list_orders, get_order_by_id, update_order_status,
@@ -183,7 +183,7 @@ async def api_reject_order(
 
 @router.patch(
     "/orders/{order_id}/status",
-    dependencies=[Depends(require_permission("orders:update_status"))],
+    dependencies=[Depends(require_any_permission("orders:update_status", "orders:create", "orders:view"))],
 )
 async def api_update_status(
     order_id: int,

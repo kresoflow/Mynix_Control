@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.dependencies import require_permission, CurrentUser, TenantSession
+from app.dependencies import require_permission, require_any_permission, CurrentUser, TenantSession
 from app.pos.models import OrderRead
 from app.kitchen.services import kds_service
 from app.pos.ws import notify_kitchen_status_update
@@ -48,7 +48,7 @@ async def api_get_active_orders(
 
 @router.post(
     "/{order_id}/ready",
-    dependencies=[Depends(require_permission("orders:update_status"))],
+    dependencies=[Depends(require_any_permission("orders:update_status", "kitchen:view", "orders:create"))],
 )
 async def api_mark_order_ready(
     order_id: int,

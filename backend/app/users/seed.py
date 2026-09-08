@@ -80,7 +80,7 @@ ROLE_TEMPLATES = {
         "description": "Cashier — POS, payments, shifts",
         "is_superuser": False,
         "permissions": [
-            "orders:create", "orders:view", "orders:cancel",
+            "orders:create", "orders:view", "orders:cancel", "orders:update_status",
             "cashbox:operate", "cashbox:view", "cashbox:expense",
             "shifts:open", "shifts:close", "shifts:view",
             "menu:view",
@@ -91,7 +91,7 @@ ROLE_TEMPLATES = {
         "description": "Waiter — hall orders, table service, quick submit",
         "is_superuser": False,
         "permissions": [
-            "orders:create", "orders:view", "orders:cancel",
+            "orders:create", "orders:view", "orders:cancel", "orders:update_status",
             "menu:view",
             "crm:view",
             "shifts:view",
