@@ -6,7 +6,6 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/general_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/hardware_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
-import 'package:mynix_frontend/features/settings/view/tabs/tax_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/system_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/settings_category_tile.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/mobile_settings_user_header.dart';
@@ -25,7 +24,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     SettingsCategory(PhosphorIconsRegular.slidersHorizontal, 'Основные'),
     SettingsCategory(PhosphorIconsRegular.printer, 'Оборудование'),
     SettingsCategory(PhosphorIconsRegular.users, 'Персонал'),
-    SettingsCategory(PhosphorIconsRegular.receipt, 'Налоги и сборы'),
     SettingsCategory(PhosphorIconsRegular.hardDrives, 'Система'),
   ];
 
@@ -154,8 +152,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case 2:
         return PersonnelSettingsTab(isDark: isDark);
       case 3:
-        return TaxSettingsTab(isDark: isDark);
-      case 4:
         return SystemSettingsTab(isDark: isDark);
       default:
         return const SizedBox.shrink();
