@@ -117,14 +117,13 @@ class _CreateSupplierDialogState extends State<CreateSupplierDialog> {
                     child: const Text('Отмена'),
                   ),
                   const SizedBox(width: 16),
-                  ElevatedButton.icon(
+                  ElevatedButton(
                     onPressed: _save,
-                    icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Сохранить'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
+                    child: const Text('Сохранить'),
                   ),
                 ],
               ),

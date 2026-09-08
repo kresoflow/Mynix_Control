@@ -221,7 +221,6 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
         const SizedBox(width: 8),
         AppPrimaryButton(
           label: 'Внести выплату',
-          icon: PhosphorIconsRegular.check,
           width: null,
           onPressed: _submit,
         ),

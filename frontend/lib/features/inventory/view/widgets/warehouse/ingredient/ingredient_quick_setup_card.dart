@@ -118,7 +118,7 @@ class IngredientQuickSetupCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _PresetCard(
-                          emoji: '🍔',
+                          icon: PhosphorIconsBold.hamburger,
                           title: 'Фастфуд',
                           subtitle: '8 категорий',
                           onTap: () => _applyPreset(context, _fastFoodPreset),
@@ -128,7 +128,7 @@ class IngredientQuickSetupCard extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _PresetCard(
-                          emoji: '🍝',
+                          icon: PhosphorIconsBold.bowlFood,
                           title: 'Ресторан',
                           subtitle: '12 категорий',
                           onTap: () => _applyPreset(context, [..._fastFoodPreset, ..._restaurantExtra]),
@@ -178,14 +178,14 @@ class IngredientQuickSetupCard extends StatelessWidget {
 }
 
 class _PresetCard extends StatelessWidget {
-  final String emoji;
+  final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
   final bool isDark;
 
   const _PresetCard({
-    required this.emoji,
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
@@ -210,8 +210,15 @@ class _PresetCard extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 32)),
-              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 28, color: AppColors.brandPrimary),
+              ),
+              const SizedBox(height: 12),
               Text(title, style: AppTextStyles.h3, textAlign: TextAlign.center),
               const SizedBox(height: 4),
               Text(

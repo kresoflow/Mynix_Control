@@ -229,7 +229,6 @@ class ReceiveDocumentFooter extends StatelessWidget {
           const SizedBox(width: 8),
           AppButton.primary(
             label: 'Провести (Ctrl+S)',
-            icon: PhosphorIconsRegular.checkCircle,
             customColor: AppColors.success,
             height: 38,
             isLoading: isSaving,

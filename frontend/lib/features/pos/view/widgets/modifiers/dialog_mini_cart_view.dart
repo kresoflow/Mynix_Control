@@ -215,7 +215,6 @@ class DialogMiniCartView extends StatelessWidget {
                 ? 'В чек (${totalCartPrice.toCurrency(context)})'
                 : 'Выберите опции',
             onPressed: totalItems > 0 ? onSubmitCart : null,
-            icon: PhosphorIconsRegular.checkCircle,
           ),
         ],
       ],

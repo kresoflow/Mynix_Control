@@ -182,7 +182,7 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      diff == 0 ? '✓ Точно' : (diff < 0 ? '${diff.toCurrency(context)}' : '+${diff.toCurrency(context)}'),
+                      diff == 0 ? 'Точно' : (diff < 0 ? diff.toCurrency(context) : '+${diff.toCurrency(context)}'),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,

@@ -246,18 +246,25 @@ class RecipeEmptyDashboard extends StatelessWidget {
                                             )
                                           else
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(
                                                 color: AppColors.warning.withValues(alpha: 0.12),
                                                 borderRadius: BorderRadius.circular(4),
                                               ),
-                                              child: const Text(
-                                                '⚠️ Требуется состав',
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: AppColors.warning,
-                                                ),
+                                              child: const Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(PhosphorIconsBold.warningCircle, size: 11, color: AppColors.warning),
+                                                  SizedBox(width: 4),
+                                                  Text(
+                                                    'Требуется состав',
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: AppColors.warning,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                         ],

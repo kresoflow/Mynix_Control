@@ -151,7 +151,6 @@ class _IncomingOrderPaymentModalState extends State<IncomingOrderPaymentModal> {
         const SizedBox(width: 10),
         AppPrimaryButton(
           label: 'Подтвердить оплату',
-          icon: PhosphorIconsBold.check,
           isLoading: _isLoading,
           onPressed: _handleConfirm,
         ),

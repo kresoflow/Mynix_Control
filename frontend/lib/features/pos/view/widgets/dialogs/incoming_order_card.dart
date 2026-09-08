@@ -221,22 +221,17 @@ class IncomingOrderCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   flex: 2,
-                  child: ElevatedButton.icon(
+                  child: ElevatedButton(
                     onPressed: onApprove,
-                    icon: Icon(
-                      useKds ? PhosphorIconsBold.cookingPot : PhosphorIconsBold.checkCircle,
-                      size: 15,
-                      color: Colors.white,
-                    ),
-                    label: Text(
-                      useKds ? 'В цех (KDS)' : 'Принять заказ',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
-                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: useKds ? const Color(0xFF10B981) : AppColors.brandPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 11),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       elevation: 0,
+                    ),
+                    child: Text(
+                      useKds ? 'В цех (KDS)' : 'Принять заказ',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12.5),
                     ),
                   ),
                 ),

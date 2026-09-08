@@ -128,7 +128,7 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  diff == 0 ? '✓ Сходится точно' : (diff < 0 ? 'Недостача:' : 'Излишек:'),
+                  diff == 0 ? 'Сходится точно' : (diff < 0 ? 'Недостача:' : 'Излишек:'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,

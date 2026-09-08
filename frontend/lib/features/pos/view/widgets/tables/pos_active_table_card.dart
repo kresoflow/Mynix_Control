@@ -146,20 +146,13 @@ class PosActiveTableCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppColors.brandTertiary.withValues(alpha: 0.5)),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(PhosphorIconsBold.check, size: 11, color: AppColors.brandTertiary),
-                        const SizedBox(width: 4),
-                        Text(
-                          hasDozakaz ? 'Отдать дозаказ' : 'Отдать в зал',
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.brandTertiary,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      hasDozakaz ? 'Отдать дозаказ' : 'Отдать в зал',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.brandTertiary,
+                      ),
                     ),
                   ),
                 ),

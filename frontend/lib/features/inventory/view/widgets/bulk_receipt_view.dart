@@ -257,7 +257,6 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
                     const SizedBox(width: 12),
                     AppButton.primary(
                       onPressed: _saveAll,
-                      icon: PhosphorIconsRegular.check,
                       label: 'Провести документ',
                       customColor: AppColors.success,
                       height: 42,

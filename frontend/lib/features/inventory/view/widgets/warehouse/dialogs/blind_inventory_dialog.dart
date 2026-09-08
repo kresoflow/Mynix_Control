@@ -166,7 +166,6 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
           builder: (context, state) {
             return AppPrimaryButton(
               label: 'Завершить',
-              icon: PhosphorIconsRegular.check,
               isLoading: _isLoading,
               onPressed: _isLoading || state is! IngredientLoaded
                   ? null

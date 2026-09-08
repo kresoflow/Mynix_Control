@@ -93,23 +93,23 @@ class BulkAddTabsBar extends StatelessWidget {
               tooltip: 'Загрузить готовый шаблон данных',
               onSelected: onLoadPreset,
               itemBuilder: (ctx) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'fastfood',
                   child: Row(
                     children: [
-                      Text('🍔', style: TextStyle(fontSize: 18)),
-                      SizedBox(width: 8),
-                      Text('Шаблон «Фастфуд»'),
+                      Icon(PhosphorIconsBold.hamburger, size: 18, color: AppColors.brandPrimary),
+                      const SizedBox(width: 8),
+                      const Text('Шаблон «Фастфуд»'),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'restaurant',
                   child: Row(
                     children: [
-                      Text('🍝', style: TextStyle(fontSize: 18)),
-                      SizedBox(width: 8),
-                      Text('Шаблон «Ресторан»'),
+                      Icon(PhosphorIconsBold.bowlFood, size: 18, color: AppColors.brandPrimary),
+                      const SizedBox(width: 8),
+                      const Text('Шаблон «Ресторан»'),
                     ],
                   ),
                 ),

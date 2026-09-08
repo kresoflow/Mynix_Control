@@ -242,10 +242,10 @@ class DocumentDetailItemsTable extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       totalDiscrepancy < -0.01
-                          ? '🔴 Итоговая недостача ревизии: ${totalDiscrepancy.toStringAsFixed(2)} с'
+                          ? 'Итоговая недостача ревизии: ${totalDiscrepancy.toStringAsFixed(2)} с'
                           : (totalDiscrepancy > 0.01
-                              ? '🟢 Итоговый излишек ревизии: +${totalDiscrepancy.toStringAsFixed(2)} с'
-                              : '✅ Отклонений нет — факт совпадает с учетом'),
+                              ? 'Итоговый излишек ревизии: +${totalDiscrepancy.toStringAsFixed(2)} с'
+                              : 'Отклонений нет — факт совпадает с учетом'),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,

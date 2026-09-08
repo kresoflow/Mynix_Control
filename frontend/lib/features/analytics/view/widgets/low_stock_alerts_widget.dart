@@ -14,7 +14,7 @@ class LowStockAlertsWidget extends StatelessWidget {
     if (alerts.isEmpty) return;
     
     final sb = StringBuffer();
-    sb.writeln('📋 Список для закупки:');
+    sb.writeln('Список для закупки:');
     sb.writeln('----------------------');
     for (var alert in alerts) {
       sb.writeln('- ${alert.name} (Остаток: ${alert.currentStock.toStringAsFixed(1)})');

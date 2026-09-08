@@ -36,13 +36,13 @@ class DocumentTextBuilder {
     final items = doc.items ?? [];
 
     final buffer = StringBuffer();
-    buffer.writeln('📦 ПРИХОДНАЯ НАКЛАДНАЯ #${doc.id}');
-    buffer.writeln('📅 $dateStr');
-    buffer.writeln('🏢 Поставщик: ${doc.supplierName ?? "Не указан"}');
+    buffer.writeln('ПРИХОДНАЯ НАКЛАДНАЯ #${doc.id}');
+    buffer.writeln('Дата: $dateStr');
+    buffer.writeln('Поставщик: ${doc.supplierName ?? "Не указан"}');
     if (doc.invoiceNumber != null && doc.invoiceNumber!.isNotEmpty) {
-      buffer.writeln('📄 Инвойс: ${doc.invoiceNumber}');
+      buffer.writeln('Инвойс: ${doc.invoiceNumber}');
     }
-    buffer.writeln('💳 Оплата: ${DocumentPdfBuilder.formatPaymentStatus(doc.paymentStatus)}');
+    buffer.writeln('Оплата: ${DocumentPdfBuilder.formatPaymentStatus(doc.paymentStatus)}');
     buffer.writeln('──────────────────────────────');
 
     for (int i = 0; i < items.length; i++) {

@@ -193,7 +193,7 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                       const SizedBox(width: 4),
                       Expanded(
                         child: _buildFilterChip(
-                          label: '🟢 Есть ($configuredCount)',
+                          label: 'С составом ($configuredCount)',
                           isSelected: _statusFilter == RecipeStatusFilter.configured,
                           activeColor: AppColors.success,
                           onTap: () => setState(() => _statusFilter = RecipeStatusFilter.configured),
@@ -203,7 +203,7 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                       const SizedBox(width: 4),
                       Expanded(
                         child: _buildFilterChip(
-                          label: '⚠️ Нет ($unconfiguredCount)',
+                          label: 'Без состава ($unconfiguredCount)',
                           isSelected: _statusFilter == RecipeStatusFilter.unconfigured,
                           activeColor: AppColors.warning,
                           onTap: () => setState(() => _statusFilter = RecipeStatusFilter.unconfigured),
@@ -421,7 +421,7 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                                                       )
                                                     else
                                                       Text(
-                                                        '⚪ Нет состава',
+                                                        'Без состава',
                                                         style: TextStyle(
                                                           fontSize: 10,
                                                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,

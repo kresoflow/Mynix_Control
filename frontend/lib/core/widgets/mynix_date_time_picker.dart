@@ -149,7 +149,6 @@ class _MynixDateTimePickerDialogState extends State<_MynixDateTimePickerDialog> 
         const SizedBox(width: 8),
         AppPrimaryButton(
           label: 'Применить',
-          icon: PhosphorIconsRegular.check,
           width: null,
           onPressed: () => Navigator.pop(context, _getFinalDateTime()),
         ),

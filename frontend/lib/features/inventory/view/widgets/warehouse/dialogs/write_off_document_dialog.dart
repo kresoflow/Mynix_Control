@@ -233,7 +233,6 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
         const SizedBox(width: 12),
         AppDangerButton(
           label: 'Провести списание',
-          icon: PhosphorIconsRegular.check,
           isLoading: _isLoading,
           onPressed: _isLoading || _entries.isEmpty ? null : _submit,
         ),

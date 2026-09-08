@@ -210,7 +210,6 @@ class OrderDetailsDialog extends StatelessWidget {
                         height: 46,
                         child: AppPrimaryButton(
                           label: 'Выдать заказ (Завершить)',
-                          icon: PhosphorIconsRegular.checkCircle,
                           onPressed: () {
                             context.read<OrdersBloc>().add(CompleteOrder(order.id));
                             Navigator.pop(context);
