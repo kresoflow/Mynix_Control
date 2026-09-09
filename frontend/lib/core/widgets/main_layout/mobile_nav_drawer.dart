@@ -151,18 +151,18 @@ class MobileNavDrawer extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
-                        color: isOpen ? AppColors.brandTertiary.withValues(alpha: 0.12) : AppColors.danger.withValues(alpha: 0.1),
+                        color: isOpen ? AppColors.success.withValues(alpha: 0.12) : AppColors.danger.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: isOpen ? AppColors.brandTertiary.withValues(alpha: 0.35) : AppColors.danger.withValues(alpha: 0.35)),
+                        border: Border.all(color: isOpen ? AppColors.success.withValues(alpha: 0.35) : AppColors.danger.withValues(alpha: 0.35)),
                       ),
                       child: Row(
                         children: [
-                          Icon(isOpen ? PhosphorIconsRegular.cashRegister : PhosphorIconsRegular.lockSimple, size: 18, color: isOpen ? AppColors.brandTertiary : AppColors.danger),
+                          Icon(isOpen ? PhosphorIconsRegular.cashRegister : PhosphorIconsRegular.lockSimple, size: 18, color: isOpen ? AppColors.success : AppColors.danger),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               isOpen ? 'Кассовая смена открыта' : 'Смена закрыта (Открыть)',
-                              style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold, color: isOpen ? AppColors.brandTertiary : AppColors.danger),
+                              style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold, color: isOpen ? AppColors.success : AppColors.danger),
                             ),
                           ),
                           const Icon(PhosphorIconsRegular.caretRight, size: 16),

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 /// Mynix Brand Color System — Dynamic Theme Tokens
 abstract class AppColors {
   // ── Brand Accents (Dynamic) ────────────────────────────────────────────────
-  static Color brandPrimary   = const Color(0xFF00F0FF); // Neon Cyan / Amber / Sky Blue
-  static Color brandSecondary = const Color(0xFFFF007A); // Neon Pink / Coral
-  static Color brandTertiary  = const Color(0xFF7000FF); // Deep Purple / Teal
+  static Color brandPrimary   = const Color(0xFF0284C7); // Sky / Cobalt Blue
+  static Color brandSecondary = const Color(0xFF0369A1); // Deep Cobalt
+  static Color brandTertiary  = const Color(0xFF0D9488); // Teal Accent
 
   // ── Dark Theme Surfaces ────────────────────────────────────────────────────
   static Color darkBg         = const Color(0xFF050B14);
@@ -52,13 +52,13 @@ abstract class AppColors {
 
   // ── Chart Palette ──────────────────────────────────────────────────────────
   static const List<Color> chartPalette = [
-    Color(0xFFE8A020),
-    Color(0xFF00F0FF),
-    Color(0xFF10B981),
-    Color(0xFFFF007A),
-    Color(0xFF6366F1),
-    Color(0xFFF59E0B),
-    Color(0xFFEC4899),
+    Color(0xFF0284C7), // Sky Blue
+    Color(0xFF10B981), // Emerald
+    Color(0xFFE8A020), // Amber
+    Color(0xFF6366F1), // Indigo
+    Color(0xFFEC4899), // Pink
+    Color(0xFFF59E0B), // Orange
+    Color(0xFF14B8A6), // Teal
   ];
 
   // ── Gradients ─────────────────────────────────────────────────────────────
@@ -88,9 +88,9 @@ abstract class AppColors {
       // 🌊 Ocean / Contrast Pair
       if (isDark) {
         // Темная (Deep Ocean)
-        brandPrimary   = const Color(0xFF00F0FF); // Neon Cyan
-        brandSecondary = const Color(0xFFFF007A); // Neon Pink
-        brandTertiary  = const Color(0xFF7000FF); // Deep Purple
+        brandPrimary   = const Color(0xFF38BDF8); // Sky Blue 400
+        brandSecondary = const Color(0xFF0284C7); // Sky Blue 600
+        brandTertiary  = const Color(0xFF0D9488); // Teal
         
         darkBg         = const Color(0xFF050B14); // Deep Midnight Navy
         darkSurface    = const Color(0xFF0A1220); // Navy Surface

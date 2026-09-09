@@ -1,4 +1,4 @@
-﻿# Mynix Control — Official Design System & UI Specification (DESIGN.md)
+# Mynix Control — Official Design System & UI Specification (DESIGN.md)
 
 ## 1. Visual Theme & Atmosphere
 Mynix Control is an enterprise-grade ERP, POS, and Warehouse operating system for modern restaurants and retail chains.
@@ -12,9 +12,9 @@ The visual identity follows an ultra-clean, high-density, **Linear & Stripe-grad
 ## 2. Color Palette & Semantic Roles
 
 ### Brand & Accents
-- **Brand Primary:** `#2563EB` / `#00F0FF` (Electric Cyan / Brand Blue) — Key CTA buttons, active tabs, primary actions.
-- **Brand Secondary:** `#FF007A` (Neon Pink / Coral) — Special highlights, live alerts.
-- **Brand Tertiary:** `#7000FF` / `#14B8A6` (Purple / Mint) — Analytical badges, secondary metrics.
+- **Brand Primary:** `#0284C7` (Light) / `#38BDF8` (Dark) — Sapphire / Sky Cobalt Blue. Key CTA buttons, active tabs, primary actions.
+- **Brand Secondary:** `#0369A1` (Deep Cobalt) — Secondary highlights and subtle accents.
+- **Brand Tertiary:** `#0D9488` (Teal Mint) — Analytical badges, secondary metrics.
 
 ### Dark Mode Surfaces
 - **Canvas / Background (`darkBg`):** `#050B14` (Deep Midnight Obsidian)

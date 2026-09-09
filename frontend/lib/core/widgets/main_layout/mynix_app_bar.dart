@@ -78,10 +78,10 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: isOpen ? AppColors.brandTertiary.withValues(alpha: 0.1) : AppColors.danger.withValues(alpha: 0.1),
+                      color: isOpen ? AppColors.success.withValues(alpha: 0.12) : AppColors.danger.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isOpen ? AppColors.brandTertiary.withValues(alpha: 0.3) : AppColors.danger.withValues(alpha: 0.3),
+                        color: isOpen ? AppColors.success.withValues(alpha: 0.35) : AppColors.danger.withValues(alpha: 0.35),
                         width: 1,
                       ),
                     ),
@@ -93,7 +93,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                           height: 8,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isOpen ? AppColors.brandTertiary : AppColors.danger,
+                            color: isOpen ? AppColors.success : AppColors.danger,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -104,7 +104,7 @@ class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
                           style: GoogleFonts.jetBrainsMono(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: isOpen ? AppColors.brandTertiary : AppColors.danger,
+                            color: isOpen ? AppColors.success : AppColors.danger,
                           ),
                         ),
                       ],
