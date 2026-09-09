@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/app_text_field.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/app_nav_tile.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
@@ -184,68 +185,26 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                       child: Column(
                         children: [
                           // Top item: All Ingredients
-                          Material(
-                            color: widget.selectedCategoryId == null
-                                ? AppColors.brandPrimary.withValues(alpha: 0.12)
-                                : (isDark ? const Color(0xFF161B26) : const Color(0xFFF1F5F9)),
-                            child: InkWell(
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+                            child: AppNavTile(
+                              title: 'ВСЕ СЫРЬЕ',
+                              count: ingredients.length,
+                              isSelected: widget.selectedCategoryId == null,
+                              size: AppNavTileSize.md,
                               onTap: () => widget.onCategorySelected(null),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    left: BorderSide(
-                                      color: widget.selectedCategoryId == null
-                                          ? AppColors.brandPrimary
-                                          : Colors.transparent,
-                                      width: 3,
-                                    ),
-                                    bottom: BorderSide(
-                                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                                      width: 1,
-                                    ),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        'ВСЕ СЫРЬЕ',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 0.5,
-                                          color: widget.selectedCategoryId == null
-                                              ? AppColors.brandPrimary
-                                              : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        '${ingredients.length}',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
+                          Divider(
+                            height: 1,
+                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                          ),
+                          const SizedBox(height: 4),
 
                           // Categories List
                           Expanded(
                             child: ListView(
-                              padding: EdgeInsets.zero,
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               children: [
                                 ...rootCategories.map((rootCat) {
                                   final count = ingredients.where((i) => i.categoryId == rootCat.id).length;

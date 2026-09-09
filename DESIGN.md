@@ -83,6 +83,15 @@ All buttons MUST strictly conform to the 5-tier size matrix:
 - **`AppDangerButton`:** Danger background/border + White text (used for Delete / Irreversible actions).
 - **`AppMenuButton`:** Unified dropdown action button with built-in popup menu.
 
+### Navigation & Category List Tiles (`AppNavTileSize`)
+All sidebars, category trees, and submenus MUST strictly conform to the 3-tier size matrix:
+
+| Size Enum | Height | Icon Size | Font Size | Target Usage |
+| :--- | :--- | :--- | :--- | :--- |
+| **`AppNavTileSize.sm`** | **32 px** | 15 px | 12 px | Nested tree nodes, deep folder hierarchies, compact filter lists |
+| **`AppNavTileSize.md`** | **38-40 px**| 18 px | 13.5 px| **Standard Warehouse Categories, Catalog Shelves, Recipe items** |
+| **`AppNavTileSize.lg`** | **48-52 px**| 22 px | 15 px | **Main Sidebar Navigation Rail, Settings sections, Mobile list tiles** |
+
 ---
 
 ## 5. Layout & 8-Point Grid System

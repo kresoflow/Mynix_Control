@@ -1,7 +1,8 @@
-﻿export 'app_menu_button.dart';
+export 'app_menu_button.dart';
 export 'app_status_badge.dart';
 export 'app_search_field.dart';
 export 'app_page_header.dart';
+export 'app_nav_tile.dart';
 export '../app_button.dart';
 export '../mynix_dialog.dart';
 export '../app_card.dart';

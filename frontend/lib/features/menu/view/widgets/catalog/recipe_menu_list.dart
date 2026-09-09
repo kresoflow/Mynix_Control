@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/app_text_field.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/app_nav_tile.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
@@ -229,61 +231,26 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                         child: Column(
                           children: [
                             // ── Top Item: Main Overview / Dashboard Button ─
-                            Material(
-                              color: widget.selectedMenuItemId == null
-                                  ? AppColors.brandPrimary.withValues(alpha: 0.12)
-                                  : (isDark ? const Color(0xFF161B26) : const Color(0xFFF1F5F9)),
-                              child: InkWell(
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+                              child: AppNavTile(
+                                title: 'СВОДКА И ОБЗОР',
+                                icon: PhosphorIconsRegular.chartLineUp,
+                                isSelected: widget.selectedMenuItemId == null,
+                                size: AppNavTileSize.md,
                                 onTap: () => widget.onMenuItemSelected(null),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      left: BorderSide(
-                                        color: widget.selectedMenuItemId == null
-                                            ? AppColors.brandPrimary
-                                            : Colors.transparent,
-                                        width: 3,
-                                      ),
-                                      bottom: BorderSide(
-                                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        PhosphorIconsRegular.chartLineUp,
-                                        size: 16,
-                                        color: widget.selectedMenuItemId == null
-                                            ? AppColors.brandPrimary
-                                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'СВОДКА И ОБЗОР',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w800,
-                                            letterSpacing: 0.5,
-                                            color: widget.selectedMenuItemId == null
-                                                ? AppColors.brandPrimary
-                                                : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
                               ),
                             ),
+                            Divider(
+                              height: 1,
+                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                            ),
+                            const SizedBox(height: 4),
 
                             // ── Dishes List ───────────────────────────
                             Expanded(
                               child: ListView.builder(
-                                padding: EdgeInsets.zero,
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 itemCount: flatList.length,
                                 itemBuilder: (context, index) {
                                   final data = flatList[index];
@@ -292,54 +259,14 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                                     final isExpanded = data['isExpanded'] as bool;
                                     final count = data['itemsCount'] as int;
 
-                                    return Material(
-                                      color: isDark ? const Color(0xFF161B26) : const Color(0xFFF1F5F9),
-                                      child: InkWell(
-                                        onTap: () => _toggleCategory(catName),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  catName.toUpperCase(),
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w800,
-                                                    letterSpacing: 0.5,
-                                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                                decoration: BoxDecoration(
-                                                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                ),
-                                                child: Text(
-                                                  '$count',
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              AnimatedRotation(
-                                                turns: isExpanded ? 0.5 : 0.0,
-                                                duration: const Duration(milliseconds: 200),
-                                                child: Icon(
-                                                  PhosphorIconsRegular.caretDown,
-                                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                                  size: 14,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
+                                    return AppNavTile(
+                                      title: catName.toUpperCase(),
+                                      count: count,
+                                      isExpandable: true,
+                                      isExpanded: isExpanded,
+                                      size: AppNavTileSize.sm,
+                                      onExpandToggle: () => _toggleCategory(catName),
+                                      onTap: () => _toggleCategory(catName),
                                     );
                                   } else {
                                     final item = data['item'];
@@ -360,90 +287,37 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                                         iconStr.isNotEmpty &&
                                         (IconHelper.getIcon(iconStr) != null || iconStr.startsWith('svg:'));
 
-                                    return Material(
-                                      color: isSelected
-                                          ? AppColors.brandPrimary.withValues(alpha: 0.12)
-                                          : Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          widget.onMenuItemSelected(item.id);
-                                          context.read<RecipeBloc>().add(LoadRecipe(item.id));
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              left: BorderSide(
-                                                color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                                                width: 3,
-                                              ),
-                                              bottom: BorderSide(
-                                                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                                                width: 0.5,
-                                              ),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              if (hasIcon) ...[
-                                                IconHelper.buildIcon(
-                                                  iconStr,
-                                                  size: 16,
-                                                  color: isSelected
-                                                      ? AppColors.brandPrimary
-                                                      : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                                ),
-                                                const SizedBox(width: 8),
-                                              ],
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      item.cleanName,
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                                        color: isDark ? AppColors.darkText : AppColors.lightText,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 1),
-                                                    if (hasRecipe)
-                                                      Text(
-                                                        '${cost.toStringAsFixed(0)} с • ${marginPercent.toStringAsFixed(0)}% маржа',
-                                                        style: TextStyle(
-                                                          fontSize: 10,
-                                                          fontWeight: FontWeight.w600,
-                                                          color: marginPercent >= 0 ? AppColors.success : AppColors.danger,
-                                                        ),
-                                                      )
-                                                    else
-                                                      Text(
-                                                        'Без состава',
-                                                        style: TextStyle(
-                                                          fontSize: 10,
-                                                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Text(
-                                                '${item.price.toStringAsFixed(0)} с',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                                  color: isSelected
-                                                      ? AppColors.brandPrimary
-                                                      : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                    return AppNavTile(
+                                      title: item.cleanName,
+                                      subtitle: hasRecipe
+                                          ? '${cost.toStringAsFixed(0)} с • ${marginPercent.toStringAsFixed(0)}% маржа'
+                                          : 'Без состава',
+                                      leading: hasIcon
+                                          ? IconHelper.buildIcon(
+                                              iconStr,
+                                              size: 16,
+                                              color: isSelected
+                                                  ? AppColors.brandPrimary
+                                                  : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                                            )
+                                          : null,
+                                      depth: 1,
+                                      size: AppNavTileSize.md,
+                                      isSelected: isSelected,
+                                      trailing: Text(
+                                        '${item.price.toStringAsFixed(0)} с',
+                                        style: GoogleFonts.jetBrainsMono(
+                                          fontSize: 12,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                          color: isSelected
+                                              ? AppColors.brandPrimary
+                                              : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                                         ),
                                       ),
+                                      onTap: () {
+                                        widget.onMenuItemSelected(item.id);
+                                        context.read<RecipeBloc>().add(LoadRecipe(item.id));
+                                      },
                                     );
                                   }
                                 },
