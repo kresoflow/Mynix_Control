@@ -239,33 +239,43 @@ class _PosScreenState extends State<PosScreen> {
 
   Widget _buildActiveTablesBadge(bool isDark) {
     final hasTables = _activeTablesCount > 0;
+    final primary = AppColors.brandPrimary;
+    final bg = hasTables
+        ? primary.withValues(alpha: isDark ? 0.16 : 0.12)
+        : (isDark ? AppColors.darkCard : AppColors.lightCard);
+    final borderColor = hasTables
+        ? primary.withValues(alpha: isDark ? 0.5 : 0.6)
+        : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
+    final fg = hasTables
+        ? (isDark ? AppColors.darkText : primary)
+        : (isDark ? AppColors.darkText : AppColors.lightText);
+    final iconColor = hasTables ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+
     return InkWell(
       onTap: () => PosActiveTablesDialog.show(context).then((_) => _refreshCounts()),
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        height: 38,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: hasTables ? AppColors.brandPrimary.withValues(alpha: 0.12) : Colors.transparent,
+          color: bg,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: hasTables ? AppColors.brandPrimary.withValues(alpha: 0.5) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            width: 1.2,
-          ),
+          border: Border.all(color: borderColor, width: 1.2),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               hasTables ? PhosphorIconsBold.chair : PhosphorIconsRegular.chair,
-              size: 17,
-              color: hasTables ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              size: 16,
+              color: iconColor,
             ),
             const SizedBox(width: 6),
             Text(
               'Столики ($_activeTablesCount)',
               style: TextStyle(
-                color: hasTables ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                fontWeight: hasTables ? FontWeight.w800 : FontWeight.w500,
+                color: fg,
+                fontWeight: hasTables ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 13,
               ),
             ),
@@ -279,39 +289,48 @@ class _PosScreenState extends State<PosScreen> {
     final authState = context.watch<AuthBloc>().state;
     final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
     final hasPending = _incomingCount > 0;
-    final badgeColor = isWaiter ? AppColors.brandPrimary : Colors.amber;
+    final badgeColor = isWaiter ? AppColors.brandPrimary : AppColors.warning;
     final label = isWaiter ? 'Мои заказы ($_incomingCount)' : 'Входящие ($_incomingCount)';
     final icon = isWaiter
         ? (hasPending ? PhosphorIconsBold.receipt : PhosphorIconsRegular.receipt)
         : (hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell);
 
+    final bg = hasPending
+        ? badgeColor.withValues(alpha: isDark ? 0.16 : 0.12)
+        : (isDark ? AppColors.darkCard : AppColors.lightCard);
+    final borderColor = hasPending
+        ? badgeColor.withValues(alpha: isDark ? 0.5 : 0.6)
+        : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
+    final fg = hasPending
+        ? (isDark ? AppColors.darkText : badgeColor)
+        : (isDark ? AppColors.darkText : AppColors.lightText);
+    final iconColor = hasPending ? badgeColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+
     return InkWell(
       onTap: () => IncomingOrdersDialog.show(context).then((_) => _refreshCounts()),
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        height: 38,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: hasPending ? badgeColor.withValues(alpha: 0.15) : Colors.transparent,
+          color: bg,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: hasPending ? badgeColor.withValues(alpha: 0.6) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            width: 1.2,
-          ),
+          border: Border.all(color: borderColor, width: 1.2),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 17,
-              color: hasPending ? badgeColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              size: 16,
+              color: iconColor,
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: hasPending ? badgeColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                fontWeight: hasPending ? FontWeight.w800 : FontWeight.w500,
+                color: fg,
+                fontWeight: hasPending ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 13,
               ),
             ),

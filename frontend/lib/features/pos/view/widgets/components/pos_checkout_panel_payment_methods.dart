@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
@@ -81,92 +80,36 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        // ── Tier 2: Payment Methods ────────────────────────────────────
-        Row(
-          children: [
-            Expanded(
-              child: _buildMethodTab('CASH', 'Наличные', PhosphorIconsRegular.money),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildMethodTab('TRANSFER', 'Перевод', PhosphorIconsRegular.qrCode),
-            ),
-            if (customer != null) ...[
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildMethodTab(
-                  customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
-                  customer.balance > 0 ? 'Депозит' : 'В долг',
-                  customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
-                ),
+        // ── Tier 2: Payment Methods (Unified AppSegmentedControl) ──────
+        AppSegmentedControl<String>(
+          selectedValue: paymentMethod,
+          onValueChanged: onPaymentMethodChanged,
+          size: AppSegmentedSize.md,
+          isExpanded: true,
+          items: [
+            const AppSegmentedItem(value: 'CASH', label: 'Наличные', icon: PhosphorIconsRegular.money),
+            const AppSegmentedItem(value: 'TRANSFER', label: 'Перевод', icon: PhosphorIconsRegular.qrCode),
+            if (customer != null)
+              AppSegmentedItem(
+                value: customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
+                label: customer.balance > 0 ? 'Депозит' : 'В долг',
+                icon: customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
               ),
-            ],
           ],
         ),
 
         // ── Tier 3: Bank selector (if Transfer) ────────────────────────
         if (paymentMethod == 'TRANSFER') ...[
           const SizedBox(height: 8),
-          _buildTransferBanksRow(),
+          AppSegmentedControl<String>(
+            selectedValue: transferProvider,
+            onValueChanged: onTransferProviderChanged,
+            size: AppSegmentedSize.sm,
+            isExpanded: true,
+            items: providers.map((p) => AppSegmentedItem<String>(value: p.id, label: p.label)).toList(),
+          ),
         ],
       ],
-    );
-  }
-
-  Widget _buildMethodTab(String method, String label, IconData icon) {
-    final isSelected = paymentMethod == method;
-    final activeColor = AppColors.brandPrimary;
-    final inactiveColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
-
-    return InkWell(
-      onTap: () => onPaymentMethodChanged(method),
-      borderRadius: BorderRadius.circular(8),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        height: 34,
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? activeColor.withValues(alpha: isDark ? 0.16 : 0.12)
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? activeColor : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 14, color: isSelected ? activeColor : inactiveColor),
-            const SizedBox(width: 5),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected
-                      ? (isDark ? Colors.white : activeColor)
-                      : (isDark ? AppColors.darkText : AppColors.lightText),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTransferBanksRow() {
-    return AppSegmentedControl<String>(
-      selectedValue: transferProvider,
-      onValueChanged: onTransferProviderChanged,
-      size: AppSegmentedSize.sm,
-      isExpanded: true,
-      items: providers.map((p) => AppSegmentedItem<String>(value: p.id, label: p.label)).toList(),
     );
   }
 }

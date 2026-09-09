@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 
@@ -33,9 +33,12 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
       effectiveIcon = widget.cat.getInheritedIcon(catState.categories);
     }
 
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isMobile = MediaQuery.of(context).size.width < 600;
+
+    final borderColor = _isHovered
+        ? widget.accent.withValues(alpha: 0.5)
+        : (isDark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.8));
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -49,24 +52,26 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
         },
         onTapCancel: () => setState(() => _isPressed = false),
         child: AnimatedScale(
-          scale: _isPressed ? 0.95 : (_isHovered ? 1.02 : 1.0),
+          scale: _isPressed ? 0.96 : (_isHovered ? 1.02 : 1.0),
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeOutCubic,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 180),
             padding: EdgeInsets.all(isMobile ? 12 : 20),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
+              borderRadius: BorderRadius.circular(isMobile ? 16 : 20),
               border: Border.all(
-                color: widget.accent.withValues(alpha: _isHovered ? 0.3 : 0.05),
-                width: 1.5,
+                color: borderColor,
+                width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: widget.accent.withValues(alpha: _isHovered ? 0.15 : 0.05),
-                  blurRadius: _isHovered ? 24 : 12,
-                  offset: Offset(0, _isHovered ? 8 : 4),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.2)
+                      : Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.04),
+                  blurRadius: _isHovered ? 16 : 8,
+                  offset: Offset(0, _isHovered ? 6 : 2),
                 ),
               ],
             ),
@@ -78,28 +83,32 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
                   height: isMobile ? 48 : 64,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: widget.accent.withValues(alpha: 0.15),
+                    color: widget.accent.withValues(alpha: isDark ? 0.16 : 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: (effectiveIcon == null || effectiveIcon.isEmpty)
                       ? Text(
                           widget.cat.name.isNotEmpty ? widget.cat.name[0].toUpperCase() : '?',
-                          style: AppTextStyles.h2.copyWith(color: widget.accent, fontWeight: FontWeight.bold, fontSize: isMobile ? 22 : 28),
+                          style: AppTextStyles.h2.copyWith(
+                            color: widget.accent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: isMobile ? 22 : 28,
+                          ),
                         )
                       : IconHelper.buildIcon(
                           effectiveIcon,
-                          size: isMobile ? 24 : 36,
+                          size: isMobile ? 24 : 34,
                           color: widget.accent,
                         ),
                 ),
-                SizedBox(height: isMobile ? 8 : 16),
+                SizedBox(height: isMobile ? 8 : 14),
                 Text(
                   widget.cat.name,
                   style: AppTextStyles.h3.copyWith(
                     color: isDark ? AppColors.darkText : AppColors.lightText,
-                    fontWeight: FontWeight.w600,
-                    fontSize: isMobile ? 14 : null,
-                    letterSpacing: 0.3,
+                    fontWeight: FontWeight.w700,
+                    fontSize: isMobile ? 13 : 15,
+                    letterSpacing: -0.2,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,

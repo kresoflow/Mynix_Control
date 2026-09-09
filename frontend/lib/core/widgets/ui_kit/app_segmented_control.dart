@@ -65,7 +65,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? AppColors.darkCard : AppColors.lightCard;
+    final bg = isDark ? AppColors.darkTrackBg : AppColors.lightTrackBg;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
     final children = items.map((item) {

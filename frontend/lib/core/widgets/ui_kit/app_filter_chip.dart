@@ -153,3 +153,89 @@ class AppFilterBar extends StatelessWidget {
     );
   }
 }
+
+/// ── Чип контекста заказа (Стол / Гость / Тип заказа) ────────────────────
+class AppOrderContextChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final VoidCallback? onClear;
+
+  const AppOrderContextChip({
+    super.key,
+    required this.label,
+    required this.icon,
+    this.isSelected = false,
+    required this.onTap,
+    this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = AppColors.brandPrimary;
+
+    final bg = isSelected
+        ? primary.withValues(alpha: isDark ? 0.16 : 0.12)
+        : (isDark ? AppColors.darkCard : AppColors.lightCard);
+    final borderColor = isSelected
+        ? primary.withValues(alpha: isDark ? 0.5 : 0.6)
+        : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
+    final fg = isSelected
+        ? (isDark ? AppColors.darkText : primary)
+        : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+    final iconColor = isSelected ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Container(
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(AppRadii.md),
+            border: Border.all(color: borderColor, width: 1.2),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 15, color: iconColor),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: fg,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (onClear != null && isSelected) ...[
+                const SizedBox(width: 6),
+                InkWell(
+                  onTap: onClear,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: Icon(
+                      Icons.close,
+                      size: 14,
+                      color: iconColor,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

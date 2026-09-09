@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_shadows.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 
@@ -45,7 +46,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
   String _getButtonLabel({bool isTableSelected = false}) {
     if (paymentMethod == 'TRANSFER') {
       return isTableSelected
-          ? 'Сразу (${_getProviderLabel(transferProvider)})'
+          ? 'Оплатить (${_getProviderLabel(transferProvider)})'
           : 'Оплатить (${_getProviderLabel(transferProvider)})';
     } else if (paymentMethod == 'DEBT') {
       return 'В долг';
@@ -74,12 +75,12 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
       return _buildWaiterPrimaryButton(context);
     }
 
-    // 2. Default Rush/Counter Mode (No table selected): Solid full-width "Оплатить"
+    // 2. Counter Mode (No table selected): Solid full-width "Оплатить"
     if (!hasTable) {
       return _buildCheckoutButton(context, isFullWidth: true);
     }
 
-    // 3. Table Selected Mode (Cashier / Admin / Owner): Adaptive Dual Action
+    // 3. Table Selected Mode (Cashier / Admin): Dual Action
     return Row(
       children: [
         Expanded(
@@ -100,7 +101,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
       context: context,
       onTap: onSendToBooth,
       color: AppColors.brandPrimary,
-      textColor: Colors.black,
+      textColor: Colors.white,
       icon: PhosphorIconsBold.paperPlaneTilt,
       label: 'Оформить заказ',
       isSubmitting: isSubmitting,
@@ -109,17 +110,19 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
   }
 
   Widget _buildSendToBoothButton(BuildContext context) {
-    final hasTable = tableNumber != null && tableNumber!.trim().isNotEmpty;
-    final buttonLabel = hasTable ? 'В зал ($tableNumber)' : 'В зал';
+    final primary = AppColors.brandPrimary;
+    final bg = isDark ? AppColors.darkCard : AppColors.lightCard;
+    final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final fg = isDark ? AppColors.darkText : primary;
 
     return _buildCtaContainer(
       context: context,
       onTap: onSendToBooth,
-      color: Colors.amber.withValues(alpha: 0.12),
-      borderColor: Colors.amber.withValues(alpha: 0.7),
-      textColor: Colors.amber,
-      icon: hasTable ? PhosphorIconsBold.chair : PhosphorIconsBold.paperPlaneTilt,
-      label: buttonLabel,
+      color: bg,
+      borderColor: border,
+      textColor: fg,
+      icon: PhosphorIconsBold.chair,
+      label: 'В стол (без оплаты)',
       isSubmitting: isSubmitting,
       isPrimary: false,
     );
@@ -134,7 +137,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
       context: context,
       onTap: onCheckout,
       color: AppColors.brandPrimary,
-      textColor: Colors.black,
+      textColor: Colors.white,
       icon: _getButtonIcon(),
       label: _getButtonLabel(isTableSelected: hasTable),
       isSubmitting: isSubmitting,
@@ -161,45 +164,40 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: isEmpty || isSubmitting ? null : onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          height: 52,
+          height: 48,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: isEmpty ? disabledBg : color,
-            borderRadius: BorderRadius.circular(14),
-            border: borderColor != null
-                ? Border.all(color: isEmpty ? disabledBorder : borderColor, width: 1.5)
-                : null,
-            boxShadow: (isEmpty || !isPrimary)
-                ? null
-                : [
-                    BoxShadow(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.35),
-                      offset: const Offset(0, 4),
-                      blurRadius: 12,
-                    ),
-                  ],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isEmpty
+                  ? disabledBorder
+                  : (borderColor ?? Colors.transparent),
+              width: 1.2,
+            ),
+            boxShadow: (isEmpty || !isPrimary) ? null : AppShadows.buttonGlow(AppColors.brandPrimary),
           ),
           child: Center(
             child: isSubmitting
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black),
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(icon, size: 17, color: isEmpty ? disabledFg : textColor),
+                      Icon(icon, size: 16, color: isEmpty ? disabledFg : textColor),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
                           label,
                           style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.3,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.1,
                             color: isEmpty ? disabledFg : textColor,
                           ),
                           maxLines: 1,
@@ -214,4 +212,3 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
     );
   }
 }
-

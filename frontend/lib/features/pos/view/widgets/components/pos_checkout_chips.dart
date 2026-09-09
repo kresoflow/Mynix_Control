@@ -20,7 +20,9 @@ class PosTableChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = AppColors.brandPrimary;
     final table = cartState.tableNumber;
+
     if (table == null || table.isEmpty) {
       return InkWell(
         onTap: () {
@@ -32,7 +34,7 @@ class PosTableChip extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          height: 32,
+          height: 34,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
@@ -42,13 +44,13 @@ class PosTableChip extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(PhosphorIconsRegular.chair, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              Icon(PhosphorIconsRegular.chair, size: 15, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
                   'Столик',
                   style: TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
@@ -62,17 +64,17 @@ class PosTableChip extends StatelessWidget {
     }
 
     return Container(
-      height: 32,
+      height: 34,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
-        color: AppColors.brandPrimary.withValues(alpha: 0.12),
+        color: primary.withValues(alpha: isDark ? 0.16 : 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
+        border: Border.all(color: primary.withValues(alpha: isDark ? 0.5 : 0.6), width: 1.2),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(PhosphorIconsBold.chair, size: 14, color: AppColors.brandPrimary),
+          Icon(PhosphorIconsBold.chair, size: 15, color: primary),
           const SizedBox(width: 6),
           Flexible(
             child: InkWell(
@@ -85,7 +87,11 @@ class PosTableChip extends StatelessWidget {
               },
               child: Text(
                 table,
-                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.darkText : primary,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -93,7 +99,11 @@ class PosTableChip extends StatelessWidget {
           const SizedBox(width: 6),
           InkWell(
             onTap: () => context.read<CartBloc>().add(const SetTableNumber(null)),
-            child: const Icon(PhosphorIconsRegular.xCircle, size: 14, color: AppColors.danger),
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Icon(PhosphorIconsRegular.x, size: 13, color: primary),
+            ),
           ),
         ],
       ),
@@ -115,6 +125,8 @@ class PosGuestChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = AppColors.brandPrimary;
+
     if (customer == null) {
       return InkWell(
         onTap: () {
@@ -128,7 +140,7 @@ class PosGuestChip extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          height: 32,
+          height: 34,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
@@ -138,13 +150,13 @@ class PosGuestChip extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(PhosphorIconsRegular.userPlus, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              Icon(PhosphorIconsRegular.userPlus, size: 15, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
                   'Гость',
                   style: TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
@@ -159,17 +171,17 @@ class PosGuestChip extends StatelessWidget {
 
     final bonus = (customer.bonusBalance as num?)?.toDouble() ?? 0.0;
     return Container(
-      height: 32,
+      height: 34,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
-        color: AppColors.brandPrimary.withValues(alpha: 0.12),
+        color: primary.withValues(alpha: isDark ? 0.16 : 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
+        border: Border.all(color: primary.withValues(alpha: isDark ? 0.5 : 0.6), width: 1.2),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(PhosphorIconsRegular.userCheck, size: 14, color: AppColors.brandPrimary),
+          Icon(PhosphorIconsRegular.userCheck, size: 15, color: primary),
           const SizedBox(width: 6),
           Flexible(
             child: InkWell(
@@ -184,7 +196,11 @@ class PosGuestChip extends StatelessWidget {
               },
               child: Text(
                 customer.name.toString(),
-                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.darkText : primary,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -195,11 +211,11 @@ class PosGuestChip extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(PhosphorIconsRegular.gift, size: 11, color: AppColors.brandPrimary),
+                Icon(PhosphorIconsRegular.gift, size: 11, color: primary),
                 const SizedBox(width: 2),
                 Text(
                   bonus.toStringAsFixed(0),
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: primary),
                 ),
               ],
             ),
@@ -207,7 +223,11 @@ class PosGuestChip extends StatelessWidget {
           const SizedBox(width: 4),
           InkWell(
             onTap: () => context.read<CartBloc>().add(const SelectCustomer(null)),
-            child: const Icon(PhosphorIconsRegular.xCircle, size: 14, color: AppColors.danger),
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Icon(PhosphorIconsRegular.x, size: 13, color: primary),
+            ),
           ),
         ],
       ),
