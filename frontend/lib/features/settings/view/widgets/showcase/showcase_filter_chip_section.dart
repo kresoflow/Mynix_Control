@@ -16,6 +16,8 @@ class ShowcaseFilterChipSection extends StatefulWidget {
 class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
   String _crmFilter = 'all';
   String _recipeFilter = 'all';
+  String? _selectedTable = 'VIP 1';
+  String? _selectedCustomer = 'Александр В.';
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +34,10 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('6. Чипы и полосы фильтрации (AppFilterChip & AppFilterBar)', style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold)),
+          Text('6. Чипы фильтрации и контекста (AppFilterChip & AppOrderContextChip)', style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(
-            'Горизонтальная фильтрация списков и таблиц со встроенными бейджами количества.',
+            'Горизонтальная фильтрация таблиц и компактные бейджи контекста заказа (стол, гость).',
             style: AppTextStyles.caption.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
           ),
           const SizedBox(height: 16),
@@ -104,6 +106,31 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
                 count: 14,
                 isSelected: _recipeFilter == 'without_ingredients',
                 onTap: () => setState(() => _recipeFilter = 'without_ingredients'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Order Context Chips (POS Table & Customer)
+          Text('Пример 3: Контекстные чипы заказа (AppOrderContextChip)', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              AppOrderContextChip(
+                label: _selectedTable ?? 'Выбрать столик',
+                icon: PhosphorIconsBold.chair,
+                isSelected: _selectedTable != null,
+                onTap: () => setState(() => _selectedTable = _selectedTable == null ? 'VIP 1' : null),
+                onClear: () => setState(() => _selectedTable = null),
+              ),
+              AppOrderContextChip(
+                label: _selectedCustomer ?? 'Выбрать гостя',
+                icon: PhosphorIconsRegular.userCheck,
+                isSelected: _selectedCustomer != null,
+                onTap: () => setState(() => _selectedCustomer = _selectedCustomer == null ? 'Александр В.' : null),
+                onClear: () => setState(() => _selectedCustomer = null),
               ),
             ],
           ),

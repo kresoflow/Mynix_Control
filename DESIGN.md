@@ -83,21 +83,32 @@ All buttons MUST strictly conform to the 5-tier size matrix:
 - **`AppDangerButton`:** Danger background/border + White text (used for Delete / Irreversible actions).
 - **`AppMenuButton`:** Unified dropdown action button with built-in popup menu.
 
-### Navigation & Category List Tiles (`AppNavTileSize`)
-All sidebars, category trees, and submenus MUST strictly conform to the 3-tier size matrix:
+### Navigation & Selection Controls Matrix (4 Canonical Categories)
 
-| Size Enum | Height | Icon Size | Font Size | Target Usage |
-| :--- | :--- | :--- | :--- | :--- |
-| **`AppNavTileSize.sm`** | **32 px** | 15 px | 12 px | Nested tree nodes, deep folder hierarchies, compact filter lists |
-| **`AppNavTileSize.md`** | **38-40 px**| 18 px | 13.5 px| **Standard Warehouse Categories, Catalog Shelves, Recipe items** |
-| **`AppNavTileSize.lg`** | **48-52 px**| 22 px | 15 px | **Main Sidebar Navigation Rail, Settings sections, Mobile list tiles** |
+1. **Vertical List & Tree Tiles (`AppNavTileSize`):**
+   - **`AppNavTileSize.sm` (32px):** Nested tree nodes, deep folder hierarchies.
+   - **`AppNavTileSize.md` (38-40px):** Standard Warehouse Categories, Catalog Shelves, Recipe items.
+   - **`AppNavTileSize.lg` (48-52px):** Main Sidebar Navigation Rail, Settings sections.
+
+2. **Horizontal Exclusive Switchers (`AppSegmentedControl`):**
+   - **`AppSegmentedSize.sm` (32px):** Compact switchers for forms, dialogs, sub-selectors (e.g. Bank choices).
+   - **`AppSegmentedSize.md` (38px):** Header module switchers (e.g. POS `[Касса | Заказы | Кухня]`, Payment methods).
+   - **`AppSegmentedSize.lg` (46-48px):** Primary touchscreen mode selectors.
+   - **Track Background:** Must use `AppColors.darkTrackBg` / `AppColors.lightTrackBg` to avoid blending into white page headers.
+
+3. **Data Filters & Lists (`AppFilterChip` & `AppFilterBar`):**
+   - Pill-shaped (`AppRadii.pill`) horizontal scrollable chips with dynamic count badges and icon support.
+
+4. **Order Context Chips (`AppOrderContextChip`):**
+   - Compact order metadata tags (Table number, Customer name, Order mode) with dynamic theme colors and optional clear button `✕`.
 
 ### Active State & Contrast Typography Law
-- **Action Buttons (`AppPrimaryButton`, `AppSegmentedTab`):**
-  - **Both Themes:** 100% Solid Brand Fill (`AppColors.brandPrimary`) + Pure White text/icon (`#FFFFFF`).
+- **Action Buttons & Segmented Active State (`AppPrimaryButton`, `AppSegmentedControl`):**
+  - **Both Themes:** 100% Solid Brand Fill (`AppColors.brandPrimary`) + Pure White text/icon (`#FFFFFF`) + Glow.
+  - **Light Theme Contrast Guarantee:** `AppColors.brandPrimary` is calibrated to have $\ge 4.5:1$ contrast ratio with white text across all color palettes (Ember, Cream, Ocean).
 - **Navigation & Category Lists (`AppNavTile`):**
-  - **Dark Mode:** Soft Brand Background (14% alpha) + 1px micro-border + **Pure Light White Text (`AppColors.darkText`)** + Brand Accent Icon. *(Guarantees WCAG AAA sharpness and prevents dark-mode blurriness).*
-  - **Light Mode:** Soft Brand Background (10% alpha) + 1px micro-border + **Vibrant Brand Text (`AppColors.brandPrimary`)** + Brand Accent Icon. *(Gives clear focus without heavy visual weight).*
+  - **Dark Mode:** Soft Brand Background (14% alpha) + 1px micro-border + **Pure Light White Text (`AppColors.darkText`)** + Brand Accent Icon. *(Guarantees WCAG AAA sharpness).*
+  - **Light Mode:** Soft Brand Background (10% alpha) + 1px micro-border + **Vibrant Brand Text (`AppColors.brandPrimary`)** + Brand Accent Icon.
 
 ---
 
