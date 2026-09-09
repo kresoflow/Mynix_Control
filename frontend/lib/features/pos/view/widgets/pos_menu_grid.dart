@@ -8,6 +8,7 @@ import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_breadcrumb_bar.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_empty_state.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_menu_grid_view.dart';
@@ -20,26 +21,33 @@ class PosMenuGrid extends StatefulWidget {
 }
 
 class _PosMenuGridState extends State<PosMenuGrid> {
-  bool _isSearching = false;
-  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  String _searchQuery = '';
 
   @override
-  void dispose() {
-    _searchFocusNode.dispose();
-    super.dispose();
-  }
-
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-      if (!_isSearching) {
-        _searchQuery = '';
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      final text = _searchController.text;
+      if (text != _searchQuery) {
+        setState(() {
+          _searchQuery = text;
+        });
       }
     });
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
   void _clearSearch() {
+    _searchController.clear();
+    _searchFocusNode.unfocus();
     setState(() {
       _searchQuery = '';
     });
@@ -57,123 +65,139 @@ class _PosMenuGridState extends State<PosMenuGrid> {
       });
     }
 
-    return BlocBuilder<PosNavCubit, List<dynamic>>(
-      builder: (context, navigationHistory) {
-        final currentCategoryId = navigationHistory.isEmpty ? null : navigationHistory.last.id;
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.keyF, control: true): () {
+          _searchFocusNode.requestFocus();
+        },
+        const SingleActivator(LogicalKeyboardKey.keyF, meta: true): () {
+          _searchFocusNode.requestFocus();
+        },
+        const SingleActivator(LogicalKeyboardKey.f2): () {
+          _searchFocusNode.requestFocus();
+        },
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          _clearSearch();
+        },
+      },
+      child: Focus(
+        autofocus: true,
+        child: BlocBuilder<PosNavCubit, List<dynamic>>(
+          builder: (context, navigationHistory) {
+            final currentCategoryId = navigationHistory.isEmpty ? null : navigationHistory.last.id;
 
-        return Container(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    )
-                  ],
-                ),
-                child: PosBreadcrumbBar(
-                  history: navigationHistory,
-                  onBack: navigationHistory.isEmpty ? null : () => posNavCubit.popCategory(context),
-                  onRoot: () => posNavCubit.clearHistory(context),
-                  onCrumb: (index) => posNavCubit.popTo(context, index),
-                  isSearching: _isSearching,
-                  searchQuery: _searchQuery,
-                  searchFocusNode: _searchFocusNode,
-                  onSearchChanged: (q) => setState(() => _searchQuery = q),
-                  onToggleSearch: _toggleSearch,
-                  onClearSearch: _clearSearch,
-                ),
-              ),
-              Expanded(
-                child: BlocBuilder<CategoryBloc, CategoryState>(
-                  builder: (context, catState) {
-                    return BlocBuilder<MenuBloc, MenuState>(
-                      builder: (context, menuState) {
-                        if (catState is CategoryLoading || menuState is MenuLoading) {
-                          return Center(child: CircularProgressIndicator(color: AppColors.brandPrimary));
-                        }
+            return Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: PosBreadcrumbBar(
+                      history: navigationHistory,
+                      onBack: navigationHistory.isEmpty ? null : () => posNavCubit.popCategory(context),
+                      onRoot: () => posNavCubit.clearHistory(context),
+                      onCrumb: (index) => posNavCubit.popTo(context, index),
+                      searchController: _searchController,
+                      searchFocusNode: _searchFocusNode,
+                      onClearSearch: _clearSearch,
+                    ),
+                  ),
+                  Expanded(
+                    child: BlocBuilder<CategoryBloc, CategoryState>(
+                      builder: (context, catState) {
+                        return BlocBuilder<MenuBloc, MenuState>(
+                          builder: (context, menuState) {
+                            if (catState is CategoryLoading || menuState is MenuLoading) {
+                              return Center(child: CircularProgressIndicator(color: AppColors.brandPrimary));
+                            }
 
-                        if (catState is CategoryError || menuState is MenuError) {
-                          return Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(PhosphorIconsRegular.warningCircle, size: 44, color: AppColors.danger),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Ошибка загрузки меню',
-                                  style: AppTextStyles.h3.copyWith(color: AppColors.danger),
+                            if (catState is CategoryError || menuState is MenuError) {
+                              return Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(PhosphorIconsRegular.warningCircle, size: 44, color: AppColors.danger),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Ошибка загрузки меню',
+                                      style: AppTextStyles.h3.copyWith(color: AppColors.danger),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        context.read<MenuBloc>().add(LoadMenu());
+                                        context.read<CategoryBloc>().add(LoadCategories());
+                                      },
+                                      child: const Text('Повторить попытку'),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 12),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    context.read<MenuBloc>().add(LoadMenu());
-                                    context.read<CategoryBloc>().add(LoadCategories());
-                                  },
-                                  child: const Text('Повторить попытку'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                              );
+                            }
 
-                        List<dynamic> categories = [];
-                        List<dynamic> items = [];
+                            List<dynamic> categories = [];
+                            List<dynamic> items = [];
 
-                        final q = _searchQuery.trim().toLowerCase();
-                        if (_isSearching && q.isNotEmpty) {
-                          if (menuState is MenuLoaded) {
-                            items = menuState.items.where((i) {
-                              final nameMatch = i.cleanName.toLowerCase().contains(q) || i.name.toLowerCase().contains(q);
-                              final shortNameMatch = i.shortName != null && i.shortName!.toLowerCase().contains(q);
-                              final barcodeMatch = i.barcode != null && i.barcode!.toLowerCase().contains(q);
-                              return (nameMatch || shortNameMatch || barcodeMatch) && i.isAvailable && i.parentId == null;
-                            }).toList();
-                          }
-                        } else {
-                          if (catState is CategoryLoaded) {
-                            categories = catState.categories
-                                .where((c) => c.parentId == currentCategoryId && c.isVisible && c.categoryType != 'ingredient')
-                                .toList();
-                          }
+                            final q = _searchQuery.trim().toLowerCase();
+                            if (q.isNotEmpty) {
+                              if (menuState is MenuLoaded) {
+                                items = menuState.items.where((i) {
+                                  final nameMatch = i.cleanName.toLowerCase().contains(q) || i.name.toLowerCase().contains(q);
+                                  final shortNameMatch = i.shortName != null && i.shortName!.toLowerCase().contains(q);
+                                  final barcodeMatch = i.barcode != null && i.barcode!.toLowerCase().contains(q);
+                                  return (nameMatch || shortNameMatch || barcodeMatch) && i.isAvailable && i.parentId == null;
+                                }).toList();
+                              }
+                            } else {
+                              if (catState is CategoryLoaded) {
+                                categories = catState.categories
+                                    .where((c) => c.parentId == currentCategoryId && c.isVisible && c.categoryType != 'ingredient')
+                                    .toList();
+                              }
 
-                          if (menuState is MenuLoaded) {
-                            items = menuState.items.where((i) {
-                              final catId = int.tryParse(i.categoryId.toString());
-                              return catId == currentCategoryId && i.isAvailable && i.parentId == null;
-                            }).toList();
-                          }
-                        }
+                              if (menuState is MenuLoaded) {
+                                items = menuState.items.where((i) {
+                                  final catId = int.tryParse(i.categoryId.toString());
+                                  return catId == currentCategoryId && i.isAvailable && i.parentId == null;
+                                }).toList();
+                              }
+                            }
 
-                        if (categories.isEmpty && items.isEmpty) {
-                          return PosEmptyState(inCategory: currentCategoryId != null || _isSearching);
-                        }
+                            if (categories.isEmpty && items.isEmpty) {
+                              return PosEmptyState(inCategory: currentCategoryId != null || q.isNotEmpty);
+                            }
 
-                        return BlocBuilder<PosSettingsCubit, PosSettingsState>(
-                          builder: (context, posSettings) {
-                            return PosMenuGridView(
-                              categories: categories,
-                              items: items,
-                              posSettings: posSettings,
-                              onCategoryTap: (cat) => posNavCubit.pushCategory(context, cat),
+                            return BlocBuilder<PosSettingsCubit, PosSettingsState>(
+                              builder: (context, posSettings) {
+                                return PosMenuGridView(
+                                  categories: categories,
+                                  items: items,
+                                  posSettings: posSettings,
+                                  onCategoryTap: (cat) => posNavCubit.pushCategory(context, cat),
+                                );
+                              },
                             );
                           },
                         );
                       },
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }

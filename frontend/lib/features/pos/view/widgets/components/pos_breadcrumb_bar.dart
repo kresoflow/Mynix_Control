@@ -9,12 +9,9 @@ class PosBreadcrumbBar extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback onRoot;
   final ValueChanged<int> onCrumb;
-  final bool isSearching;
-  final String searchQuery;
-  final ValueChanged<String> onSearchChanged;
-  final VoidCallback onToggleSearch;
+  final TextEditingController searchController;
+  final FocusNode searchFocusNode;
   final VoidCallback onClearSearch;
-  final FocusNode? searchFocusNode;
 
   const PosBreadcrumbBar({
     super.key,
@@ -22,12 +19,9 @@ class PosBreadcrumbBar extends StatelessWidget {
     required this.onBack,
     required this.onRoot,
     required this.onCrumb,
-    this.isSearching = false,
-    this.searchQuery = '',
-    required this.onSearchChanged,
-    required this.onToggleSearch,
+    required this.searchController,
+    required this.searchFocusNode,
     required this.onClearSearch,
-    this.searchFocusNode,
   });
 
   @override
@@ -43,115 +37,151 @@ class PosBreadcrumbBar extends StatelessWidget {
         color: bg,
         border: Border(bottom: BorderSide(color: border, width: 1)),
       ),
-      child: isSearching ? _buildSearchBar(context, isDark) : _buildNavRow(context, isDark),
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context, bool isDark) {
-    return Row(
-      children: [
-        Icon(PhosphorIconsRegular.magnifyingGlass, size: 18, color: AppColors.brandPrimary),
-        const SizedBox(width: 10),
-        Expanded(
-          child: TextField(
-            focusNode: searchFocusNode,
-            autofocus: true,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.darkText : AppColors.lightText,
+      child: Row(
+        children: [
+          // ── Breadcrumbs ──────────────────────────────────────────────
+          if (onBack != null)
+            IconButton(
+              icon: const Icon(PhosphorIconsRegular.caretLeft, size: 16),
+              color: AppColors.darkSubtext,
+              onPressed: onBack,
+              tooltip: 'Назад',
             ),
-            decoration: InputDecoration(
-              hintText: 'Поиск блюда по названию или штрихкоду... (Esc для выхода)',
-              hintStyle: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-            onChanged: onSearchChanged,
-          ),
-        ),
-        if (searchQuery.isNotEmpty)
-          IconButton(
-            icon: const Icon(PhosphorIconsRegular.xCircle, size: 18),
-            color: AppColors.darkSubtext,
-            onPressed: onClearSearch,
-            tooltip: 'Очистить',
-          ),
-        IconButton(
-          icon: const Icon(PhosphorIconsRegular.x, size: 18),
-          color: AppColors.darkSubtext,
-          onPressed: onToggleSearch,
-          tooltip: 'Закрыть поиск (Esc)',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNavRow(BuildContext context, bool isDark) {
-    return Row(
-      children: [
-        if (onBack != null)
-          IconButton(
-            icon: const Icon(PhosphorIconsRegular.caretLeft, size: 16),
-            color: AppColors.darkSubtext,
-            onPressed: onBack,
-            tooltip: 'Назад',
-          ),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: onRoot,
-                  child: Text(
-                    'Меню',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: history.isEmpty ? AppColors.brandPrimary : AppColors.darkSubtext,
-                    ),
-                  ),
-                ),
-                for (int i = 0; i < history.length; i++) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Icon(
-                      PhosphorIconsRegular.caretRight,
-                      size: 16,
-                      color: AppColors.darkSubtext,
-                    ),
-                  ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
                   GestureDetector(
-                    onTap: i == history.length - 1 ? null : () => onCrumb(i),
+                    onTap: onRoot,
                     child: Text(
-                      history[i].name,
+                      'Меню',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: i == history.length - 1 ? AppColors.brandPrimary : AppColors.darkSubtext,
-                        fontWeight: i == history.length - 1 ? FontWeight.w600 : FontWeight.w400,
+                        color: history.isEmpty ? AppColors.brandPrimary : AppColors.darkSubtext,
                       ),
                     ),
                   ),
+                  for (int i = 0; i < history.length; i++) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Icon(
+                        PhosphorIconsRegular.caretRight,
+                        size: 16,
+                        color: AppColors.darkSubtext,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: i == history.length - 1 ? null : () => onCrumb(i),
+                      child: Text(
+                        history[i].name,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: i == history.length - 1 ? AppColors.brandPrimary : AppColors.darkSubtext,
+                          fontWeight: i == history.length - 1 ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
-        ),
-        IconButton(
-          icon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
-          color: AppColors.darkSubtext,
-          onPressed: onToggleSearch,
-          tooltip: 'Поиск блюд (Ctrl+F)',
-        ),
-        IconButton(
-          icon: const Icon(PhosphorIconsRegular.slidersHorizontal),
-          color: AppColors.darkSubtext,
-          onPressed: () => PosSettingsModal.show(context),
-          tooltip: 'Настройки кассы',
-        ),
-      ],
+          const SizedBox(width: 12),
+
+          // ── Premium Search Input Box ────────────────────────────────
+          _buildSearchBox(context, isDark, border),
+          const SizedBox(width: 8),
+
+          // ── POS Settings Button ─────────────────────────────────────
+          IconButton(
+            icon: const Icon(PhosphorIconsRegular.slidersHorizontal),
+            color: AppColors.darkSubtext,
+            onPressed: () => PosSettingsModal.show(context),
+            tooltip: 'Настройки кассы',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBox(BuildContext context, bool isDark, Color border) {
+    return Container(
+      width: 240,
+      height: 36,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: border),
+      ),
+      child: ValueListenableBuilder<TextEditingValue>(
+        valueListenable: searchController,
+        builder: (context, value, _) {
+          final hasText = value.text.isNotEmpty;
+          return Row(
+            children: [
+              const SizedBox(width: 10),
+              Icon(
+                PhosphorIconsRegular.magnifyingGlass,
+                size: 15,
+                color: hasText ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: searchController,
+                  focusNode: searchFocusNode,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Поиск по меню...',
+                    hintStyle: TextStyle(
+                      fontSize: 12.5,
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+              if (hasText)
+                InkWell(
+                  onTap: onClearSearch,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Icon(
+                      PhosphorIconsRegular.xCircle,
+                      size: 15,
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'Ctrl+F',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
