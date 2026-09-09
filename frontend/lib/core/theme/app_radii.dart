@@ -18,6 +18,7 @@ abstract class AppRadii {
   static const double card   = xl;  // 16.0
   static const double dialog = xxl; // 20.0
   static const double badge  = sm;  // 6.0
+  static const double pill   = 24.0;
 
   // BorderRadius объекты
   static final BorderRadius inputRadius  = BorderRadius.circular(input);
@@ -26,5 +27,6 @@ abstract class AppRadii {
   static final BorderRadius cardRadius   = BorderRadius.circular(card);
   static final BorderRadius dialogRadius = BorderRadius.circular(dialog);
   static final BorderRadius badgeRadius  = BorderRadius.circular(badge);
+  static final BorderRadius pillRadius   = BorderRadius.circular(pill);
   static final BorderRadius maxRadius    = BorderRadius.circular(max);
 }

@@ -143,6 +143,7 @@ class _AppButtonState extends State<AppButton> {
     Color bg;
     Color fg;
     Border? border;
+    List<BoxShadow>? shadow;
     final effectiveSize = widget.size ?? AppButtonSize.lg;
     final double effectiveHeight = widget.height ?? effectiveSize.height;
     final double effectiveIconSize = effectiveSize.iconSize;
