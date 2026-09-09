@@ -105,7 +105,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                 List<dynamic> currentCategories = [];
                 if (catState is CategoryLoaded) {
                   currentCategories = catState.categories.where((c) {
-                    if (!_showArchived && !c.isVisible) return false;
+                    if (!_showArchived && c.isArchived) return false;
                     if (c.parentId != _currentCategoryId) return false;
                     if (widget.categoryType == 'all') return c.categoryType != 'ingredient';
                     return c.categoryType == widget.categoryType;

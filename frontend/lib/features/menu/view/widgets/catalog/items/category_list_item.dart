@@ -40,7 +40,8 @@ class CategoryListItem extends StatelessWidget {
       effectiveIcon = category.getInheritedIcon(catState.categories);
     }
 
-    final isArchived = !category.isVisible;
+    final isArchived = category.isArchived;
+    final isHiddenFromPos = !category.isVisible;
     final customColor = ColorPickerUtils.parseHex(category.color);
     final accentColor = isArchived ? Colors.grey : (customColor ?? AppColors.brandPrimary);
 
@@ -94,6 +95,23 @@ class CategoryListItem extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text('В архиве', style: AppTextStyles.caption.copyWith(color: Colors.grey, fontSize: 10)),
+                ),
+              ] else if (isHiddenFromPos) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(PhosphorIconsRegular.eyeSlash, size: 12, color: AppColors.warning),
+                      const SizedBox(width: 4),
+                      Text('Скрыто на кассе', style: AppTextStyles.caption.copyWith(color: AppColors.warning, fontSize: 10)),
+                    ],
+                  ),
                 ),
               ],
             ],

@@ -14,6 +14,7 @@ async def create_category(session: AsyncSession, data: dict) -> MenuCategory:
         level=data.get("level", 1),
         path=data.get("path"),
         is_visible=data.get("is_visible", True),
+        is_archived=data.get("is_archived", False),
         parent_id=data.get("parent_id"),
     )
     session.add(category)
@@ -32,6 +33,7 @@ async def bulk_create_categories(session: AsyncSession, categories_data: list[di
             level=data.get("level", 1),
             path=data.get("path"),
             is_visible=data.get("is_visible", True),
+            is_archived=data.get("is_archived", False),
             parent_id=data.get("parent_id"),
         )
         categories.append(category)
@@ -152,7 +154,7 @@ async def delete_category(session: AsyncSession, category_id: int, mode: str = "
     for sub in subcategories:
         await delete_category(session, sub.id, mode=mode)
 
-    category.is_visible = False
+    category.is_archived = True
     session.add(category)
     await session.flush()
 
@@ -163,7 +165,7 @@ async def restore_category(session: AsyncSession, category_id: int) -> MenuCateg
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
         
-    category.is_visible = True
+    category.is_archived = False
     session.add(category)
 
     item_stmt = select(MenuItem).where(MenuItem.category_id == category_id)

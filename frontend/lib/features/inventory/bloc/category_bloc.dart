@@ -117,6 +117,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         sortOrder: event.sortOrder,
         color: event.color,
         isVisible: event.isVisible,
+        isArchived: event.isArchived,
         icon: event.icon,
       );
       add(LoadCategories());

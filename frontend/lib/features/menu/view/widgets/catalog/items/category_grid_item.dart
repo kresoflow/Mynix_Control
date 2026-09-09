@@ -41,7 +41,8 @@ class CategoryGridItem extends StatelessWidget {
       effectiveIcon = category.getInheritedIcon(catState.categories);
     }
 
-    final isArchived = !category.isVisible;
+    final isArchived = category.isArchived;
+    final isHiddenFromPos = !category.isVisible;
     final customColor = ColorPickerUtils.parseHex(category.color);
     final accentColor = isArchived ? Colors.grey : (customColor ?? AppColors.brandPrimary);
 
@@ -96,6 +97,20 @@ class CategoryGridItem extends StatelessWidget {
                       'В архиве',
                       style: AppTextStyles.caption.copyWith(color: Colors.grey, fontSize: 11),
                       textAlign: TextAlign.center,
+                    ),
+                  ] else if (isHiddenFromPos) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(PhosphorIconsRegular.eyeSlash, size: 12, color: AppColors.warning),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Скрыто на кассе',
+                          style: AppTextStyles.caption.copyWith(color: AppColors.warning, fontSize: 11),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
                   ],
                 ],

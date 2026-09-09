@@ -14,6 +14,7 @@ class MenuCategory(TenantModel, table=True):
     level: int = Field(default=1)
     path: Optional[str] = Field(default=None, max_length=255)
     is_visible: bool = Field(default=True)
+    is_archived: bool = Field(default=False)
     parent_id: Optional[int] = Field(default=None, foreign_key="menu_categories.id")
 
     # Relationships
@@ -36,6 +37,7 @@ class MenuCategoryRead(SQLModel):
     level: int = 1
     path: Optional[str] = None
     is_visible: bool = True
+    is_archived: bool = False
     parent_id: Optional[int] = None
 
 class MenuCategoryCreate(SQLModel):
@@ -47,4 +49,5 @@ class MenuCategoryCreate(SQLModel):
     level: int = 1
     path: Optional[str] = None
     is_visible: bool = True
+    is_archived: bool = False
     parent_id: Optional[int] = None

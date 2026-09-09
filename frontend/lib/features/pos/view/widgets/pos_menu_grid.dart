@@ -177,7 +177,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                         } else {
                           if (catState is CategoryLoaded) {
                             categories = catState.categories
-                                .where((c) => c.parentId == currentCategoryId && c.isVisible && c.categoryType != 'ingredient')
+                                .where((c) => c.parentId == currentCategoryId && c.isVisible && !c.isArchived && c.categoryType != 'ingredient')
                                 .toList();
                           }
 

@@ -52,6 +52,7 @@ extension CategoriesPart on InventoryRepository {
     int? sortOrder,
     String? color,
     bool? isVisible,
+    bool? isArchived,
     String? icon,
   }) async {
     try {
@@ -60,6 +61,7 @@ extension CategoriesPart on InventoryRepository {
       if (sortOrder != null) data['sort_order'] = sortOrder;
       data['color'] = color;
       if (isVisible != null) data['is_visible'] = isVisible;
+      if (isArchived != null) data['is_archived'] = isArchived;
       if (icon != null) data['icon'] = icon;
       await _dio.put('/categories/$id', data: data);
     } catch (e) {

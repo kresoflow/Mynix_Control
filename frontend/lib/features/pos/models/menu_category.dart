@@ -8,6 +8,7 @@ class MenuCategory {
   final int level;
   final String? path;
   final bool isVisible;
+  final bool isArchived;
   final int? parentId;
 
   MenuCategory({
@@ -20,6 +21,7 @@ class MenuCategory {
     this.level = 1,
     this.path,
     this.isVisible = true,
+    this.isArchived = false,
     this.parentId,
   });
 
@@ -34,6 +36,7 @@ class MenuCategory {
       level: json['level'] as int? ?? 1,
       path: json['path'] as String?,
       isVisible: json['is_visible'] as bool? ?? true,
+      isArchived: json['is_archived'] as bool? ?? false,
       parentId: json['parent_id'] as int?,
     );
   }
@@ -49,6 +52,7 @@ class MenuCategory {
       'level': level,
       'path': path,
       'is_visible': isVisible,
+      'is_archived': isArchived,
       'parent_id': parentId,
     };
   }
