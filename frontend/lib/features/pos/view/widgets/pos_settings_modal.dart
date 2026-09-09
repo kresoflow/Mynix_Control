@@ -35,7 +35,7 @@ class PosSettingsModal extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 40,
               offset: const Offset(0, -10),
-            )
+            ),
           ],
         ),
         child: SafeArea(
@@ -62,7 +62,7 @@ class PosSettingsModal extends StatelessWidget {
                   IconButton(
                     icon: const Icon(PhosphorIconsRegular.x),
                     onPressed: () => Navigator.of(context).pop(),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 32),
@@ -135,9 +135,21 @@ class PosSettingsModal extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Разноцветные категории',
-                              style: AppTextStyles.h3,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Цветные категории',
+                                  style: AppTextStyles.h3,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Использовать цвета категорий из каталога',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                  ),
+                                ),
+                              ],
                             ),
                             Switch(
                               value: state.enableRainbowColors,
