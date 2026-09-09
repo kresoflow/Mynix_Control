@@ -236,10 +236,13 @@ class _IngredientTabState extends State<IngredientTab> {
                           ),
                         ),
                       ],
-                      child: const AppPrimaryButton(
-                        label: 'Добавить',
-                        icon: PhosphorIconsRegular.plus,
-                        height: 36,
+                      child: IgnorePointer(
+                        child: AppPrimaryButton(
+                          label: 'Добавить',
+                          icon: PhosphorIconsRegular.plus,
+                          height: 36,
+                          onPressed: () {},
+                        ),
                       ),
                     ),
                   ],

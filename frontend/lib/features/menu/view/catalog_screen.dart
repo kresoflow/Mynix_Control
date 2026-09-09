@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_browser_tab.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CatalogScreen extends StatefulWidget {
@@ -76,13 +77,12 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                     const PopupMenuDivider(),
                     const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
                   ],
-                  child: ElevatedButton.icon(
-                    onPressed: null,
-                    icon: const Icon(PhosphorIconsRegular.plus, color: Colors.white),
-                    label: const Text('Добавить', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      disabledBackgroundColor: Theme.of(context).colorScheme.primary,
+                  child: IgnorePointer(
+                    child: AppPrimaryButton(
+                      label: 'Добавить',
+                      icon: PhosphorIconsRegular.plus,
+                      height: 36,
+                      onPressed: () {},
                     ),
                   ),
                 ),
@@ -111,13 +111,12 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                     const PopupMenuDivider(),
                     const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
                   ],
-                  child: ElevatedButton.icon(
-                    onPressed: null,
-                    icon: const Icon(PhosphorIconsRegular.plus, color: Colors.white),
-                    label: const Text('Добавить', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      disabledBackgroundColor: Theme.of(context).colorScheme.primary,
+                  child: IgnorePointer(
+                    child: AppPrimaryButton(
+                      label: 'Добавить',
+                      icon: PhosphorIconsRegular.plus,
+                      height: 36,
+                      onPressed: () {},
                     ),
                   ),
                 ),
@@ -146,13 +145,12 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                     const PopupMenuDivider(),
                     const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
                   ],
-                  child: ElevatedButton.icon(
-                    onPressed: null,
-                    icon: const Icon(PhosphorIconsRegular.plus, color: Colors.white),
-                    label: const Text('Добавить', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      disabledBackgroundColor: Theme.of(context).colorScheme.primary,
+                  child: IgnorePointer(
+                    child: AppPrimaryButton(
+                      label: 'Добавить',
+                      icon: PhosphorIconsRegular.plus,
+                      height: 36,
+                      onPressed: () {},
                     ),
                   ),
                 ),
