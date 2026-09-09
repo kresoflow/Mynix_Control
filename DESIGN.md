@@ -92,6 +92,13 @@ All sidebars, category trees, and submenus MUST strictly conform to the 3-tier s
 | **`AppNavTileSize.md`** | **38-40 px**| 18 px | 13.5 px| **Standard Warehouse Categories, Catalog Shelves, Recipe items** |
 | **`AppNavTileSize.lg`** | **48-52 px**| 22 px | 15 px | **Main Sidebar Navigation Rail, Settings sections, Mobile list tiles** |
 
+### Active State & Contrast Typography Law
+- **Action Buttons (`AppPrimaryButton`, `AppSegmentedTab`):**
+  - **Both Themes:** 100% Solid Brand Fill (`AppColors.brandPrimary`) + Pure White text/icon (`#FFFFFF`).
+- **Navigation & Category Lists (`AppNavTile`):**
+  - **Dark Mode:** Soft Brand Background (14% alpha) + 1px micro-border + **Pure Light White Text (`AppColors.darkText`)** + Brand Accent Icon. *(Guarantees WCAG AAA sharpness and prevents dark-mode blurriness).*
+  - **Light Mode:** Soft Brand Background (10% alpha) + 1px micro-border + **Vibrant Brand Text (`AppColors.brandPrimary`)** + Brand Accent Icon. *(Gives clear focus without heavy visual weight).*
+
 ---
 
 ## 5. Layout & 8-Point Grid System
