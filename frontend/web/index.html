@@ -198,6 +198,31 @@
   <script src="flutter_bootstrap.js" async></script>
 
   <script>
+    function removeSplashScreen() {
+      const splash = document.getElementById('splash-screen');
+      if (splash && splash.style.display !== 'none') {
+        splash.style.opacity = '0';
+        setTimeout(() => {
+          if (splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 500);
+      }
+    }
+
+    // Auto-remove splash screen once Flutter UI attaches to DOM
+    const splashObserver = new MutationObserver((mutations, obs) => {
+      const fltView = document.querySelector('flutter-view, flt-glass-pane, canvas');
+      if (fltView) {
+        removeSplashScreen();
+        obs.disconnect();
+      }
+    });
+    splashObserver.observe(document.body, { childList: true, subtree: true });
+
+    // Fail-safe timeout: never leave user stuck on splash screen even if CDN fonts fail
+    setTimeout(removeSplashScreen, 3500);
+
     window.addEventListener('load', function() {
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.expand();

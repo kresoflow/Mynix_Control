@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/color_picker/color_picker_utils.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_category_card.dart';
@@ -49,9 +50,10 @@ class PosMenuGridView extends StatelessWidget {
       itemBuilder: (context, index) {
         if (index < categories.length) {
           final cat = categories[index];
-          final accent = posSettings.enableRainbowColors
+          final customColor = ColorPickerUtils.parseHex(cat.color);
+          final accent = customColor ?? (posSettings.enableRainbowColors
               ? AppColors.categoryRainbowPalette[index % AppColors.categoryRainbowPalette.length]
-              : AppColors.brandPrimary;
+              : AppColors.brandPrimary);
           return PosCategoryCard(
             cat: cat,
             accent: accent,

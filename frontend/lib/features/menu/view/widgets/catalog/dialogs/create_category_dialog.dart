@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
+import 'package:mynix_frontend/core/widgets/color_picker/color_picker_field.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
@@ -14,6 +15,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
   final sortOrderController = TextEditingController(text: isEditing ? itemToEdit.sortOrder.toString() : '');
   bool isVisible = itemToEdit?.isVisible ?? true;
   String selectedIcon = itemToEdit?.icon ?? '';
+  String? selectedColor = itemToEdit?.color;
 
   showDialog(
     context: context,
@@ -92,6 +94,15 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                   },
                 ),
                 const SizedBox(height: 16),
+                ColorPickerField(
+                  selectedColor: selectedColor,
+                  onColorSelected: (color) {
+                    setState(() {
+                      selectedColor = color;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkBg : AppColors.lightBg,
@@ -130,6 +141,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                   }
                   final sortOrder = int.tryParse(sortOrderController.text) ?? defaultSort;
                   final finalIcon = selectedIcon;
+                  final finalColor = selectedColor;
                   
                   if (nameController.text.isNotEmpty) {
                     if (isEditing) {
@@ -138,6 +150,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                               id: itemToEdit.id,
                               name: nameController.text.trim(),
                               sortOrder: sortOrder,
+                              color: finalColor,
                               isVisible: isVisible,
                               icon: finalIcon,
                             ),
@@ -152,6 +165,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                                 categoryType: type,
                                 parentId: currentCategoryId,
                                 sortOrder: sortOrder,
+                                color: finalColor,
                                 isVisible: isVisible,
                                 icon: finalIcon,
                               ),
@@ -165,6 +179,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                              'category_type': type,
                              'parent_id': currentCategoryId,
                              'sort_order': currentSortOrder,
+                             'color': finalColor,
                              'is_visible': isVisible,
                              'icon': finalIcon,
                            });
