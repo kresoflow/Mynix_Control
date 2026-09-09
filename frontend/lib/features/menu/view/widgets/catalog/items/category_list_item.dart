@@ -4,6 +4,7 @@ import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
+import 'package:mynix_frontend/core/widgets/color_picker/color_picker_utils.dart';
 import '../catalog_enums.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -40,6 +41,8 @@ class CategoryListItem extends StatelessWidget {
     }
 
     final isArchived = !category.isVisible;
+    final customColor = ColorPickerUtils.parseHex(category.color);
+    final accentColor = isArchived ? Colors.grey : (customColor ?? AppColors.brandPrimary);
 
     return Material(
       color: Colors.transparent,
@@ -50,14 +53,14 @@ class CategoryListItem extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: (isArchived ? Colors.grey : AppColors.brandPrimary).withValues(alpha: 0.1),
+              color: accentColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: (effectiveIcon == null || effectiveIcon.isEmpty)
                 ? Text(
                     category.name.isNotEmpty ? category.name[0].toUpperCase() : '?',
                     style: TextStyle(
-                      color: isArchived ? Colors.grey : AppColors.brandPrimary,
+                      color: accentColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -66,7 +69,7 @@ class CategoryListItem extends StatelessWidget {
                 : IconHelper.buildIcon(
                     effectiveIcon,
                     size: 24,
-                    color: isArchived ? Colors.grey : AppColors.brandPrimary,
+                    color: accentColor,
                   ),
           ),
         ),

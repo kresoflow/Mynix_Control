@@ -5,6 +5,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/core/widgets/app_card.dart';
+import 'package:mynix_frontend/core/widgets/color_picker/color_picker_utils.dart';
 import '../catalog_enums.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -41,6 +42,8 @@ class CategoryGridItem extends StatelessWidget {
     }
 
     final isArchived = !category.isVisible;
+    final customColor = ColorPickerUtils.parseHex(category.color);
+    final accentColor = isArchived ? Colors.grey : (customColor ?? AppColors.brandPrimary);
 
     return AppCard(
       onTap: onTap,
@@ -59,21 +62,21 @@ class CategoryGridItem extends StatelessWidget {
                     height: 56,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: (isArchived ? Colors.grey : AppColors.brandPrimary).withValues(alpha: 0.1),
+                      color: accentColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: (effectiveIcon == null || effectiveIcon.isEmpty)
                         ? Text(
                             category.name.isNotEmpty ? category.name[0].toUpperCase() : '?',
                             style: AppTextStyles.h2.copyWith(
-                              color: isArchived ? Colors.grey : AppColors.brandPrimary,
+                              color: accentColor,
                               fontWeight: FontWeight.bold,
                             ),
                           )
                         : IconHelper.buildIcon(
                             effectiveIcon,
                             size: 32,
-                            color: isArchived ? Colors.grey : AppColors.brandPrimary,
+                            color: accentColor,
                           ),
                   ),
                   const SizedBox(height: 14),
