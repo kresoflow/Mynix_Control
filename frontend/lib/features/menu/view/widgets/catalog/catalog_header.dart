@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'catalog_enums.dart';
 import 'catalog_header_manage_mode.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -224,24 +223,9 @@ class CatalogHeader extends StatelessWidget {
           onManageModeChanged(CategoryManageMode.delete);
         } else if (val == 'visibility') {
           onManageModeChanged(CategoryManageMode.visibility);
-        } else if (val == 'bulk_add') {
-          showDialog(
-            context: context,
-            builder: (ctx) => BulkAddModal(initialParentId: currentCategoryId),
-          );
         }
       },
       itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 'bulk_add',
-          child: Row(
-            children: [
-              Icon(PhosphorIconsRegular.table, size: 18, color: AppColors.brandPrimary),
-              const SizedBox(width: 8),
-              const Text('Массовое добавление'),
-            ],
-          ),
-        ),
         const PopupMenuItem(
           value: 'visibility',
           child: Row(

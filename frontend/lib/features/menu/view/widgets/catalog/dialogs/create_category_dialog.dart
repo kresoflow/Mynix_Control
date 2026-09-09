@@ -9,6 +9,9 @@ import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:mynix_frontend/features/menu/services/duplicate_detector.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
+
 void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynamic itemToEdit, String type = 'dish', bool isBulk = false}) {
   final isEditing = itemToEdit != null;
   final nameController = TextEditingController(text: itemToEdit?.name ?? '');
@@ -30,11 +33,24 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
               setState(() {
                 parsedCount = count;
               });
+            } else {
+              setState(() {});
             }
           });
 
           final isDark = Theme.of(context).brightness == Brightness.dark;
           final titleText = isEditing ? 'Редактировать категорию' : (isBulk ? 'Массовое создание категорий' : 'Новая категория');
+
+          final catState = context.watch<CategoryBloc>().state;
+          DuplicateMatch? duplicateMatch;
+          if (catState is CategoryLoaded && !isBulk && nameController.text.trim().isNotEmpty) {
+            duplicateMatch = DuplicateDetector.findCategoryDuplicate(
+              categories: catState.categories,
+              queryName: nameController.text.trim(),
+              categoryType: type,
+              excludeCategoryId: itemToEdit?.id,
+            );
+          }
 
           return MynixDialog(
             title: titleText,
@@ -59,6 +75,19 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                   minLines: 1,
                   autofocus: true,
                 ),
+                if (duplicateMatch != null)
+                  DuplicateWarningChip(
+                    message: duplicateMatch.matchReason,
+                    onOpenExisting: () {
+                      Navigator.pop(ctx);
+                      showAddCategoryDialog(
+                        context,
+                        currentCategoryId: currentCategoryId,
+                        itemToEdit: duplicateMatch!.item,
+                        type: type,
+                      );
+                    },
+                  ),
                 if (!isEditing && parsedCount > 1)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),

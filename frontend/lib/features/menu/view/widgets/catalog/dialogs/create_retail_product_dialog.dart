@@ -10,6 +10,9 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import 'package:mynix_frontend/features/menu/services/duplicate_detector.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
+
 void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   final isEditing = itemToEdit != null;
   final nameController = TextEditingController(text: itemToEdit?.cleanName ?? '');
@@ -31,8 +34,27 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
     builder: (ctx) {
       return StatefulBuilder(
         builder: (context, setState) {
+          nameController.addListener(() {
+            if (ctx.mounted) setState(() {});
+          });
+          barcodeController.addListener(() {
+            if (ctx.mounted) setState(() {});
+          });
+
           final isDark = Theme.of(context).brightness == Brightness.dark;
           final inputBg = isDark ? AppColors.darkBg : AppColors.lightBg;
+
+          final menuState = context.watch<MenuBloc>().state;
+          DuplicateMatch? duplicateMatch;
+          if (menuState is MenuLoaded) {
+            duplicateMatch = DuplicateDetector.findMenuItemDuplicate(
+              items: menuState.items,
+              queryName: nameController.text,
+              queryBarcode: barcodeController.text,
+              currentCategoryId: currentCategoryId,
+              excludeItemId: itemToEdit?.id,
+            );
+          }
 
           return MynixDialog(
             title: isEditing ? 'Редактировать товар' : 'Новый товар для витрины',
@@ -56,6 +78,18 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                     ),
                     autofocus: true,
                   ),
+                  if (duplicateMatch != null)
+                    DuplicateWarningChip(
+                      message: duplicateMatch.matchReason,
+                      onOpenExisting: () {
+                        Navigator.pop(ctx);
+                        showAddRetailProductDialog(
+                          context,
+                          currentCategoryId: currentCategoryId,
+                          itemToEdit: duplicateMatch!.item,
+                        );
+                      },
+                    ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: sellingPriceController,

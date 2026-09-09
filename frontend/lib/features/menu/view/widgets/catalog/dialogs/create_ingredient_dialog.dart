@@ -10,6 +10,9 @@ import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/features/menu/services/duplicate_detector.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
+
 void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int? initialCategoryId}) {
   final isEditing = itemToEdit != null;
   final nameController = TextEditingController(text: itemToEdit?.name ?? '');
@@ -46,7 +49,26 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
     builder: (ctx) {
       return StatefulBuilder(
         builder: (context, setState) {
+          nameController.addListener(() {
+            if (ctx.mounted) setState(() {});
+          });
+          barcodeController.addListener(() {
+            if (ctx.mounted) setState(() {});
+          });
+
           final isDark = Theme.of(context).brightness == Brightness.dark;
+
+          final ingState = context.watch<IngredientBloc>().state;
+          DuplicateMatch? duplicateMatch;
+          if (ingState is IngredientLoaded) {
+            duplicateMatch = DuplicateDetector.findIngredientDuplicate(
+              ingredients: ingState.ingredients,
+              queryName: nameController.text,
+              queryBarcode: barcodeController.text,
+              currentCategoryId: selectedCategoryId,
+              excludeIngredientId: itemToEdit?.id,
+            );
+          }
 
           return MynixDialog(
             title: isEditing ? 'Редактировать сырье' : 'Новый ингредиент',
@@ -69,6 +91,18 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                     ),
                     autofocus: true,
                   ),
+                  if (duplicateMatch != null)
+                    DuplicateWarningChip(
+                      message: duplicateMatch.matchReason,
+                      onOpenExisting: () {
+                        Navigator.pop(ctx);
+                        showAddIngredientDialog(
+                          context,
+                          itemToEdit: duplicateMatch!.item,
+                          initialCategoryId: selectedCategoryId,
+                        );
+                      },
+                    ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: selectedUnit,

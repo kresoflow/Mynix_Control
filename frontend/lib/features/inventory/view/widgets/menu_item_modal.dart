@@ -163,6 +163,8 @@ class _MenuItemModalState extends State<MenuItemModal> {
                 priceController: _priceController,
                 barcodeController: _barcodeController,
                 sortOrderController: _sortOrderController,
+                currentCategoryId: widget.preselectedCategoryId ?? int.tryParse(widget.existingItem?.categoryId ?? ''),
+                excludeItemId: widget.existingItem?.id,
               ),
               const SizedBox(height: 16),
               Container(

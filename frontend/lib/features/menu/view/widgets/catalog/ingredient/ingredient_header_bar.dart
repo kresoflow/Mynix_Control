@@ -5,7 +5,6 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 
 class IngredientHeaderBar extends StatelessWidget {
@@ -175,26 +174,11 @@ class IngredientHeaderBar extends StatelessWidget {
               ),
               tooltip: 'Действия',
               onSelected: (val) {
-                if (val == 'bulk') {
-                  showDialog(
-                    context: context,
-                    builder: (_) => const BulkAddModal(initialTabIndex: 2),
-                  );
-                } else if (val == 'manage') {
+                if (val == 'manage') {
                   onToggleManageMode();
                 }
               },
               itemBuilder: (ctx) => [
-                const PopupMenuItem(
-                  value: 'bulk',
-                  child: Row(
-                    children: [
-                      Icon(PhosphorIconsRegular.listPlus, size: 16),
-                      SizedBox(width: 10),
-                      Text('Массовое добавление'),
-                    ],
-                  ),
-                ),
                 const PopupMenuItem(
                   value: 'manage',
                   child: Row(
