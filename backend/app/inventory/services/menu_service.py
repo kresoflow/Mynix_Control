@@ -1,3 +1,4 @@
+from sqlalchemy import case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
@@ -176,7 +177,10 @@ async def list_menu_items(session: AsyncSession) -> list[MenuItemRead]:
         select(MenuItem)
         .where(MenuItem.parent_id.is_(None))
         .options(selectinload(MenuItem.category))
-        .order_by(MenuItem.sort_order, MenuItem.id)
+        .order_by(
+            case((MenuItem.sort_order == 0, 999999), else_=MenuItem.sort_order).asc(),
+            MenuItem.id.asc(),
+        )
     )
     result = await session.execute(stmt)
     items = result.scalars().all()
@@ -207,6 +211,7 @@ async def list_menu_items(session: AsyncSession) -> list[MenuItemRead]:
             description=m.description,
             type=m.type,
             barcode=m.barcode,
+            sort_order=m.sort_order,
             attributes=m.attributes,
             parent_id=m.parent_id,
         )
@@ -225,6 +230,24 @@ async def update_menu_item(session: AsyncSession, menu_item_id: int, data: dict)
             setattr(item, key, value)
     
     session.add(item)
+
+    if item.retail_product_id:
+        rp_stmt = select(RetailProduct).where(RetailProduct.id == item.retail_product_id)
+        rp_res = await session.execute(rp_stmt)
+        rp = rp_res.scalar_one_or_none()
+        if rp:
+            if "name" in data and data["name"] is not None:
+                rp.name = data["name"]
+            if "price" in data and data["price"] is not None:
+                rp.price = data["price"]
+            if "category_id" in data and data["category_id"] is not None:
+                rp.category_id = data["category_id"]
+            if "sort_order" in data and data["sort_order"] is not None:
+                rp.sort_order = data["sort_order"]
+            if "barcode" in data:
+                rp.barcode = data["barcode"]
+            session.add(rp)
+
     await session.flush()
 
     attributes = item.attributes

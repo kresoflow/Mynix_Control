@@ -39,6 +39,9 @@ class MenuItem extends Equatable {
   @HiveField(10)
   final int? parentId;
 
+  @HiveField(11, defaultValue: 0)
+  final int sortOrder;
+
   const MenuItem({
     required this.id,
     required this.name,
@@ -51,10 +54,11 @@ class MenuItem extends Equatable {
     this.isAvailable = true,
     this.barcode,
     this.parentId,
+    this.sortOrder = 0,
   });
 
   @override
-  List<Object?> get props => [id, name, price, categoryId, categoryName, shortName, tags, attributesJson, isAvailable, barcode, parentId];
+  List<Object?> get props => [id, name, price, categoryId, categoryName, shortName, tags, attributesJson, isAvailable, barcode, parentId, sortOrder];
 
   String get cleanName {
     return name.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];

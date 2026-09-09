@@ -13,6 +13,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int? initialCategoryId}) {
   final isEditing = itemToEdit != null;
   final nameController = TextEditingController(text: itemToEdit?.name ?? '');
+  final sortOrderController = TextEditingController(text: (itemToEdit != null && itemToEdit.sortOrder > 0) ? itemToEdit.sortOrder.toString() : '');
   final costController = TextEditingController(text: isEditing ? itemToEdit.costPerUnit.toInt().toString() : '0');
   final alertController = TextEditingController(text: isEditing ? itemToEdit.minStockAlert.toInt().toString() : '0');
   final initialStockController = TextEditingController(text: '0');
@@ -50,6 +51,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
           return MynixDialog(
             title: isEditing ? 'Редактировать сырье' : 'Новый ингредиент',
             icon: PhosphorIconsRegular.leaf,
+            width: 500,
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -188,6 +190,22 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                       ),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: sortOrderController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Порядок сортировки (1, 2, 3...)',
+                      hintText: 'Пусто = авто-очередь',
+                      filled: true,
+                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.inputRadius,
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: Icon(PhosphorIconsRegular.sortAscending, color: AppColors.brandPrimary),
+                    ),
+                  ),
                   if (!isEditing) ...[
                     const SizedBox(height: 16),
                     TextFormField(
@@ -216,11 +234,12 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
               AppPrimaryButton(
                 label: isEditing ? 'Сохранить' : 'Создать',
                 icon: PhosphorIconsRegular.floppyDisk,
-                width: 140,
+                width: null,
                 onPressed: () {
                   final cost = double.tryParse(costController.text) ?? 0.0;
                   final alert = double.tryParse(alertController.text) ?? 0.0;
                   final stock = double.tryParse(initialStockController.text) ?? 0.0;
+                  final sortOrder = int.tryParse(sortOrderController.text.trim()) ?? 0;
                   if (nameController.text.isNotEmpty) {
                     if (isEditing) {
                       context.read<IngredientBloc>().add(
@@ -232,6 +251,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                                 'cost_per_unit': cost,
                                 'min_stock_alert': alert,
                                 'category_id': selectedCategoryId,
+                                'sort_order': sortOrder,
                                 'barcode': barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim(),
                               },
                             ),
@@ -245,6 +265,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                               minStockAlert: alert,
                               categoryId: selectedCategoryId,
                               initialStock: stock,
+                              sortOrder: sortOrder,
                               barcode: barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim(),
                             ),
                           );

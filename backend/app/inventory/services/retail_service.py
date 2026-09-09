@@ -1,4 +1,5 @@
-﻿from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import case
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
@@ -69,7 +70,10 @@ async def list_retail_products(session: AsyncSession) -> list[RetailProductRead]
     stmt = (
         select(RetailProduct)
         .options(selectinload(RetailProduct.category))
-        .order_by(RetailProduct.sort_order, RetailProduct.id)
+        .order_by(
+            case((RetailProduct.sort_order == 0, 999999), else_=RetailProduct.sort_order).asc(),
+            RetailProduct.id.asc(),
+        )
     )
     result = await session.execute(stmt)
     products = result.scalars().all()
@@ -86,6 +90,7 @@ async def list_retail_products(session: AsyncSession) -> list[RetailProductRead]
             min_stock_alert=p.min_stock_alert,
             is_available=p.is_available,
             barcode=p.barcode,
+            sort_order=p.sort_order,
             attributes=p.attributes,
             is_low_stock=p.current_stock <= p.min_stock_alert,
         )
@@ -115,6 +120,8 @@ async def update_retail_product(session: AsyncSession, product_id: int, data: di
             menu_item.price = data["price"]
         if "category_id" in data and data["category_id"] is not None:
             menu_item.category_id = data["category_id"]
+        if "sort_order" in data and data["sort_order"] is not None:
+            menu_item.sort_order = data["sort_order"]
         session.add(menu_item)
 
     await session.flush()

@@ -35,14 +35,16 @@ class CategoryListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String? effectiveIcon = category.icon;
+    String? effectiveColor = category.color;
     final catState = context.read<CategoryBloc>().state;
     if (catState is CategoryLoaded) {
       effectiveIcon = category.getInheritedIcon(catState.categories);
+      effectiveColor = category.getInheritedColor(catState.categories);
     }
 
     final isArchived = category.isArchived;
     final isHiddenFromPos = !category.isVisible;
-    final customColor = ColorPickerUtils.parseHex(category.color);
+    final customColor = ColorPickerUtils.parseHex(effectiveColor);
     final accentColor = isArchived ? Colors.grey : (customColor ?? AppColors.brandPrimary);
 
     return Material(

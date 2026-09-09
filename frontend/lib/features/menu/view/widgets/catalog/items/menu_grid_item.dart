@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:mynix_frontend/core/widgets/color_picker/color_picker_utils.dart';
 
 class MenuGridItem extends StatelessWidget {
   final MenuItem item;
@@ -35,12 +36,7 @@ class MenuGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color accentColor = AppColors.brandPrimary;
-    
-    if (!item.isAvailable) {
-      accentColor = Colors.grey;
-    }
-
+    Color? inheritedColor;
     String? effectiveIcon = item.icon;
     
     // Check if the item's own icon is valid
@@ -58,8 +54,14 @@ class MenuGridItem extends StatelessWidget {
         if (effectiveIcon == null || effectiveIcon.isEmpty) {
           effectiveIcon = category.getInheritedIcon(categoryState.categories);
         }
+        final colorHex = category.getInheritedColor(categoryState.categories);
+        inheritedColor = ColorPickerUtils.parseHex(colorHex);
       }
     } catch (_) {}
+
+    final Color accentColor = !item.isAvailable
+        ? Colors.grey
+        : (inheritedColor ?? AppColors.brandPrimary);
 
     Widget? finalIconWidget;
     if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
@@ -100,7 +102,7 @@ class MenuGridItem extends StatelessWidget {
                             color: accentColor.withAlpha(20),
                             blurRadius: 12,
                             spreadRadius: 2,
-                          )
+                          ),
                         ],
                       ),
                       child: finalIconWidget,

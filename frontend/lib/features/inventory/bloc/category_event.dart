@@ -54,6 +54,7 @@ class UpdateCategory extends CategoryEvent {
   final String? name;
   final int? sortOrder;
   final String? color;
+  final bool resetColor;
   final bool? isVisible;
   final bool? isArchived;
   final String? icon;
@@ -63,13 +64,14 @@ class UpdateCategory extends CategoryEvent {
     this.name,
     this.sortOrder,
     this.color,
+    this.resetColor = false,
     this.isVisible,
     this.isArchived,
     this.icon,
   });
 
   @override
-  List<Object?> get props => [id, name, sortOrder, color, isVisible, isArchived, icon];
+  List<Object?> get props => [id, name, sortOrder, color, resetColor, isVisible, isArchived, icon];
 }
 
 class RestoreCategory extends CategoryEvent {

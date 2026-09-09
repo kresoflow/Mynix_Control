@@ -109,7 +109,13 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                     if (c.parentId != _currentCategoryId) return false;
                     if (widget.categoryType == 'all') return c.categoryType != 'ingredient';
                     return c.categoryType == widget.categoryType;
-                  }).toList();
+                  }).toList()
+                    ..sort((a, b) {
+                      final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;
+                      final sortB = b.sortOrder == 0 ? 999999 : b.sortOrder;
+                      final cmp = sortA.compareTo(sortB);
+                      return cmp != 0 ? cmp : a.id.compareTo(b.id);
+                    });
                 }
 
                 List<dynamic> currentItems = [];
@@ -121,7 +127,13 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                     final isRootItem = iCatStr == '0' || iCatStr == 'null' || iCatStr == 'uncategorized' || iCatStr == '';
                     final inCategory = iCatStr == currentCatStr || (isRootItem && currentCatStr == null);
                     return inCategory && i.parentId == null && widget.itemFilter(i);
-                  }).toList();
+                  }).toList()
+                    ..sort((a, b) {
+                      final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;
+                      final sortB = b.sortOrder == 0 ? 999999 : b.sortOrder;
+                      final cmp = sortA.compareTo(sortB);
+                      return cmp != 0 ? cmp : a.id.compareTo(b.id);
+                    });
                 }
 
                 final int selectedCount = _selectedCategories.length + _selectedItems.length;
@@ -199,7 +211,9 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               onCategoryDelete: (cat) => CatalogDeletionDialogs.confirmDeleteCategory(context, cat),
                               onCategoryRestore: (cat) => context.read<CategoryBloc>().add(RestoreCategory(cat.id)),
                               onItemToggle: (item, val) => setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id)),
-                              onItemEdit: (item) => showAddMenuItemDialog(context, itemToEdit: item, currentCategoryId: _currentCategoryId),
+                              onItemEdit: (item) => item.isRetail
+                                  ? showAddRetailProductDialog(context, itemToEdit: item, currentCategoryId: _currentCategoryId)
+                                  : showAddMenuItemDialog(context, itemToEdit: item, currentCategoryId: _currentCategoryId),
                               onItemDelete: (item) => CatalogDeletionDialogs.confirmDeleteItem(context, item),
                               onItemRestore: (item) {
                                 context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true}));

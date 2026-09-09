@@ -73,4 +73,18 @@ class MenuCategory {
     }
     return null;
   }
+
+  String? getInheritedColor(List<MenuCategory> allCategories) {
+    if (color != null && color!.trim().isNotEmpty && color != 'null' && color != 'none') {
+      return color;
+    }
+    if (parentId != null) {
+      try {
+        final parent = allCategories.firstWhere((c) => c.id == parentId);
+        final parentColor = parent.getInheritedColor(allCategories);
+        if (parentColor != null && parentColor.isNotEmpty) return parentColor;
+      } catch (_) {}
+    }
+    return null;
+  }
 }

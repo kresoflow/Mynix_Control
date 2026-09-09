@@ -1,3 +1,4 @@
+from sqlalchemy import case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from fastapi import HTTPException
@@ -43,7 +44,10 @@ async def bulk_create_categories(session: AsyncSession, categories_data: list[di
     return [MenuCategoryRead.model_validate(c) for c in categories]
 
 async def list_categories(session: AsyncSession) -> list[MenuCategoryRead]:
-    stmt = select(MenuCategory).order_by(MenuCategory.sort_order, MenuCategory.id)
+    stmt = select(MenuCategory).order_by(
+        case((MenuCategory.sort_order == 0, 999999), else_=MenuCategory.sort_order).asc(),
+        MenuCategory.id.asc(),
+    )
     result = await session.execute(stmt)
     categories = result.scalars().all()
     return [MenuCategoryRead.model_validate(c) for c in categories]

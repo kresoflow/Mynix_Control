@@ -11,6 +11,7 @@ class Ingredient {
   final int? categoryId;
   final String? categoryName;
   final String? barcode;
+  final int sortOrder;
 
   bool get isRetail => attributes?['is_retail'] == true;
 
@@ -27,6 +28,7 @@ class Ingredient {
     this.categoryId,
     this.categoryName,
     this.barcode,
+    this.sortOrder = 0,
   });
 
   String get displayCode {
@@ -53,6 +55,7 @@ class Ingredient {
       categoryId: json['category_id'],
       categoryName: json['category_name'],
       barcode: json['barcode'],
+      sortOrder: (json['sort_order'] as int?) ?? 0,
     );
   }
 }

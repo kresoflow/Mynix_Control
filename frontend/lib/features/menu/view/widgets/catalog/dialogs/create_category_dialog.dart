@@ -151,6 +151,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                               name: nameController.text.trim(),
                               sortOrder: sortOrder,
                               color: finalColor,
+                              resetColor: finalColor == null,
                               isVisible: isVisible,
                               icon: finalIcon,
                             ),

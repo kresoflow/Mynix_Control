@@ -44,6 +44,7 @@ class MenuRepository {
           isAvailable: json['is_available'] as bool? ?? true,
           barcode: json['barcode'] as String?,
           parentId: json['parent_id'] as int?,
+          sortOrder: (json['sort_order'] as int?) ?? 0,
         );
       }).toList();
     } catch (e) {

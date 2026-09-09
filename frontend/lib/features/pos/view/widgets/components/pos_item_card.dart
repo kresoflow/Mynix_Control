@@ -5,6 +5,8 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:mynix_frontend/core/widgets/color_picker/color_picker_utils.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
 class PosItemCard extends StatefulWidget {
@@ -27,6 +29,7 @@ class _PosItemCardState extends State<PosItemCard> {
 
   @override
   Widget build(BuildContext context) {
+    Color? inheritedColor;
     String? effectiveIcon = widget.item.icon;
     
     // Check if the item's own icon is valid
@@ -44,8 +47,15 @@ class _PosItemCardState extends State<PosItemCard> {
         if (effectiveIcon == null || effectiveIcon.isEmpty) {
           effectiveIcon = category.getInheritedIcon(categoryState.categories);
         }
+        final colorHex = category.getInheritedColor(categoryState.categories);
+        inheritedColor = ColorPickerUtils.parseHex(colorHex);
       }
     } catch (_) {}
+
+    final posSettings = context.watch<PosSettingsCubit>().state;
+    final accentColor = (posSettings.enableRainbowColors && inheritedColor != null)
+        ? inheritedColor
+        : AppColors.brandPrimary;
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -56,7 +66,7 @@ class _PosItemCardState extends State<PosItemCard> {
       finalIconWidget = IconHelper.buildIcon(
         effectiveIcon,
         size: isMobile ? 24 : 32,
-        color: AppColors.brandPrimary,
+        color: accentColor,
       );
     }
 
@@ -82,12 +92,12 @@ class _PosItemCardState extends State<PosItemCard> {
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
               borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
               border: Border.all(
-                color: AppColors.brandPrimary.withValues(alpha: _isHovered ? 0.3 : 0.05),
+                color: accentColor.withValues(alpha: _isHovered ? 0.3 : 0.05),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.brandPrimary.withValues(alpha: _isHovered ? 0.15 : 0.05),
+                  color: accentColor.withValues(alpha: _isHovered ? 0.15 : 0.05),
                   blurRadius: _isHovered ? 24 : 12,
                   offset: Offset(0, _isHovered ? 8 : 4),
                 ),
@@ -105,7 +115,7 @@ class _PosItemCardState extends State<PosItemCard> {
                       height: isMobile ? 40 : 56,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                        color: accentColor.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: finalIconWidget,
@@ -160,7 +170,7 @@ class _PosItemCardState extends State<PosItemCard> {
                     duration: const Duration(milliseconds: 200),
                     padding: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 12, vertical: isMobile ? 4 : 6),
                     decoration: BoxDecoration(
-                      color: AppColors.brandPrimary.withValues(alpha: _isHovered ? 0.9 : 0.1),
+                      color: accentColor.withValues(alpha: _isHovered ? 0.9 : 0.1),
                       borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
                     ),
                     child: FittedBox(
@@ -180,7 +190,7 @@ class _PosItemCardState extends State<PosItemCard> {
                         style: GoogleFonts.jetBrainsMono(
                           fontSize: isMobile ? 12 : 14,
                           fontWeight: FontWeight.w800,
-                          color: _isHovered ? Colors.white : AppColors.brandPrimary,
+                          color: _isHovered ? Colors.white : accentColor,
                         ),
                         maxLines: 1,
                       ),

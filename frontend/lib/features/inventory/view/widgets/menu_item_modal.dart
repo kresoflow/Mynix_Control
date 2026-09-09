@@ -5,6 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_radii.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'menu_item/menu_item_basic_fields.dart';
 import 'menu_item/menu_item_variations_section.dart';
 import 'menu_item/menu_item_modifier_groups_section.dart';
 
@@ -24,6 +28,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
   late TextEditingController _nameController;
   late TextEditingController _priceController;
   late TextEditingController _barcodeController;
+  late TextEditingController _sortOrderController;
 
   bool _hasModifiers = false;
   final List<Map<String, dynamic>> _variations = [];
@@ -35,6 +40,8 @@ class _MenuItemModalState extends State<MenuItemModal> {
     _nameController = TextEditingController(text: widget.existingItem?.cleanName ?? '');
     _priceController = TextEditingController(text: widget.existingItem?.price.toString() ?? '');
     _barcodeController = TextEditingController(text: widget.existingItem?.barcode ?? '');
+    final sort = widget.existingItem?.sortOrder ?? 0;
+    _sortOrderController = TextEditingController(text: sort > 0 ? sort.toString() : '');
 
     if (widget.existingItem?.attributesJson != null && widget.existingItem!.attributesJson!.isNotEmpty) {
       try {
@@ -61,6 +68,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
     _nameController.dispose();
     _priceController.dispose();
     _barcodeController.dispose();
+    _sortOrderController.dispose();
     super.dispose();
   }
 
@@ -86,6 +94,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
       final name = _nameController.text.trim();
       final price = double.tryParse(_priceController.text) ?? 0.0;
       final categoryId = widget.existingItem?.categoryId.toString() ?? widget.preselectedCategoryId.toString();
+      final sortOrder = int.tryParse(_sortOrderController.text.trim()) ?? 0;
 
       Map<String, dynamic>? attributes;
 
@@ -107,6 +116,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
           {
             'name': name,
             'price': price,
+            'sort_order': sortOrder,
             'attributes': attributes,
             'barcode': barcode,
           },
@@ -117,6 +127,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
             name: name,
             category: categoryId,
             price: price,
+            sortOrder: sortOrder,
             attributes: attributes,
             barcode: barcode,
           ),
@@ -133,125 +144,81 @@ class _MenuItemModalState extends State<MenuItemModal> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 650,
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
-        padding: const EdgeInsets.all(32),
-        child: Form(
-          key: _formKey,
+    final isEditing = widget.existingItem != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return MynixDialog(
+      title: isEditing ? 'Редактировать блюдо' : 'Новое блюдо',
+      icon: PhosphorIconsRegular.bowlFood,
+      width: 580,
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    widget.existingItem != null ? 'Редактировать блюдо' : 'Добавить блюдо',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
-                ],
+              MenuItemBasicFields(
+                nameController: _nameController,
+                priceController: _priceController,
+                barcodeController: _barcodeController,
+                sortOrderController: _sortOrderController,
               ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: TextFormField(
-                              controller: _nameController,
-                              decoration: const InputDecoration(labelText: 'Название блюда', border: OutlineInputBorder()),
-                              validator: (v) => v == null || v.isEmpty ? 'Обязательное поле' : null,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            flex: 1,
-                            child: TextFormField(
-                              controller: _priceController,
-                              decoration: const InputDecoration(labelText: 'Базовая цена', border: OutlineInputBorder()),
-                              keyboardType: TextInputType.number,
-                              validator: (v) => v == null || v.isEmpty ? 'Заполните' : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _barcodeController,
-                        decoration: InputDecoration(
-                          labelText: 'Штрихкод (опционально)',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: Icon(PhosphorIconsRegular.barcode, color: AppColors.brandPrimary),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-                        ),
-                        child: SwitchListTile(
-                          title: const Text('Блюдо имеет размеры или модификаторы (опции)', style: TextStyle(fontWeight: FontWeight.bold)),
-                          value: _hasModifiers,
-                          onChanged: (val) => setState(() => _hasModifiers = val),
-                          activeThumbColor: AppColors.brandPrimary,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                      if (_hasModifiers) ...[
-                        const SizedBox(height: 32),
-                        MenuItemVariationsSection(
-                          variations: _variations,
-                          onAddVariation: _addVariation,
-                          onRemoveVariation: (i) => setState(() => _variations.removeAt(i)),
-                        ),
-                        const SizedBox(height: 24),
-                        MenuItemModifierGroupsSection(
-                          modifierGroups: _modifierGroups,
-                          onAddGroup: _addModifierGroup,
-                          onRemoveGroup: (gIndex) => setState(() => _modifierGroups.removeAt(gIndex)),
-                          onAddOption: (gIndex) => setState(() => (_modifierGroups[gIndex]['modifiers'] as List).add({'name': '', 'price': 0})),
-                          onRemoveOption: (gIndex, mIndex) => setState(() => (_modifierGroups[gIndex]['modifiers'] as List).removeAt(mIndex)),
-                          onToggleRequired: (gIndex, val) => setState(() => _modifierGroups[gIndex]['required'] = val),
-                        ),
-                      ],
-                    ],
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkBg : AppColors.lightBg,
+                  borderRadius: AppRadii.cardRadius,
+                ),
+                child: SwitchListTile(
+                  title: Text(
+                    'Размеры или модификаторы (опции)',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                    ),
                   ),
+                  value: _hasModifiers,
+                  onChanged: (val) => setState(() => _hasModifiers = val),
+                  activeColor: AppColors.brandPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
                 ),
               ),
-              const Divider(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Отмена', style: TextStyle(fontSize: 16)),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.brandPrimary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Сохранить', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
+              if (_hasModifiers) ...[
+                const SizedBox(height: 20),
+                MenuItemVariationsSection(
+                  variations: _variations,
+                  onAddVariation: _addVariation,
+                  onRemoveVariation: (i) => setState(() => _variations.removeAt(i)),
+                ),
+                const SizedBox(height: 20),
+                MenuItemModifierGroupsSection(
+                  modifierGroups: _modifierGroups,
+                  onAddGroup: _addModifierGroup,
+                  onRemoveGroup: (gIndex) => setState(() => _modifierGroups.removeAt(gIndex)),
+                  onAddOption: (gIndex) => setState(() => (_modifierGroups[gIndex]['modifiers'] as List).add({'name': '', 'price': 0})),
+                  onRemoveOption: (gIndex, mIndex) => setState(() => (_modifierGroups[gIndex]['modifiers'] as List).removeAt(mIndex)),
+                  onToggleRequired: (gIndex, val) => setState(() => _modifierGroups[gIndex]['required'] = val),
+                ),
+              ],
             ],
           ),
         ),
       ),
+      actions: [
+        AppGhostButton(
+          label: 'Отмена',
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        const SizedBox(width: 12),
+        AppPrimaryButton(
+          label: isEditing ? 'Сохранить' : 'Создать',
+          icon: PhosphorIconsRegular.floppyDisk,
+          width: null,
+          onPressed: _submit,
+        ),
+      ],
     );
   }
 }

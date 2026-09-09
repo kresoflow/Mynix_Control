@@ -209,7 +209,7 @@ class _AppButtonState extends State<AppButton> {
             duration: const Duration(milliseconds: 150),
             height: widget.height,
             width: widget.isFullWidth ? double.infinity : widget.width,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: widget.width != null ? 14 : 20),
             decoration: BoxDecoration(
               color: bg,
               borderRadius: BorderRadius.circular(radius),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/color_picker/color_picker_utils.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_category_card.dart';
@@ -50,7 +52,18 @@ class PosMenuGridView extends StatelessWidget {
       itemBuilder: (context, index) {
         if (index < categories.length) {
           final cat = categories[index];
-          final customColor = ColorPickerUtils.parseHex(cat.color);
+          Color? customColor;
+          try {
+            final catState = context.read<CategoryBloc>().state;
+            if (catState is CategoryLoaded) {
+              final hex = cat.getInheritedColor(catState.categories);
+              customColor = ColorPickerUtils.parseHex(hex);
+            } else {
+              customColor = ColorPickerUtils.parseHex(cat.color);
+            }
+          } catch (_) {
+            customColor = ColorPickerUtils.parseHex(cat.color);
+          }
           final accent = (posSettings.enableRainbowColors && customColor != null)
               ? customColor
               : AppColors.brandPrimary;

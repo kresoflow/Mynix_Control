@@ -51,6 +51,7 @@ extension CategoriesPart on InventoryRepository {
     String? name,
     int? sortOrder,
     String? color,
+    bool resetColor = false,
     bool? isVisible,
     bool? isArchived,
     String? icon,
@@ -59,7 +60,11 @@ extension CategoriesPart on InventoryRepository {
       final Map<String, dynamic> data = {};
       if (name != null) data['name'] = name;
       if (sortOrder != null) data['sort_order'] = sortOrder;
-      data['color'] = color;
+      if (color != null) {
+        data['color'] = color;
+      } else if (resetColor) {
+        data['color'] = null;
+      }
       if (isVisible != null) data['is_visible'] = isVisible;
       if (isArchived != null) data['is_archived'] = isArchived;
       if (icon != null) data['icon'] = icon;

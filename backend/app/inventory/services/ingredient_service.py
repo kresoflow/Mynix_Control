@@ -1,3 +1,4 @@
+from sqlalchemy import case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -37,7 +38,10 @@ async def list_ingredients(session: AsyncSession) -> list[IngredientRead]:
     stmt = (
         select(Ingredient, MenuCategory.name)
         .outerjoin(MenuCategory, Ingredient.category_id == MenuCategory.id)
-        .order_by(Ingredient.sort_order, Ingredient.id)
+        .order_by(
+            case((Ingredient.sort_order == 0, 999999), else_=Ingredient.sort_order).asc(),
+            Ingredient.id.asc(),
+        )
     )
     result = await session.execute(stmt)
     rows = result.all()
@@ -51,6 +55,7 @@ async def list_ingredients(session: AsyncSession) -> list[IngredientRead]:
             cost_per_unit=i.Ingredient.cost_per_unit,
             category_id=i.Ingredient.category_id,
             category_name=i.name,
+            sort_order=i.Ingredient.sort_order,
             is_low_stock=i.Ingredient.current_stock <= i.Ingredient.min_stock_alert,
             barcode=i.Ingredient.barcode,
         )

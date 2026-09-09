@@ -178,14 +178,26 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                           if (catState is CategoryLoaded) {
                             categories = catState.categories
                                 .where((c) => c.parentId == currentCategoryId && c.isVisible && !c.isArchived && c.categoryType != 'ingredient')
-                                .toList();
+                                .toList()
+                              ..sort((a, b) {
+                                final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;
+                                final sortB = b.sortOrder == 0 ? 999999 : b.sortOrder;
+                                final cmp = sortA.compareTo(sortB);
+                                return cmp != 0 ? cmp : a.id.compareTo(b.id);
+                              });
                           }
 
                           if (menuState is MenuLoaded) {
                             items = menuState.items.where((i) {
                               final catId = int.tryParse(i.categoryId.toString());
                               return catId == currentCategoryId && i.isAvailable && i.parentId == null;
-                            }).toList();
+                            }).toList()
+                              ..sort((a, b) {
+                                final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;
+                                final sortB = b.sortOrder == 0 ? 999999 : b.sortOrder;
+                                final cmp = sortA.compareTo(sortB);
+                                return cmp != 0 ? cmp : a.id.compareTo(b.id);
+                              });
                           }
                         }
 

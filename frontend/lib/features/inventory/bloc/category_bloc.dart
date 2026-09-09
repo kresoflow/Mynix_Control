@@ -116,6 +116,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         name: event.name,
         sortOrder: event.sortOrder,
         color: event.color,
+        resetColor: event.resetColor,
         isVisible: event.isVisible,
         isArchived: event.isArchived,
         icon: event.icon,

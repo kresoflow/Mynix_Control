@@ -8,6 +8,8 @@ import '../catalog_enums.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
+import 'package:mynix_frontend/core/widgets/color_picker/color_picker_utils.dart';
+
 class MenuListItem extends StatelessWidget {
   final MenuItem item;
   final CategoryManageMode manageMode;
@@ -32,6 +34,7 @@ class MenuListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color? inheritedColor;
     String? effectiveIcon = item.icon;
     
     // Check if the item's own icon is valid
@@ -49,15 +52,21 @@ class MenuListItem extends StatelessWidget {
         if (effectiveIcon == null || effectiveIcon.isEmpty) {
           effectiveIcon = category.getInheritedIcon(categoryState.categories);
         }
+        final colorHex = category.getInheritedColor(categoryState.categories);
+        inheritedColor = ColorPickerUtils.parseHex(colorHex);
       }
     } catch (_) {}
+
+    final Color accentColor = !item.isAvailable
+        ? Colors.grey
+        : (inheritedColor ?? AppColors.brandPrimary);
 
     Widget? finalIconWidget;
     if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
       finalIconWidget = IconHelper.buildIcon(
         effectiveIcon,
         size: 20,
-        color: item.isAvailable ? AppColors.brandPrimary : Colors.grey,
+        color: accentColor,
       );
     }
 
@@ -72,7 +81,7 @@ class MenuListItem extends StatelessWidget {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: (item.isAvailable ? AppColors.brandPrimary : Colors.grey).withValues(alpha: 0.1),
+              color: accentColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: finalIconWidget,
