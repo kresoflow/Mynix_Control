@@ -4,7 +4,6 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/app_text_field.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'ingredient_category_node.dart';
@@ -261,60 +260,35 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                                     onCategorySelected: widget.onCategorySelected,
                                     onDelete: (cat) => _confirmDeleteCategory(context, cat),
                                   );
-                                }),
+                                  }),
                               ],
                             ),
                           ),
 
-                          // Bottom Action: Create Category
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                top: BorderSide(
-                                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                                  width: 0.5,
+                          if (widget.isManageMode && ingredientCategories.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                                    width: 0.5,
+                                  ),
+                                ),
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 32,
+                                child: TextButton.icon(
+                                  onPressed: () => _confirmDeleteAllCategories(context, ingredientCategories),
+                                  icon: const Icon(PhosphorIconsRegular.trash, size: 14, color: AppColors.danger),
+                                  label: Text(
+                                    'Удалить все (${ingredientCategories.length})',
+                                    style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600),
+                                  ),
                                 ),
                               ),
                             ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 34,
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {
-                                      showAddCategoryDialog(context, type: 'ingredient');
-                                    },
-                                    icon: const Icon(PhosphorIconsRegular.folderPlus, size: 14),
-                                    label: const Text('Создать полку', style: TextStyle(fontSize: 12)),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                if (widget.isManageMode && ingredientCategories.isNotEmpty) ...[
-                                  const SizedBox(height: 6),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 30,
-                                    child: TextButton.icon(
-                                      onPressed: () => _confirmDeleteAllCategories(context, ingredientCategories),
-                                      icon: const Icon(PhosphorIconsRegular.trash, size: 14, color: AppColors.danger),
-                                      label: Text(
-                                        'Удалить все (${ingredientCategories.length})',
-                                        style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
                         ],
                       ),
                     ),
