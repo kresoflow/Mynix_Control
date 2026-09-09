@@ -12,8 +12,38 @@ import 'package:mynix_frontend/features/pos/view/widgets/components/pos_breadcru
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_empty_state.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_menu_grid_view.dart';
 
-class PosMenuGrid extends StatelessWidget {
+class PosMenuGrid extends StatefulWidget {
   const PosMenuGrid({super.key});
+
+  @override
+  State<PosMenuGrid> createState() => _PosMenuGridState();
+}
+
+class _PosMenuGridState extends State<PosMenuGrid> {
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchQuery = '';
+      }
+    });
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchQuery = '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +82,12 @@ class PosMenuGrid extends StatelessWidget {
                   onBack: navigationHistory.isEmpty ? null : () => posNavCubit.popCategory(context),
                   onRoot: () => posNavCubit.clearHistory(context),
                   onCrumb: (index) => posNavCubit.popTo(context, index),
+                  isSearching: _isSearching,
+                  searchQuery: _searchQuery,
+                  searchFocusNode: _searchFocusNode,
+                  onSearchChanged: (q) => setState(() => _searchQuery = q),
+                  onToggleSearch: _toggleSearch,
+                  onClearSearch: _clearSearch,
                 ),
               ),
               Expanded(
@@ -88,22 +124,35 @@ class PosMenuGrid extends StatelessWidget {
                         }
 
                         List<dynamic> categories = [];
-                        if (catState is CategoryLoaded) {
-                          categories = catState.categories
-                              .where((c) => c.parentId == currentCategoryId && c.isVisible && c.categoryType != 'ingredient')
-                              .toList();
-                        }
-
                         List<dynamic> items = [];
-                        if (menuState is MenuLoaded) {
-                          items = menuState.items.where((i) {
-                            final catId = int.tryParse(i.categoryId.toString());
-                            return catId == currentCategoryId && i.isAvailable && i.parentId == null;
-                          }).toList();
+
+                        final q = _searchQuery.trim().toLowerCase();
+                        if (_isSearching && q.isNotEmpty) {
+                          if (menuState is MenuLoaded) {
+                            items = menuState.items.where((i) {
+                              final nameMatch = i.cleanName.toLowerCase().contains(q) || i.name.toLowerCase().contains(q);
+                              final shortNameMatch = i.shortName != null && i.shortName!.toLowerCase().contains(q);
+                              final barcodeMatch = i.barcode != null && i.barcode!.toLowerCase().contains(q);
+                              return (nameMatch || shortNameMatch || barcodeMatch) && i.isAvailable && i.parentId == null;
+                            }).toList();
+                          }
+                        } else {
+                          if (catState is CategoryLoaded) {
+                            categories = catState.categories
+                                .where((c) => c.parentId == currentCategoryId && c.isVisible && c.categoryType != 'ingredient')
+                                .toList();
+                          }
+
+                          if (menuState is MenuLoaded) {
+                            items = menuState.items.where((i) {
+                              final catId = int.tryParse(i.categoryId.toString());
+                              return catId == currentCategoryId && i.isAvailable && i.parentId == null;
+                            }).toList();
+                          }
                         }
 
                         if (categories.isEmpty && items.isEmpty) {
-                          return PosEmptyState(inCategory: currentCategoryId != null);
+                          return PosEmptyState(inCategory: currentCategoryId != null || _isSearching);
                         }
 
                         return BlocBuilder<PosSettingsCubit, PosSettingsState>(

@@ -51,9 +51,7 @@ class PosMenuGridView extends StatelessWidget {
         if (index < categories.length) {
           final cat = categories[index];
           final customColor = ColorPickerUtils.parseHex(cat.color);
-          final accent = customColor ?? (posSettings.enableRainbowColors
-              ? AppColors.categoryRainbowPalette[index % AppColors.categoryRainbowPalette.length]
-              : AppColors.brandPrimary);
+          final accent = customColor ?? AppColors.brandPrimary;
           return PosCategoryCard(
             cat: cat,
             accent: accent,

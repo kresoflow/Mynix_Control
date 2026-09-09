@@ -157,6 +157,29 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                 border: border,
               ),
               const SizedBox(height: 10),
+              if (state.bonusToSpend > 0) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Сумма: ${state.total.toCurrency(context)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
+                    ),
+                    Text(
+                      'Бонусы: -${state.bonusToSpend.toCurrency(context)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.brandPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+              ],
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

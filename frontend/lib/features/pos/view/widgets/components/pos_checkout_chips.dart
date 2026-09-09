@@ -40,16 +40,19 @@ class PosTableChip extends StatelessWidget {
             border: Border.all(color: border),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(PhosphorIconsRegular.chair, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               const SizedBox(width: 6),
-              Text(
-                'Столик',
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
+              Flexible(
+                child: Text(
+                  'Столик',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -67,21 +70,24 @@ class PosTableChip extends StatelessWidget {
         border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(PhosphorIconsBold.chair, size: 14, color: AppColors.brandPrimary),
           const SizedBox(width: 6),
-          InkWell(
-            onTap: () {
-              TablePickerModal.show(
-                context,
-                currentTable: table,
-                onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
-              );
-            },
-            child: Text(
-              table,
-              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+          Flexible(
+            child: InkWell(
+              onTap: () {
+                TablePickerModal.show(
+                  context,
+                  currentTable: table,
+                  onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
+                );
+              },
+              child: Text(
+                table,
+                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
           const SizedBox(width: 6),
@@ -130,16 +136,19 @@ class PosGuestChip extends StatelessWidget {
             border: Border.all(color: border),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(PhosphorIconsRegular.userPlus, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               const SizedBox(width: 6),
-              Text(
-                'Гость',
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
+              Flexible(
+                child: Text(
+                  'Гость',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -158,25 +167,27 @@ class PosGuestChip extends StatelessWidget {
         border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.4)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(PhosphorIconsRegular.userCheck, size: 14, color: AppColors.brandPrimary),
           const SizedBox(width: 6),
-          InkWell(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (_) => CustomerPickerModal(
-                  selectedCustomer: customer,
-                  onSelect: (c) => context.read<CartBloc>().add(SelectCustomer(c)),
-                ),
-              );
-            },
-            child: Text(
-              customer.name.toString(),
-              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          Flexible(
+            child: InkWell(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => CustomerPickerModal(
+                    selectedCustomer: customer,
+                    onSelect: (c) => context.read<CartBloc>().add(SelectCustomer(c)),
+                  ),
+                );
+              },
+              child: Text(
+                customer.name.toString(),
+                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brandPrimary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
           if (bonus > 0) ...[

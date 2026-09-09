@@ -96,62 +96,15 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
   }
 
   Widget _buildWaiterPrimaryButton(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: isEmpty || isSubmitting ? null : onSendToBooth,
-        borderRadius: BorderRadius.circular(14),
-        child: Ink(
-          height: 52,
-          decoration: BoxDecoration(
-            color: isEmpty
-                ? (isDark ? Colors.white10 : Colors.black12)
-                : AppColors.brandPrimary,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: isEmpty
-                ? null
-                : [
-                    BoxShadow(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.35),
-                      offset: const Offset(0, 4),
-                      blurRadius: 12,
-                    ),
-                  ],
-          ),
-          child: Center(
-            child: isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        PhosphorIconsBold.paperPlaneTilt,
-                        size: 18,
-                        color: isEmpty
-                            ? (isDark ? Colors.white24 : Colors.black26)
-                            : Colors.black,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Оформить заказ',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.4,
-                          color: isEmpty
-                              ? (isDark ? Colors.white24 : Colors.black26)
-                              : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-      ),
+    return _buildCtaContainer(
+      context: context,
+      onTap: onSendToBooth,
+      color: AppColors.brandPrimary,
+      textColor: Colors.black,
+      icon: PhosphorIconsBold.paperPlaneTilt,
+      label: 'Оформить заказ',
+      isSubmitting: isSubmitting,
+      isPrimary: true,
     );
   }
 
@@ -159,57 +112,16 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
     final hasTable = tableNumber != null && tableNumber!.trim().isNotEmpty;
     final buttonLabel = hasTable ? 'В зал ($tableNumber)' : 'В зал';
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: isEmpty || isSubmitting ? null : onSendToBooth,
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: isEmpty
-                ? Colors.transparent
-                : Colors.amber.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isEmpty
-                  ? (isDark ? Colors.white12 : Colors.black12)
-                  : Colors.amber.withValues(alpha: 0.7),
-              width: 1.5,
-            ),
-          ),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  hasTable ? PhosphorIconsBold.chair : PhosphorIconsBold.paperPlaneTilt,
-                  size: 16,
-                  color: isEmpty
-                      ? (isDark ? Colors.white24 : Colors.black26)
-                      : Colors.amber,
-                ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    buttonLabel,
-                    style: TextStyle(
-                      color: isEmpty
-                          ? (isDark ? Colors.white24 : Colors.black26)
-                          : Colors.amber,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return _buildCtaContainer(
+      context: context,
+      onTap: onSendToBooth,
+      color: Colors.amber.withValues(alpha: 0.12),
+      borderColor: Colors.amber.withValues(alpha: 0.7),
+      textColor: Colors.amber,
+      icon: hasTable ? PhosphorIconsBold.chair : PhosphorIconsBold.paperPlaneTilt,
+      label: buttonLabel,
+      isSubmitting: isSubmitting,
+      isPrimary: false,
     );
   }
 
@@ -218,19 +130,48 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
     required bool isFullWidth,
     bool hasTable = false,
   }) {
+    return _buildCtaContainer(
+      context: context,
+      onTap: onCheckout,
+      color: AppColors.brandPrimary,
+      textColor: Colors.black,
+      icon: _getButtonIcon(),
+      label: _getButtonLabel(isTableSelected: hasTable),
+      isSubmitting: isSubmitting,
+      isPrimary: true,
+    );
+  }
+
+  Widget _buildCtaContainer({
+    required BuildContext context,
+    required VoidCallback onTap,
+    required Color color,
+    Color? borderColor,
+    required Color textColor,
+    required IconData icon,
+    required String label,
+    required bool isSubmitting,
+    required bool isPrimary,
+  }) {
+    final disabledBg = isPrimary ? (isDark ? Colors.white10 : Colors.black12) : Colors.transparent;
+    final disabledBorder = isDark ? Colors.white12 : Colors.black12;
+    final disabledFg = isDark ? Colors.white24 : Colors.black26;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: isEmpty || isSubmitting ? null : onCheckout,
+        onTap: isEmpty || isSubmitting ? null : onTap,
         borderRadius: BorderRadius.circular(14),
-        child: Ink(
+        child: Container(
           height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: isEmpty
-                ? (isDark ? Colors.white10 : Colors.black12)
-                : AppColors.brandPrimary,
+            color: isEmpty ? disabledBg : color,
             borderRadius: BorderRadius.circular(14),
-            boxShadow: isEmpty
+            border: borderColor != null
+                ? Border.all(color: isEmpty ? disabledBorder : borderColor, width: 1.5)
+                : null,
+            boxShadow: (isEmpty || !isPrimary)
                 ? null
                 : [
                     BoxShadow(
@@ -250,24 +191,16 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        _getButtonIcon(),
-                        size: 18,
-                        color: isEmpty
-                            ? (isDark ? Colors.white24 : Colors.black26)
-                            : Colors.black,
-                      ),
+                      Icon(icon, size: 17, color: isEmpty ? disabledFg : textColor),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
-                          _getButtonLabel(isTableSelected: hasTable),
+                          label,
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: 0.4,
-                            color: isEmpty
-                                ? (isDark ? Colors.white24 : Colors.black26)
-                                : Colors.black,
+                            letterSpacing: 0.3,
+                            color: isEmpty ? disabledFg : textColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

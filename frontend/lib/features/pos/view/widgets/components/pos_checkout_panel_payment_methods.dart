@@ -64,31 +64,46 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              PosTableChip(cartState: cartState, isDark: isDark, border: border),
-              if (showGuest || customer != null) ...[
-                const SizedBox(width: 8),
-                PosGuestChip(customer: customer, isDark: isDark, border: border),
-              ],
+        // ── Tier 1: Order Context (Table & Guest) ──────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: PosTableChip(cartState: cartState, isDark: isDark, border: border),
+            ),
+            if (showGuest || customer != null) ...[
               const SizedBox(width: 8),
-              _buildMethodTab('CASH', 'Наличные', PhosphorIconsRegular.money),
+              Expanded(
+                child: PosGuestChip(customer: customer, isDark: isDark, border: border),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // ── Tier 2: Payment Methods ────────────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: _buildMethodTab('CASH', 'Наличные', PhosphorIconsRegular.money),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildMethodTab('TRANSFER', 'Перевод', PhosphorIconsRegular.qrCode),
+            ),
+            if (customer != null) ...[
               const SizedBox(width: 8),
-              _buildMethodTab('TRANSFER', 'Перевод', PhosphorIconsRegular.qrCode),
-              if (customer != null) ...[
-                const SizedBox(width: 8),
-                _buildMethodTab(
+              Expanded(
+                child: _buildMethodTab(
                   customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
                   customer.balance > 0 ? 'Депозит' : 'В долг',
                   customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
                 ),
-              ],
+              ),
             ],
-          ),
+          ],
         ),
+
+        // ── Tier 3: Bank selector (if Transfer) ────────────────────────
         if (paymentMethod == 'TRANSFER') ...[
           const SizedBox(height: 8),
           _buildTransferBanksRow(),
@@ -108,7 +123,7 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
           color: isSelected ? activeColor.withValues(alpha: 0.15) : (isDark ? AppColors.darkCard : AppColors.lightCard),
           borderRadius: BorderRadius.circular(8),
@@ -118,16 +133,20 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
           ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 14, color: isSelected ? activeColor : inactiveColor),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
