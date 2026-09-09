@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/pos/services/lan/local_pos_server.dart';
 import '../../services/lan_settings_service.dart';
 import 'lan_client_settings_section.dart';
@@ -68,12 +69,14 @@ class LanSettingsCard extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text('Роль этого устройства:', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        _buildRoleChoice('master', 'Касса-Сервер (Master)', PhosphorIconsRegular.desktop, data.role == 'master'),
-                        _buildRoleChoice('client', 'Официант (Client)', PhosphorIconsRegular.deviceMobile, data.role == 'client'),
-                        _buildRoleChoice('standalone', 'Автономный (Standalone)', PhosphorIconsRegular.lightning, data.role == 'standalone'),
+                    AppSegmentedControl<String>(
+                      selectedValue: data.role,
+                      size: AppSegmentedSize.sm,
+                      onValueChanged: (val) => LanSettingsService.setRole(val),
+                      items: const [
+                        AppSegmentedItem(value: 'master', label: 'Касса-Сервер (Master)', icon: PhosphorIconsRegular.desktop),
+                        AppSegmentedItem(value: 'client', label: 'Официант (Client)', icon: PhosphorIconsRegular.deviceMobile),
+                        AppSegmentedItem(value: 'standalone', label: 'Автономный (Standalone)', icon: PhosphorIconsRegular.lightning),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -144,20 +147,6 @@ class LanSettingsCard extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildRoleChoice(String roleValue, String label, IconData icon, bool isSelected) {
-    return ChoiceChip(
-      avatar: Icon(icon, size: 16, color: isSelected ? AppColors.brandPrimary : null),
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => LanSettingsService.setRole(roleValue),
-      selectedColor: AppColors.brandPrimary.withValues(alpha: 0.2),
-      labelStyle: TextStyle(
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        color: isSelected ? AppColors.brandPrimary : null,
-      ),
     );
   }
 

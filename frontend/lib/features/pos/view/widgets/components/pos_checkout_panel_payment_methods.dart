@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
@@ -122,10 +123,12 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        height: 32,
+        height: 34,
         padding: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.15) : (isDark ? AppColors.darkCard : AppColors.lightCard),
+          color: isSelected
+              ? activeColor.withValues(alpha: isDark ? 0.16 : 0.12)
+              : (isDark ? AppColors.darkCard : AppColors.lightCard),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? activeColor : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
@@ -143,7 +146,9 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
+                  color: isSelected
+                      ? (isDark ? Colors.white : activeColor)
+                      : (isDark ? AppColors.darkText : AppColors.lightText),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -156,41 +161,12 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
   }
 
   Widget _buildTransferBanksRow() {
-    return Container(
-      height: 30,
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: border),
-      ),
-      child: Row(
-        children: providers.map((p) {
-          final isSelected = transferProvider == p.id;
-          return Expanded(
-            child: InkWell(
-              onTap: () => onTransferProviderChanged(p.id),
-              borderRadius: BorderRadius.circular(6),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 100),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  p.label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                    color: isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
+    return AppSegmentedControl<String>(
+      selectedValue: transferProvider,
+      onValueChanged: onTransferProviderChanged,
+      size: AppSegmentedSize.sm,
+      isExpanded: true,
+      items: providers.map((p) => AppSegmentedItem<String>(value: p.id, label: p.label)).toList(),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/general_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/hardware_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
@@ -49,27 +50,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       MobileSettingsUserHeader(isDark: isDark),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: List.generate(_categories.length, (index) {
-                            final category = _categories[index];
-                            final isSelected = index == _selectedIndex;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ChoiceChip(
-                                label: Text(category.title),
-                                avatar: Icon(category.icon, size: 18, color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText)),
-                                selected: isSelected,
-                                onSelected: (selected) {
-                                  if (selected) {
-                                    setState(() => _selectedIndex = index);
-                                  }
-                                },
-                                selectedColor: AppColors.brandPrimary,
-                                backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                                labelStyle: AppTextStyles.bodyMedium.copyWith(
-                                  color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
-                                ),
-                              ),
+                        child: AppSegmentedControl<int>(
+                          selectedValue: _selectedIndex,
+                          size: AppSegmentedSize.sm,
+                          onValueChanged: (idx) => setState(() => _selectedIndex = idx),
+                          items: List.generate(_categories.length, (index) {
+                            final cat = _categories[index];
+                            return AppSegmentedItem<int>(
+                              value: index,
+                              label: cat.title,
+                              icon: cat.icon,
                             );
                           }),
                         ),

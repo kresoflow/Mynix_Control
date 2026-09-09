@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class CustomerFilterBar extends StatelessWidget {
   final TextEditingController searchController;
@@ -25,97 +24,60 @@ class CustomerFilterBar extends StatelessWidget {
     required this.onFilterChanged,
   });
 
-  Widget _buildFilterPill(String label, String value, bool isDark, {IconData? icon}) {
-    final isSelected = activeFilter == value;
-    final fgColor = isSelected
-        ? AppColors.darkBg
-        : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight);
-
-    return InkWell(
-      onTap: () => onFilterChanged(value),
-      borderRadius: BorderRadius.circular(8),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandPrimary
-              : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.brandPrimary
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 14, color: fgColor),
-              const SizedBox(width: 5),
-            ],
-            Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: fgColor,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Row(
       children: [
         Expanded(
-          child: TextField(
+          child: AppSearchField(
             controller: searchController,
             onChanged: onSearch,
-            decoration: InputDecoration(
-              hintText: 'Поиск по имени или телефону...',
-              prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
-              filled: true,
-              fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            ),
+            hintText: 'Поиск по имени или телефону...',
           ),
         ),
-        const SizedBox(width: 10),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildFilterPill('Все ($totalCount)', 'all', isDark),
-              const SizedBox(width: 6),
-              _buildFilterPill('VIP ($vipCount)', 'vip', isDark, icon: PhosphorIconsRegular.crown),
-              const SizedBox(width: 6),
-              _buildFilterPill('Спящие', 'churn', isDark, icon: PhosphorIconsRegular.moon),
-              const SizedBox(width: 6),
-              _buildFilterPill('Новички', 'new', isDark, icon: PhosphorIconsRegular.sparkle),
-              const SizedBox(width: 6),
-              _buildFilterPill('Должники ($debtorsCount)', 'debtors', isDark),
-              const SizedBox(width: 6),
-              _buildFilterPill('Депозиты ($depositsCount)', 'deposits', isDark),
-            ],
-          ),
+        const SizedBox(width: 12),
+        AppFilterBar(
+          children: [
+            AppFilterChip(
+              label: 'Все',
+              count: totalCount,
+              isSelected: activeFilter == 'all',
+              onTap: () => onFilterChanged('all'),
+            ),
+            AppFilterChip(
+              label: 'VIP',
+              count: vipCount,
+              icon: PhosphorIconsRegular.crown,
+              isSelected: activeFilter == 'vip',
+              onTap: () => onFilterChanged('vip'),
+            ),
+            AppFilterChip(
+              label: 'Спящие',
+              icon: PhosphorIconsRegular.moon,
+              isSelected: activeFilter == 'churn',
+              onTap: () => onFilterChanged('churn'),
+            ),
+            AppFilterChip(
+              label: 'Новички',
+              icon: PhosphorIconsRegular.sparkle,
+              isSelected: activeFilter == 'new',
+              onTap: () => onFilterChanged('new'),
+            ),
+            AppFilterChip(
+              label: 'Должники',
+              count: debtorsCount,
+              isSelected: activeFilter == 'debtors',
+              onTap: () => onFilterChanged('debtors'),
+            ),
+            AppFilterChip(
+              label: 'Депозиты',
+              count: depositsCount,
+              isSelected: activeFilter == 'deposits',
+              onTap: () => onFilterChanged('deposits'),
+            ),
+          ],
         ),
       ],
     );
   }
 }
-

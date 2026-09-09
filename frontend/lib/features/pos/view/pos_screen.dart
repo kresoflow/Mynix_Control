@@ -9,7 +9,7 @@ import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/utils/audio_helper.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
 import 'package:mynix_frontend/core/network/websocket_service.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
+
 
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
@@ -25,6 +25,8 @@ import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
 import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 import 'widgets/pos_mobile_layout.dart';
 import 'widgets/pos_desktop_layout.dart';
@@ -191,15 +193,18 @@ class _PosScreenState extends State<PosScreen> {
                       ),
                       child: Row(
                         children: [
-                          _buildTabButton(0, 'Касса', PhosphorIconsRegular.receipt, isDark),
-                          if (useOrders) ...[
-                            const SizedBox(width: 8),
-                            _buildTabButton(1, 'Заказы', PhosphorIconsRegular.listNumbers, isDark),
-                          ],
-                          if (useKds) ...[
-                            const SizedBox(width: 8),
-                            _buildTabButton(2, 'Кухня (KDS)', PhosphorIconsRegular.cookingPot, isDark),
-                          ],
+                          AppSegmentedControl<int>(
+                            selectedValue: _currentTab,
+                            onValueChanged: (val) => setState(() => _currentTab = val),
+                            size: AppSegmentedSize.md,
+                            items: [
+                              const AppSegmentedItem(value: 0, label: 'Касса', icon: PhosphorIconsRegular.receipt),
+                              if (useOrders)
+                                const AppSegmentedItem(value: 1, label: 'Заказы', icon: PhosphorIconsRegular.listNumbers),
+                              if (useKds)
+                                const AppSegmentedItem(value: 2, label: 'Кухня (KDS)', icon: PhosphorIconsRegular.cookingPot),
+                            ],
+                          ),
                           const Spacer(),
                           _buildActiveTablesBadge(isDark),
                           const SizedBox(width: 8),
@@ -316,38 +321,6 @@ class _PosScreenState extends State<PosScreen> {
     );
   }
 
-  Widget _buildTabButton(int index, String label, IconData icon, bool isDark) {
-    final isSelected = _currentTab == index;
-    final activeColor = AppColors.brandPrimary;
-    final inactiveColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
-
-    return InkWell(
-      onTap: () => setState(() => _currentTab = index),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: isSelected ? Border.all(color: activeColor.withValues(alpha: 0.4)) : null,
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: isSelected ? activeColor : inactiveColor),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? activeColor : inactiveColor,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _handleBarcode(BuildContext context, String barcode) {
     final menuState = context.read<MenuBloc>().state;

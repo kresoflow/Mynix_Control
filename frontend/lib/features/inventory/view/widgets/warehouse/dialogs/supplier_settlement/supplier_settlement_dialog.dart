@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
@@ -210,52 +210,35 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            _buildFilterChip('all', 'Все'),
-            const SizedBox(width: 6),
-            _buildFilterChip('invoices', 'Накладные'),
-            const SizedBox(width: 6),
-            _buildFilterChip('payments', 'Выплаты'),
-            const SizedBox(width: 6),
-            _buildFilterChip('manual', 'Ручные'),
+        AppSegmentedControl<String>(
+          selectedValue: _filter,
+          size: AppSegmentedSize.sm,
+          onValueChanged: (val) => setState(() => _filter = val),
+          items: const [
+            AppSegmentedItem(value: 'all', label: 'Все'),
+            AppSegmentedItem(value: 'invoices', label: 'Накладные'),
+            AppSegmentedItem(value: 'payments', label: 'Выплаты'),
+            AppSegmentedItem(value: 'manual', label: 'Ручные'),
           ],
         ),
         Row(
           children: [
-            AppButton(
+            AppSecondaryButton(
               label: 'Начислить долг',
               icon: PhosphorIconsRegular.plus,
-              variant: AppButtonVariant.secondary,
+              size: AppButtonSize.sm,
               onPressed: () => _openAddTransaction(context, SupplierTransactionType.manualDebt),
             ),
             const SizedBox(width: 8),
-            AppButton(
+            AppPrimaryButton(
               label: 'Внести оплату',
               icon: PhosphorIconsRegular.money,
-              variant: AppButtonVariant.primary,
+              size: AppButtonSize.sm,
               onPressed: () => _openAddTransaction(context, SupplierTransactionType.payment),
             ),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildFilterChip(String id, String label) {
-    final isSelected = _filter == id;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => setState(() => _filter = id),
-      selectedColor: AppColors.brandPrimary.withValues(alpha: 0.2),
-      labelStyle: AppTextStyles.caption.copyWith(
-        color: isSelected ? AppColors.brandPrimary : AppColors.darkSubtext,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
-      backgroundColor: AppColors.darkCard,
-      side: BorderSide.none,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 
