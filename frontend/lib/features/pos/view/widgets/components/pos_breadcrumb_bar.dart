@@ -9,9 +9,12 @@ class PosBreadcrumbBar extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback onRoot;
   final ValueChanged<int> onCrumb;
+  final bool isSearchOpen;
+  final VoidCallback onOpenSearch;
+  final VoidCallback onCloseSearch;
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
-  final VoidCallback onClearSearch;
+  final ValueChanged<String> onSearchChanged;
 
   const PosBreadcrumbBar({
     super.key,
@@ -19,9 +22,12 @@ class PosBreadcrumbBar extends StatelessWidget {
     required this.onBack,
     required this.onRoot,
     required this.onCrumb,
+    required this.isSearchOpen,
+    required this.onOpenSearch,
+    required this.onCloseSearch,
     required this.searchController,
     required this.searchFocusNode,
-    required this.onClearSearch,
+    required this.onSearchChanged,
   });
 
   @override
@@ -87,8 +93,15 @@ class PosBreadcrumbBar extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // ── Premium Search Input Box ────────────────────────────────
-          _buildSearchBox(context, isDark, border),
+          // ── Search Mode (Collapsible Glowing Trigger or Input Box) ────
+          if (isSearchOpen)
+            _buildExpandedSearchBox(context, isDark, border)
+          else
+            _PosSearchTriggerButton(
+              onTap: onOpenSearch,
+              isDark: isDark,
+              border: border,
+            ),
           const SizedBox(width: 8),
 
           // ── POS Settings Button ─────────────────────────────────────
@@ -103,84 +116,154 @@ class PosBreadcrumbBar extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBox(BuildContext context, bool isDark, Color border) {
+  Widget _buildExpandedSearchBox(BuildContext context, bool isDark, Color border) {
     return Container(
-      width: 240,
+      width: 280,
       height: 36,
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: border),
+        border: Border.all(color: AppColors.brandPrimary, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.brandPrimary.withValues(alpha: 0.22),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: ValueListenableBuilder<TextEditingValue>(
-        valueListenable: searchController,
-        builder: (context, value, _) {
-          final hasText = value.text.isNotEmpty;
-          return Row(
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          Icon(PhosphorIconsRegular.magnifyingGlass, size: 15, color: AppColors.brandPrimary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: searchController,
+              focusNode: searchFocusNode,
+              autofocus: true,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Поиск блюд... (Esc для сброса)',
+                hintStyle: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              onChanged: onSearchChanged,
+            ),
+          ),
+          InkWell(
+            onTap: onCloseSearch,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Icon(
+                PhosphorIconsRegular.xCircle,
+                size: 16,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PosSearchTriggerButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final bool isDark;
+  final Color border;
+
+  const _PosSearchTriggerButton({
+    required this.onTap,
+    required this.isDark,
+    required this.border,
+  });
+
+  @override
+  State<_PosSearchTriggerButton> createState() => _PosSearchTriggerButtonState();
+}
+
+class _PosSearchTriggerButtonState extends State<_PosSearchTriggerButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          height: 36,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? AppColors.brandPrimary.withValues(alpha: 0.12)
+                : (widget.isDark ? AppColors.darkCard : AppColors.lightCard),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: _isHovered ? AppColors.brandPrimary : widget.border,
+              width: _isHovered ? 1.5 : 1,
+            ),
+            boxShadow: _isHovered
+                ? [
+                    BoxShadow(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.28),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(width: 10),
               Icon(
                 PhosphorIconsRegular.magnifyingGlass,
                 size: 15,
-                color: hasText ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                color: _isHovered ? AppColors.brandPrimary : (widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: searchController,
-                  focusNode: searchFocusNode,
+              const SizedBox(width: 6),
+              Text(
+                'Поиск',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: _isHovered ? AppColors.brandPrimary : (widget.isDark ? AppColors.darkText : AppColors.lightText),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(
+                  color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Ctrl+F',
                   style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Поиск по меню...',
-                    hintStyle: TextStyle(
-                      fontSize: 12.5,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                    color: widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                   ),
                 ),
               ),
-              if (hasText)
-                InkWell(
-                  onTap: onClearSearch,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Icon(
-                      PhosphorIconsRegular.xCircle,
-                      size: 15,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    ),
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'Ctrl+F',
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                      ),
-                    ),
-                  ),
-                ),
             ],
-          );
-        },
+          ),
+        ),
       ),
     );
   }
