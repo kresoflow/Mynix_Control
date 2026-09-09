@@ -167,7 +167,7 @@ class _MynixColorPickerDialogState extends State<MynixColorPickerDialog> {
           // 4. Quick Commercial Swatches
           Text(
             'Готовые палитры',
-            style: AppTextStyles.bodySmall.copyWith(
+            style: AppTextStyles.caption.copyWith(
               color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
               fontWeight: FontWeight.w600,
             ),
@@ -211,46 +211,45 @@ class _MynixColorPickerDialogState extends State<MynixColorPickerDialog> {
               );
             }).toList(),
           ),
-          const SizedBox(height: 20),
-
-          // 5. Actions Footer
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton.icon(
-                onPressed: () => Navigator.pop(context, ''),
-                icon: const Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 16),
-                label: const Text('Сбросить'),
-                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-              ),
-              Row(
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Отмена'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context, ColorPickerUtils.toHex(activeColor)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: activeColor,
-                      foregroundColor: ThemeData.estimateBrightnessForColor(activeColor) == Brightness.dark
-                          ? Colors.white
-                          : Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: const Text(
-                      'Выбрать цвет',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ],
       ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton.icon(
+              onPressed: () => Navigator.pop(context, ''),
+              icon: const Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 16),
+              label: const Text('Сбросить'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            ),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Отмена'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, ColorPickerUtils.toHex(activeColor)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: activeColor,
+                    foregroundColor: ThemeData.estimateBrightnessForColor(activeColor) == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text(
+                    'Выбрать цвет',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
