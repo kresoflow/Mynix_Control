@@ -93,16 +93,17 @@ class PosBreadcrumbBar extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // ── Search Mode (Collapsible Glowing Trigger or Input Box) ────
+          // ── Search Mode (Collapsible Input Box or Simple IconButton) ──
           if (isSearchOpen)
             _buildExpandedSearchBox(context, isDark, border)
           else
-            _PosSearchTriggerButton(
-              onTap: onOpenSearch,
-              isDark: isDark,
-              border: border,
+            IconButton(
+              icon: const Icon(PhosphorIconsRegular.magnifyingGlass),
+              color: AppColors.darkSubtext,
+              onPressed: onOpenSearch,
+              tooltip: 'Поиск блюд (Ctrl+F)',
             ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
 
           // ── POS Settings Button ─────────────────────────────────────
           IconButton(
@@ -173,74 +174,6 @@ class PosBreadcrumbBar extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PosSearchTriggerButton extends StatefulWidget {
-  final VoidCallback onTap;
-  final bool isDark;
-  final Color border;
-
-  const _PosSearchTriggerButton({
-    required this.onTap,
-    required this.isDark,
-    required this.border,
-  });
-
-  @override
-  State<_PosSearchTriggerButton> createState() => _PosSearchTriggerButtonState();
-}
-
-class _PosSearchTriggerButtonState extends State<_PosSearchTriggerButton> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: Tooltip(
-        message: 'Поиск блюд (Ctrl+F)',
-        child: GestureDetector(
-          onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutCubic,
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: _isHovered
-                  ? AppColors.brandPrimary.withValues(alpha: 0.15)
-                  : (widget.isDark ? AppColors.darkCard : AppColors.lightCard),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: _isHovered ? AppColors.brandPrimary : widget.border,
-                width: _isHovered ? 1.5 : 1,
-              ),
-              boxShadow: _isHovered
-                  ? [
-                      BoxShadow(
-                        color: AppColors.brandPrimary.withValues(alpha: 0.35),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Center(
-              child: Icon(
-                PhosphorIconsRegular.magnifyingGlass,
-                size: 18,
-                color: _isHovered
-                    ? AppColors.brandPrimary
-                    : (widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
