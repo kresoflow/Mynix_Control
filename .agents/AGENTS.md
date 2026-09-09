@@ -11,8 +11,17 @@
 - **Micro-Architecture (Критически важно!):** Лимит строк файлов (как для роутеров, так и для сервисов) не должен превышать 250-300 строк. Избегайте "God Objects".
 - **SQLModel/SQLAlchemy:** Используй асинхронный драйвер (`asyncpg`). Выполняй запросы через `session.exec()`.
 
-## 2. Frontend (Flutter, Dart)
+## 2. Frontend (Flutter, Dart) & UI Kit
 - **Macro-Architecture:** Строгое использование Feature-Driven Architecture. Каждый модуль живет в `lib/features/<имя_модуля>`.
+- **UI Kit & Design System (Строгий закон!):**
+  - **Запрет сырых кнопок:** Запрещено использовать `ElevatedButton`, `TextButton`, `OutlinedButton`. Использовать только компоненты дизайн-системы: `AppPrimaryButton`, `AppSecondaryButton`, `AppGhostButton`, `AppDangerButton`, `AppMenuButton`.
+  - **Шкала размеров кнопок (`AppButtonSize`):**
+    - `XS (28px)` — микро-действия в ячейках таблиц.
+    - `SM (32px)` — компактные кнопки в сайдбарах и строках.
+    - `MD (36px)` — **стандарт для панелей инструментов (тулбаров), шапок страниц и кнопки `+ Добавить`**.
+    - `LG (44-48px)` — **стандарт для модальных окон, диалогов и главных форм**.
+    - `XL (52px)` — **стандарт для сенсорного POS-экрана**.
+  - **Запрет хардкода цветов и стилей:** Запрещено использовать `Colors.*` и сырые `Color(0x...)` в коде виджетов. Все цвета берутся только из `AppColors.*`, скругления из `AppRadii.*`, шрифты из `AppTextStyles.*`.
 - **State Management:** Запрещено использовать `StatefulWidget` для бизнес-логики. Все состояния управляются исключительно через `BLoC` + `Equatable`.
 - **Networking:** Прямые HTTP-запросы из UI или BLoC запрещены. Используй слой Repository (`Dio`), который инжектируется через `RepositoryProvider`.
 - **Micro-Architecture (Критически важно!):**
