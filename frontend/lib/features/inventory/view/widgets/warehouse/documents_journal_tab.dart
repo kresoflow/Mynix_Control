@@ -69,18 +69,21 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
                   AppPrimaryButton(
                     label: 'Оформить приход',
                     icon: PhosphorIconsRegular.truck,
+                    size: AppButtonSize.md,
                     onPressed: () => _showReceiveDocumentDialog(context),
                   ),
                   const SizedBox(width: 8),
                   AppSecondaryButton(
                     label: 'Списание',
                     icon: PhosphorIconsRegular.trashSimple,
+                    size: AppButtonSize.md,
                     onPressed: () => WriteOffDocumentDialog.show(context),
                   ),
                   const SizedBox(width: 8),
                   AppSecondaryButton(
                     label: 'Инвентаризация',
                     icon: PhosphorIconsRegular.clipboardText,
+                    size: AppButtonSize.md,
                     onPressed: () => BlindInventoryDialog.show(context),
                   ),
                 ],

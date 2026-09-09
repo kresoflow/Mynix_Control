@@ -170,17 +170,11 @@ class _CrmScreenState extends State<CrmScreen> {
                         ],
                       ),
                     ),
-                    ElevatedButton.icon(
+                    AppPrimaryButton(
+                      label: isMobile ? 'Гость' : 'Новый гость',
+                      icon: PhosphorIconsRegular.plus,
+                      size: AppButtonSize.md,
                       onPressed: _openCreateModal,
-                      icon: const Icon(PhosphorIconsRegular.plus, size: 18),
-                      label: Text(isMobile ? 'Гость' : 'Новый гость'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.brandPrimary,
-                        foregroundColor: Colors.black,
-                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 18, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                      ),
                     ),
                   ],
                 ),

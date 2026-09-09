@@ -173,20 +173,11 @@ class _SuppliersTabState extends State<SuppliersTab> {
                       ),
                     ],
                   ),
-                  ElevatedButton.icon(
+                  AppPrimaryButton(
+                    label: 'Добавить',
+                    icon: PhosphorIconsRegular.plus,
+                    size: AppButtonSize.md,
                     onPressed: () => _openCreate(context),
-                    icon: const Icon(PhosphorIconsRegular.plus, size: 18),
-                    label: const Text(
-                      'Добавить',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.brandPrimary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
                   ),
                 ],
               ),

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
@@ -12,7 +11,6 @@ import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ing
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_kpi_cards.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_grid_view.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 
@@ -198,8 +196,16 @@ class _IngredientTabState extends State<IngredientTab> {
                     const SizedBox(width: 10),
 
                     // Main CTA Button
-                    PopupMenuButton<String>(
-                      tooltip: 'Добавить',
+                    AppMenuButton(
+                      label: 'Добавить',
+                      icon: PhosphorIconsRegular.plus,
+                      size: AppButtonSize.md,
+                      items: const [
+                        AppMenuItem(id: 'ingredient', label: 'Сырье / Ингредиент', icon: PhosphorIconsRegular.leaf),
+                        AppMenuItem(id: 'category', label: 'Категория сырья (Полка)', icon: PhosphorIconsRegular.folderPlus),
+                        AppMenuDivider(),
+                        AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
+                      ],
                       onSelected: (val) {
                         if (val == 'ingredient') {
                           showAddIngredientDialog(context, initialCategoryId: _selectedCategoryId);
@@ -212,38 +218,6 @@ class _IngredientTabState extends State<IngredientTab> {
                           );
                         }
                       },
-                      itemBuilder: (ctx) => [
-                        const PopupMenuItem(
-                          value: 'ingredient',
-                          child: ListTile(
-                            leading: Icon(PhosphorIconsRegular.leaf),
-                            title: Text('Сырье / Ингредиент'),
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'category',
-                          child: ListTile(
-                            leading: Icon(PhosphorIconsRegular.folderPlus),
-                            title: Text('Категория сырья (Полка)'),
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        const PopupMenuItem(
-                          value: 'bulk_add',
-                          child: ListTile(
-                            leading: Icon(PhosphorIconsRegular.table),
-                            title: Text('Массовое добавление'),
-                          ),
-                        ),
-                      ],
-                      child: IgnorePointer(
-                        child: AppPrimaryButton(
-                          label: 'Добавить',
-                          icon: PhosphorIconsRegular.plus,
-                          height: 36,
-                          onPressed: () {},
-                        ),
-                      ),
                     ),
                   ],
                 ],

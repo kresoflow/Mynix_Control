@@ -7,6 +7,7 @@ import 'package:mynix_frontend/features/settings/view/tabs/general_settings_tab.
 import 'package:mynix_frontend/features/settings/view/tabs/hardware_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
 import 'package:mynix_frontend/features/settings/view/tabs/system_settings_tab.dart';
+import 'package:mynix_frontend/features/settings/view/ui_kit_showcase_screen.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/settings_category_tile.dart';
 import 'package:mynix_frontend/features/settings/view/widgets/mobile_settings_user_header.dart';
 
@@ -25,6 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     SettingsCategory(PhosphorIconsRegular.printer, 'Оборудование'),
     SettingsCategory(PhosphorIconsRegular.users, 'Персонал'),
     SettingsCategory(PhosphorIconsRegular.hardDrives, 'Система'),
+    SettingsCategory(PhosphorIconsRegular.paintBrushBroad, 'UI Kit & Дизайн'),
   ];
 
   @override
@@ -153,6 +155,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return PersonnelSettingsTab(isDark: isDark);
       case 3:
         return SystemSettingsTab(isDark: isDark);
+      case 4:
+        return const UiKitShowcaseScreen();
       default:
         return const SizedBox.shrink();
     }

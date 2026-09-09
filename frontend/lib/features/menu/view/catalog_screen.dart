@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_browser_tab.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CatalogScreen extends StatefulWidget {
@@ -33,6 +33,7 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
       children: [
         Container(
           color: Theme.of(context).cardColor,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
               Expanded(
@@ -40,8 +41,8 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                   controller: _tabController,
                   isScrollable: true,
                   tabs: const [
-                    Tab(icon: Icon(PhosphorIconsRegular.squaresFour), text: 'Категории'),
-                    Tab(icon: Icon(PhosphorIconsRegular.hamburger), text: 'Блюда'),
+                    Tab(icon: Icon(PhosphorIconsRegular.folder), text: 'Категории'),
+                    Tab(icon: Icon(PhosphorIconsRegular.cookingPot), text: 'Блюда'),
                     Tab(icon: Icon(PhosphorIconsRegular.storefront), text: 'Витрина'),
                   ],
                 ),
@@ -58,7 +59,16 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                 rootTitle: 'Все категории',
                 itemFilter: (item) => true,
                 emptyMessage: 'Категорий пока нет.',
-                addMenuBuilder: (context, currentCategoryId) => PopupMenuButton<String>(
+                addMenuBuilder: (context, currentCategoryId) => AppMenuButton(
+                  label: 'Добавить',
+                  icon: PhosphorIconsRegular.plus,
+                  size: AppButtonSize.md,
+                  items: const [
+                    AppMenuItem(id: 'dish', label: 'Папка для Блюд', icon: PhosphorIconsRegular.hamburger),
+                    AppMenuItem(id: 'retail', label: 'Папка для Витрины', icon: PhosphorIconsRegular.storefront),
+                    AppMenuDivider(),
+                    AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
+                  ],
                   onSelected: (val) {
                     if (val == 'dish') {
                       showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'dish');
@@ -71,20 +81,6 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                       );
                     }
                   },
-                  itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'dish', child: ListTile(leading: Icon(PhosphorIconsRegular.hamburger), title: Text('Папка для Блюд'))),
-                    const PopupMenuItem(value: 'retail', child: ListTile(leading: Icon(PhosphorIconsRegular.storefront), title: Text('Папка для Витрины'))),
-                    const PopupMenuDivider(),
-                    const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
-                  ],
-                  child: IgnorePointer(
-                    child: AppPrimaryButton(
-                      label: 'Добавить',
-                      icon: PhosphorIconsRegular.plus,
-                      height: 36,
-                      onPressed: () {},
-                    ),
-                  ),
                 ),
               ),
               CatalogBrowserTab(
@@ -92,7 +88,16 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                 rootTitle: 'Все блюда',
                 itemFilter: (item) => !item.isRetail,
                 emptyMessage: 'В меню пока пусто. Добавьте блюда или категории.',
-                addMenuBuilder: (context, currentCategoryId) => PopupMenuButton<String>(
+                addMenuBuilder: (context, currentCategoryId) => AppMenuButton(
+                  label: 'Добавить',
+                  icon: PhosphorIconsRegular.plus,
+                  size: AppButtonSize.md,
+                  items: const [
+                    AppMenuItem(id: 'dish', label: 'Блюдо', icon: PhosphorIconsRegular.hamburger),
+                    AppMenuItem(id: 'category', label: 'Категория', icon: PhosphorIconsRegular.folderPlus),
+                    AppMenuDivider(),
+                    AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
+                  ],
                   onSelected: (val) {
                     if (val == 'category') {
                       showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'dish');
@@ -105,20 +110,6 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                       );
                     }
                   },
-                  itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'dish', child: ListTile(leading: Icon(PhosphorIconsRegular.hamburger), title: Text('Блюдо'))),
-                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(PhosphorIconsRegular.folderPlus), title: Text('Категория'))),
-                    const PopupMenuDivider(),
-                    const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
-                  ],
-                  child: IgnorePointer(
-                    child: AppPrimaryButton(
-                      label: 'Добавить',
-                      icon: PhosphorIconsRegular.plus,
-                      height: 36,
-                      onPressed: () {},
-                    ),
-                  ),
                 ),
               ),
               CatalogBrowserTab(
@@ -126,7 +117,16 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                 rootTitle: 'Вся витрина',
                 itemFilter: (item) => item.isRetail,
                 emptyMessage: 'На витрине пока пусто. Добавьте товары или категории.',
-                addMenuBuilder: (context, currentCategoryId) => PopupMenuButton<String>(
+                addMenuBuilder: (context, currentCategoryId) => AppMenuButton(
+                  label: 'Добавить',
+                  icon: PhosphorIconsRegular.plus,
+                  size: AppButtonSize.md,
+                  items: const [
+                    AppMenuItem(id: 'retail', label: 'Товар витрины', icon: PhosphorIconsRegular.storefront),
+                    AppMenuItem(id: 'category', label: 'Категория', icon: PhosphorIconsRegular.folderPlus),
+                    AppMenuDivider(),
+                    AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
+                  ],
                   onSelected: (val) {
                     if (val == 'category') {
                       showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'retail');
@@ -139,20 +139,6 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                       );
                     }
                   },
-                  itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'retail', child: ListTile(leading: Icon(PhosphorIconsRegular.storefront), title: Text('Товар витрины'))),
-                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(PhosphorIconsRegular.folderPlus), title: Text('Категория'))),
-                    const PopupMenuDivider(),
-                    const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
-                  ],
-                  child: IgnorePointer(
-                    child: AppPrimaryButton(
-                      label: 'Добавить',
-                      icon: PhosphorIconsRegular.plus,
-                      height: 36,
-                      onPressed: () {},
-                    ),
-                  ),
                 ),
               ),
             ],

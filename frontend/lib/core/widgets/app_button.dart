@@ -6,12 +6,35 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
 enum AppButtonVariant { primary, secondary, outline, ghost, danger }
 
+enum AppButtonSize {
+  xs(28.0, 14.0, 11.0, 8.0, 6.0),
+  sm(32.0, 16.0, 12.0, 12.0, 8.0),
+  md(36.0, 16.0, 13.0, 14.0, 8.0),
+  lg(44.0, 18.0, 14.0, 20.0, 10.0),
+  xl(52.0, 22.0, 16.0, 24.0, 12.0);
+
+  final double height;
+  final double iconSize;
+  final double fontSize;
+  final double horizontalPadding;
+  final double borderRadius;
+
+  const AppButtonSize(
+    this.height,
+    this.iconSize,
+    this.fontSize,
+    this.horizontalPadding,
+    this.borderRadius,
+  );
+}
+
 class AppButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
   final AppButtonVariant variant;
-  final double height;
+  final AppButtonSize? size;
+  final double? height;
   final double? width;
   final bool isLoading;
   final bool isFullWidth;
@@ -24,7 +47,8 @@ class AppButton extends StatefulWidget {
     this.onPressed,
     this.icon,
     this.variant = AppButtonVariant.primary,
-    this.height = 48,
+    this.size,
+    this.height,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
@@ -37,7 +61,8 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 48,
+    this.size,
+    this.height,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
@@ -50,7 +75,8 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 48,
+    this.size,
+    this.height,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
@@ -63,7 +89,8 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 48,
+    this.size,
+    this.height,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
@@ -76,7 +103,8 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 48,
+    this.size,
+    this.height,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
@@ -89,7 +117,8 @@ class AppButton extends StatefulWidget {
     required this.label,
     this.onPressed,
     this.icon,
-    this.height = 48,
+    this.size,
+    this.height,
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
@@ -114,10 +143,16 @@ class _AppButtonState extends State<AppButton> {
     Color bg;
     Color fg;
     Border? border;
-    List<BoxShadow>? shadow;
+    final effectiveSize = widget.size ?? AppButtonSize.lg;
+    final double effectiveHeight = widget.height ?? effectiveSize.height;
+    final double effectiveIconSize = effectiveSize.iconSize;
+    final double effectiveFontSize = effectiveSize.fontSize;
+    final double effectiveHorizPadding = widget.width != null
+        ? (effectiveSize.horizontalPadding * 0.7)
+        : effectiveSize.horizontalPadding;
+    final double radius = widget.borderRadius ?? effectiveSize.borderRadius;
 
     final primary = widget.customColor ?? AppColors.brandPrimary;
-    final radius = widget.borderRadius ?? AppRadii.button;
 
     switch (widget.variant) {
       case AppButtonVariant.primary:
@@ -166,8 +201,8 @@ class _AppButtonState extends State<AppButton> {
 
     final Widget content = widget.isLoading
         ? SizedBox(
-            width: 18,
-            height: 18,
+            width: effectiveIconSize,
+            height: effectiveIconSize,
             child: CircularProgressIndicator(
               strokeWidth: 2.2,
               valueColor: AlwaysStoppedAnimation<Color>(fg),
@@ -178,14 +213,14 @@ class _AppButtonState extends State<AppButton> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (widget.icon != null) ...[
-                Icon(widget.icon, size: 18, color: fg),
-                const SizedBox(width: 8),
+                Icon(widget.icon, size: effectiveIconSize, color: fg),
+                SizedBox(width: effectiveSize == AppButtonSize.xs ? 4 : 6),
               ],
               Text(
                 widget.label,
                 style: AppTextStyles.button.copyWith(
                   color: fg,
-                  fontSize: 14,
+                  fontSize: effectiveFontSize,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,
                 ),
@@ -207,9 +242,9 @@ class _AppButtonState extends State<AppButton> {
           duration: const Duration(milliseconds: 100),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
-            height: widget.height,
+            height: effectiveHeight,
             width: widget.isFullWidth ? double.infinity : widget.width,
-            padding: EdgeInsets.symmetric(horizontal: widget.width != null ? 14 : 20),
+            padding: EdgeInsets.symmetric(horizontal: effectiveHorizPadding),
             decoration: BoxDecoration(
               color: bg,
               borderRadius: BorderRadius.circular(radius),
@@ -224,19 +259,20 @@ class _AppButtonState extends State<AppButton> {
   }
 }
 
-// ── Legacy Aliases ───────────────────────────────────────────────────────────
+// ── Button Aliases ───────────────────────────────────────────────────────────
 class AppPrimaryButton extends AppButton {
   const AppPrimaryButton({
     super.key,
     required super.label,
     super.onPressed,
     super.icon,
-    super.height = 50,
+    super.size,
+    super.height,
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
-    super.borderRadius = 12,
+    super.borderRadius,
   }) : super.primary();
 }
 
@@ -246,12 +282,13 @@ class AppSecondaryButton extends AppButton {
     required super.label,
     super.onPressed,
     super.icon,
-    super.height = 48,
+    super.size,
+    super.height,
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
-    super.borderRadius = 12,
+    super.borderRadius,
   }) : super.secondary();
 }
 
@@ -261,12 +298,13 @@ class AppGhostButton extends AppButton {
     required super.label,
     super.onPressed,
     super.icon,
-    super.height = 48,
+    super.size,
+    super.height,
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
-    super.borderRadius = 12,
+    super.borderRadius,
   }) : super.ghost();
 }
 
@@ -276,11 +314,12 @@ class AppDangerButton extends AppButton {
     required super.label,
     super.onPressed,
     super.icon,
-    super.height = 48,
+    super.size,
+    super.height,
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
     super.customColor,
-    super.borderRadius = 12,
+    super.borderRadius,
   }) : super.danger();
 }
