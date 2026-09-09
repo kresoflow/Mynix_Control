@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_browser_tab.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CatalogScreen extends StatefulWidget {
@@ -58,11 +59,22 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                 emptyMessage: 'Категорий пока нет.',
                 addMenuBuilder: (context, currentCategoryId) => PopupMenuButton<String>(
                   onSelected: (val) {
-                    showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: val);
+                    if (val == 'dish') {
+                      showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'dish');
+                    } else if (val == 'retail') {
+                      showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'retail');
+                    } else if (val == 'bulk_add') {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => BulkAddModal(initialTabIndex: 3, initialParentId: currentCategoryId),
+                      );
+                    }
                   },
                   itemBuilder: (ctx) => [
                     const PopupMenuItem(value: 'dish', child: ListTile(leading: Icon(PhosphorIconsRegular.hamburger), title: Text('Папка для Блюд'))),
                     const PopupMenuItem(value: 'retail', child: ListTile(leading: Icon(PhosphorIconsRegular.storefront), title: Text('Папка для Витрины'))),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
                   ],
                   child: ElevatedButton.icon(
                     onPressed: null,
@@ -86,11 +98,18 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                       showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'dish');
                     } else if (val == 'dish') {
                       showAddMenuItemDialog(context, currentCategoryId: currentCategoryId);
+                    } else if (val == 'bulk_add') {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => BulkAddModal(initialTabIndex: 0, initialParentId: currentCategoryId),
+                      );
                     }
                   },
                   itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(PhosphorIconsRegular.folderPlus), title: Text('Категория'))),
                     const PopupMenuItem(value: 'dish', child: ListTile(leading: Icon(PhosphorIconsRegular.hamburger), title: Text('Блюдо'))),
+                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(PhosphorIconsRegular.folderPlus), title: Text('Категория'))),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
                   ],
                   child: ElevatedButton.icon(
                     onPressed: null,
@@ -114,11 +133,18 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                       showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'retail');
                     } else if (val == 'retail') {
                       showAddRetailProductDialog(context, currentCategoryId: currentCategoryId);
+                    } else if (val == 'bulk_add') {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => BulkAddModal(initialTabIndex: 1, initialParentId: currentCategoryId),
+                      );
                     }
                   },
                   itemBuilder: (ctx) => [
-                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(PhosphorIconsRegular.folderPlus), title: Text('Категория'))),
                     const PopupMenuItem(value: 'retail', child: ListTile(leading: Icon(PhosphorIconsRegular.storefront), title: Text('Товар витрины'))),
+                    const PopupMenuItem(value: 'category', child: ListTile(leading: Icon(PhosphorIconsRegular.folderPlus), title: Text('Категория'))),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(value: 'bulk_add', child: ListTile(leading: Icon(PhosphorIconsRegular.table), title: Text('Массовое добавление'))),
                   ],
                   child: ElevatedButton.icon(
                     onPressed: null,
