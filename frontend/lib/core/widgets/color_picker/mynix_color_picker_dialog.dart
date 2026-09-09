@@ -37,7 +37,7 @@ class _MynixColorPickerDialogState extends State<MynixColorPickerDialog> {
     _hue = hsv.hue;
     _saturation = hsv.saturation;
     _value = hsv.value;
-    _hexController = TextEditingController(text: ColorPickerUtils.toHex(hsv.toColor()));
+    _hexController = TextEditingController(text: ColorPickerUtils.toHex(hsv.toColor()).replaceAll('#', ''));
   }
 
   @override
@@ -53,7 +53,7 @@ class _MynixColorPickerDialogState extends State<MynixColorPickerDialog> {
       if (hue != null) _hue = hue;
       if (saturation != null) _saturation = saturation;
       if (value != null) _value = value;
-      _hexController.text = ColorPickerUtils.toHex(_currentColor);
+      _hexController.text = ColorPickerUtils.toHex(_currentColor).replaceAll('#', '');
     });
   }
 
@@ -75,7 +75,7 @@ class _MynixColorPickerDialogState extends State<MynixColorPickerDialog> {
       _hue = hsv.hue;
       _saturation = hsv.saturation;
       _value = hsv.value;
-      _hexController.text = ColorPickerUtils.toHex(color);
+      _hexController.text = ColorPickerUtils.toHex(color).replaceAll('#', '');
     });
   }
 
@@ -199,7 +199,7 @@ class _MynixColorPickerDialogState extends State<MynixColorPickerDialog> {
                                 color: preset.color.withValues(alpha: 0.5),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
-                              )
+                              ),
                             ]
                           : null,
                     ),

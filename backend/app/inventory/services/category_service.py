@@ -53,7 +53,7 @@ async def update_category(session: AsyncSession, category_id: int, data: dict) -
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     for key, value in data.items():
-        if hasattr(category, key) and value is not None:
+        if hasattr(category, key):
             setattr(category, key, value)
     await session.flush()
     return MenuCategoryRead.model_validate(category)

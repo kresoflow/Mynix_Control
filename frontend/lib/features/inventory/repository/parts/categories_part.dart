@@ -58,7 +58,7 @@ extension CategoriesPart on InventoryRepository {
       final Map<String, dynamic> data = {};
       if (name != null) data['name'] = name;
       if (sortOrder != null) data['sort_order'] = sortOrder;
-      if (color != null) data['color'] = color;
+      data['color'] = color;
       if (isVisible != null) data['is_visible'] = isVisible;
       if (icon != null) data['icon'] = icon;
       await _dio.put('/categories/$id', data: data);
