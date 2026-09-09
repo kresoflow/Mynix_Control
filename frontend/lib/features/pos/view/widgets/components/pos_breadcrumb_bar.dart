@@ -202,66 +202,43 @@ class _PosSearchTriggerButtonState extends State<_PosSearchTriggerButton> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? AppColors.brandPrimary.withValues(alpha: 0.12)
-                : (widget.isDark ? AppColors.darkCard : AppColors.lightCard),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: _isHovered ? AppColors.brandPrimary : widget.border,
-              width: _isHovered ? 1.5 : 1,
+      child: Tooltip(
+        message: 'Поиск блюд (Ctrl+F)',
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: _isHovered
+                  ? AppColors.brandPrimary.withValues(alpha: 0.15)
+                  : (widget.isDark ? AppColors.darkCard : AppColors.lightCard),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _isHovered ? AppColors.brandPrimary : widget.border,
+                width: _isHovered ? 1.5 : 1,
+              ),
+              boxShadow: _isHovered
+                  ? [
+                      BoxShadow(
+                        color: AppColors.brandPrimary.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
-            boxShadow: _isHovered
-                ? [
-                    BoxShadow(
-                      color: AppColors.brandPrimary.withValues(alpha: 0.28),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
+            child: Center(
+              child: Icon(
                 PhosphorIconsRegular.magnifyingGlass,
-                size: 15,
-                color: _isHovered ? AppColors.brandPrimary : (widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                size: 18,
+                color: _isHovered
+                    ? AppColors.brandPrimary
+                    : (widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               ),
-              const SizedBox(width: 6),
-              Text(
-                'Поиск',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: _isHovered ? AppColors.brandPrimary : (widget.isDark ? AppColors.darkText : AppColors.lightText),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                decoration: BoxDecoration(
-                  color: widget.isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'Ctrl+F',
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    color: widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

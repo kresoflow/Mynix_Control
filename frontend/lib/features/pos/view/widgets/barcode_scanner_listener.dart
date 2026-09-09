@@ -40,6 +40,15 @@ class _BarcodeScannerListenerState extends State<BarcodeScannerListener> {
       autofocus: true,
       focusNode: _focusNode,
       onKeyEvent: (node, event) {
+        // If an input field (TextField) is currently focused, do not intercept keys
+        final currentFocus = FocusManager.instance.primaryFocus;
+        if (currentFocus != null && currentFocus != _focusNode) {
+          final isEditable = currentFocus.context?.findAncestorWidgetOfExactType<EditableText>() != null;
+          if (isEditable) {
+            return KeyEventResult.ignored;
+          }
+        }
+
         if (event is KeyDownEvent) {
           if (event.logicalKey == LogicalKeyboardKey.enter) {
             final barcode = _buffer.toString().trim();
