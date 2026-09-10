@@ -6,6 +6,7 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/widgets/color_picker/color_picker_utils.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 
@@ -61,11 +62,26 @@ class _PosItemCardState extends State<PosItemCard> {
     final isDark = theme.brightness == Brightness.dark;
     final isMobile = MediaQuery.of(context).size.width < 600;
 
-    Widget? finalIconWidget;
+    Widget finalIconWidget;
     if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
-      finalIconWidget = IconHelper.buildIcon(
-        effectiveIcon,
-        size: isMobile ? 24 : 32,
+      final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
+      if (IconHelper.availableIcons.contains(cleanName)) {
+        finalIconWidget = IconHelper.buildIcon(
+          effectiveIcon,
+          size: isMobile ? 24 : 32,
+          color: accentColor,
+        );
+      } else {
+        finalIconWidget = Icon(
+          widget.item.isRetail ? PhosphorIconsRegular.storefront : PhosphorIconsRegular.bowlFood,
+          size: isMobile ? 22 : 28,
+          color: accentColor,
+        );
+      }
+    } else {
+      finalIconWidget = Icon(
+        widget.item.isRetail ? PhosphorIconsRegular.storefront : PhosphorIconsRegular.bowlFood,
+        size: isMobile ? 22 : 28,
         color: accentColor,
       );
     }
@@ -107,22 +123,20 @@ class _PosItemCardState extends State<PosItemCard> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (finalIconWidget != null) ...[
-                  Align(
+                Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: isMobile ? 40 : 56,
+                    height: isMobile ? 40 : 56,
                     alignment: Alignment.center,
-                    child: Container(
-                      width: isMobile ? 40 : 56,
-                      height: isMobile ? 40 : 56,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: accentColor.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: finalIconWidget,
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
                     ),
+                    child: finalIconWidget,
                   ),
-                  const SizedBox(height: 12),
-                ],
+                ),
+                const SizedBox(height: 12),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

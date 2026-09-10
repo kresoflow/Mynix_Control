@@ -104,7 +104,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(PhosphorIconsRegular.warningCircle, size: 44, color: AppColors.danger),
+                                const Icon(PhosphorIconsRegular.warningCircle, size: 44, color: AppColors.danger),
                                 const SizedBox(height: 12),
                                 Text(
                                   'Ошибка загрузки меню',
@@ -151,8 +151,11 @@ class _PosMenuGridState extends State<PosMenuGrid> {
 
                           if (menuState is MenuLoaded) {
                             items = menuState.items.where((i) {
-                              final catId = int.tryParse(i.categoryId.toString());
-                              return catId == currentCategoryId && i.isAvailable && i.parentId == null;
+                              final catIdStr = i.categoryId.toString();
+                              final catId = int.tryParse(catIdStr);
+                              final isRootItem = catId == null || catId == 0 || catIdStr == '0' || catIdStr == 'null' || catIdStr == 'uncategorized' || catIdStr == '';
+                              final inCurrentCategory = currentCategoryId == null ? isRootItem : (catId == currentCategoryId);
+                              return inCurrentCategory && i.isAvailable && i.parentId == null;
                             }).toList()
                               ..sort((a, b) {
                                 final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;

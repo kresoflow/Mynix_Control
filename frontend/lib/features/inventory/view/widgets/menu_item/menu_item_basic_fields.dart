@@ -92,7 +92,7 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                 ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return 'Обязательное поле';
-                  if (duplicateMatch != null) return 'Позиция с таким названием или штрихкодом уже есть';
+                  if (duplicateMatch != null) return 'Позиция уже существует';
                   return null;
                 },
               ),

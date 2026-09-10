@@ -63,16 +63,28 @@ class MenuGridItem extends StatelessWidget {
         ? Colors.grey
         : (inheritedColor ?? AppColors.brandPrimary);
 
-    Widget? finalIconWidget;
+    Widget finalIconWidget;
     if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
       final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
       if (IconHelper.availableIcons.contains(cleanName)) {
         finalIconWidget = IconHelper.buildIcon(
           effectiveIcon,
-          size: 32,
+          size: 28,
+          color: accentColor,
+        );
+      } else {
+        finalIconWidget = Icon(
+          item.isRetail ? PhosphorIconsRegular.storefront : PhosphorIconsRegular.bowlFood,
+          size: 26,
           color: accentColor,
         );
       }
+    } else {
+      finalIconWidget = Icon(
+        item.isRetail ? PhosphorIconsRegular.storefront : PhosphorIconsRegular.bowlFood,
+        size: 26,
+        color: accentColor,
+      );
     }
 
     return Opacity(
@@ -88,19 +100,18 @@ class MenuGridItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                if (finalIconWidget != null)
                   Center(
                     child: Container(
                       width: 52,
                       height: 52,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: accentColor.withAlpha(25),
+                        color: accentColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: accentColor.withAlpha(50)),
+                        border: Border.all(color: accentColor.withValues(alpha: 0.25)),
                         boxShadow: [
                           BoxShadow(
-                            color: accentColor.withAlpha(20),
+                            color: accentColor.withValues(alpha: 0.08),
                             blurRadius: 12,
                             spreadRadius: 2,
                           ),
