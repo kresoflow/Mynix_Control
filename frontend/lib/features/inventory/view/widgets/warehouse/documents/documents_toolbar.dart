@@ -17,42 +17,32 @@ class DocumentsToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return AppFilterBar(
+      spacing: 8.0,
       children: [
-        // Filter chips (UI Kit)
-        AppFilterBar(
-          spacing: 6.0,
-          children: [
-            AppFilterChip(
-              label: 'Все',
-              isSelected: selectedFilter == 'all',
-              onTap: () => onFilterChanged('all'),
-            ),
-            AppFilterChip(
-              label: 'Приходы',
-              isSelected: selectedFilter == 'receipt',
-              onTap: () => onFilterChanged('receipt'),
-            ),
-            AppFilterChip(
-              label: 'Списания',
-              isSelected: selectedFilter == 'write_off',
-              onTap: () => onFilterChanged('write_off'),
-            ),
-            AppFilterChip(
-              label: 'Инвентаризации',
-              isSelected: selectedFilter == 'inventory',
-              onTap: () => onFilterChanged('inventory'),
-            ),
-          ],
+        AppFilterChip(
+          label: 'Все',
+          isSelected: selectedFilter == 'all',
+          onTap: () => onFilterChanged('all'),
         ),
-
-        const Spacer(),
-
-        // Collapsible Search bar on the right
+        AppFilterChip(
+          label: 'Приходы',
+          isSelected: selectedFilter == 'receipt',
+          onTap: () => onFilterChanged('receipt'),
+        ),
+        AppFilterChip(
+          label: 'Списания',
+          isSelected: selectedFilter == 'write_off',
+          onTap: () => onFilterChanged('write_off'),
+        ),
+        AppFilterChip(
+          label: 'Инвентаризации',
+          isSelected: selectedFilter == 'inventory',
+          onTap: () => onFilterChanged('inventory'),
+        ),
         AppSearchField(
           mode: AppSearchMode.collapsible,
-          size: AppSearchFieldSize.md,
-          width: 260,
+          size: AppSearchFieldSize.sm,
           hintText: 'Поиск по номеру, поставщику...',
           shortcutHint: 'Ctrl+F',
           onChanged: onSearchChanged,
