@@ -67,10 +67,10 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                     AppMenuItem(id: 'category_dish', label: 'Категория блюд', icon: PhosphorIconsRegular.folderPlus),
                     AppMenuItem(id: 'category_retail', label: 'Категория витрины', icon: PhosphorIconsRegular.storefront),
                     AppMenuDivider(),
-                    AppMenuItem(id: 'dish', label: 'Блюдо кухни', icon: PhosphorIconsRegular.cookingPot),
-                    AppMenuItem(id: 'retail', label: 'Товар витрины', icon: PhosphorIconsRegular.barcode),
+                    AppMenuItem(id: 'dish', label: 'Блюдо', icon: PhosphorIconsRegular.cookingPot),
+                    AppMenuItem(id: 'retail', label: 'Товар', icon: PhosphorIconsRegular.barcode),
                     AppMenuDivider(),
-                    AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
+                    AppMenuItem(id: 'bulk_add', label: 'Массовый ввод', icon: PhosphorIconsRegular.table),
                   ],
                   onSelected: (val) {
                     if (val == 'category_dish') {
@@ -100,10 +100,10 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                   icon: PhosphorIconsRegular.plus,
                   size: AppButtonSize.md,
                   items: const [
-                    AppMenuItem(id: 'dish', label: 'Блюдо', icon: PhosphorIconsRegular.hamburger),
-                    AppMenuItem(id: 'category', label: 'Категория', icon: PhosphorIconsRegular.folderPlus),
+                    AppMenuItem(id: 'dish', label: 'Блюдо', icon: PhosphorIconsRegular.cookingPot),
+                    AppMenuItem(id: 'category', label: 'Категория блюд', icon: PhosphorIconsRegular.folderPlus),
                     AppMenuDivider(),
-                    AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
+                    AppMenuItem(id: 'bulk_add', label: 'Массовый ввод', icon: PhosphorIconsRegular.table),
                   ],
                   onSelected: (val) {
                     if (val == 'category') {
@@ -129,10 +129,10 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                   icon: PhosphorIconsRegular.plus,
                   size: AppButtonSize.md,
                   items: const [
-                    AppMenuItem(id: 'retail', label: 'Товар витрины', icon: PhosphorIconsRegular.storefront),
-                    AppMenuItem(id: 'category', label: 'Категория', icon: PhosphorIconsRegular.folderPlus),
+                    AppMenuItem(id: 'retail', label: 'Товар', icon: PhosphorIconsRegular.barcode),
+                    AppMenuItem(id: 'category', label: 'Категория витрины', icon: PhosphorIconsRegular.storefront),
                     AppMenuDivider(),
-                    AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
+                    AppMenuItem(id: 'bulk_add', label: 'Массовый ввод', icon: PhosphorIconsRegular.table),
                   ],
                   onSelected: (val) {
                     if (val == 'category') {

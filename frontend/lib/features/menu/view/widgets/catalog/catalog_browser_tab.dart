@@ -220,11 +220,15 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               emptyMessage: widget.emptyMessage,
                               onCategoryTap: (category) {
                                 if (_manageMode != CategoryManageMode.none) {
-                                  setState(() => _selectedCategories.contains(category.id)
-                                      ? _selectedCategories.remove(category.id)
-                                      : _selectedCategories.add(category.id));
+                                  setState(() {
+                                    if (_selectedCategories.contains(category.id)) {
+                                      _selectedCategories.remove(category.id);
+                                    } else {
+                                      _selectedCategories.add(category.id);
+                                    }
+                                  },);
                                 } else {
-                                  setState(() => _navigationHistory.add(category));
+                                  setState(() => _navigationHistory.add(category),);
                                 }
                               },
                               onCategoryToggle: (cat, val) => setState(() => _selectedCategories.contains(cat.id) ? _selectedCategories.remove(cat.id) : _selectedCategories.add(cat.id)),

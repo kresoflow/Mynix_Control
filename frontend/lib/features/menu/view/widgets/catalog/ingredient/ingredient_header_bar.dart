@@ -215,7 +215,7 @@ class IngredientHeaderBar extends StatelessWidget {
                   value: 'bulk_add',
                   child: ListTile(
                     leading: Icon(PhosphorIconsRegular.table),
-                    title: Text('Массовое добавление'),
+                    title: Text('Массовый ввод'),
                   ),
                 ),
               ],

@@ -41,7 +41,7 @@ class _RecipeBulkEditDialogState extends State<RecipeBulkEditDialog> {
         _rows.add(RecipeRowState(
           ingredientId: recipe['ingredient_id'],
           quantity: (recipe['quantity_required'] as num?)?.toDouble() ?? 0.0,
-        ));
+        ),);
       }
     }
   }

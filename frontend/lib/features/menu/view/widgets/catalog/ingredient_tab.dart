@@ -230,9 +230,9 @@ class _IngredientTabState extends State<IngredientTab> {
                       size: AppButtonSize.md,
                       items: const [
                         AppMenuItem(id: 'ingredient', label: 'Сырье / Ингредиент', icon: PhosphorIconsRegular.leaf),
-                        AppMenuItem(id: 'category', label: 'Категория сырья (Полка)', icon: PhosphorIconsRegular.folderPlus),
+                        AppMenuItem(id: 'category', label: 'Категория сырья', icon: PhosphorIconsRegular.folderPlus),
                         AppMenuDivider(),
-                        AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
+                        AppMenuItem(id: 'bulk_add', label: 'Массовый ввод', icon: PhosphorIconsRegular.table),
                       ],
                       onSelected: (val) {
                         if (val == 'ingredient') {

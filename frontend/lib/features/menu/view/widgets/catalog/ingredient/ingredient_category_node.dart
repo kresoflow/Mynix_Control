@@ -141,7 +141,7 @@ class _IngredientCategoryNodeState extends State<IngredientCategoryNode> with Si
                 forceExpanded: widget.forceExpanded,
                 onCategorySelected: widget.onCategorySelected,
                 onDelete: widget.onDelete,
-              )),
+              ),),
       ],
     );
   }

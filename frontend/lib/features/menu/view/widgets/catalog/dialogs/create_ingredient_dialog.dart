@@ -154,10 +154,12 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                                 value: null,
                                 child: Text('Без категории'),
                               ),
-                              ...ingredientCategories.map((cat) => DropdownMenuItem(
-                                value: cat.id,
-                                child: Text(cat.name),
-                              )),
+                              ...ingredientCategories.map(
+                                (cat) => DropdownMenuItem(
+                                  value: cat.id,
+                                  child: Text(cat.name),
+                                ),
+                              ),
                             ],
                             onChanged: (val) {
                               setState(() {
