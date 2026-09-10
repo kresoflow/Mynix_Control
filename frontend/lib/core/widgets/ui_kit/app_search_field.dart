@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
@@ -9,7 +9,7 @@ class AppSearchField extends StatefulWidget {
   final String hintText;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onClear;
-  final double width;
+  final double? width;
   final double height;
   final bool autoFocus;
 
@@ -19,8 +19,8 @@ class AppSearchField extends StatefulWidget {
     this.hintText = 'Поиск...',
     this.onChanged,
     this.onClear,
-    this.width = 240,
-    this.height = 36,
+    this.width,
+    this.height = 34,
     this.autoFocus = false,
   });
 
@@ -60,7 +60,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
       height: widget.height,
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(AppRadii.button),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),

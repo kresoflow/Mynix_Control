@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/core/utils/icon_helper.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/recipe/recipe_dish_tile.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 enum RecipeStatusFilter { all, configured, unconfigured }
@@ -133,45 +132,34 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                   Row(
                     children: [
                       Expanded(
-                        child: AppTextField(
+                        child: AppSearchField(
                           hintText: 'Поиск блюда...',
-                          isCompact: true,
-                          prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
+                          height: 34,
                           onChanged: (val) => setState(() => _searchQuery = val),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      InkWell(
-                        onTap: () => _toggleExpandAll(allCategoryNames),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          height: 36,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                      Tooltip(
+                        message: _allExpanded ? 'Свернуть все' : 'Развернуть все',
+                        child: InkWell(
+                          onTap: () => _toggleExpandAll(allCategoryNames),
+                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          child: Container(
+                            height: 34,
+                            width: 34,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                              borderRadius: BorderRadius.circular(AppRadii.md),
+                              border: Border.all(
+                                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _allExpanded ? PhosphorIconsRegular.caretUp : PhosphorIconsRegular.caretDown,
-                                size: 14,
-                                color: isDark ? AppColors.darkText : AppColors.lightText,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _allExpanded ? 'Свернуть' : 'Развернуть',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                                ),
-                              ),
-                            ],
+                            child: Icon(
+                              _allExpanded ? PhosphorIconsRegular.caretUp : PhosphorIconsRegular.caretDown,
+                              size: 15,
+                              color: isDark ? AppColors.darkText : AppColors.lightText,
+                            ),
                           ),
                         ),
                       ),
@@ -179,36 +167,32 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                   ),
                   const SizedBox(height: 8),
 
-                  // ── Status Filter Chips (Все / С техкартой / Без) ────
-                  Row(
+                  // ── Status Filter Chips (AppFilterChipSize.sm) ──────
+                  AppFilterBar(
+                    spacing: 4.0,
                     children: [
-                      Expanded(
-                        child: AppFilterChip(
-                          label: 'Все',
-                          count: totalCount,
-                          isSelected: _statusFilter == RecipeStatusFilter.all,
-                          onTap: () => setState(() => _statusFilter = RecipeStatusFilter.all),
-                        ),
+                      AppFilterChip(
+                        size: AppFilterChipSize.sm,
+                        label: 'Все',
+                        count: totalCount,
+                        isSelected: _statusFilter == RecipeStatusFilter.all,
+                        onTap: () => setState(() => _statusFilter = RecipeStatusFilter.all),
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: AppFilterChip(
-                          label: 'С составом',
-                          count: configuredCount,
-                          isSelected: _statusFilter == RecipeStatusFilter.configured,
-                          activeColor: AppColors.success,
-                          onTap: () => setState(() => _statusFilter = RecipeStatusFilter.configured),
-                        ),
+                      AppFilterChip(
+                        size: AppFilterChipSize.sm,
+                        label: 'С составом',
+                        count: configuredCount,
+                        isSelected: _statusFilter == RecipeStatusFilter.configured,
+                        activeColor: AppColors.success,
+                        onTap: () => setState(() => _statusFilter = RecipeStatusFilter.configured),
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: AppFilterChip(
-                          label: 'Без состава',
-                          count: unconfiguredCount,
-                          isSelected: _statusFilter == RecipeStatusFilter.unconfigured,
-                          activeColor: AppColors.warning,
-                          onTap: () => setState(() => _statusFilter = RecipeStatusFilter.unconfigured),
-                        ),
+                      AppFilterChip(
+                        size: AppFilterChipSize.sm,
+                        label: 'Без состава',
+                        count: unconfiguredCount,
+                        isSelected: _statusFilter == RecipeStatusFilter.unconfigured,
+                        activeColor: AppColors.warning,
+                        onTap: () => setState(() => _statusFilter = RecipeStatusFilter.unconfigured),
                       ),
                     ],
                   ),
@@ -268,50 +252,11 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                                     );
                                   } else {
                                     final item = data['item'];
-                                    final isSelected = widget.selectedMenuItemId == item.id;
-                                    final summary = summaryMap[item.id];
-                                    final bool hasRecipe = summary?['has_recipe'] == true;
-                                    final double cost = (summary?['total_cost'] as num?)?.toDouble() ?? 0.0;
-                                    final double marginPercent = item.price > 0 && cost > 0
-                                        ? ((item.price - cost) / item.price) * 100
-                                        : 0.0;
-
-                                    String? iconStr = item.icon;
-                                    if ((iconStr == null || iconStr.isEmpty) && catState is CategoryLoaded) {
-                                      final cat = catState.categories.where((c) => c.id.toString() == item.categoryId).firstOrNull;
-                                      iconStr = cat?.getInheritedIcon(catState.categories);
-                                    }
-                                    final bool hasIcon = iconStr != null &&
-                                        iconStr.isNotEmpty &&
-                                        (IconHelper.getIcon(iconStr) != null || iconStr.startsWith('svg:'));
-
-                                    return AppNavTile(
-                                      title: item.cleanName,
-                                      subtitle: hasRecipe
-                                          ? '${cost.toStringAsFixed(0)} с • ${marginPercent.toStringAsFixed(0)}% маржа'
-                                          : 'Без состава',
-                                      leading: hasIcon
-                                          ? IconHelper.buildIcon(
-                                              iconStr,
-                                              size: 16,
-                                              color: isSelected
-                                                  ? AppColors.brandPrimary
-                                                  : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                            )
-                                          : null,
-                                      depth: 1,
-                                      size: AppNavTileSize.md,
-                                      isSelected: isSelected,
-                                      trailing: Text(
-                                        '${item.price.toStringAsFixed(0)} с',
-                                        style: GoogleFonts.jetBrainsMono(
-                                          fontSize: 12,
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                          color: isSelected
-                                              ? AppColors.brandPrimary
-                                              : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                                        ),
-                                      ),
+                                    return RecipeDishTile(
+                                      item: item,
+                                      isSelected: widget.selectedMenuItemId == item.id,
+                                      summary: summaryMap[item.id],
+                                      catState: catState,
                                       onTap: () {
                                         widget.onMenuItemSelected(item.id);
                                         context.read<RecipeBloc>().add(LoadRecipe(item.id));

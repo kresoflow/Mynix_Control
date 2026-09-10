@@ -99,7 +99,10 @@ All buttons MUST strictly conform to the 5-tier size matrix:
 3. **Data Filters & Lists (`AppFilterChip` & `AppFilterBar`):**
    - Squircle-shaped (`AppRadii.md` = 8px) horizontal scrollable chips with dynamic count badges, optional custom semantic colors (`activeColor`), and icon support.
    - Active state: soft 12–16% translucent accent background + 1.2px accent border. Never 100% solid fill (to avoid collision with primary CTA buttons).
-   - Height: 32px standard with 8px border radius, strictly aligned with table toolbar inputs.
+   - **Size Scale (`AppFilterChipSize`):**
+     - **`AppFilterChipSize.sm` (26px):** Compact sidebars (Recipe menu list, Category sub-filters), dense inspector panels.
+     - **`AppFilterChipSize.md` (32px):** **Standard** for main page toolbars (CRM, Warehouse Documents, Shift analytics).
+     - **`AppFilterChipSize.lg` (40px):** Touchscreen POS / Tablet mode.
 
 4. **Order Context Chips (`AppOrderContextChip`):**
    - Compact order metadata tags (Table number, Customer name, Order mode) with dynamic theme colors and optional clear button `✕`.

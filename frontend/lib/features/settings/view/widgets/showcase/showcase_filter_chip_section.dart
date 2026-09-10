@@ -42,18 +42,54 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
           ),
           const SizedBox(height: 16),
 
-          // CRM Filters
-          Text('Пример 1: Фильтры гостей в CRM', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          // Sizes Showcase
+          Text('Шкала размеров (AppFilterChipSize):', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              AppFilterChip(
+                size: AppFilterChipSize.sm,
+                label: 'SM (26px) Сайдбар',
+                count: 14,
+                isSelected: true,
+                onTap: () {},
+              ),
+              AppFilterChip(
+                size: AppFilterChipSize.md,
+                label: 'MD (32px) Таблицы',
+                count: 42,
+                isSelected: true,
+                onTap: () {},
+              ),
+              AppFilterChip(
+                size: AppFilterChipSize.lg,
+                label: 'LG (40px) Сенсор/POS',
+                count: 99,
+                icon: PhosphorIconsRegular.handTap,
+                isSelected: true,
+                onTap: () {},
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // CRM Filters (MD Standard)
+          Text('Пример 1: Фильтры гостей в CRM (Размер MD)', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           AppFilterBar(
             children: [
               AppFilterChip(
+                size: AppFilterChipSize.md,
                 label: 'Все',
                 count: 142,
                 isSelected: _crmFilter == 'all',
                 onTap: () => setState(() => _crmFilter = 'all'),
               ),
               AppFilterChip(
+                size: AppFilterChipSize.md,
                 label: 'VIP',
                 count: 18,
                 icon: PhosphorIconsRegular.crown,
@@ -61,6 +97,7 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
                 onTap: () => setState(() => _crmFilter = 'vip'),
               ),
               AppFilterChip(
+                size: AppFilterChipSize.md,
                 label: 'Спящие',
                 count: 24,
                 icon: PhosphorIconsRegular.moon,
@@ -68,6 +105,7 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
                 onTap: () => setState(() => _crmFilter = 'churn'),
               ),
               AppFilterChip(
+                size: AppFilterChipSize.md,
                 label: 'Новички',
                 count: 9,
                 icon: PhosphorIconsRegular.sparkle,
@@ -75,6 +113,7 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
                 onTap: () => setState(() => _crmFilter = 'new'),
               ),
               AppFilterChip(
+                size: AppFilterChipSize.md,
                 label: 'Должники',
                 count: 5,
                 isSelected: _crmFilter == 'debtors',
@@ -84,26 +123,32 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
           ),
           const SizedBox(height: 16),
 
-          // Recipe Filters
-          Text('Пример 2: Фильтры состава техкарт', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          // Recipe Filters (SM Compact)
+          Text('Пример 2: Компактные фильтры сайдбара техкарт (Размер SM)', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           AppFilterBar(
+            spacing: 4,
             children: [
               AppFilterChip(
-                label: 'Все техкарты',
+                size: AppFilterChipSize.sm,
+                label: 'Все блюда',
                 count: 56,
                 isSelected: _recipeFilter == 'all',
                 onTap: () => setState(() => _recipeFilter = 'all'),
               ),
               AppFilterChip(
+                size: AppFilterChipSize.sm,
                 label: 'С составом',
                 count: 42,
+                activeColor: AppColors.success,
                 isSelected: _recipeFilter == 'with_ingredients',
                 onTap: () => setState(() => _recipeFilter = 'with_ingredients'),
               ),
               AppFilterChip(
+                size: AppFilterChipSize.sm,
                 label: 'Без состава',
                 count: 14,
+                activeColor: AppColors.warning,
                 isSelected: _recipeFilter == 'without_ingredients',
                 onTap: () => setState(() => _recipeFilter = 'without_ingredients'),
               ),

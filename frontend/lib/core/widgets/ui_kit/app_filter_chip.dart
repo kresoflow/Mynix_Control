@@ -3,6 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 
+enum AppFilterChipSize {
+  sm,
+  md,
+  lg,
+}
+
 /// ── Унифицированный чип фильтрации данных (AppFilterChip) ──────────────
 class AppFilterChip extends StatefulWidget {
   final String label;
@@ -12,6 +18,7 @@ class AppFilterChip extends StatefulWidget {
   final bool isSelected;
   final bool isHighlighted;
   final Color? activeColor;
+  final AppFilterChipSize size;
   final VoidCallback? onTap;
 
   const AppFilterChip({
@@ -23,6 +30,7 @@ class AppFilterChip extends StatefulWidget {
     this.isSelected = false,
     this.isHighlighted = false,
     this.activeColor,
+    this.size = AppFilterChipSize.md,
     this.onTap,
   });
 
@@ -64,6 +72,45 @@ class _AppFilterChipState extends State<AppFilterChip> {
             ? (isDark ? AppColors.darkText : AppColors.lightText)
             : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext));
 
+    // Size metrics
+    final double height;
+    final EdgeInsets padding;
+    final double fontSize;
+    final double iconSize;
+    final EdgeInsets badgePadding;
+    final double badgeFontSize;
+    final double itemSpacing;
+
+    switch (widget.size) {
+      case AppFilterChipSize.sm:
+        height = 26.0;
+        padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 2);
+        fontSize = 11.0;
+        iconSize = 12.0;
+        badgePadding = const EdgeInsets.symmetric(horizontal: 4, vertical: 1);
+        badgeFontSize = 9.5;
+        itemSpacing = 4.0;
+        break;
+      case AppFilterChipSize.md:
+        height = 32.0;
+        padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 4);
+        fontSize = 12.5;
+        iconSize = 14.0;
+        badgePadding = const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5);
+        badgeFontSize = 10.5;
+        itemSpacing = 6.0;
+        break;
+      case AppFilterChipSize.lg:
+        height = 40.0;
+        padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 6);
+        fontSize = 14.0;
+        iconSize = 16.0;
+        badgePadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 2);
+        badgeFontSize = 12.0;
+        itemSpacing = 8.0;
+        break;
+    }
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -75,8 +122,8 @@ class _AppFilterChipState extends State<AppFilterChip> {
           borderRadius: BorderRadius.circular(AppRadii.md),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 140),
-            height: 32,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            height: height,
+            padding: padding,
             decoration: BoxDecoration(
               color: bg,
               borderRadius: BorderRadius.circular(AppRadii.md),
@@ -89,22 +136,22 @@ class _AppFilterChipState extends State<AppFilterChip> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (widget.icon != null) ...[
-                  Icon(widget.icon, size: 14, color: iconColor),
-                  const SizedBox(width: 6),
+                  Icon(widget.icon, size: iconSize, color: iconColor),
+                  SizedBox(width: itemSpacing),
                 ],
                 Text(
                   widget.label,
                   style: GoogleFonts.inter(
-                    fontSize: 12.5,
+                    fontSize: fontSize,
                     fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: fg,
                     letterSpacing: -0.1,
                   ),
                 ),
                 if (countStr != null) ...[
-                  const SizedBox(width: 6),
+                  SizedBox(width: itemSpacing),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                    padding: badgePadding,
                     decoration: BoxDecoration(
                       color: widget.isSelected
                           ? primary.withValues(alpha: isDark ? 0.22 : 0.16)
@@ -114,7 +161,7 @@ class _AppFilterChipState extends State<AppFilterChip> {
                     child: Text(
                       countStr,
                       style: GoogleFonts.jetBrainsMono(
-                        fontSize: 10.5,
+                        fontSize: badgeFontSize,
                         fontWeight: FontWeight.w700,
                         color: widget.isSelected ? primary : fg,
                       ),
