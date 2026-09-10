@@ -19,7 +19,6 @@ class MenuItemBasicFields extends StatefulWidget {
   final int? selectedCategoryId;
   final ValueChanged<int?> onCategoryChanged;
   final int? excludeItemId;
-  final ValueChanged<DuplicateMatch<MenuItem>?>? onDuplicateChanged;
 
   const MenuItemBasicFields({
     super.key,
@@ -30,7 +29,6 @@ class MenuItemBasicFields extends StatefulWidget {
     required this.selectedCategoryId,
     required this.onCategoryChanged,
     this.excludeItemId,
-    this.onDuplicateChanged,
   });
 
   @override
@@ -72,8 +70,6 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
         excludeItemId: widget.excludeItemId,
       );
     }
-
-    widget.onDuplicateChanged?.call(duplicateMatch);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

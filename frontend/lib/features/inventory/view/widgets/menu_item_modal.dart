@@ -30,7 +30,6 @@ class _MenuItemModalState extends State<MenuItemModal> {
   late TextEditingController _barcodeController;
   late TextEditingController _sortOrderController;
   int? _selectedCategoryId;
-  bool _hasDuplicate = false;
 
   bool _hasModifiers = false;
   final List<Map<String, dynamic>> _variations = [];
@@ -93,13 +92,6 @@ class _MenuItemModalState extends State<MenuItemModal> {
   }
 
   void _submit() {
-    if (_hasDuplicate) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Позиция с таким названием или штрихкодом уже существует')),
-      );
-      return;
-    }
-
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
       final price = double.tryParse(_priceController.text) ?? 0.0;
@@ -179,12 +171,6 @@ class _MenuItemModalState extends State<MenuItemModal> {
                 selectedCategoryId: _selectedCategoryId,
                 onCategoryChanged: (val) => setState(() => _selectedCategoryId = val),
                 excludeItemId: widget.existingItem?.id,
-                onDuplicateChanged: (dup) {
-                  final hasDup = dup != null;
-                  if (_hasDuplicate != hasDup) {
-                    setState(() => _hasDuplicate = hasDup);
-                  }
-                },
               ),
               const SizedBox(height: 16),
               Container(
