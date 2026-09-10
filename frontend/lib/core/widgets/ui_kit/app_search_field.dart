@@ -153,6 +153,10 @@ class _AppSearchFieldState extends State<AppSearchField> {
         break;
     }
 
+    final Color subtextColor = isDark ? const Color(0xFF94A3B8) : AppColors.lightSubtext;
+    final Color textColor = isDark ? Colors.white : AppColors.lightText;
+    final Color iconColor = _isFocused ? AppColors.brandPrimary : subtextColor;
+
     // Режим свернутой кнопки
     if (widget.mode == AppSearchMode.collapsible && !_isExpanded) {
       return Tooltip(
@@ -179,7 +183,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
               child: Icon(
                 PhosphorIconsRegular.magnifyingGlass,
                 size: iconSize,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                color: iconColor,
               ),
             ),
           ),
@@ -187,18 +191,13 @@ class _AppSearchFieldState extends State<AppSearchField> {
       );
     }
 
-    final Color bgColor = _isFocused
-        ? (isDark ? AppColors.darkCard : AppColors.lightCard)
-        : (isDark ? AppColors.darkCard : AppColors.lightCard);
+    final Color bgColor = isDark ? AppColors.darkCard : AppColors.lightCard;
 
     final Color borderColor = _isFocused
         ? AppColors.brandPrimary
         : (_isHovered
             ? (isDark ? AppColors.brandPrimary.withValues(alpha: 0.6) : AppColors.brandPrimary.withValues(alpha: 0.5))
             : (isDark ? AppColors.darkBorder : AppColors.lightBorder));
-
-    final Color subtextColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
-    final Color textColor = isDark ? AppColors.darkText : AppColors.lightText;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -230,10 +229,12 @@ class _AppSearchFieldState extends State<AppSearchField> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(width: leftPadding),
-                Icon(
-                  PhosphorIconsRegular.magnifyingGlass,
-                  size: iconSize,
-                  color: _isFocused ? AppColors.brandPrimary : subtextColor,
+                Center(
+                  child: Icon(
+                    PhosphorIconsRegular.magnifyingGlass,
+                    size: iconSize,
+                    color: iconColor,
+                  ),
                 ),
                 SizedBox(width: iconGap),
                 Expanded(
@@ -250,64 +251,85 @@ class _AppSearchFieldState extends State<AppSearchField> {
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: textColor,
                         fontSize: fontSize,
+                        fontWeight: FontWeight.w400,
                         height: 1.0,
                         leadingDistribution: TextLeadingDistribution.even,
                       ),
-                      decoration: InputDecoration.collapsed(
+                      decoration: InputDecoration(
+                        isDense: true,
+                        isCollapsed: true,
                         hintText: widget.hintText,
                         hintStyle: AppTextStyles.bodyMedium.copyWith(
                           color: subtextColor,
                           fontSize: fontSize,
+                          fontWeight: FontWeight.w400,
                           height: 1.0,
                           leadingDistribution: TextLeadingDistribution.even,
                         ),
                         filled: false,
                         fillColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
                       ),
                     ),
                   ),
                 ),
                 if (hasText) ...[
-                  _buildActionBtn(
-                    icon: PhosphorIconsRegular.x,
-                    size: actionSize,
-                    iconSize: iconSize - 2,
-                    tooltip: 'Очистить',
-                    color: subtextColor,
-                    onTap: () {
-                      _controller.clear();
-                      widget.onChanged?.call('');
-                      widget.onClear?.call();
-                    },
+                  Center(
+                    child: _buildActionBtn(
+                      icon: PhosphorIconsRegular.x,
+                      size: actionSize,
+                      iconSize: iconSize - 2,
+                      tooltip: 'Очистить',
+                      color: subtextColor,
+                      isDark: isDark,
+                      onTap: () {
+                        _controller.clear();
+                        widget.onChanged?.call('');
+                        widget.onClear?.call();
+                      },
+                    ),
                   ),
                   SizedBox(width: rightPadding),
                 ] else if (widget.mode == AppSearchMode.collapsible) ...[
-                  _buildActionBtn(
-                    icon: PhosphorIconsRegular.x,
-                    size: actionSize,
-                    iconSize: iconSize - 2,
-                    tooltip: 'Закрыть (Esc)',
-                    color: subtextColor,
-                    onTap: _toggleExpanded,
+                  Center(
+                    child: _buildActionBtn(
+                      icon: PhosphorIconsRegular.x,
+                      size: actionSize,
+                      iconSize: iconSize - 2,
+                      tooltip: 'Закрыть (Esc)',
+                      color: subtextColor,
+                      isDark: isDark,
+                      onTap: _toggleExpanded,
+                    ),
                   ),
                   SizedBox(width: rightPadding),
                 ] else if (widget.shortcutHint != null && !_isFocused) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        width: 0.8,
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.lightBorder,
+                          width: 0.8,
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      widget.shortcutHint!,
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: badgeFontSize,
-                        fontWeight: FontWeight.w600,
-                        color: subtextColor,
+                      child: Text(
+                        widget.shortcutHint!,
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: badgeFontSize,
+                          fontWeight: FontWeight.w600,
+                          color: subtextColor,
+                        ),
                       ),
                     ),
                   ),
@@ -329,6 +351,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
     required double iconSize,
     required String tooltip,
     required Color color,
+    required bool isDark,
     required VoidCallback onTap,
   }) {
     return Tooltip(
@@ -336,6 +359,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadii.max),
+        hoverColor: isDark ? Colors.white.withValues(alpha: 0.1) : AppColors.lightBorder.withValues(alpha: 0.4),
         child: Container(
           width: size,
           height: size,
