@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/app_text_field.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/app_nav_tile.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
@@ -184,32 +183,31 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildFilterChip(
-                          label: 'Все ($totalCount)',
+                        child: AppFilterChip(
+                          label: 'Все',
+                          count: totalCount,
                           isSelected: _statusFilter == RecipeStatusFilter.all,
-                          activeColor: AppColors.brandPrimary,
                           onTap: () => setState(() => _statusFilter = RecipeStatusFilter.all),
-                          isDark: isDark,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Expanded(
-                        child: _buildFilterChip(
-                          label: 'С составом ($configuredCount)',
+                        child: AppFilterChip(
+                          label: 'С составом',
+                          count: configuredCount,
                           isSelected: _statusFilter == RecipeStatusFilter.configured,
                           activeColor: AppColors.success,
                           onTap: () => setState(() => _statusFilter = RecipeStatusFilter.configured),
-                          isDark: isDark,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Expanded(
-                        child: _buildFilterChip(
-                          label: 'Без состава ($unconfiguredCount)',
+                        child: AppFilterChip(
+                          label: 'Без состава',
+                          count: unconfiguredCount,
                           isSelected: _statusFilter == RecipeStatusFilter.unconfigured,
                           activeColor: AppColors.warning,
                           onTap: () => setState(() => _statusFilter = RecipeStatusFilter.unconfigured),
-                          isDark: isDark,
                         ),
                       ),
                     ],
@@ -335,45 +333,6 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
           },
         );
       },
-    );
-  }
-
-  Widget _buildFilterChip({
-    required String label,
-    required bool isSelected,
-    required Color activeColor,
-    required VoidCallback onTap,
-    required bool isDark,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        height: 28,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? activeColor.withValues(alpha: 0.15)
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: isSelected
-                ? activeColor
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            color: isSelected
-                ? activeColor
-                : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -97,7 +97,9 @@ All buttons MUST strictly conform to the 5-tier size matrix:
    - **Track Background:** Must use `AppColors.darkTrackBg` / `AppColors.lightTrackBg` to avoid blending into white page headers.
 
 3. **Data Filters & Lists (`AppFilterChip` & `AppFilterBar`):**
-   - Pill-shaped (`AppRadii.pill`) horizontal scrollable chips with dynamic count badges and icon support.
+   - Squircle-shaped (`AppRadii.md` = 8px) horizontal scrollable chips with dynamic count badges, optional custom semantic colors (`activeColor`), and icon support.
+   - Active state: soft 12–16% translucent accent background + 1.2px accent border. Never 100% solid fill (to avoid collision with primary CTA buttons).
+   - Height: 32px standard with 8px border radius, strictly aligned with table toolbar inputs.
 
 4. **Order Context Chips (`AppOrderContextChip`):**
    - Compact order metadata tags (Table number, Customer name, Order mode) with dynamic theme colors and optional clear button `✕`.

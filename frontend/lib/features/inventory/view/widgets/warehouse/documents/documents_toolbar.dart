@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/app_text_field.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class DocumentsToolbar extends StatelessWidget {
   final String selectedFilter;
@@ -17,56 +17,34 @@ class DocumentsToolbar extends StatelessWidget {
     required this.onSearchChanged,
   });
 
-  Widget _buildPill(BuildContext context, String label, String value) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isSelected = selectedFilter == value;
-
-    return GestureDetector(
-      onTap: () => onFilterChanged(value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandPrimary.withValues(alpha: 0.15)
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.brandPrimary
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: isSelected
-                ? AppColors.brandPrimary
-                : (isDark ? AppColors.darkText : AppColors.lightText),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Filter pills
-        Row(
-          mainAxisSize: MainAxisSize.min,
+        // Filter chips (UI Kit)
+        AppFilterBar(
+          spacing: 6.0,
           children: [
-            _buildPill(context, 'Все', 'all'),
-            const SizedBox(width: 6),
-            _buildPill(context, 'Приходы', 'receipt'),
-            const SizedBox(width: 6),
-            _buildPill(context, 'Списания', 'write_off'),
-            const SizedBox(width: 6),
-            _buildPill(context, 'Инвентаризации', 'inventory'),
+            AppFilterChip(
+              label: 'Все',
+              isSelected: selectedFilter == 'all',
+              onTap: () => onFilterChanged('all'),
+            ),
+            AppFilterChip(
+              label: 'Приходы',
+              isSelected: selectedFilter == 'receipt',
+              onTap: () => onFilterChanged('receipt'),
+            ),
+            AppFilterChip(
+              label: 'Списания',
+              isSelected: selectedFilter == 'write_off',
+              onTap: () => onFilterChanged('write_off'),
+            ),
+            AppFilterChip(
+              label: 'Инвентаризации',
+              isSelected: selectedFilter == 'inventory',
+              onTap: () => onFilterChanged('inventory'),
+            ),
           ],
         ),
 

@@ -11,6 +11,7 @@ class AppFilterChip extends StatefulWidget {
   final IconData? icon;
   final bool isSelected;
   final bool isHighlighted;
+  final Color? activeColor;
   final VoidCallback? onTap;
 
   const AppFilterChip({
@@ -21,6 +22,7 @@ class AppFilterChip extends StatefulWidget {
     this.icon,
     this.isSelected = false,
     this.isHighlighted = false,
+    this.activeColor,
     this.onTap,
   });
 
@@ -34,7 +36,7 @@ class _AppFilterChipState extends State<AppFilterChip> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = AppColors.brandPrimary;
+    final primary = widget.activeColor ?? AppColors.brandPrimary;
 
     final countStr = widget.countLabel ?? (widget.count != null ? '${widget.count}' : null);
 
@@ -44,7 +46,7 @@ class _AppFilterChipState extends State<AppFilterChip> {
 
     if (widget.isSelected) {
       bg = primary.withValues(alpha: isDark ? 0.16 : 0.12);
-      borderColor = primary.withValues(alpha: isDark ? 0.5 : 0.6);
+      borderColor = primary.withValues(alpha: isDark ? 0.65 : 0.70);
       fg = isDark ? AppColors.darkText : primary;
     } else if (_isHovered) {
       bg = isDark ? AppColors.darkCardHover : AppColors.lightCardHover;
@@ -58,7 +60,9 @@ class _AppFilterChipState extends State<AppFilterChip> {
 
     final iconColor = widget.isSelected
         ? primary
-        : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+        : (_isHovered
+            ? (isDark ? AppColors.darkText : AppColors.lightText)
+            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext));
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -68,15 +72,18 @@ class _AppFilterChipState extends State<AppFilterChip> {
         color: Colors.transparent,
         child: InkWell(
           onTap: widget.onTap,
-          borderRadius: BorderRadius.circular(AppRadii.pill),
+          borderRadius: BorderRadius.circular(AppRadii.md),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 140),
             height: 32,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-              border: Border.all(color: borderColor, width: 1),
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              border: Border.all(
+                color: borderColor,
+                width: widget.isSelected ? 1.2 : 1.0,
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -97,10 +104,10 @@ class _AppFilterChipState extends State<AppFilterChip> {
                 if (countStr != null) ...[
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                     decoration: BoxDecoration(
                       color: widget.isSelected
-                          ? primary.withValues(alpha: 0.20)
+                          ? primary.withValues(alpha: isDark ? 0.22 : 0.16)
                           : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(AppRadii.badge),
                     ),

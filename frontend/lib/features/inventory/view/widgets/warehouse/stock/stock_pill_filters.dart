@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class StockPillFilters extends StatelessWidget {
@@ -26,37 +27,38 @@ class StockPillFilters extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Wrap(
+            child: AppFilterBar(
               spacing: 8.0,
-              runSpacing: 8.0,
-              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                _buildPill(
+                AppFilterChip(
                   label: 'Все',
-                  value: 'all',
-                  isDark: isDark,
+                  isSelected: currentFilter == 'all',
+                  onTap: () => onFilterChanged('all'),
                 ),
-                _buildPill(
+                AppFilterChip(
                   label: 'Сырье для кухни',
-                  value: 'raw',
-                  isDark: isDark,
+                  icon: PhosphorIconsRegular.cookingPot,
+                  isSelected: currentFilter == 'raw',
+                  onTap: () => onFilterChanged('raw'),
                 ),
-                _buildPill(
+                AppFilterChip(
                   label: 'Витрина',
-                  value: 'retail',
-                  isDark: isDark,
+                  icon: PhosphorIconsRegular.storefront,
+                  isSelected: currentFilter == 'retail',
+                  onTap: () => onFilterChanged('retail'),
                 ),
               ],
             ),
           ),
           InkWell(
             onTap: onToggleExpandAll,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              height: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),
@@ -68,7 +70,7 @@ class StockPillFilters extends StatelessWidget {
                     isExpandedAll
                         ? PhosphorIconsRegular.caretUp
                         : PhosphorIconsRegular.caretDown,
-                    size: 15,
+                    size: 14,
                     color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                   ),
                   const SizedBox(width: 6),
@@ -84,52 +86,6 @@ class StockPillFilters extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPill({
-    required String label,
-    required String value,
-    required bool isDark,
-  }) {
-    final isSelected = currentFilter == value;
-
-    return GestureDetector(
-      onTap: () => onFilterChanged(value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandPrimary
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.brandPrimary
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : (isDark ? AppColors.darkText : AppColors.lightText),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            fontSize: 13,
-          ),
-        ),
       ),
     );
   }

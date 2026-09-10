@@ -5,6 +5,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/app_text_field.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/pos/repository/shift_repository.dart';
 import '../widgets/analytics_kpi_card.dart';
 import '../widgets/analytics_shift_row.dart';
@@ -169,7 +170,7 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
           ),
           const SizedBox(height: 16),
 
-          // ── Search & Filter Bar (CRM Style) ─────────────────────────
+          // ── Search & Filter Bar (UI Kit Style) ──────────────────────
           Row(
             children: [
               Expanded(
@@ -181,13 +182,39 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
                 ),
               ),
               const SizedBox(width: 12),
-              _buildFilterChip('all', 'Все (${_history.length})', isDark),
-              const SizedBox(width: 6),
-              _buildFilterChip('active', 'Активные ($activeCount)', isDark, icon: PhosphorIconsRegular.radioactive),
-              const SizedBox(width: 6),
-              _buildFilterChip('closed', 'Закрытые ($closedCount)', isDark, icon: PhosphorIconsRegular.lockSimple),
-              const SizedBox(width: 6),
-              _buildFilterChip('diff', 'С расхождением ($diffCount)', isDark, icon: PhosphorIconsRegular.warningCircle),
+              AppFilterBar(
+                spacing: 6.0,
+                children: [
+                  AppFilterChip(
+                    label: 'Все',
+                    count: _history.length,
+                    isSelected: _filterType == 'all',
+                    onTap: () => setState(() => _filterType = 'all'),
+                  ),
+                  AppFilterChip(
+                    label: 'Активные',
+                    count: activeCount,
+                    icon: PhosphorIconsRegular.radioactive,
+                    isSelected: _filterType == 'active',
+                    onTap: () => setState(() => _filterType = 'active'),
+                  ),
+                  AppFilterChip(
+                    label: 'Закрытые',
+                    count: closedCount,
+                    icon: PhosphorIconsRegular.lockSimple,
+                    isSelected: _filterType == 'closed',
+                    onTap: () => setState(() => _filterType = 'closed'),
+                  ),
+                  AppFilterChip(
+                    label: 'С расхождением',
+                    count: diffCount,
+                    icon: PhosphorIconsRegular.warningCircle,
+                    isSelected: _filterType == 'diff',
+                    activeColor: AppColors.warning,
+                    onTap: () => setState(() => _filterType = 'diff'),
+                  ),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -229,47 +256,6 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
               itemBuilder: (context, index) => AnalyticsShiftRow(shift: filtered[index]),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String type, String label, bool isDark, {IconData? icon}) {
-    final isSelected = _filterType == type;
-    return InkWell(
-      onTap: () => setState(() => _filterType = type),
-      borderRadius: BorderRadius.circular(8),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        height: 36,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandPrimary
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.brandPrimary
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 14, color: isSelected ? Colors.white : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
