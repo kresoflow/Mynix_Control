@@ -9,6 +9,7 @@ class StockPillFilters extends StatelessWidget {
   final ValueChanged<String> onFilterChanged;
   final bool isExpandedAll;
   final VoidCallback onToggleExpandAll;
+  final ValueChanged<String>? onSearchChanged;
 
   const StockPillFilters({
     super.key,
@@ -16,6 +17,7 @@ class StockPillFilters extends StatelessWidget {
     required this.onFilterChanged,
     required this.isExpandedAll,
     required this.onToggleExpandAll,
+    this.onSearchChanged,
   });
 
   @override
@@ -47,6 +49,13 @@ class StockPillFilters extends StatelessWidget {
                   isSelected: currentFilter == 'retail',
                   onTap: () => onFilterChanged('retail'),
                 ),
+                if (onSearchChanged != null)
+                  AppSearchField(
+                    mode: AppSearchMode.collapsible,
+                    size: AppSearchFieldSize.sm,
+                    hintText: 'Поиск остатков...',
+                    onChanged: onSearchChanged,
+                  ),
               ],
             ),
           ),

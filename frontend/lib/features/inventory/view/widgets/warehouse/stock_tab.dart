@@ -30,6 +30,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
   bool get wantKeepAlive => true;
 
   late String _filter;
+  String _searchQuery = '';
   bool _isExpandedAll = false;
   final Map<String, bool> _expandedCategories = {};
 
@@ -113,13 +114,30 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
 
         final filtered = state.ingredients.where((item) {
           final isRetail = item.attributes != null && item.attributes!['is_retail'] == true;
-          if (_filter == 'retail') return isRetail;
-          if (_filter == 'raw') return !isRetail;
+          if (_filter == 'retail' && !isRetail) return false;
+          if (_filter == 'raw' && isRetail) return false;
+          if (_searchQuery.isNotEmpty) {
+            final name = item.name.toLowerCase();
+            final barcode = item.barcode?.toLowerCase() ?? '';
+            final sku = item.sku?.toLowerCase() ?? '';
+            return name.contains(_searchQuery) || barcode.contains(_searchQuery) || sku.contains(_searchQuery);
+          }
           return true;
         }).toList();
 
         if (filtered.isEmpty) {
-          return const Center(child: Text('Нет товаров в этой категории.'));
+          return Center(
+            child: Text(
+              _searchQuery.isNotEmpty
+                  ? 'Ничего не найдено по запросу "$_searchQuery"'
+                  : 'Нет товаров в этой категории.',
+              style: AppTextStyles.body.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkSubtext
+                    : AppColors.lightSubtext,
+              ),
+            ),
+          );
         }
 
         double totalCapital = 0;
@@ -169,7 +187,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
         final List<dynamic> flatList = [];
         for (final category in sortedCategories) {
           final items = grouped[category]!;
-          final isExpanded = _expandedCategories[category] ?? false;
+          final isExpanded = _searchQuery.isNotEmpty || (_expandedCategories[category] ?? false);
 
           flatList.add({
             'type': 'header',
@@ -235,6 +253,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                           onFilterChanged: (val) => setState(() => _filter = val),
                           isExpandedAll: _isExpandedAll,
                           onToggleExpandAll: _toggleExpandAll,
+                          onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                         ),
                         Expanded(child: itemsList),
                       ],
@@ -253,6 +272,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                               onFilterChanged: (val) => setState(() => _filter = val),
                               isExpandedAll: _isExpandedAll,
                               onToggleExpandAll: _toggleExpandAll,
+                              onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                             ),
                             Expanded(child: itemsList),
                           ],

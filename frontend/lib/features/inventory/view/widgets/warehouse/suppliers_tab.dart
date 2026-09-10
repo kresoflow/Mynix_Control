@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
@@ -28,6 +27,8 @@ class SuppliersTab extends StatefulWidget {
 }
 
 class _SuppliersTabState extends State<SuppliersTab> {
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -144,6 +145,14 @@ class _SuppliersTabState extends State<SuppliersTab> {
           );
         }
 
+        final suppliers = state.suppliers.where((s) {
+          if (_searchQuery.isEmpty) return true;
+          final q = _searchQuery.toLowerCase().trim();
+          return s.name.toLowerCase().contains(q) ||
+              (s.contactInfo != null && s.contactInfo!.toLowerCase().contains(q)) ||
+              s.id.toString().contains(q);
+        }).toList();
+
         return Column(
           children: [
             Padding(
@@ -165,7 +174,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${state.suppliers.length} записей',
+                        '${suppliers.length} записей',
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
@@ -173,18 +182,31 @@ class _SuppliersTabState extends State<SuppliersTab> {
                       ),
                     ],
                   ),
-                  AppPrimaryButton(
-                    label: 'Добавить',
-                    icon: PhosphorIconsRegular.plus,
-                    size: AppButtonSize.md,
-                    onPressed: () => _openCreate(context),
+                  Row(
+                    children: [
+                      AppSearchField(
+                        mode: AppSearchMode.collapsible,
+                        size: AppSearchFieldSize.md,
+                        hintText: 'Поиск поставщика...',
+                        shortcutHint: 'Ctrl+F',
+                        width: 240,
+                        onChanged: (val) => setState(() => _searchQuery = val),
+                      ),
+                      const SizedBox(width: 10),
+                      AppPrimaryButton(
+                        label: 'Добавить',
+                        icon: PhosphorIconsRegular.plus,
+                        size: AppButtonSize.md,
+                        onPressed: () => _openCreate(context),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
             const SuppliersTableHeader(),
             Expanded(
-              child: state.suppliers.isEmpty
+              child: suppliers.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -196,7 +218,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Нет поставщиков',
+                            _searchQuery.isNotEmpty ? 'Поставщики не найдены' : 'Нет поставщиков',
                             style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                           ),
                         ],
@@ -204,10 +226,10 @@ class _SuppliersTabState extends State<SuppliersTab> {
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      itemCount: state.suppliers.length,
+                      itemCount: suppliers.length,
                       itemBuilder: (context, index) {
-                        final supplier = state.suppliers[index];
-                        final isLast = index == state.suppliers.length - 1;
+                        final supplier = suppliers[index];
+                        final isLast = index == suppliers.length - 1;
                         return SupplierRow(
                           supplier: supplier,
                           currency: currency,

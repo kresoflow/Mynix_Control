@@ -42,19 +42,18 @@ class IngredientHeader extends StatelessWidget {
       child: Row(
         children: [
           Text('Управление сырьем', style: AppTextStyles.h3),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           if (onSearchChanged != null)
-            SizedBox(
-              width: 250,
-              child: AppSearchField(
-                size: AppSearchFieldSize.md,
-                hintText: 'Поиск по названию...',
-                onChanged: onSearchChanged,
-              ),
+            AppSearchField(
+              mode: AppSearchMode.collapsible,
+              size: AppSearchFieldSize.md,
+              hintText: 'Поиск по названию...',
+              onChanged: onSearchChanged,
             ),
           const Spacer(),
           if (isManageMode) ...[
-            TextButton.icon(
+            AppGhostButton(
+              size: AppButtonSize.md,
               onPressed: () {
                 final state = context.read<IngredientBloc>().state;
                 if (state is IngredientLoaded) {
@@ -72,12 +71,12 @@ class IngredientHeader extends StatelessWidget {
                   onSelectedIngredientsChanged(filteredIngredients.map((i) => i.id).toSet());
                 }
               },
-              icon: const Icon(PhosphorIconsRegular.checkSquareOffset),
-              label: const Text('Выбрать все'),
+              icon: PhosphorIconsRegular.checkSquareOffset,
+              label: 'Выбрать все',
             ),
             const SizedBox(width: 8),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
+            AppDangerButton(
+              size: AppButtonSize.md,
               onPressed: () {
                 showDialog(
                   context: context,
@@ -85,9 +84,13 @@ class IngredientHeader extends StatelessWidget {
                     title: const Text('Массовое удаление'),
                     content: Text('Удалить выбранные элементы (${selectedIngredients.length} шт.)?'),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
+                      AppGhostButton(
+                        size: AppButtonSize.md,
+                        onPressed: () => Navigator.pop(ctx),
+                        label: 'Отмена',
+                      ),
+                      AppDangerButton(
+                        size: AppButtonSize.md,
                         onPressed: () {
                           for (var itemId in selectedIngredients) {
                             context.read<IngredientBloc>().add(DeleteIngredient(itemId));
@@ -96,55 +99,51 @@ class IngredientHeader extends StatelessWidget {
                           onManageModeChanged(false);
                           Navigator.pop(ctx);
                         },
-                        child: const Text('Удалить'),
+                        label: 'Удалить',
                       ),
                     ],
                   ),
                 );
               },
-              icon: const Icon(PhosphorIconsRegular.trash),
-              label: Text('Удалить (${selectedIngredients.length})'),
+              icon: PhosphorIconsRegular.trash,
+              label: 'Удалить (${selectedIngredients.length})',
             ),
             const SizedBox(width: 8),
-            TextButton(
+            AppGhostButton(
+              size: AppButtonSize.md,
               onPressed: () {
                 onManageModeChanged(false);
                 onSelectedIngredientsChanged({});
               },
-              child: const Text('Отмена'),
+              label: 'Отмена',
             ),
           ] else ...[
-            ElevatedButton.icon(
+            AppSecondaryButton(
+              size: AppButtonSize.md,
               onPressed: () => onManageModeChanged(true),
-              icon: const Icon(PhosphorIconsRegular.pencilSimple),
-              label: const Text('Управление'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
-              ),
+              icon: PhosphorIconsRegular.pencilSimple,
+              label: 'Управление',
             ),
             const SizedBox(width: 8),
-            ElevatedButton.icon(
+            AppSecondaryButton(
+              size: AppButtonSize.md,
               onPressed: () {
                 showDialog(
                   context: context,
                   builder: (_) => const BulkAddModal(initialTabIndex: 2),
                 );
               },
-              icon: const Icon(PhosphorIconsRegular.listPlus),
-              label: const Text('Массово'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
-              ),
+              icon: PhosphorIconsRegular.listPlus,
+              label: 'Массово',
             ),
-            const SizedBox(width: 12),
-            ElevatedButton.icon(
+            const SizedBox(width: 8),
+            AppPrimaryButton(
+              size: AppButtonSize.md,
               onPressed: () {
                 showAddIngredientDialog(context, initialCategoryId: selectedCategoryId);
               },
-              icon: const Icon(PhosphorIconsRegular.plus),
-              label: const Text('Добавить'),
+              icon: PhosphorIconsRegular.plus,
+              label: 'Добавить',
             ),
           ],
         ],

@@ -48,14 +48,14 @@ class DocumentsToolbar extends StatelessWidget {
 
         const Spacer(),
 
-        // Search bar on the right
-        SizedBox(
-          width: 280,
-          child: AppSearchField(
-            size: AppSearchFieldSize.md,
-            hintText: 'Поиск по номеру, поставщику...',
-            onChanged: onSearchChanged,
-          ),
+        // Collapsible Search bar on the right
+        AppSearchField(
+          mode: AppSearchMode.collapsible,
+          size: AppSearchFieldSize.md,
+          width: 260,
+          hintText: 'Поиск по номеру, поставщику...',
+          shortcutHint: 'Ctrl+F',
+          onChanged: onSearchChanged,
         ),
       ],
     );
