@@ -42,6 +42,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
   final Set<int> _selectedCategories = {};
   final Set<int> _selectedItems = {};
   bool _showArchived = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -106,9 +107,12 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                 if (catState is CategoryLoaded) {
                   currentCategories = catState.categories.where((c) {
                     if (!_showArchived && c.isArchived) return false;
-                    if (c.parentId != _currentCategoryId) return false;
-                    if (widget.categoryType == 'all') return c.categoryType != 'ingredient';
-                    return c.categoryType == widget.categoryType;
+                    if (widget.categoryType == 'all' && c.categoryType == 'ingredient') return false;
+                    if (widget.categoryType != 'all' && c.categoryType != widget.categoryType) return false;
+                    if (_searchQuery.isNotEmpty) {
+                      return c.name.toLowerCase().contains(_searchQuery);
+                    }
+                    return c.parentId == _currentCategoryId;
                   }).toList()
                     ..sort((a, b) {
                       final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;
@@ -123,10 +127,18 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                   final currentCatStr = _currentCategoryId?.toString();
                   currentItems = menuState.items.where((i) {
                     if (!_showArchived && !i.isAvailable) return false;
+                    if (!widget.itemFilter(i)) return false;
+                    if (i.parentId != null) return false;
+
+                    if (_searchQuery.isNotEmpty) {
+                      final name = i.cleanName.toLowerCase();
+                      final barcode = i.barcode?.toLowerCase() ?? '';
+                      return name.contains(_searchQuery) || barcode.contains(_searchQuery);
+                    }
+
                     final iCatStr = i.categoryId.toString();
                     final isRootItem = iCatStr == '0' || iCatStr == 'null' || iCatStr == 'uncategorized' || iCatStr == '';
-                    final inCategory = iCatStr == currentCatStr || (isRootItem && currentCatStr == null);
-                    return inCategory && i.parentId == null && widget.itemFilter(i);
+                    return iCatStr == currentCatStr || (isRootItem && currentCatStr == null);
                   }).toList()
                     ..sort((a, b) {
                       final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;
@@ -153,6 +165,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       currentCategoryId: _currentCategoryId,
                       rootTitle: widget.rootTitle,
                       showArchived: _showArchived,
+                      onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                       onShowArchivedToggle: () => setState(() => _showArchived = !_showArchived),
                       onManageModeChanged: (mode) => setState(() {
                         _manageMode = mode;

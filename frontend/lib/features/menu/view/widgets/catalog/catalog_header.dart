@@ -26,6 +26,7 @@ class CatalogHeader extends StatelessWidget {
   final String rootTitle;
   final bool showArchived;
   final VoidCallback onShowArchivedToggle;
+  final ValueChanged<String>? onSearchChanged;
 
   const CatalogHeader({
     super.key,
@@ -48,6 +49,7 @@ class CatalogHeader extends StatelessWidget {
     required this.rootTitle,
     required this.showArchived,
     required this.onShowArchivedToggle,
+    this.onSearchChanged,
   });
 
   @override
@@ -85,6 +87,15 @@ class CatalogHeader extends StatelessWidget {
             if (navigationHistory.isNotEmpty)
               IconButton(icon: const Icon(PhosphorIconsRegular.arrowLeft), onPressed: onNavigateUp),
             Expanded(child: _buildBreadcrumbs(context, isMobile: true)),
+            if (onSearchChanged != null) ...[
+              AppSearchField(
+                mode: AppSearchMode.collapsible,
+                size: AppSearchFieldSize.sm,
+                hintText: 'Поиск...',
+                onChanged: onSearchChanged,
+              ),
+              const SizedBox(width: 4),
+            ],
             IconButton(
               icon: Icon(showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray),
               color: showArchived ? AppColors.brandPrimary : null,
@@ -121,6 +132,16 @@ class CatalogHeader extends StatelessWidget {
         if (navigationHistory.isNotEmpty)
           IconButton(icon: const Icon(PhosphorIconsRegular.arrowLeft), onPressed: onNavigateUp),
         Expanded(child: _buildBreadcrumbs(context, isMobile: false)),
+        if (onSearchChanged != null) ...[
+          AppSearchField(
+            mode: AppSearchMode.collapsible,
+            size: AppSearchFieldSize.md,
+            hintText: 'Поиск в каталоге...',
+            shortcutHint: 'Ctrl+F',
+            onChanged: onSearchChanged,
+          ),
+          const SizedBox(width: 8),
+        ],
         IconButton(
           icon: Icon(showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray),
           color: showArchived ? AppColors.brandPrimary : null,
