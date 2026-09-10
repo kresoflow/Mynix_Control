@@ -14,6 +14,7 @@ class Ingredient {
   final int sortOrder;
 
   bool get isRetail => attributes?['is_retail'] == true;
+  String? get sku => attributes?['sku']?.toString();
 
   Ingredient({
     required this.id,
