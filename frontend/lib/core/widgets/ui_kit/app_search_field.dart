@@ -188,7 +188,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
         actionSize = 20.0;
         rightPadding = 8.0;
         badgeFontSize = 9.5;
-        opticalYOffset = -1.5;
+        opticalYOffset = -2.5;
         break;
       case AppSearchFieldSize.md:
         height = 38.0;
@@ -199,7 +199,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
         actionSize = 24.0;
         rightPadding = 8.0;
         badgeFontSize = 10.5;
-        opticalYOffset = -2.0;
+        opticalYOffset = -3.5;
         break;
       case AppSearchFieldSize.lg:
         height = 46.0;
@@ -210,7 +210,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
         actionSize = 28.0;
         rightPadding = 10.0;
         badgeFontSize = 11.5;
-        opticalYOffset = -2.2;
+        opticalYOffset = -4.5;
         break;
     }
 
@@ -311,6 +311,12 @@ class _AppSearchFieldState extends State<AppSearchField> {
                         cursorHeight: fontSize * 1.15,
                         cursorWidth: 1.6,
                         cursorColor: AppColors.brandPrimary,
+                        strutStyle: StrutStyle(
+                          fontSize: fontSize,
+                          height: 1.0,
+                          forceStrutHeight: true,
+                          leadingDistribution: TextLeadingDistribution.even,
+                        ),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: textColor,
                           fontSize: fontSize,
