@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
@@ -25,7 +26,8 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
         : '',
   );
   final barcodeController = TextEditingController(text: itemToEdit?.barcode ?? '');
-  const String selectedUnit = 'pcs';
+  int? selectedCategoryId = currentCategoryId ?? int.tryParse(itemToEdit?.categoryId ?? '');
+  String selectedUnit = 'pcs';
   String? selectedIcon = itemToEdit?.icon;
   final currency = context.read<SettingsBloc>().state.currency;
 
@@ -45,13 +47,13 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
           final inputBg = isDark ? AppColors.darkBg : AppColors.lightBg;
 
           final menuState = context.watch<MenuBloc>().state;
-          DuplicateMatch? duplicateMatch;
+          DuplicateMatch<MenuItem>? duplicateMatch;
           if (menuState is MenuLoaded) {
             duplicateMatch = DuplicateDetector.findMenuItemDuplicate(
               items: menuState.items,
               queryName: nameController.text,
               queryBarcode: barcodeController.text,
-              currentCategoryId: currentCategoryId,
+              currentCategoryId: selectedCategoryId,
               excludeItemId: itemToEdit?.id,
             );
           }
@@ -67,7 +69,7 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                   TextFormField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'Название товара (Сникерс, Кола, Вода)',
+                      labelText: 'Название товара (Мясо, Вода, Сникерс)',
                       filled: true,
                       fillColor: inputBg,
                       border: OutlineInputBorder(
@@ -85,30 +87,101 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                         Navigator.pop(ctx);
                         showAddRetailProductDialog(
                           context,
-                          currentCategoryId: currentCategoryId,
+                          currentCategoryId: selectedCategoryId,
                           itemToEdit: duplicateMatch!.item,
                         );
                       },
                     ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: sellingPriceController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: 'Цена продажи на кассе',
-                      suffixText: currency,
-                      suffixStyle: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  BlocBuilder<CategoryBloc, CategoryState>(
+                    builder: (context, catState) {
+                      final retailCategories = catState is CategoryLoaded
+                          ? catState.categories.where((c) => c.categoryType == 'retail' && !c.isArchived).toList()
+                          : [];
+
+                      return DropdownButtonFormField<int?>(
+                        initialValue: selectedCategoryId,
+                        dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                        decoration: InputDecoration(
+                          labelText: 'Категория витрины',
+                          filled: true,
+                          fillColor: inputBg,
+                          border: OutlineInputBorder(
+                            borderRadius: AppRadii.inputRadius,
+                            borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: Icon(PhosphorIconsRegular.folderPlus, color: AppColors.brandPrimary),
+                        ),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('Без категории (в корень каталога)'),
+                          ),
+                          ...retailCategories.map(
+                            (c) => DropdownMenuItem<int?>(
+                              value: c.id,
+                              child: Text(c.name),
+                            ),
+                          ),
+                        ],
+                        onChanged: (val) => setState(() => selectedCategoryId = val),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextFormField(
+                          controller: sellingPriceController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(
+                            labelText: 'Цена продажи на кассе',
+                            suffixText: currency,
+                            suffixStyle: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                            ),
+                            filled: true,
+                            fillColor: inputBg,
+                            border: OutlineInputBorder(
+                              borderRadius: AppRadii.inputRadius,
+                              borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: Icon(PhosphorIconsRegular.tag, color: AppColors.brandPrimary),
+                          ),
+                        ),
                       ),
-                      filled: true,
-                      fillColor: inputBg,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadii.inputRadius,
-                        borderSide: BorderSide.none,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: DropdownButtonFormField<String>(
+                          initialValue: selectedUnit,
+                          dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                          decoration: InputDecoration(
+                            labelText: 'Ед. изм.',
+                            filled: true,
+                            fillColor: inputBg,
+                            border: OutlineInputBorder(
+                              borderRadius: AppRadii.inputRadius,
+                              borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: Icon(PhosphorIconsRegular.scales, color: AppColors.brandPrimary),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'pcs', child: Text('Шт (шт)')),
+                            DropdownMenuItem(value: 'kg', child: Text('Кг (кг)')),
+                            DropdownMenuItem(value: 'g', child: Text('Гр (г)')),
+                            DropdownMenuItem(value: 'l', child: Text('Литр (л)')),
+                            DropdownMenuItem(value: 'ml', child: Text('Мл (мл)')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) setState(() => selectedUnit = val);
+                          },
+                        ),
                       ),
-                      prefixIcon: Icon(PhosphorIconsRegular.tag, color: AppColors.brandPrimary),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -170,42 +243,45 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                 label: isEditing ? 'Сохранить' : 'Создать',
                 icon: PhosphorIconsRegular.floppyDisk,
                 width: null,
-                onPressed: () {
-                  final sPrice = double.tryParse(sellingPriceController.text.trim()) ?? 0.0;
-                  final sortOrder = int.tryParse(sortOrderController.text.trim()) ?? 0;
-                  final barcode = barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim();
+                onPressed: duplicateMatch != null
+                    ? null
+                    : () {
+                        final sPrice = double.tryParse(sellingPriceController.text.trim()) ?? 0.0;
+                        final sortOrder = int.tryParse(sortOrderController.text.trim()) ?? 0;
+                        final barcode = barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim();
 
-                  if (nameController.text.trim().isNotEmpty && sPrice >= 0) {
-                    final Map<String, dynamic> attributes = {};
-                    if (selectedIcon != null) {
-                      attributes['icon'] = 'icon:$selectedIcon';
-                    }
-                    if (isEditing) {
-                      final Map<String, dynamic> data = {
-                        'name': nameController.text.trim(),
-                        'price': sPrice,
-                        'sort_order': sortOrder,
-                        'barcode': barcode,
-                        if (attributes.isNotEmpty) 'attributes': attributes,
-                      };
-                      context.read<MenuBloc>().add(UpdateMenuItem(itemToEdit.id, data));
-                    } else {
-                      context.read<MenuBloc>().add(
-                            CreateRetailProduct(
-                              name: nameController.text.trim(),
-                              categoryId: currentCategoryId ?? 0,
-                              unit: selectedUnit,
-                              purchasePrice: 0.0,
-                              sellingPrice: sPrice,
-                              sortOrder: sortOrder,
-                              barcode: barcode,
-                              attributes: attributes.isNotEmpty ? attributes : null,
-                            ),
-                          );
-                    }
-                    Navigator.pop(ctx);
-                  }
-                },
+                        if (nameController.text.trim().isNotEmpty && sPrice >= 0) {
+                          final Map<String, dynamic> attributes = {};
+                          if (selectedIcon != null) {
+                            attributes['icon'] = 'icon:$selectedIcon';
+                          }
+                          if (isEditing) {
+                            final Map<String, dynamic> data = {
+                              'name': nameController.text.trim(),
+                              'price': sPrice,
+                              'category_id': selectedCategoryId,
+                              'sort_order': sortOrder,
+                              'barcode': barcode,
+                              if (attributes.isNotEmpty) 'attributes': attributes,
+                            };
+                            context.read<MenuBloc>().add(UpdateMenuItem(itemToEdit.id, data));
+                          } else {
+                            context.read<MenuBloc>().add(
+                                  CreateRetailProduct(
+                                    name: nameController.text.trim(),
+                                    categoryId: selectedCategoryId,
+                                    unit: selectedUnit,
+                                    purchasePrice: 0.0,
+                                    sellingPrice: sPrice,
+                                    sortOrder: sortOrder,
+                                    barcode: barcode,
+                                    attributes: attributes.isNotEmpty ? attributes : null,
+                                  ),
+                                );
+                          }
+                          Navigator.pop(ctx);
+                        }
+                      },
               ),
             ],
           );

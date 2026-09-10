@@ -29,6 +29,8 @@ class _MenuItemModalState extends State<MenuItemModal> {
   late TextEditingController _priceController;
   late TextEditingController _barcodeController;
   late TextEditingController _sortOrderController;
+  int? _selectedCategoryId;
+  bool _hasDuplicate = false;
 
   bool _hasModifiers = false;
   final List<Map<String, dynamic>> _variations = [];
@@ -37,6 +39,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
   @override
   void initState() {
     super.initState();
+    _selectedCategoryId = widget.preselectedCategoryId ?? int.tryParse(widget.existingItem?.categoryId ?? '');
     _nameController = TextEditingController(text: widget.existingItem?.cleanName ?? '');
     _priceController = TextEditingController(text: widget.existingItem?.price.toString() ?? '');
     _barcodeController = TextEditingController(text: widget.existingItem?.barcode ?? '');
@@ -90,10 +93,17 @@ class _MenuItemModalState extends State<MenuItemModal> {
   }
 
   void _submit() {
-    if (_formKey.currentState!.validate() && (widget.preselectedCategoryId != null || widget.existingItem != null)) {
+    if (_hasDuplicate) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Позиция с таким названием или штрихкодом уже существует')),
+      );
+      return;
+    }
+
+    if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
       final price = double.tryParse(_priceController.text) ?? 0.0;
-      final categoryId = widget.existingItem?.categoryId.toString() ?? widget.preselectedCategoryId.toString();
+      final categoryId = _selectedCategoryId?.toString() ?? '';
       final sortOrder = int.tryParse(_sortOrderController.text.trim()) ?? 0;
 
       Map<String, dynamic>? attributes;
@@ -111,16 +121,19 @@ class _MenuItemModalState extends State<MenuItemModal> {
       final barcode = _barcodeController.text.trim().isEmpty ? null : _barcodeController.text.trim();
 
       if (widget.existingItem != null) {
-        context.read<MenuBloc>().add(UpdateMenuItem(
-          widget.existingItem!.id,
-          {
-            'name': name,
-            'price': price,
-            'sort_order': sortOrder,
-            'attributes': attributes,
-            'barcode': barcode,
-          },
-        ));
+        context.read<MenuBloc>().add(
+              UpdateMenuItem(
+                widget.existingItem!.id,
+                {
+                  'name': name,
+                  'price': price,
+                  'category_id': _selectedCategoryId,
+                  'sort_order': sortOrder,
+                  'attributes': attributes,
+                  'barcode': barcode,
+                },
+              ),
+            );
       } else {
         context.read<MenuBloc>().add(
           CreateMenuItem(
@@ -137,7 +150,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Пожалуйста, заполните все поля')),
+        const SnackBar(content: Text('Пожалуйста, заполните все обязательные поля')),
       );
     }
   }
@@ -163,8 +176,15 @@ class _MenuItemModalState extends State<MenuItemModal> {
                 priceController: _priceController,
                 barcodeController: _barcodeController,
                 sortOrderController: _sortOrderController,
-                currentCategoryId: widget.preselectedCategoryId ?? int.tryParse(widget.existingItem?.categoryId ?? ''),
+                selectedCategoryId: _selectedCategoryId,
+                onCategoryChanged: (val) => setState(() => _selectedCategoryId = val),
                 excludeItemId: widget.existingItem?.id,
+                onDuplicateChanged: (dup) {
+                  final hasDup = dup != null;
+                  if (_hasDuplicate != hasDup) {
+                    setState(() => _hasDuplicate = hasDup);
+                  }
+                },
               ),
               const SizedBox(height: 16),
               Container(
@@ -183,7 +203,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
                   ),
                   value: _hasModifiers,
                   onChanged: (val) => setState(() => _hasModifiers = val),
-                  activeColor: AppColors.brandPrimary,
+                  activeThumbColor: AppColors.brandPrimary,
                   shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
                 ),
               ),

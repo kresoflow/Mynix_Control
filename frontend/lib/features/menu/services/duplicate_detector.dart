@@ -37,7 +37,7 @@ class DuplicateDetector {
       if (cleanBarcode != null && cleanBarcode.isNotEmpty && item.barcode != null && item.barcode!.trim() == cleanBarcode) {
         return DuplicateMatch(
           item: item,
-          matchReason: 'Штрихкод совпадает с «»',
+          matchReason: 'Штрихкод совпадает с «${item.cleanName}»',
           isSameCategory: currentCategoryId == null || item.categoryId == currentCategoryId.toString(),
           categoryName: item.categoryName,
         );
@@ -47,7 +47,7 @@ class DuplicateDetector {
       if (cleanQuery.isNotEmpty && itemClean == cleanQuery) {
         return DuplicateMatch(
           item: item,
-          matchReason: 'Позиция «» уже существует',
+          matchReason: 'Позиция «${item.cleanName}» уже существует',
           isSameCategory: currentCategoryId == null || item.categoryId == currentCategoryId.toString(),
           categoryName: item.categoryName,
         );
@@ -77,7 +77,7 @@ class DuplicateDetector {
       if (cleanBarcode != null && cleanBarcode.isNotEmpty && ing.barcode != null && ing.barcode!.trim() == cleanBarcode) {
         return DuplicateMatch(
           item: ing,
-          matchReason: 'Артикул/Штрихкод совпадает с «»',
+          matchReason: 'Штрихкод совпадает с «${ing.name}»',
           isSameCategory: currentCategoryId == null || ing.categoryId == currentCategoryId,
           categoryName: null,
         );
@@ -87,7 +87,7 @@ class DuplicateDetector {
       if (cleanQuery.isNotEmpty && ingClean == cleanQuery) {
         return DuplicateMatch(
           item: ing,
-          matchReason: 'Сырье «» уже существует',
+          matchReason: 'Сырье «${ing.name}» уже существует',
           isSameCategory: currentCategoryId == null || ing.categoryId == currentCategoryId,
           categoryName: null,
         );
@@ -114,7 +114,7 @@ class DuplicateDetector {
       if (catClean == cleanQuery) {
         return DuplicateMatch(
           item: cat,
-          matchReason: 'Категория «» уже существует',
+          matchReason: 'Категория «${cat.name}» уже существует',
           isSameCategory: true,
           categoryName: null,
         );

@@ -151,7 +151,7 @@ class BulkAddCategorySelector extends StatelessWidget {
                       items: [
                         const DropdownMenuItem<int?>(
                           value: null,
-                          child: Text('— Все категории —'),
+                          child: Text('— Без категории (в корень) —'),
                         ),
                         ...parents.map(
                           (c) => DropdownMenuItem<int?>(
@@ -213,6 +213,40 @@ class BulkAddCategorySelector extends StatelessWidget {
                   ),
                 ],
               ),
+              if (safeParentId == null) ...[
+                const SizedBox(height: 10),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: isDark ? 0.12 : 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.warning.withValues(alpha: isDark ? 0.35 : 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        PhosphorIconsRegular.folderDashed,
+                        size: 16,
+                        color: AppColors.warning,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Режим корня: позиции будут добавлены без категории (на главный экран каталога).',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? const Color(0xFFFFD54F) : const Color(0xFFB78103),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           );
         }

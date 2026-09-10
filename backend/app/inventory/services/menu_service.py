@@ -93,11 +93,14 @@ async def _sync_child_variations(session: AsyncSession, parent_item: MenuItem, v
 from sqlalchemy.orm.attributes import flag_modified
 
 async def create_menu_item(session: AsyncSession, data: dict) -> MenuItem:
+    raw_cat_id = data.get("category_id")
+    category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
+
     menu_item = MenuItem(
         name=data["name"],
         short_name=data.get("short_name"),
         tags=data.get("tags", []),
-        category_id=data["category_id"],
+        category_id=category_id,
         price=data["price"],
         description=data.get("description"),
         image_url=data.get("image_url"),

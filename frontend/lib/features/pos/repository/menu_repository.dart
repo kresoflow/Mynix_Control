@@ -95,7 +95,7 @@ class MenuRepository {
     try {
       final response = await _dio.post('/retail-product/', data: {
         'name': name,
-        'category_id': categoryId,
+        'category_id': (categoryId == null || categoryId == 0) ? null : categoryId,
         'unit': unit,
         'purchase_price': purchasePrice,
         'selling_price': sellingPrice,

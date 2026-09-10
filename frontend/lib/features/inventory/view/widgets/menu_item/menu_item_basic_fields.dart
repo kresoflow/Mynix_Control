@@ -5,6 +5,8 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/menu/services/duplicate_detector.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_menu_item_dialog.dart';
@@ -14,8 +16,10 @@ class MenuItemBasicFields extends StatefulWidget {
   final TextEditingController priceController;
   final TextEditingController barcodeController;
   final TextEditingController sortOrderController;
-  final int? currentCategoryId;
+  final int? selectedCategoryId;
+  final ValueChanged<int?> onCategoryChanged;
   final int? excludeItemId;
+  final ValueChanged<DuplicateMatch<MenuItem>?>? onDuplicateChanged;
 
   const MenuItemBasicFields({
     super.key,
@@ -23,8 +27,10 @@ class MenuItemBasicFields extends StatefulWidget {
     required this.priceController,
     required this.barcodeController,
     required this.sortOrderController,
-    this.currentCategoryId,
+    required this.selectedCategoryId,
+    required this.onCategoryChanged,
     this.excludeItemId,
+    this.onDuplicateChanged,
   });
 
   @override
@@ -56,16 +62,18 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
     final inputBg = isDark ? AppColors.darkBg : AppColors.lightBg;
 
     final menuState = context.watch<MenuBloc>().state;
-    DuplicateMatch? duplicateMatch;
+    DuplicateMatch<MenuItem>? duplicateMatch;
     if (menuState is MenuLoaded) {
       duplicateMatch = DuplicateDetector.findMenuItemDuplicate(
         items: menuState.items,
         queryName: widget.nameController.text,
         queryBarcode: widget.barcodeController.text,
-        currentCategoryId: widget.currentCategoryId,
+        currentCategoryId: widget.selectedCategoryId,
         excludeItemId: widget.excludeItemId,
       );
     }
+
+    widget.onDuplicateChanged?.call(duplicateMatch);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,7 +94,11 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                   ),
                   prefixIcon: Icon(PhosphorIconsRegular.bowlFood, color: AppColors.brandPrimary),
                 ),
-                validator: (v) => v == null || v.isEmpty ? 'Обязательное поле' : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Обязательное поле';
+                  if (duplicateMatch != null) return 'Позиция с таким названием или штрихкодом уже есть';
+                  return null;
+                },
               ),
             ),
             const SizedBox(width: 16),
@@ -126,11 +138,47 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
               Navigator.pop(context);
               showAddMenuItemDialog(
                 context,
-                currentCategoryId: widget.currentCategoryId,
+                currentCategoryId: widget.selectedCategoryId,
                 itemToEdit: duplicateMatch!.item,
               );
             },
           ),
+        const SizedBox(height: 16),
+        BlocBuilder<CategoryBloc, CategoryState>(
+          builder: (context, catState) {
+            final dishCategories = catState is CategoryLoaded
+                ? catState.categories.where((c) => c.categoryType == 'dish' && !c.isArchived).toList()
+                : [];
+
+            return DropdownButtonFormField<int?>(
+              initialValue: widget.selectedCategoryId,
+              dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+              decoration: InputDecoration(
+                labelText: 'Категория блюда',
+                filled: true,
+                fillColor: inputBg,
+                border: OutlineInputBorder(
+                  borderRadius: AppRadii.inputRadius,
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Icon(PhosphorIconsRegular.folderPlus, color: AppColors.brandPrimary),
+              ),
+              items: [
+                const DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text('Без категории (в корень каталога)'),
+                ),
+                ...dishCategories.map(
+                  (c) => DropdownMenuItem<int?>(
+                    value: c.id,
+                    child: Text(c.name),
+                  ),
+                ),
+              ],
+              onChanged: widget.onCategoryChanged,
+            );
+          },
+        ),
         const SizedBox(height: 16),
         Row(
           children: [

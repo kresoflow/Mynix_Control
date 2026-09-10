@@ -11,10 +11,12 @@ from app.inventory.services.menu_service import _sync_child_variations
 
 async def create_retail_product(session: AsyncSession, data: dict, user_id: int = 1) -> MenuItem:
     initial_stock = data.get("initial_stock", 0.0)
+    raw_cat_id = data.get("category_id")
+    category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
 
     retail_product = RetailProduct(
         name=data["name"],
-        category_id=data["category_id"],
+        category_id=category_id,
         price=data["selling_price"],
         cost=data["purchase_price"],
         unit=data["unit"],
@@ -43,7 +45,7 @@ async def create_retail_product(session: AsyncSession, data: dict, user_id: int 
         name=data["name"],
         short_name=data.get("short_name"),
         tags=data.get("tags", []),
-        category_id=data["category_id"],
+        category_id=category_id,
         retail_product_id=retail_product.id,
         price=data["selling_price"],
         type="retail",
