@@ -64,16 +64,23 @@ class _CatalogScreenState extends State<CatalogScreen> with SingleTickerProvider
                   icon: PhosphorIconsRegular.plus,
                   size: AppButtonSize.md,
                   items: const [
-                    AppMenuItem(id: 'dish', label: 'Папка для Блюд', icon: PhosphorIconsRegular.hamburger),
-                    AppMenuItem(id: 'retail', label: 'Папка для Витрины', icon: PhosphorIconsRegular.storefront),
+                    AppMenuItem(id: 'category_dish', label: 'Категория блюд', icon: PhosphorIconsRegular.folderPlus),
+                    AppMenuItem(id: 'category_retail', label: 'Категория витрины', icon: PhosphorIconsRegular.storefront),
+                    AppMenuDivider(),
+                    AppMenuItem(id: 'dish', label: 'Блюдо кухни', icon: PhosphorIconsRegular.cookingPot),
+                    AppMenuItem(id: 'retail', label: 'Товар витрины', icon: PhosphorIconsRegular.barcode),
                     AppMenuDivider(),
                     AppMenuItem(id: 'bulk_add', label: 'Массовое добавление', icon: PhosphorIconsRegular.table),
                   ],
                   onSelected: (val) {
-                    if (val == 'dish') {
+                    if (val == 'category_dish') {
                       showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'dish');
-                    } else if (val == 'retail') {
+                    } else if (val == 'category_retail') {
                       showAddCategoryDialog(context, currentCategoryId: currentCategoryId, type: 'retail');
+                    } else if (val == 'dish') {
+                      showAddMenuItemDialog(context, currentCategoryId: currentCategoryId);
+                    } else if (val == 'retail') {
+                      showAddRetailProductDialog(context, currentCategoryId: currentCategoryId);
                     } else if (val == 'bulk_add') {
                       showDialog(
                         context: context,
