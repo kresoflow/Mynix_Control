@@ -121,8 +121,8 @@ class CatalogHeaderManageMode extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           AppGhostButton(
-            label: 'Готово',
-            icon: PhosphorIconsRegular.check,
+            label: 'Отмена',
+            icon: PhosphorIconsRegular.x,
             height: 38,
             size: AppButtonSize.md,
             onPressed: onClearSelection,
@@ -158,9 +158,9 @@ class CatalogHeaderManageMode extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        AppSecondaryButton(
-          label: 'Готово',
-          icon: PhosphorIconsRegular.check,
+        AppGhostButton(
+          label: 'Отмена',
+          icon: PhosphorIconsRegular.x,
           height: 38,
           size: AppButtonSize.md,
           onPressed: onClearSelection,
@@ -171,6 +171,14 @@ class CatalogHeaderManageMode extends StatelessWidget {
 
   Widget _buildSelectedBadge(bool isDark, {required bool isMobile}) {
     final hasSelection = selectedCount > 0;
+    final IconData badgeIcon = selectedCount == 0
+        ? PhosphorIconsRegular.square
+        : (isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.minusSquare);
+
+    final Color badgeColor = hasSelection
+        ? AppColors.danger
+        : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+
     return Container(
       height: isMobile ? 32 : 38,
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 14),
@@ -190,16 +198,16 @@ class CatalogHeaderManageMode extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            PhosphorIconsRegular.checkSquare,
+            badgeIcon,
             size: isMobile ? 14 : 16,
-            color: hasSelection ? AppColors.danger : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+            color: badgeColor,
           ),
           const SizedBox(width: 8),
           Text(
             'Выбрано: $selectedCount',
             style: (isMobile ? AppTextStyles.caption : AppTextStyles.bodyMedium).copyWith(
               fontWeight: FontWeight.w600,
-              color: hasSelection ? AppColors.danger : (isDark ? AppColors.darkText : AppColors.lightText),
+              color: hasSelection ? badgeColor : (isDark ? AppColors.darkText : AppColors.lightText),
             ),
           ),
         ],

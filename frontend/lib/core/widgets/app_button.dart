@@ -189,12 +189,25 @@ class _AppButtonState extends State<AppButton> {
                 : (_isHovered ? AppColors.lightBorder : AppColors.lightSurface));
         fg = widget.isSelected
             ? primary
-            : (isDark ? AppColors.darkText : AppColors.lightText);
+            : (_isHovered && enabled
+                ? primary
+                : (isDark ? AppColors.darkText : AppColors.lightText));
         border = Border.all(
           color: widget.isSelected
               ? primary.withValues(alpha: 0.6)
-              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+              : (_isHovered && enabled
+                  ? primary.withValues(alpha: 0.5)
+                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
         );
+        if (_isHovered && enabled && !widget.isSelected) {
+          shadow = [
+            BoxShadow(
+              color: primary.withValues(alpha: 0.15),
+              blurRadius: 8,
+              spreadRadius: 0,
+            ),
+          ];
+        }
         break;
 
       case AppButtonVariant.outline:

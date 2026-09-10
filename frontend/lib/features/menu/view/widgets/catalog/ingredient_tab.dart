@@ -99,52 +99,77 @@ class _IngredientTabState extends State<IngredientTab> {
               Row(
                 children: [
                   if (_isManageMode) ...[
-                    Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: _selectedIngredients.isNotEmpty
-                            ? AppColors.danger.withValues(alpha: isDark ? 0.2 : 0.1)
-                            : (isDark ? AppColors.darkCard : AppColors.lightCard),
-                        borderRadius: BorderRadius.circular(AppRadii.md),
-                        border: Border.all(
-                          color: _selectedIngredients.isNotEmpty
-                              ? AppColors.danger.withValues(alpha: 0.4)
-                              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            PhosphorIconsRegular.checkSquare,
-                            size: 16,
-                            color: _selectedIngredients.isNotEmpty
-                                ? AppColors.danger
-                                : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Выбрано: ${_selectedIngredients.length}',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: _selectedIngredients.isNotEmpty
-                                  ? AppColors.danger
-                                  : (isDark ? AppColors.darkText : AppColors.lightText),
+                    Builder(
+                      builder: (context) {
+                        final raw = ingState is IngredientLoaded
+                            ? ingState.ingredients.where((i) => !i.isRetail).toList()
+                            : [];
+                        final filtered = _selectedCategoryId == null
+                            ? raw
+                            : raw.where((i) => i.categoryId == _selectedCategoryId).toList();
+                        final isAllSelected = filtered.isNotEmpty && _selectedIngredients.length == filtered.length;
+                        final IconData badgeIcon = _selectedIngredients.isEmpty
+                            ? PhosphorIconsRegular.square
+                            : (isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.minusSquare);
+                        final Color badgeColor = _selectedIngredients.isNotEmpty
+                            ? AppColors.danger
+                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              height: 38,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: _selectedIngredients.isNotEmpty
+                                    ? AppColors.danger.withValues(alpha: isDark ? 0.2 : 0.1)
+                                    : (isDark ? AppColors.darkCard : AppColors.lightCard),
+                                borderRadius: BorderRadius.circular(AppRadii.md),
+                                border: Border.all(
+                                  color: _selectedIngredients.isNotEmpty
+                                      ? AppColors.danger.withValues(alpha: 0.4)
+                                      : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    badgeIcon,
+                                    size: 16,
+                                    color: badgeColor,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Выбрано: ${_selectedIngredients.length}',
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: _selectedIngredients.isNotEmpty
+                                          ? badgeColor
+                                          : (isDark ? AppColors.darkText : AppColors.lightText),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    AppSecondaryButton(
-                      label: 'Выбрать все',
-                      icon: PhosphorIconsRegular.checkSquareOffset,
-                      height: 38,
-                      size: AppButtonSize.md,
-                      onPressed: () {
-                        if (ingState is IngredientLoaded) _selectAll(ingState);
+                            const SizedBox(width: 8),
+                            AppSecondaryButton(
+                              label: isAllSelected ? 'Снять выделение' : 'Выбрать все',
+                              icon: isAllSelected ? PhosphorIconsRegular.square : PhosphorIconsRegular.checkSquareOffset,
+                              height: 38,
+                              size: AppButtonSize.md,
+                              onPressed: () {
+                                if (isAllSelected) {
+                                  setState(() => _selectedIngredients.clear());
+                                } else if (ingState is IngredientLoaded) {
+                                  _selectAll(ingState);
+                                }
+                              },
+                            ),
+                          ],
+                        );
                       },
                     ),
                     const SizedBox(width: 8),
@@ -157,8 +182,8 @@ class _IngredientTabState extends State<IngredientTab> {
                     ),
                     const SizedBox(width: 8),
                     AppGhostButton(
-                      label: 'Готово',
-                      icon: PhosphorIconsRegular.check,
+                      label: 'Отмена',
+                      icon: PhosphorIconsRegular.x,
                       height: 38,
                       size: AppButtonSize.md,
                       onPressed: () => setState(() {
@@ -190,7 +215,7 @@ class _IngredientTabState extends State<IngredientTab> {
                     // Group 2: Operations
                     AppSecondaryButton(
                       label: 'Выбрать',
-                      icon: PhosphorIconsRegular.checks,
+                      icon: PhosphorIconsRegular.checkSquareOffset,
                       height: 38,
                       size: AppButtonSize.md,
                       onPressed: () => setState(() => _isManageMode = true),

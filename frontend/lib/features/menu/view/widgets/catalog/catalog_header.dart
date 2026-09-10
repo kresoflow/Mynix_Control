@@ -134,7 +134,7 @@ class CatalogHeader extends StatelessWidget {
             const SizedBox(width: 8),
             AppSecondaryButton(
               label: 'Выбрать',
-              icon: PhosphorIconsRegular.checks,
+              icon: PhosphorIconsRegular.checkSquareOffset,
               height: 32,
               size: AppButtonSize.sm,
               onPressed: () => onManageModeChanged(CategoryManageMode.delete),
@@ -208,7 +208,7 @@ class CatalogHeader extends StatelessWidget {
         // ── Group 2: Operations ──────────────────────────────────────
         AppSecondaryButton(
           label: 'Выбрать',
-          icon: PhosphorIconsRegular.checks,
+          icon: PhosphorIconsRegular.checkSquareOffset,
           height: 38,
           size: AppButtonSize.md,
           onPressed: () => onManageModeChanged(CategoryManageMode.delete),
