@@ -189,8 +189,8 @@ class _IngredientTabState extends State<IngredientTab> {
 
                     // Group 2: Operations
                     AppSecondaryButton(
-                      label: 'Управление',
-                      icon: PhosphorIconsRegular.pencilSimple,
+                      label: 'Выбрать',
+                      icon: PhosphorIconsRegular.checks,
                       height: 38,
                       size: AppButtonSize.md,
                       onPressed: () => setState(() => _isManageMode = true),

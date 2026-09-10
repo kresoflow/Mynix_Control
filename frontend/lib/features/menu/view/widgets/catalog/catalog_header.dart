@@ -26,6 +26,7 @@ class CatalogHeader extends StatelessWidget {
   final bool showArchived;
   final VoidCallback onShowArchivedToggle;
   final ValueChanged<String>? onSearchChanged;
+  final VoidCallback? onToggleVisibilitySelected;
 
   const CatalogHeader({
     super.key,
@@ -49,6 +50,7 @@ class CatalogHeader extends StatelessWidget {
     required this.showArchived,
     required this.onShowArchivedToggle,
     this.onSearchChanged,
+    this.onToggleVisibilitySelected,
   });
 
   @override
@@ -71,6 +73,7 @@ class CatalogHeader extends StatelessWidget {
               onClearSelection: onClearSelection,
               onSelectAllToggle: onSelectAllToggle,
               onDeleteSelected: onDeleteSelected,
+              onToggleVisibilitySelected: onToggleVisibilitySelected,
             )
           : (isMobile ? _buildMobileDefaultMode(context, colorScheme) : _buildDesktopDefaultMode(context, colorScheme)),
     );
@@ -130,8 +133,8 @@ class CatalogHeader extends StatelessWidget {
             _buildViewModeToggle(isMobile: true),
             const SizedBox(width: 8),
             AppSecondaryButton(
-              label: 'Управление',
-              icon: PhosphorIconsRegular.pencilSimple,
+              label: 'Выбрать',
+              icon: PhosphorIconsRegular.checks,
               height: 32,
               size: AppButtonSize.sm,
               onPressed: () => onManageModeChanged(CategoryManageMode.delete),
@@ -204,8 +207,8 @@ class CatalogHeader extends StatelessWidget {
 
         // ── Group 2: Operations ──────────────────────────────────────
         AppSecondaryButton(
-          label: 'Управление',
-          icon: PhosphorIconsRegular.pencilSimple,
+          label: 'Выбрать',
+          icon: PhosphorIconsRegular.checks,
           height: 38,
           size: AppButtonSize.md,
           onPressed: () => onManageModeChanged(CategoryManageMode.delete),

@@ -50,6 +50,7 @@ class CategoryGridItem extends StatelessWidget {
 
     return AppCard(
       onTap: onTap,
+      isSelected: isSelected,
       child: Stack(
         children: [
           Opacity(

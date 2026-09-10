@@ -79,6 +79,7 @@ class MenuGridItem extends StatelessWidget {
       opacity: item.isAvailable ? 1.0 : 0.5,
       child: AppCard(
         onTap: onTap,
+        isSelected: isSelected,
         child: Stack(
           children: [
             Padding(

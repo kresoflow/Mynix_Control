@@ -13,6 +13,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
   final VoidCallback onClearSelection;
   final VoidCallback onSelectAllToggle;
   final VoidCallback onDeleteSelected;
+  final VoidCallback? onToggleVisibilitySelected;
 
   const CatalogHeaderManageMode({
     super.key,
@@ -23,6 +24,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
     required this.onClearSelection,
     required this.onSelectAllToggle,
     required this.onDeleteSelected,
+    this.onToggleVisibilitySelected,
   });
 
   @override
@@ -60,7 +62,19 @@ class CatalogHeaderManageMode extends StatelessWidget {
                     onPressed: onSelectAllToggle,
                   ),
                 ),
-                const SizedBox(width: 8),
+                if (onToggleVisibilitySelected != null) ...[
+                  const SizedBox(width: 6),
+                  AppSecondaryButton(
+                    label: '',
+                    icon: PhosphorIconsRegular.eyeSlash,
+                    tooltip: 'Скрыть / Показать',
+                    height: 32,
+                    width: 32,
+                    size: AppButtonSize.sm,
+                    onPressed: selectedCount > 0 ? onToggleVisibilitySelected : null,
+                  ),
+                ],
+                const SizedBox(width: 6),
                 Expanded(
                   child: AppDangerButton(
                     label: 'Удалить ($selectedCount)',
@@ -88,6 +102,16 @@ class CatalogHeaderManageMode extends StatelessWidget {
             onPressed: onSelectAllToggle,
           ),
           const Spacer(),
+          if (onToggleVisibilitySelected != null) ...[
+            AppSecondaryButton(
+              label: 'Скрыть / Показать',
+              icon: PhosphorIconsRegular.eyeSlash,
+              height: 38,
+              size: AppButtonSize.md,
+              onPressed: selectedCount > 0 ? onToggleVisibilitySelected : null,
+            ),
+            const SizedBox(width: 8),
+          ],
           AppDangerButton(
             label: 'Удалить выбранные ($selectedCount)',
             icon: PhosphorIconsRegular.trash,
@@ -95,7 +119,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
             size: AppButtonSize.md,
             onPressed: selectedCount > 0 ? onDeleteSelected : null,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           AppGhostButton(
             label: 'Готово',
             icon: PhosphorIconsRegular.check,

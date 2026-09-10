@@ -205,6 +205,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       onNavigateToHistory: (index) => setState(() => _navigationHistory = _navigationHistory.sublist(0, index + 1)),
                       onAddPressed: () => showAddCategoryDialog(context, currentCategoryId: _currentCategoryId),
                       addMenuBuilder: widget.addMenuBuilder,
+                      onToggleVisibilitySelected: () => _toggleVisibilitySelected(currentCategories, currentItems),
                     ),
                     Expanded(
                       child: isLoading
@@ -217,7 +218,15 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               selectedCategories: _selectedCategories,
                               selectedItems: _selectedItems,
                               emptyMessage: widget.emptyMessage,
-                              onCategoryTap: (category) => setState(() => _navigationHistory.add(category)),
+                              onCategoryTap: (category) {
+                                if (_manageMode != CategoryManageMode.none) {
+                                  setState(() => _selectedCategories.contains(category.id)
+                                      ? _selectedCategories.remove(category.id)
+                                      : _selectedCategories.add(category.id));
+                                } else {
+                                  setState(() => _navigationHistory.add(category));
+                                }
+                              },
                               onCategoryToggle: (cat, val) => setState(() => _selectedCategories.contains(cat.id) ? _selectedCategories.remove(cat.id) : _selectedCategories.add(cat.id)),
                               onCategoryVisibilityToggle: (cat) => context.read<CategoryBloc>().add(UpdateCategory(id: cat.id, isVisible: !cat.isVisible)),
                               onCategoryEdit: (cat) => showAddCategoryDialog(context, itemToEdit: cat, currentCategoryId: _currentCategoryId),
@@ -233,7 +242,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                                 context.read<CategoryBloc>().add(LoadCategories());
                               },
                               onItemTap: (item) {
-                                if (_manageMode == CategoryManageMode.delete) {
+                                if (_manageMode != CategoryManageMode.none) {
                                   setState(() => _selectedItems.contains(item.id) ? _selectedItems.remove(item.id) : _selectedItems.add(item.id));
                                 } else {
                                   final children = (menuState as MenuLoaded).items.where((i) => i.parentId == item.id).toList();
@@ -264,6 +273,30 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
           },
         ),
       ),
+    );
+  }
+
+  void _toggleVisibilitySelected(List<dynamic> currentCategories, List<dynamic> currentItems) {
+    final selectedCats = currentCategories.where((c) => _selectedCategories.contains(c.id)).toList();
+    final selectedDishes = currentItems.where((i) => _selectedItems.contains(i.id)).toList();
+    if (selectedCats.isEmpty && selectedDishes.isEmpty) return;
+
+    final anyVisible = selectedCats.any((c) => c.isVisible == true) || selectedDishes.any((i) => i.isAvailable == true);
+    final targetVisible = !anyVisible;
+
+    for (final cat in selectedCats) {
+      context.read<CategoryBloc>().add(UpdateCategory(id: cat.id, isVisible: targetVisible));
+    }
+    for (final item in selectedDishes) {
+      context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': targetVisible}));
+    }
+    context.read<CategoryBloc>().add(LoadCategories());
+
+    final count = selectedCats.length + selectedDishes.length;
+    AppToast.showSuccess(
+      context,
+      targetVisible ? 'Элементы отображаются на кассе' : 'Элементы скрыты на кассе',
+      subtitle: '$count шт.',
     );
   }
 }
