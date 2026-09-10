@@ -105,6 +105,7 @@ class PosBreadcrumbBar extends StatelessWidget {
             isInitiallyExpanded: isSearchOpen,
             width: 280,
             onChanged: onSearchChanged,
+            onExpandedChanged: (expanded) => expanded ? onOpenSearch() : onCloseSearch(),
             onCollapsed: onCloseSearch,
           ),
           const SizedBox(width: 4),

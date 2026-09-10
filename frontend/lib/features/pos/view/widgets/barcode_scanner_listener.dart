@@ -50,6 +50,21 @@ class _BarcodeScannerListenerState extends State<BarcodeScannerListener> {
         }
 
         if (event is KeyDownEvent) {
+          final isModifierPressed = HardwareKeyboard.instance.isControlPressed ||
+              HardwareKeyboard.instance.isMetaPressed ||
+              HardwareKeyboard.instance.isAltPressed;
+
+          if (isModifierPressed) {
+            return KeyEventResult.ignored;
+          }
+
+          if (event.logicalKey == LogicalKeyboardKey.escape ||
+              event.logicalKey == LogicalKeyboardKey.tab ||
+              event.logicalKey.keyId >= LogicalKeyboardKey.f1.keyId &&
+                  event.logicalKey.keyId <= LogicalKeyboardKey.f12.keyId) {
+            return KeyEventResult.ignored;
+          }
+
           if (event.logicalKey == LogicalKeyboardKey.enter) {
             final barcode = _buffer.toString().trim();
             if (barcode.isNotEmpty) {
@@ -59,13 +74,13 @@ class _BarcodeScannerListenerState extends State<BarcodeScannerListener> {
             return KeyEventResult.handled;
           } else if (event.character != null && event.character!.isNotEmpty) {
             _buffer.write(event.character);
-            
+
             // Timeout to clear buffer if typing is too slow (not a scanner)
             _timer?.cancel();
             _timer = Timer(widget.timeout, () {
               _resetBuffer();
             });
-            
+
             return KeyEventResult.handled;
           }
         }

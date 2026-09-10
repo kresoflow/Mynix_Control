@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
@@ -26,11 +27,13 @@ class AppSearchField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onClear;
   final VoidCallback? onCollapsed;
+  final ValueChanged<bool>? onExpandedChanged;
   final double? width;
   final AppSearchFieldSize size;
   final AppSearchMode mode;
   final bool autoFocus;
   final bool isInitiallyExpanded;
+  final bool enableHotkeys;
 
   const AppSearchField({
     super.key,
@@ -41,11 +44,13 @@ class AppSearchField extends StatefulWidget {
     this.onChanged,
     this.onClear,
     this.onCollapsed,
+    this.onExpandedChanged,
     this.width,
     this.size = AppSearchFieldSize.md,
     this.mode = AppSearchMode.standard,
     this.autoFocus = false,
     this.isInitiallyExpanded = false,
+    this.enableHotkeys = true,
   });
 
   @override
@@ -80,14 +85,64 @@ class _AppSearchFieldState extends State<AppSearchField> {
 
     _isExpanded = widget.mode == AppSearchMode.standard || widget.isInitiallyExpanded;
     _focusNode.addListener(_onFocusChange);
+
+    if (widget.enableHotkeys) {
+      HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
+    }
   }
 
   void _onFocusChange() {
     if (mounted) setState(() => _isFocused = _focusNode.hasFocus);
   }
 
+  bool _handleGlobalKeyEvent(KeyEvent event) {
+    if (!widget.enableHotkeys || !mounted) return false;
+    if (event is! KeyDownEvent) return false;
+
+    final isCtrlOrCmd = HardwareKeyboard.instance.isControlPressed ||
+        HardwareKeyboard.instance.isMetaPressed;
+
+    // Ctrl+F / Cmd+K / F2: открыть и сфокусировать поиск
+    if ((isCtrlOrCmd && (event.logicalKey == LogicalKeyboardKey.keyF || event.logicalKey == LogicalKeyboardKey.keyK)) ||
+        event.logicalKey == LogicalKeyboardKey.f2) {
+      if (!_isExpanded) {
+        setState(() {
+          _isExpanded = true;
+          widget.onExpandedChanged?.call(true);
+        });
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focusNode.requestFocus();
+      });
+      return true;
+    }
+
+    // Escape: очистить, расфокусировать и свернуть
+    if (event.logicalKey == LogicalKeyboardKey.escape) {
+      if (_isFocused || (widget.mode == AppSearchMode.collapsible && _isExpanded)) {
+        _controller.clear();
+        widget.onChanged?.call('');
+        widget.onClear?.call();
+        _focusNode.unfocus();
+        if (widget.mode == AppSearchMode.collapsible) {
+          setState(() {
+            _isExpanded = false;
+            widget.onExpandedChanged?.call(false);
+            widget.onCollapsed?.call();
+          });
+        }
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   @override
   void dispose() {
+    if (widget.enableHotkeys) {
+      HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
+    }
     _focusNode.removeListener(_onFocusChange);
     if (_isInternalController) _controller.dispose();
     if (_isInternalFocusNode) _focusNode.dispose();
@@ -97,11 +152,13 @@ class _AppSearchFieldState extends State<AppSearchField> {
   void _toggleExpanded() {
     setState(() {
       _isExpanded = !_isExpanded;
+      widget.onExpandedChanged?.call(_isExpanded);
       if (_isExpanded) {
         _focusNode.requestFocus();
       } else {
         _controller.clear();
         widget.onChanged?.call('');
+        widget.onClear?.call();
         widget.onCollapsed?.call();
       }
     });

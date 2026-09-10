@@ -8,7 +8,6 @@ import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
 import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:flutter/services.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_breadcrumb_bar.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_empty_state.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/components/pos_menu_grid_view.dart';
@@ -27,51 +26,14 @@ class _PosMenuGridState extends State<PosMenuGrid> {
   String _searchQuery = '';
 
   @override
-  void initState() {
-    super.initState();
-    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
-  }
-
-  @override
   void dispose() {
-    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
   }
 
-  bool _handleKeyEvent(KeyEvent event) {
-    if (event is! KeyDownEvent) return false;
-
-    final isCtrlOrCmd = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
-
-    if (isCtrlOrCmd && event.logicalKey == LogicalKeyboardKey.keyF) {
-      _openSearch();
-      return true;
-    }
-
-    if (event.logicalKey == LogicalKeyboardKey.f2) {
-      _openSearch();
-      return true;
-    }
-
-    if (event.logicalKey == LogicalKeyboardKey.escape) {
-      if (_isSearchOpen || _searchQuery.isNotEmpty) {
-        _closeSearch();
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   void _openSearch() {
-    setState(() {
-      _isSearchOpen = true;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchFocusNode.requestFocus();
-    });
+    setState(() => _isSearchOpen = true);
   }
 
   void _closeSearch() {
@@ -165,7 +127,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                         List<dynamic> items = [];
 
                         final q = _searchQuery.trim().toLowerCase();
-                        if (_isSearchOpen && q.isNotEmpty) {
+                        if (q.isNotEmpty) {
                           if (menuState is MenuLoaded) {
                             items = menuState.items.where((i) {
                               final nameMatch = i.cleanName.toLowerCase().contains(q) || i.name.toLowerCase().contains(q);
@@ -202,7 +164,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                         }
 
                         if (categories.isEmpty && items.isEmpty) {
-                          return PosEmptyState(inCategory: currentCategoryId != null || (_isSearchOpen && q.isNotEmpty));
+                          return PosEmptyState(inCategory: currentCategoryId != null || q.isNotEmpty);
                         }
 
                         return BlocBuilder<PosSettingsCubit, PosSettingsState>(
