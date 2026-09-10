@@ -82,20 +82,14 @@ class _AppSearchFieldState extends State<AppSearchField> {
   }
 
   void _onFocusChange() {
-    if (mounted) {
-      setState(() => _isFocused = _focusNode.hasFocus);
-    }
+    if (mounted) setState(() => _isFocused = _focusNode.hasFocus);
   }
 
   @override
   void dispose() {
     _focusNode.removeListener(_onFocusChange);
-    if (_isInternalController) {
-      _controller.dispose();
-    }
-    if (_isInternalFocusNode) {
-      _focusNode.dispose();
-    }
+    if (_isInternalController) _controller.dispose();
+    if (_isInternalFocusNode) _focusNode.dispose();
     super.dispose();
   }
 
@@ -116,13 +110,13 @@ class _AppSearchFieldState extends State<AppSearchField> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Метрики размеров
     final double height;
     final double fontSize;
     final double iconSize;
     final double leftPadding;
     final double iconGap;
     final double rightPadding;
+    final double actionSize;
     final double badgeFontSize;
 
     switch (widget.size) {
@@ -132,7 +126,8 @@ class _AppSearchFieldState extends State<AppSearchField> {
         iconSize = 14.0;
         leftPadding = 10.0;
         iconGap = 8.0;
-        rightPadding = 6.0;
+        actionSize = 20.0;
+        rightPadding = 7.0;
         badgeFontSize = 9.5;
         break;
       case AppSearchFieldSize.md:
@@ -140,7 +135,8 @@ class _AppSearchFieldState extends State<AppSearchField> {
         fontSize = 13.0;
         iconSize = 16.0;
         leftPadding = 12.0;
-        iconGap = 10.0;
+        iconGap = 8.0;
+        actionSize = 24.0;
         rightPadding = 8.0;
         badgeFontSize = 10.5;
         break;
@@ -149,13 +145,14 @@ class _AppSearchFieldState extends State<AppSearchField> {
         fontSize = 14.5;
         iconSize = 18.0;
         leftPadding = 14.0;
-        iconGap = 12.0;
-        rightPadding = 10.0;
+        iconGap = 10.0;
+        actionSize = 28.0;
+        rightPadding = 9.0;
         badgeFontSize = 11.5;
         break;
     }
 
-    // Режим свернутой кнопки
+    // Режим свернутой иконки-кнопки
     if (widget.mode == AppSearchMode.collapsible && !_isExpanded) {
       return Tooltip(
         message: widget.shortcutHint != null
@@ -197,10 +194,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(AppRadii.md),
-        border: Border.all(
-          color: borderColor,
-          width: 1.0,
-        ),
+        border: Border.all(color: borderColor, width: 1.0),
         boxShadow: _isFocused
             ? [
                 BoxShadow(
@@ -235,6 +229,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                   autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
                   onChanged: widget.onChanged,
                   textAlignVertical: TextAlignVertical.center,
+                  cursorHeight: fontSize * 1.25,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: isDark ? AppColors.darkText : AppColors.lightText,
                     fontSize: fontSize,
@@ -242,6 +237,9 @@ class _AppSearchFieldState extends State<AppSearchField> {
                   ),
                   decoration: InputDecoration(
                     isDense: true,
+                    filled: false,
+                    fillColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
                     hintText: widget.hintText,
                     hintStyle: AppTextStyles.bodyMedium.copyWith(
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
@@ -251,43 +249,34 @@ class _AppSearchFieldState extends State<AppSearchField> {
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
               ),
               if (hasText) ...[
-                InkWell(
+                _buildActionBtn(
+                  icon: PhosphorIconsRegular.x,
+                  size: actionSize,
+                  iconSize: iconSize - 2,
+                  tooltip: 'Очистить',
+                  isDark: isDark,
                   onTap: () {
                     _controller.clear();
                     widget.onChanged?.call('');
                     widget.onClear?.call();
                   },
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      PhosphorIconsRegular.x,
-                      size: iconSize - 2,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    ),
-                  ),
                 ),
                 SizedBox(width: rightPadding),
               ] else if (widget.mode == AppSearchMode.collapsible) ...[
-                Tooltip(
-                  message: 'Закрыть (Esc)',
-                  child: InkWell(
-                    onTap: _toggleExpanded,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        PhosphorIconsRegular.x,
-                        size: iconSize - 2,
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                      ),
-                    ),
-                  ),
+                _buildActionBtn(
+                  icon: PhosphorIconsRegular.x,
+                  size: actionSize,
+                  iconSize: iconSize - 2,
+                  tooltip: 'Закрыть (Esc)',
+                  isDark: isDark,
+                  onTap: _toggleExpanded,
                 ),
                 SizedBox(width: rightPadding),
               ] else if (widget.shortcutHint != null && !_isFocused) ...[
@@ -310,13 +299,40 @@ class _AppSearchFieldState extends State<AppSearchField> {
                     ),
                   ),
                 ),
-                SizedBox(width: rightPadding),
+                SizedBox(width: rightPadding + 2),
               ] else ...[
-                SizedBox(width: rightPadding),
+                SizedBox(width: leftPadding),
               ],
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildActionBtn({
+    required IconData icon,
+    required double size,
+    required double iconSize,
+    required String tooltip,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadii.max),
+        child: Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          child: Icon(
+            icon,
+            size: iconSize,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
+        ),
       ),
     );
   }
