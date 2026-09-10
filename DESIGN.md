@@ -107,6 +107,17 @@ All buttons MUST strictly conform to the 5-tier size matrix:
 4. **Order Context Chips (`AppOrderContextChip`):**
    - Compact order metadata tags (Table number, Customer name, Order mode) with dynamic theme colors and optional clear button `✕`.
 
+5. **Search Fields (`AppSearchField`):**
+   - Live, reactive search-as-you-type (no redundant "Search" submit buttons).
+   - Built-in hotkey badge (`Ctrl+F` / `⌘K`) that automatically switches to clear button `✕` on input.
+   - **Size Scale (`AppSearchFieldSize`):**
+     - **`AppSearchFieldSize.sm` (32px):** Compact sidebars (Recipe menu list, Category tree).
+     - **`AppSearchFieldSize.md` (36px):** Standard for main page toolbars (CRM, Warehouse Documents, Shift analytics, POS).
+     - **`AppSearchFieldSize.lg` (44px):** Modal dialogs, Command Palette, Touchscreen POS.
+   - **Display Modes (`AppSearchMode`):**
+     - **`AppSearchMode.standard`:** Always visible field.
+     - **`AppSearchMode.collapsible`:** Collapsed icon button `34×34px`, expands on tap or `Ctrl+F` with autofocus.
+
 ### Active State & Contrast Typography Law
 - **Action Buttons & Segmented Active State (`AppPrimaryButton`, `AppSegmentedControl`):**
   - **Both Themes:** 100% Solid Brand Fill (`AppColors.brandPrimary`) + Pure White text/icon (`#FFFFFF`) + Glow.

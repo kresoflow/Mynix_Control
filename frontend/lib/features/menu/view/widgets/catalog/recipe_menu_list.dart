@@ -134,7 +134,7 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                       Expanded(
                         child: AppSearchField(
                           hintText: 'Поиск блюда...',
-                          height: 34,
+                          size: AppSearchFieldSize.sm,
                           onChanged: (val) => setState(() => _searchQuery = val),
                         ),
                       ),

@@ -37,30 +37,57 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('7. Поиск, Диалоги и Уведомления (AppSearchField, MynixDialog, AppToast)', style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(
-            'Инпуты тулбаров (36px MD), модальные окна со скруглениями 20px и всплывающие тосты.',
-            style: AppTextStyles.caption.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-          ),
-          const SizedBox(height: 16),
-          Row(
+          // Search Sizes Showcase
+          Text('Шкала размеров поиска (AppSearchFieldSize):', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               AppSearchField(
-                controller: _searchCtrl,
-                hintText: 'Поиск по блюдам или SKU...',
-                width: 300,
+                size: AppSearchFieldSize.sm,
+                width: 210,
+                hintText: 'SM (32px) Сайдбар...',
+                shortcutHint: 'Ctrl+F',
               ),
-              const SizedBox(width: 12),
-              AppPrimaryButton(
-                label: 'Найти',
-                icon: PhosphorIconsRegular.magnifyingGlass,
-                size: AppButtonSize.md,
-                onPressed: () => AppToast.showSuccess(context, 'Поиск: ${_searchCtrl.text}'),
+              AppSearchField(
+                size: AppSearchFieldSize.md,
+                width: 250,
+                hintText: 'MD (36px) Тулбар...',
+                shortcutHint: 'Ctrl+F',
+              ),
+              AppSearchField(
+                size: AppSearchFieldSize.lg,
+                width: 290,
+                hintText: 'LG (44px) Модалка/POS...',
+                shortcutHint: '⌘K',
               ),
             ],
           ),
           const SizedBox(height: 16),
+
+          // Collapsible Search Mode Showcase
+          Text('Раскрывающийся режим (AppSearchMode.collapsible для POS/узких тулбаров):', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              AppSearchField(
+                mode: AppSearchMode.collapsible,
+                size: AppSearchFieldSize.md,
+                hintText: 'Поиск блюд...',
+                shortcutHint: 'Ctrl+F',
+                width: 260,
+                onChanged: (val) {},
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '← Нажмите на лупу для раскрытия строки поиска с автофокусом',
+                style: AppTextStyles.caption.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
           Wrap(
             spacing: 12,
             children: [
