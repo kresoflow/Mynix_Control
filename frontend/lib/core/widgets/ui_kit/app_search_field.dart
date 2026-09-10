@@ -119,6 +119,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
     final double rightPadding;
     final double actionSize;
     final double badgeFontSize;
+    final double opticalYOffset;
 
     switch (widget.size) {
       case AppSearchFieldSize.sm:
@@ -128,8 +129,9 @@ class _AppSearchFieldState extends State<AppSearchField> {
         leftPadding = 10.0;
         iconGap = 8.0;
         actionSize = 20.0;
-        rightPadding = 7.0;
+        rightPadding = 8.0;
         badgeFontSize = 9.5;
+        opticalYOffset = -1.5;
         break;
       case AppSearchFieldSize.md:
         height = 38.0;
@@ -140,6 +142,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
         actionSize = 24.0;
         rightPadding = 8.0;
         badgeFontSize = 10.5;
+        opticalYOffset = -2.0;
         break;
       case AppSearchFieldSize.lg:
         height = 46.0;
@@ -148,8 +151,9 @@ class _AppSearchFieldState extends State<AppSearchField> {
         leftPadding = 14.0;
         iconGap = 10.0;
         actionSize = 28.0;
-        rightPadding = 9.0;
+        rightPadding = 10.0;
         badgeFontSize = 11.5;
+        opticalYOffset = -2.2;
         break;
     }
 
@@ -239,49 +243,53 @@ class _AppSearchFieldState extends State<AppSearchField> {
                 SizedBox(width: iconGap),
                 Expanded(
                   child: Center(
-                    child: TextField(
-                      controller: _controller,
-                      focusNode: _focusNode,
-                      autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
-                      onChanged: widget.onChanged,
-                      textAlignVertical: TextAlignVertical.center,
-                      cursorHeight: fontSize * 1.15,
-                      cursorWidth: 1.6,
-                      cursorColor: AppColors.brandPrimary,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: textColor,
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w400,
-                        height: 1.0,
-                        leadingDistribution: TextLeadingDistribution.even,
-                      ),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        isCollapsed: true,
-                        hintText: widget.hintText,
-                        hintStyle: AppTextStyles.bodyMedium.copyWith(
-                          color: subtextColor,
+                    child: Transform.translate(
+                      offset: Offset(0, opticalYOffset),
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
+                        onChanged: widget.onChanged,
+                        textAlignVertical: TextAlignVertical.center,
+                        cursorHeight: fontSize * 1.15,
+                        cursorWidth: 1.6,
+                        cursorColor: AppColors.brandPrimary,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: textColor,
                           fontSize: fontSize,
                           fontWeight: FontWeight.w400,
                           height: 1.0,
                           leadingDistribution: TextLeadingDistribution.even,
                         ),
-                        filled: false,
-                        fillColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          isCollapsed: true,
+                          hintText: widget.hintText,
+                          hintStyle: AppTextStyles.bodyMedium.copyWith(
+                            color: subtextColor,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w400,
+                            height: 1.0,
+                            leadingDistribution: TextLeadingDistribution.even,
+                          ),
+                          filled: false,
+                          fillColor: Colors.transparent,
+                          hoverColor: Colors.transparent,
+                          focusColor: Colors.transparent,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          focusedErrorBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
                     ),
                   ),
                 ),
                 if (hasText) ...[
+                  SizedBox(width: iconGap),
                   Center(
                     child: _buildActionBtn(
                       icon: PhosphorIconsRegular.x,
@@ -299,6 +307,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                   ),
                   SizedBox(width: rightPadding),
                 ] else if (widget.mode == AppSearchMode.collapsible) ...[
+                  SizedBox(width: iconGap),
                   Center(
                     child: _buildActionBtn(
                       icon: PhosphorIconsRegular.x,
@@ -312,6 +321,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                   ),
                   SizedBox(width: rightPadding),
                 ] else if (widget.shortcutHint != null && !_isFocused) ...[
+                  SizedBox(width: iconGap),
                   Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -333,7 +343,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                       ),
                     ),
                   ),
-                  SizedBox(width: rightPadding + 2),
+                  SizedBox(width: rightPadding),
                 ] else ...[
                   SizedBox(width: leftPadding),
                 ],
