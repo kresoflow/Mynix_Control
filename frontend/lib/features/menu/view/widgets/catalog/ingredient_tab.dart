@@ -123,6 +123,7 @@ class _IngredientTabState extends State<IngredientTab> {
                         _selectedIngredients.clear();
                       }),
                     ),
+                  ] else ...[
                     // View Switcher (Grid / List) using unified UI Kit AppSegmentedControl
                     AppSegmentedControl<bool>(
                       size: AppSegmentedSize.md,
