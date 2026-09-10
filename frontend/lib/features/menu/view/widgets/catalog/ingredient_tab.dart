@@ -157,7 +157,8 @@ class _IngredientTabState extends State<IngredientTab> {
                             const SizedBox(width: 8),
                             AppSecondaryButton(
                               label: isAllSelected ? 'Снять выделение' : 'Выбрать все',
-                              icon: isAllSelected ? PhosphorIconsRegular.square : PhosphorIconsRegular.checkSquareOffset,
+                              icon: isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.square,
+                              isSelected: isAllSelected,
                               height: 38,
                               size: AppButtonSize.md,
                               onPressed: () {
