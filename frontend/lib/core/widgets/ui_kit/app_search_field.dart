@@ -260,28 +260,47 @@ class _AppSearchFieldState extends State<AppSearchField> {
             ? (isDark ? AppColors.brandPrimary.withValues(alpha: 0.6) : AppColors.brandPrimary.withValues(alpha: 0.5))
             : (isDark ? AppColors.darkBorder : AppColors.lightBorder));
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
-        width: widget.width,
-        height: height,
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(AppRadii.md),
-          border: Border.all(color: borderColor, width: 1.0),
-          boxShadow: _isFocused
-              ? [
-                  BoxShadow(
-                    color: AppColors.brandPrimary.withValues(alpha: isDark ? 0.20 : 0.12),
-                    blurRadius: 6,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
-        ),
-        child: ValueListenableBuilder<TextEditingValue>(
+    final double defaultWidth;
+    switch (widget.size) {
+      case AppSearchFieldSize.sm:
+        defaultWidth = 220.0;
+        break;
+      case AppSearchFieldSize.md:
+        defaultWidth = 260.0;
+        break;
+      case AppSearchFieldSize.lg:
+        defaultWidth = 300.0;
+        break;
+    }
+
+    final double? targetWidth = widget.width ?? (widget.mode == AppSearchMode.collapsible ? defaultWidth : null);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double? effectiveWidth = targetWidth ?? (constraints.hasBoundedWidth ? null : defaultWidth);
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 140),
+            width: effectiveWidth,
+            height: height,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              border: Border.all(color: borderColor, width: 1.0),
+              boxShadow: _isFocused
+                  ? [
+                      BoxShadow(
+                        color: AppColors.brandPrimary.withValues(alpha: isDark ? 0.20 : 0.12),
+                        blurRadius: 6,
+                        offset: const Offset(0, 1),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: ValueListenableBuilder<TextEditingValue>(
           valueListenable: _controller,
           builder: (context, value, _) {
             final hasText = value.text.isNotEmpty;
@@ -415,6 +434,8 @@ class _AppSearchFieldState extends State<AppSearchField> {
           },
         ),
       ),
+    );
+      },
     );
   }
 
