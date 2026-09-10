@@ -34,12 +34,14 @@ enum AppSegmentedSize {
 class AppSegmentedItem<T> {
   final T value;
   final String label;
+  final String? tooltip;
   final IconData? icon;
   final int? count;
 
   const AppSegmentedItem({
     required this.value,
-    required this.label,
+    this.label = '',
+    this.tooltip,
     this.icon,
     this.count,
   });
@@ -124,6 +126,7 @@ class _SegmentTileState<T> extends State<_SegmentTile<T>> {
     final size = widget.size;
     final isSelected = widget.isSelected;
     final item = widget.item;
+    final isIconOnly = item.label.isEmpty && item.icon != null;
 
     Color bg;
     Color fg;
@@ -141,6 +144,71 @@ class _SegmentTileState<T> extends State<_SegmentTile<T>> {
       fg = widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
     }
 
+    final tileHeight = size.height - 6;
+    final tileWidth = isIconOnly ? tileHeight : null;
+
+    Widget content = AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      width: tileWidth,
+      height: tileHeight,
+      padding: isIconOnly ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: size.paddingH),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(size.radius - 2),
+        boxShadow: shadows,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (item.icon != null) ...[
+            Icon(item.icon, size: size.iconSize, color: fg),
+            if (!isIconOnly) const SizedBox(width: 6),
+          ],
+          if (!isIconOnly)
+            Text(
+              item.label,
+              style: GoogleFonts.inter(
+                fontSize: size.fontSize,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: fg,
+                letterSpacing: -0.1,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          if (item.count != null) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.25)
+                    : (widget.isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(AppRadii.badge),
+              ),
+              child: Text(
+                '${item.count}',
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: size.fontSize * 0.8,
+                  fontWeight: FontWeight.w700,
+                  color: fg,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (item.tooltip != null) {
+      content = Tooltip(
+        message: item.tooltip!,
+        child: content,
+      );
+    }
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -150,57 +218,7 @@ class _SegmentTileState<T> extends State<_SegmentTile<T>> {
         child: InkWell(
           onTap: widget.onTap,
           borderRadius: BorderRadius.circular(size.radius - 2),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            padding: EdgeInsets.symmetric(horizontal: size.paddingH),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(size.radius - 2),
-              boxShadow: shadows,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (item.icon != null) ...[
-                  Icon(item.icon, size: size.iconSize, color: fg),
-                  const SizedBox(width: 6),
-                ],
-                Text(
-                  item.label,
-                  style: GoogleFonts.inter(
-                    fontSize: size.fontSize,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: fg,
-                    letterSpacing: -0.1,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (item.count != null) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? Colors.white.withValues(alpha: 0.25)
-                          : (widget.isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(AppRadii.badge),
-                    ),
-                    child: Text(
-                      '${item.count}',
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: size.fontSize * 0.8,
-                        fontWeight: FontWeight.w700,
-                        color: fg,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
+          child: content,
         ),
       ),
     );

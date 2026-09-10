@@ -123,36 +123,23 @@ class _IngredientTabState extends State<IngredientTab> {
                         _selectedIngredients.clear();
                       }),
                     ),
-                  ] else ...[
-                    // View Switcher (Grid / List)
-                    Container(
-                      height: 36,
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    // View Switcher (Grid / List) using unified UI Kit AppSegmentedControl
+                    AppSegmentedControl<bool>(
+                      size: AppSegmentedSize.md,
+                      selectedValue: _isGridView,
+                      onValueChanged: (val) => setState(() => _isGridView = val),
+                      items: const [
+                        AppSegmentedItem(
+                          value: true,
+                          icon: PhosphorIconsRegular.squaresFour,
+                          tooltip: 'Сетка',
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          _buildViewBtn(
-                            isActive: !_isGridView,
-                            icon: PhosphorIconsRegular.list,
-                            tooltip: 'Список',
-                            onTap: () => setState(() => _isGridView = false),
-                            isDark: isDark,
-                          ),
-                          _buildViewBtn(
-                            isActive: _isGridView,
-                            icon: PhosphorIconsRegular.squaresFour,
-                            tooltip: 'Сетка',
-                            onTap: () => setState(() => _isGridView = true),
-                            isDark: isDark,
-                          ),
-                        ],
-                      ),
+                        AppSegmentedItem(
+                          value: false,
+                          icon: PhosphorIconsRegular.listDashes,
+                          tooltip: 'Список',
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 8),
 
@@ -345,35 +332,6 @@ class _IngredientTabState extends State<IngredientTab> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildViewBtn({
-    required bool isActive,
-    required IconData icon,
-    required String tooltip,
-    required VoidCallback onTap,
-    required bool isDark,
-  }) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: isActive ? AppColors.brandPrimary : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: isActive ? Colors.white : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-          ),
-        ),
       ),
     );
   }

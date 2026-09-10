@@ -3,7 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
@@ -122,36 +122,23 @@ class IngredientHeaderBar extends StatelessWidget {
               height: 36,
               onPressed: onCancelManageMode,
             ),
-          ] else ...[
-            // View Switcher (Grid / List)
-            Container(
-              height: 36,
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            // View Switcher (Grid / List) using unified UI Kit AppSegmentedControl
+            AppSegmentedControl<bool>(
+              size: AppSegmentedSize.md,
+              selectedValue: isGridView,
+              onValueChanged: onToggleView,
+              items: const [
+                AppSegmentedItem(
+                  value: true,
+                  icon: PhosphorIconsRegular.squaresFour,
+                  tooltip: 'Сетка',
                 ),
-              ),
-              child: Row(
-                children: [
-                  _buildViewBtn(
-                    isActive: !isGridView,
-                    icon: PhosphorIconsRegular.list,
-                    tooltip: 'Список',
-                    onTap: () => onToggleView(false),
-                    isDark: isDark,
-                  ),
-                  _buildViewBtn(
-                    isActive: isGridView,
-                    icon: PhosphorIconsRegular.squaresFour,
-                    tooltip: 'Сетка',
-                    onTap: () => onToggleView(true),
-                    isDark: isDark,
-                  ),
-                ],
-              ),
+                AppSegmentedItem(
+                  value: false,
+                  icon: PhosphorIconsRegular.listDashes,
+                  tooltip: 'Список',
+                ),
+              ],
             ),
             const SizedBox(width: 8),
 
@@ -285,35 +272,6 @@ class IngredientHeaderBar extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildViewBtn({
-    required bool isActive,
-    required IconData icon,
-    required String tooltip,
-    required VoidCallback onTap,
-    required bool isDark,
-  }) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: isActive ? AppColors.brandPrimary : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: isActive ? Colors.white : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-          ),
-        ),
       ),
     );
   }

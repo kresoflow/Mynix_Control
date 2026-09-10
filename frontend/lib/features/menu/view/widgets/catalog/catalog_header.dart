@@ -4,8 +4,7 @@ import 'catalog_header_manage_mode.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/app_segmented_tab.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class CatalogHeader extends StatelessWidget {
   final CategoryManageMode manageMode;
@@ -195,19 +194,18 @@ class CatalogHeader extends StatelessWidget {
   }
 
   Widget _buildViewModeToggle() {
-    return AppSegmentedTab<CategoryViewMode>(
-      height: 38,
-      isCompact: true,
+    return AppSegmentedControl<CategoryViewMode>(
+      size: AppSegmentedSize.md,
       items: const [
-        AppSegmentedTabItem(
+        AppSegmentedItem(
           value: CategoryViewMode.grid,
-          label: '',
           icon: PhosphorIconsRegular.squaresFour,
+          tooltip: 'Сетка',
         ),
-        AppSegmentedTabItem(
+        AppSegmentedItem(
           value: CategoryViewMode.list,
-          label: '',
           icon: PhosphorIconsRegular.listDashes,
+          tooltip: 'Список',
         ),
       ],
       selectedValue: viewMode,
