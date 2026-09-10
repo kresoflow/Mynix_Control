@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/app_text_field.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/app_nav_tile.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
@@ -38,15 +37,9 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
         title: const Text('Удаление категории'),
         content: Text('Удалить полку «${category.name}»? Привязанное сырьё станет «Без категории».'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.danger,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
             onPressed: () {
               context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'all'));
               Navigator.pop(ctx);
@@ -65,15 +58,9 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
         title: const Text('Массовое удаление полок'),
         content: Text('Удалить все категории сырья (${categories.length} шт.)? Привязанное сырьё станет «Без категории».'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.danger,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
             onPressed: () {
               final ids = categories.map((c) => c.id).toList();
               context.read<CategoryBloc>().add(DeleteCategoriesBulk(ids, mode: 'all'));
@@ -119,10 +106,9 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                 Row(
                   children: [
                     Expanded(
-                      child: AppTextField(
-                        hintText: 'Поиск сырья и полок...',
-                        isCompact: true,
-                        prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
+                      child: AppSearchField(
+                        size: AppSearchFieldSize.sm,
+                        hintText: 'Поиск...',
                         onChanged: (val) {
                           setState(() => _searchQuery = val);
                           widget.onSearchChanged?.call(val);
@@ -130,39 +116,29 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    InkWell(
-                      onTap: () => setState(() => _forceExpanded = !(_forceExpanded ?? false)),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        height: 36,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    Tooltip(
+                      message: (_forceExpanded == true) ? 'Свернуть все' : 'Развернуть все',
+                      child: InkWell(
+                        onTap: () => setState(() => _forceExpanded = !(_forceExpanded ?? false)),
+                        borderRadius: BorderRadius.circular(AppRadii.sm),
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                            borderRadius: BorderRadius.circular(AppRadii.sm),
+                            border: Border.all(
+                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              (_forceExpanded == true)
-                                  ? PhosphorIconsRegular.caretUp
-                                  : PhosphorIconsRegular.caretDown,
-                              size: 14,
-                              color: isDark ? AppColors.darkText : AppColors.lightText,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              (_forceExpanded == true) ? 'Свернуть' : 'Развернуть',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? AppColors.darkText : AppColors.lightText,
-                              ),
-                            ),
-                          ],
+                          child: Icon(
+                            (_forceExpanded == true)
+                                ? PhosphorIconsRegular.caretUp
+                                : PhosphorIconsRegular.caretDown,
+                            size: 16,
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                          ),
                         ),
                       ),
                     ),

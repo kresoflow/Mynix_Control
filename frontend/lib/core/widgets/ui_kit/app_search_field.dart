@@ -7,9 +7,9 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Размеры поля поиска
 enum AppSearchFieldSize {
-  sm, // 32px — для узких сайдбаров и вложенных колонок
-  md, // 36px — стандарт для главных тулбаров и таблиц
-  lg, // 44px — для модальных окон и сенсорного POS
+  sm, // 34px — для узких сайдбаров и вложенных колонок
+  md, // 38px — стандарт для главных тулбаров и таблиц
+  lg, // 46px — для модальных окон и сенсорного POS
 }
 
 /// Режим отображения поиска
@@ -120,26 +120,38 @@ class _AppSearchFieldState extends State<AppSearchField> {
     final double height;
     final double fontSize;
     final double iconSize;
+    final double leftPadding;
+    final double iconGap;
+    final double rightPadding;
     final double badgeFontSize;
 
     switch (widget.size) {
       case AppSearchFieldSize.sm:
-        height = 32.0;
+        height = 34.0;
         fontSize = 12.0;
         iconSize = 14.0;
+        leftPadding = 10.0;
+        iconGap = 8.0;
+        rightPadding = 6.0;
         badgeFontSize = 9.5;
         break;
       case AppSearchFieldSize.md:
-        height = 36.0;
+        height = 38.0;
         fontSize = 13.0;
         iconSize = 16.0;
-        badgeFontSize = 10.0;
+        leftPadding = 12.0;
+        iconGap = 10.0;
+        rightPadding = 8.0;
+        badgeFontSize = 10.5;
         break;
       case AppSearchFieldSize.lg:
-        height = 44.0;
+        height = 46.0;
         fontSize = 14.5;
         iconSize = 18.0;
-        badgeFontSize = 11.0;
+        leftPadding = 14.0;
+        iconGap = 12.0;
+        rightPadding = 10.0;
+        badgeFontSize = 11.5;
         break;
     }
 
@@ -161,6 +173,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
               borderRadius: BorderRadius.circular(AppRadii.md),
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                width: 1.0,
               ),
             ),
             child: Icon(
@@ -174,11 +187,11 @@ class _AppSearchFieldState extends State<AppSearchField> {
     }
 
     final borderColor = _isFocused
-        ? AppColors.brandPrimary
+        ? (isDark ? AppColors.brandPrimary.withValues(alpha: 0.8) : AppColors.brandPrimary)
         : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
+      duration: const Duration(milliseconds: 140),
       width: widget.width,
       height: height,
       decoration: BoxDecoration(
@@ -186,13 +199,13 @@ class _AppSearchFieldState extends State<AppSearchField> {
         borderRadius: BorderRadius.circular(AppRadii.md),
         border: Border.all(
           color: borderColor,
-          width: _isFocused ? 1.2 : 1.0,
+          width: 1.0,
         ),
         boxShadow: _isFocused
             ? [
                 BoxShadow(
-                  color: AppColors.brandPrimary.withValues(alpha: isDark ? 0.18 : 0.12),
-                  blurRadius: 8,
+                  color: AppColors.brandPrimary.withValues(alpha: isDark ? 0.12 : 0.08),
+                  blurRadius: 6,
                   offset: const Offset(0, 1),
                 ),
               ]
@@ -204,8 +217,9 @@ class _AppSearchFieldState extends State<AppSearchField> {
           final hasText = value.text.isNotEmpty;
 
           return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(width: 10),
+              SizedBox(width: leftPadding),
               Icon(
                 PhosphorIconsRegular.magnifyingGlass,
                 size: iconSize,
@@ -213,16 +227,18 @@ class _AppSearchFieldState extends State<AppSearchField> {
                     ? AppColors.brandPrimary
                     : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: iconGap),
               Expanded(
                 child: TextField(
                   controller: _controller,
                   focusNode: _focusNode,
                   autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
                   onChanged: widget.onChanged,
+                  textAlignVertical: TextAlignVertical.center,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: isDark ? AppColors.darkText : AppColors.lightText,
                     fontSize: fontSize,
+                    height: 1.2,
                   ),
                   decoration: InputDecoration(
                     isDense: true,
@@ -230,67 +246,73 @@ class _AppSearchFieldState extends State<AppSearchField> {
                     hintStyle: AppTextStyles.bodyMedium.copyWith(
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       fontSize: fontSize,
+                      height: 1.2,
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
                   ),
                 ),
               ),
-              if (hasText)
+              if (hasText) ...[
                 InkWell(
                   onTap: () {
                     _controller.clear();
                     widget.onChanged?.call('');
                     widget.onClear?.call();
                   },
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding: const EdgeInsets.all(4),
                     child: Icon(
                       PhosphorIconsRegular.x,
                       size: iconSize - 2,
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                     ),
                   ),
-                )
-              else if (widget.shortcutHint != null && !_isFocused)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        width: 0.8,
-                      ),
-                    ),
-                    child: Text(
-                      widget.shortcutHint!,
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: badgeFontSize,
-                        fontWeight: FontWeight.w600,
+                ),
+                SizedBox(width: rightPadding),
+              ] else if (widget.mode == AppSearchMode.collapsible) ...[
+                Tooltip(
+                  message: 'Закрыть (Esc)',
+                  child: InkWell(
+                    onTap: _toggleExpanded,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        PhosphorIconsRegular.x,
+                        size: iconSize - 2,
                         color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       ),
                     ),
                   ),
                 ),
-              if (widget.mode == AppSearchMode.collapsible) ...[
-                const SizedBox(width: 2),
-                InkWell(
-                  onTap: _toggleExpanded,
-                  borderRadius: BorderRadius.circular(10),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    child: Icon(
-                      PhosphorIconsRegular.xCircle,
-                      size: iconSize,
+                SizedBox(width: rightPadding),
+              ] else if (widget.shortcutHint != null && !_isFocused) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Text(
+                    widget.shortcutHint!,
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: badgeFontSize,
+                      fontWeight: FontWeight.w600,
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: rightPadding),
+              ] else ...[
+                SizedBox(width: rightPadding),
               ],
             ],
           );

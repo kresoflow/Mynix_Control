@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class IngredientPickerDialog extends StatefulWidget {
@@ -77,19 +78,10 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
               ],
             ),
             const SizedBox(height: 12),
-            TextField(
+            AppSearchField(
+              size: AppSearchFieldSize.lg,
               controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Поиск сырья по названию или артикулу...',
-                prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
-                filled: true,
-                fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+              hintText: 'Поиск сырья по названию или артикулу...',
               onChanged: (q) => setState(() => _searchQuery = q),
             ),
             const SizedBox(height: 12),

@@ -8,7 +8,7 @@ import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.da
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_ingredient_dialog.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class IngredientHeader extends StatelessWidget {
   final bool isManageMode;
@@ -46,16 +46,10 @@ class IngredientHeader extends StatelessWidget {
           if (onSearchChanged != null)
             SizedBox(
               width: 250,
-              height: 38,
-              child: TextField(
+              child: AppSearchField(
+                size: AppSearchFieldSize.md,
+                hintText: 'Поиск по названию...',
                 onChanged: onSearchChanged,
-                style: const TextStyle(fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Поиск по названию...',
-                  prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
               ),
             ),
           const Spacer(),

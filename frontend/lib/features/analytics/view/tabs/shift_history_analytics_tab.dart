@@ -174,10 +174,9 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
           Row(
             children: [
               Expanded(
-                child: AppTextField(
+                child: AppSearchField(
+                  size: AppSearchFieldSize.md,
                   hintText: 'Поиск по номеру смены или кассиру...',
-                  isCompact: true,
-                  prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
               ),

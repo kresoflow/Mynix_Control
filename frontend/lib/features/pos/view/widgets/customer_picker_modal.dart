@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
 import 'package:mynix_frontend/features/crm/repository/crm_repository.dart';
 import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_form_modal.dart';
@@ -128,31 +128,21 @@ class _CustomerPickerModalState extends State<CustomerPickerModal> {
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
+                    child: AppSearchField(
+                      size: AppSearchFieldSize.lg,
                       controller: _searchController,
                       onChanged: _loadCustomers,
-                      autofocus: true,
-                      decoration: InputDecoration(
-                        hintText: 'Номер телефона или имя...',
-                        prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
-                        filled: true,
-                        fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: border)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: border)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      ),
+                      autoFocus: true,
+                      hintText: 'Номер телефона или имя...',
                     ),
                   ),
                   const SizedBox(width: 8),
-                  IconButton.filled(
+                  AppPrimaryButton(
+                    label: '',
+                    icon: PhosphorIconsRegular.userPlus,
+                    size: AppButtonSize.lg,
+                    width: 44,
                     onPressed: () => _openCreateCustomer(context),
-                    icon: const Icon(PhosphorIconsRegular.userPlus, size: 20),
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.brandPrimary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.all(12),
-                    ),
-                    tooltip: 'Создать нового гостя',
                   ),
                 ],
               ),

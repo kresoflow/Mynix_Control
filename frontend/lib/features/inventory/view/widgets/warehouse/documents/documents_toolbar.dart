@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/widgets/app_text_field.dart';
 import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class DocumentsToolbar extends StatelessWidget {
@@ -53,10 +51,9 @@ class DocumentsToolbar extends StatelessWidget {
         // Search bar on the right
         SizedBox(
           width: 280,
-          child: AppTextField(
+          child: AppSearchField(
+            size: AppSearchFieldSize.md,
             hintText: 'Поиск по номеру, поставщику...',
-            isCompact: true,
-            prefixIcon: const Icon(PhosphorIconsRegular.magnifyingGlass, size: 16),
             onChanged: onSearchChanged,
           ),
         ),

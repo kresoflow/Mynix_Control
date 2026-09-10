@@ -44,23 +44,23 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
             spacing: 12,
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
+            children: const [
               AppSearchField(
                 size: AppSearchFieldSize.sm,
                 width: 210,
-                hintText: 'SM (32px) Сайдбар...',
+                hintText: 'SM (34px) Сайдбар...',
                 shortcutHint: 'Ctrl+F',
               ),
               AppSearchField(
                 size: AppSearchFieldSize.md,
                 width: 250,
-                hintText: 'MD (36px) Тулбар...',
+                hintText: 'MD (38px) Тулбар...',
                 shortcutHint: 'Ctrl+F',
               ),
               AppSearchField(
                 size: AppSearchFieldSize.lg,
                 width: 290,
-                hintText: 'LG (44px) Модалка/POS...',
+                hintText: 'LG (46px) Модалка/POS...',
                 shortcutHint: '⌘K',
               ),
             ],
