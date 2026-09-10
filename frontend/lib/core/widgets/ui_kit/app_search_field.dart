@@ -59,6 +59,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
   bool _isInternalFocusNode = false;
   bool _isExpanded = false;
   bool _isFocused = false;
+  bool _isHovered = false;
 
   @override
   void initState() {
@@ -152,160 +153,172 @@ class _AppSearchFieldState extends State<AppSearchField> {
         break;
     }
 
-    // Режим свернутой иконки-кнопки
+    // Режим свернутой кнопки
     if (widget.mode == AppSearchMode.collapsible && !_isExpanded) {
       return Tooltip(
         message: widget.shortcutHint != null
             ? '${widget.hintText} (${widget.shortcutHint})'
             : widget.hintText,
-        child: InkWell(
-          onTap: _toggleExpanded,
-          borderRadius: BorderRadius.circular(AppRadii.md),
-          child: Container(
-            width: height,
-            height: height,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(AppRadii.md),
-              border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                width: 1.0,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: InkWell(
+            onTap: _toggleExpanded,
+            borderRadius: BorderRadius.circular(AppRadii.md),
+            child: Container(
+              width: height,
+              height: height,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                borderRadius: BorderRadius.circular(AppRadii.md),
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  width: 1.0,
+                ),
               ),
-            ),
-            child: Icon(
-              PhosphorIconsRegular.magnifyingGlass,
-              size: iconSize,
-              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              child: Icon(
+                PhosphorIconsRegular.magnifyingGlass,
+                size: iconSize,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
             ),
           ),
         ),
       );
     }
 
-    final borderColor = _isFocused
-        ? (isDark ? AppColors.brandPrimary.withValues(alpha: 0.8) : AppColors.brandPrimary)
-        : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
+    final Color bgColor = _isFocused
+        ? (isDark ? AppColors.darkCard : AppColors.lightCard)
+        : (isDark ? AppColors.darkCard : AppColors.lightCard);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 140),
-      width: widget.width,
-      height: height,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        border: Border.all(color: borderColor, width: 1.0),
-        boxShadow: _isFocused
-            ? [
-                BoxShadow(
-                  color: AppColors.brandPrimary.withValues(alpha: isDark ? 0.12 : 0.08),
-                  blurRadius: 6,
-                  offset: const Offset(0, 1),
-                ),
-              ]
-            : null,
-      ),
-      child: ValueListenableBuilder<TextEditingValue>(
-        valueListenable: _controller,
-        builder: (context, value, _) {
-          final hasText = value.text.isNotEmpty;
+    final Color borderColor = _isFocused
+        ? AppColors.brandPrimary
+        : (_isHovered
+            ? (isDark ? AppColors.brandPrimary.withValues(alpha: 0.6) : AppColors.brandPrimary.withValues(alpha: 0.5))
+            : (isDark ? AppColors.darkBorder : AppColors.lightBorder));
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(width: leftPadding),
-              Icon(
-                PhosphorIconsRegular.magnifyingGlass,
-                size: iconSize,
-                color: _isFocused
-                    ? AppColors.brandPrimary
-                    : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              ),
-              SizedBox(width: iconGap),
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
-                  onChanged: widget.onChanged,
-                  textAlignVertical: TextAlignVertical.center,
-                  cursorHeight: fontSize * 1.25,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                    fontSize: fontSize,
-                    height: 1.2,
+    final Color subtextColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
+    final Color textColor = isDark ? AppColors.darkText : AppColors.lightText;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        width: widget.width,
+        height: height,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          border: Border.all(color: borderColor, width: 1.0),
+          boxShadow: _isFocused
+              ? [
+                  BoxShadow(
+                    color: AppColors.brandPrimary.withValues(alpha: isDark ? 0.20 : 0.12),
+                    blurRadius: 6,
+                    offset: const Offset(0, 1),
                   ),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    hintText: widget.hintText,
-                    hintStyle: AppTextStyles.bodyMedium.copyWith(
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                      fontSize: fontSize,
-                      height: 1.2,
-                    ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-              if (hasText) ...[
-                _buildActionBtn(
-                  icon: PhosphorIconsRegular.x,
-                  size: actionSize,
-                  iconSize: iconSize - 2,
-                  tooltip: 'Очистить',
-                  isDark: isDark,
-                  onTap: () {
-                    _controller.clear();
-                    widget.onChanged?.call('');
-                    widget.onClear?.call();
-                  },
-                ),
-                SizedBox(width: rightPadding),
-              ] else if (widget.mode == AppSearchMode.collapsible) ...[
-                _buildActionBtn(
-                  icon: PhosphorIconsRegular.x,
-                  size: actionSize,
-                  iconSize: iconSize - 2,
-                  tooltip: 'Закрыть (Esc)',
-                  isDark: isDark,
-                  onTap: _toggleExpanded,
-                ),
-                SizedBox(width: rightPadding),
-              ] else if (widget.shortcutHint != null && !_isFocused) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Text(
-                    widget.shortcutHint!,
-                    style: GoogleFonts.jetBrainsMono(
-                      fontSize: badgeFontSize,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    ),
-                  ),
-                ),
-                SizedBox(width: rightPadding + 2),
-              ] else ...[
+                ]
+              : null,
+        ),
+        child: ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _controller,
+          builder: (context, value, _) {
+            final hasText = value.text.isNotEmpty;
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
                 SizedBox(width: leftPadding),
+                Icon(
+                  PhosphorIconsRegular.magnifyingGlass,
+                  size: iconSize,
+                  color: _isFocused ? AppColors.brandPrimary : subtextColor,
+                ),
+                SizedBox(width: iconGap),
+                Expanded(
+                  child: Center(
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
+                      onChanged: widget.onChanged,
+                      textAlignVertical: TextAlignVertical.center,
+                      cursorHeight: fontSize * 1.15,
+                      cursorWidth: 1.6,
+                      cursorColor: AppColors.brandPrimary,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: textColor,
+                        fontSize: fontSize,
+                        height: 1.0,
+                        leadingDistribution: TextLeadingDistribution.even,
+                      ),
+                      decoration: InputDecoration.collapsed(
+                        hintText: widget.hintText,
+                        hintStyle: AppTextStyles.bodyMedium.copyWith(
+                          color: subtextColor,
+                          fontSize: fontSize,
+                          height: 1.0,
+                          leadingDistribution: TextLeadingDistribution.even,
+                        ),
+                        filled: false,
+                        fillColor: Colors.transparent,
+                      ),
+                    ),
+                  ),
+                ),
+                if (hasText) ...[
+                  _buildActionBtn(
+                    icon: PhosphorIconsRegular.x,
+                    size: actionSize,
+                    iconSize: iconSize - 2,
+                    tooltip: 'Очистить',
+                    color: subtextColor,
+                    onTap: () {
+                      _controller.clear();
+                      widget.onChanged?.call('');
+                      widget.onClear?.call();
+                    },
+                  ),
+                  SizedBox(width: rightPadding),
+                ] else if (widget.mode == AppSearchMode.collapsible) ...[
+                  _buildActionBtn(
+                    icon: PhosphorIconsRegular.x,
+                    size: actionSize,
+                    iconSize: iconSize - 2,
+                    tooltip: 'Закрыть (Esc)',
+                    color: subtextColor,
+                    onTap: _toggleExpanded,
+                  ),
+                  SizedBox(width: rightPadding),
+                ] else if (widget.shortcutHint != null && !_isFocused) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Text(
+                      widget.shortcutHint!,
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: badgeFontSize,
+                        fontWeight: FontWeight.w600,
+                        color: subtextColor,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: rightPadding + 2),
+                ] else ...[
+                  SizedBox(width: leftPadding),
+                ],
               ],
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -315,7 +328,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
     required double size,
     required double iconSize,
     required String tooltip,
-    required bool isDark,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return Tooltip(
@@ -327,11 +340,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
           width: size,
           height: size,
           alignment: Alignment.center,
-          child: Icon(
-            icon,
-            size: iconSize,
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
+          child: Icon(icon, size: iconSize, color: color),
         ),
       ),
     );
