@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 
@@ -76,7 +75,7 @@ class AppMenuButton extends StatelessWidget {
         for (final item in items) {
           if (item is AppMenuDivider) {
             entries.add(
-              PopupMenuDivider(
+              const PopupMenuDivider(
                 height: 1,
               ),
             );

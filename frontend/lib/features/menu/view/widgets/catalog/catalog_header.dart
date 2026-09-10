@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'catalog_enums.dart';
 import 'catalog_header_manage_mode.dart';
+import 'catalog_breadcrumbs.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class CatalogHeader extends StatelessWidget {
@@ -84,9 +83,26 @@ class CatalogHeader extends StatelessWidget {
       children: [
         Row(
           children: [
-            if (navigationHistory.isNotEmpty)
-              IconButton(icon: const Icon(PhosphorIconsRegular.arrowLeft), onPressed: onNavigateUp),
-            Expanded(child: _buildBreadcrumbs(context, isMobile: true)),
+            if (navigationHistory.isNotEmpty) ...[
+              AppGhostButton(
+                label: '',
+                icon: PhosphorIconsRegular.arrowLeft,
+                height: 32,
+                width: 32,
+                size: AppButtonSize.sm,
+                onPressed: onNavigateUp,
+              ),
+              const SizedBox(width: 4),
+            ],
+            Expanded(
+              child: CatalogBreadcrumbs(
+                rootTitle: rootTitle,
+                navigationHistory: navigationHistory,
+                isMobile: true,
+                onNavigateToRoot: onNavigateToRoot,
+                onNavigateToHistory: onNavigateToHistory,
+              ),
+            ),
             if (onSearchChanged != null) ...[
               AppSearchField(
                 mode: AppSearchMode.collapsible,
@@ -94,12 +110,16 @@ class CatalogHeader extends StatelessWidget {
                 hintText: 'Поиск...',
                 onChanged: onSearchChanged,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
             ],
-            IconButton(
-              icon: Icon(showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray),
-              color: showArchived ? AppColors.brandPrimary : null,
+            AppSecondaryButton(
+              label: '',
+              icon: showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray,
               tooltip: showArchived ? 'Скрыть архивные' : 'Показать архивные',
+              isSelected: showArchived,
+              height: 32,
+              width: 32,
+              size: AppButtonSize.sm,
               onPressed: onShowArchivedToggle,
             ),
           ],
@@ -107,9 +127,15 @@ class CatalogHeader extends StatelessWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            _buildViewModeToggle(),
+            _buildViewModeToggle(isMobile: true),
             const SizedBox(width: 8),
-            _buildManageMenu(context),
+            AppSecondaryButton(
+              label: 'Управление',
+              icon: PhosphorIconsRegular.pencilSimple,
+              height: 32,
+              size: AppButtonSize.sm,
+              onPressed: () => onManageModeChanged(CategoryManageMode.delete),
+            ),
             const Spacer(),
             if (addMenuBuilder != null)
               addMenuBuilder!(context, currentCategoryId)
@@ -117,7 +143,8 @@ class CatalogHeader extends StatelessWidget {
               AppPrimaryButton(
                 label: 'Добавить',
                 icon: PhosphorIconsRegular.plus,
-                height: 38,
+                height: 32,
+                size: AppButtonSize.sm,
                 onPressed: onAddPressed,
               ),
           ],
@@ -129,9 +156,28 @@ class CatalogHeader extends StatelessWidget {
   Widget _buildDesktopDefaultMode(BuildContext context, ColorScheme colorScheme) {
     return Row(
       children: [
-        if (navigationHistory.isNotEmpty)
-          IconButton(icon: const Icon(PhosphorIconsRegular.arrowLeft), onPressed: onNavigateUp),
-        Expanded(child: _buildBreadcrumbs(context, isMobile: false)),
+        if (navigationHistory.isNotEmpty) ...[
+          AppGhostButton(
+            label: '',
+            icon: PhosphorIconsRegular.arrowLeft,
+            tooltip: 'Назад',
+            height: 38,
+            width: 38,
+            size: AppButtonSize.md,
+            onPressed: onNavigateUp,
+          ),
+          const SizedBox(width: 8),
+        ],
+        Expanded(
+          child: CatalogBreadcrumbs(
+            rootTitle: rootTitle,
+            navigationHistory: navigationHistory,
+            isMobile: false,
+            onNavigateToRoot: onNavigateToRoot,
+            onNavigateToHistory: onNavigateToHistory,
+          ),
+        ),
+        // ── Group 1: Search & View Controls ──────────────────────────
         if (onSearchChanged != null) ...[
           AppSearchField(
             mode: AppSearchMode.collapsible,
@@ -142,17 +188,31 @@ class CatalogHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
         ],
-        IconButton(
-          icon: Icon(showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray),
-          color: showArchived ? AppColors.brandPrimary : null,
+        AppSecondaryButton(
+          label: '',
+          icon: showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray,
           tooltip: showArchived ? 'Скрыть архивные' : 'Показать архивные',
+          isSelected: showArchived,
+          height: 38,
+          width: 38,
+          size: AppButtonSize.md,
           onPressed: onShowArchivedToggle,
         ),
         const SizedBox(width: 8),
-        _buildViewModeToggle(),
-        const SizedBox(width: 8),
-        _buildManageMenu(context),
-        const SizedBox(width: 16),
+        _buildViewModeToggle(isMobile: false),
+        const SizedBox(width: 12),
+
+        // ── Group 2: Operations ──────────────────────────────────────
+        AppSecondaryButton(
+          label: 'Управление',
+          icon: PhosphorIconsRegular.pencilSimple,
+          height: 38,
+          size: AppButtonSize.md,
+          onPressed: () => onManageModeChanged(CategoryManageMode.delete),
+        ),
+        const SizedBox(width: 12),
+
+        // ── Group 3: Primary CTA ─────────────────────────────────────
         if (addMenuBuilder != null)
           addMenuBuilder!(context, currentCategoryId)
         else
@@ -160,63 +220,16 @@ class CatalogHeader extends StatelessWidget {
             label: 'Добавить',
             icon: PhosphorIconsRegular.plus,
             height: 38,
+            size: AppButtonSize.md,
             onPressed: onAddPressed,
           ),
       ],
     );
   }
 
-  Widget _buildBreadcrumbs(BuildContext context, {required bool isMobile}) {
-    final List<Widget> crumbs = [];
-    crumbs.add(
-      InkWell(
-        onTap: onNavigateToRoot,
-        borderRadius: BorderRadius.circular(6),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Text(
-            rootTitle,
-            style: isMobile ? AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold) : AppTextStyles.h2,
-          ),
-        ),
-      ),
-    );
-
-    for (int i = 0; i < navigationHistory.length; i++) {
-      final isLast = i == navigationHistory.length - 1;
-      final category = navigationHistory[i];
-      crumbs.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Icon(PhosphorIconsRegular.caretRight, size: isMobile ? 14 : 18, color: Theme.of(context).disabledColor),
-        ),
-      );
-      crumbs.add(
-        InkWell(
-          onTap: isLast ? null : () => onNavigateToHistory(i),
-          borderRadius: BorderRadius.circular(6),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Text(
-              category.name,
-              style: isLast
-                  ? (isMobile ? AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold) : AppTextStyles.h2)
-                  : (isMobile ? AppTextStyles.caption : AppTextStyles.bodyMedium).copyWith(color: Theme.of(context).disabledColor),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(children: crumbs),
-    );
-  }
-
-  Widget _buildViewModeToggle() {
+  Widget _buildViewModeToggle({required bool isMobile}) {
     return AppSegmentedControl<CategoryViewMode>(
-      size: AppSegmentedSize.md,
+      size: isMobile ? AppSegmentedSize.sm : AppSegmentedSize.md,
       items: const [
         AppSegmentedItem(
           value: CategoryViewMode.grid,
@@ -231,41 +244,6 @@ class CatalogHeader extends StatelessWidget {
       ],
       selectedValue: viewMode,
       onValueChanged: onViewModeChanged,
-    );
-  }
-
-  Widget _buildManageMenu(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
-      onSelected: (val) {
-        if (val == 'delete') {
-          onManageModeChanged(CategoryManageMode.delete);
-        } else if (val == 'visibility') {
-          onManageModeChanged(CategoryManageMode.visibility);
-        }
-      },
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 'visibility',
-          child: Row(
-            children: [
-              Icon(PhosphorIconsRegular.eye, size: 18),
-              SizedBox(width: 8),
-              Text('Скрыть/показать категории'),
-            ],
-          ),
-        ),
-        const PopupMenuItem(
-          value: 'delete',
-          child: Row(
-            children: [
-              Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
-              SizedBox(width: 8),
-              Text('Удалить элементы', style: TextStyle(color: AppColors.danger)),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

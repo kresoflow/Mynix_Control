@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'catalog_enums.dart';
 
 class CatalogHeaderManageMode extends StatelessWidget {
@@ -24,7 +27,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (manageMode == CategoryManageMode.delete) {
       if (isMobile) {
@@ -33,19 +36,14 @@ class CatalogHeaderManageMode extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Выбрано: $selectedCount',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onErrorContainer,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(PhosphorIconsRegular.x),
-                  color: colorScheme.onErrorContainer,
+                _buildSelectedBadge(isDark, isMobile: true),
+                const Spacer(),
+                AppGhostButton(
+                  label: 'Отмена',
+                  icon: PhosphorIconsRegular.x,
+                  height: 32,
+                  size: AppButtonSize.sm,
                   onPressed: onClearSelection,
                 ),
               ],
@@ -54,28 +52,21 @@ class CatalogHeaderManageMode extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    icon: Icon(
-                      isAllSelected ? PhosphorIconsRegular.square : PhosphorIconsRegular.checkSquare,
-                      size: 18,
-                    ),
-                    label: Text(isAllSelected ? 'Снять' : 'Все'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colorScheme.onErrorContainer,
-                      side: BorderSide(color: colorScheme.onErrorContainer),
-                    ),
+                  child: AppSecondaryButton(
+                    label: isAllSelected ? 'Снять' : 'Все',
+                    icon: isAllSelected ? PhosphorIconsRegular.square : PhosphorIconsRegular.checkSquareOffset,
+                    height: 32,
+                    size: AppButtonSize.sm,
                     onPressed: onSelectAllToggle,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: FilledButton.icon(
-                    icon: const Icon(PhosphorIconsRegular.trash, size: 18),
-                    label: const Text('Удалить'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: colorScheme.error,
-                      foregroundColor: colorScheme.onError,
-                    ),
+                  child: AppDangerButton(
+                    label: 'Удалить ($selectedCount)',
+                    icon: PhosphorIconsRegular.trash,
+                    height: 32,
+                    size: AppButtonSize.sm,
                     onPressed: selectedCount > 0 ? onDeleteSelected : null,
                   ),
                 ),
@@ -87,64 +78,108 @@ class CatalogHeaderManageMode extends StatelessWidget {
 
       return Row(
         children: [
-          IconButton(
-            icon: const Icon(PhosphorIconsRegular.x),
-            color: colorScheme.onErrorContainer,
-            onPressed: onClearSelection,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Выбрано: $selectedCount',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onErrorContainer,
-            ),
-          ),
-          const Spacer(),
-          OutlinedButton.icon(
-            icon: Icon(
-              isAllSelected ? PhosphorIconsRegular.square : PhosphorIconsRegular.checkSquare,
-              size: 18,
-            ),
-            label: Text(isAllSelected ? 'Снять выделение' : 'Выбрать все'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: colorScheme.onErrorContainer,
-              side: BorderSide(color: colorScheme.onErrorContainer),
-            ),
+          _buildSelectedBadge(isDark, isMobile: false),
+          const SizedBox(width: 12),
+          AppSecondaryButton(
+            label: isAllSelected ? 'Снять выделение' : 'Выбрать все',
+            icon: isAllSelected ? PhosphorIconsRegular.square : PhosphorIconsRegular.checkSquareOffset,
+            height: 38,
+            size: AppButtonSize.md,
             onPressed: onSelectAllToggle,
           ),
-          const SizedBox(width: 16),
-          FilledButton.icon(
-            icon: const Icon(PhosphorIconsRegular.trash, size: 18),
-            label: const Text('Удалить выбранные'),
-            style: FilledButton.styleFrom(
-              backgroundColor: colorScheme.error,
-              foregroundColor: colorScheme.onError,
-            ),
+          const Spacer(),
+          AppDangerButton(
+            label: 'Удалить выбранные ($selectedCount)',
+            icon: PhosphorIconsRegular.trash,
+            height: 38,
+            size: AppButtonSize.md,
             onPressed: selectedCount > 0 ? onDeleteSelected : null,
+          ),
+          const SizedBox(width: 10),
+          AppGhostButton(
+            label: 'Готово',
+            icon: PhosphorIconsRegular.check,
+            height: 38,
+            size: AppButtonSize.md,
+            onPressed: onClearSelection,
           ),
         ],
       );
     }
 
+    // Visibility mode
     return Row(
       children: [
-        IconButton(
-          icon: const Icon(PhosphorIconsRegular.x),
-          onPressed: onClearSelection,
-        ),
-        const SizedBox(width: 8),
-        const Text(
-          'Режим видимости',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        Container(
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkCard : AppColors.lightCard,
+            borderRadius: BorderRadius.circular(AppRadii.md),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.eye, size: 16, color: AppColors.brandPrimary),
+              const SizedBox(width: 8),
+              Text(
+                'Режим настройки видимости',
+                style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
         ),
         const Spacer(),
-        TextButton(
+        AppSecondaryButton(
+          label: 'Готово',
+          icon: PhosphorIconsRegular.check,
+          height: 38,
+          size: AppButtonSize.md,
           onPressed: onClearSelection,
-          child: const Text('Готово'),
         ),
       ],
+    );
+  }
+
+  Widget _buildSelectedBadge(bool isDark, {required bool isMobile}) {
+    final hasSelection = selectedCount > 0;
+    return Container(
+      height: isMobile ? 32 : 38,
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 14),
+      decoration: BoxDecoration(
+        color: hasSelection
+            ? AppColors.danger.withValues(alpha: isDark ? 0.2 : 0.1)
+            : (isDark ? AppColors.darkCard : AppColors.lightCard),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(
+          color: hasSelection
+              ? AppColors.danger.withValues(alpha: 0.4)
+              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            PhosphorIconsRegular.checkSquare,
+            size: isMobile ? 14 : 16,
+            color: hasSelection ? AppColors.danger : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Выбрано: $selectedCount',
+            style: (isMobile ? AppTextStyles.caption : AppTextStyles.bodyMedium).copyWith(
+              fontWeight: FontWeight.w600,
+              color: hasSelection ? AppColors.danger : (isDark ? AppColors.darkText : AppColors.lightText),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

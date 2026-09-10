@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:mynix_frontend/core/theme/app_shadows.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 
@@ -38,6 +37,8 @@ class AppButton extends StatefulWidget {
   final double? width;
   final bool isLoading;
   final bool isFullWidth;
+  final bool isSelected;
+  final String? tooltip;
   final Color? customColor;
   final double? borderRadius;
 
@@ -52,6 +53,8 @@ class AppButton extends StatefulWidget {
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
+    this.isSelected = false,
+    this.tooltip,
     this.customColor,
     this.borderRadius,
   });
@@ -66,6 +69,8 @@ class AppButton extends StatefulWidget {
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
+    this.isSelected = false,
+    this.tooltip,
     this.customColor,
     this.borderRadius,
   }) : variant = AppButtonVariant.primary;
@@ -80,6 +85,8 @@ class AppButton extends StatefulWidget {
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
+    this.isSelected = false,
+    this.tooltip,
     this.customColor,
     this.borderRadius,
   }) : variant = AppButtonVariant.secondary;
@@ -94,6 +101,8 @@ class AppButton extends StatefulWidget {
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
+    this.isSelected = false,
+    this.tooltip,
     this.customColor,
     this.borderRadius,
   }) : variant = AppButtonVariant.outline;
@@ -108,6 +117,8 @@ class AppButton extends StatefulWidget {
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
+    this.isSelected = false,
+    this.tooltip,
     this.customColor,
     this.borderRadius,
   }) : variant = AppButtonVariant.danger;
@@ -122,6 +133,8 @@ class AppButton extends StatefulWidget {
     this.width,
     this.isLoading = false,
     this.isFullWidth = false,
+    this.isSelected = false,
+    this.tooltip,
     this.customColor,
     this.borderRadius,
   }) : variant = AppButtonVariant.ghost;
@@ -148,9 +161,13 @@ class _AppButtonState extends State<AppButton> {
     final double effectiveHeight = widget.height ?? effectiveSize.height;
     final double effectiveIconSize = effectiveSize.iconSize;
     final double effectiveFontSize = effectiveSize.fontSize;
-    final double effectiveHorizPadding = widget.width != null
-        ? (effectiveSize.horizontalPadding * 0.7)
-        : effectiveSize.horizontalPadding;
+    final bool isIconOnly = widget.label.isEmpty && widget.icon != null;
+    final double effectiveHorizPadding = isIconOnly
+        ? 0.0
+        : (widget.width != null ? (effectiveSize.horizontalPadding * 0.7) : effectiveSize.horizontalPadding);
+    final double? effectiveWidth = widget.isFullWidth
+        ? double.infinity
+        : (widget.width ?? (isIconOnly ? effectiveHeight : null));
     final double radius = widget.borderRadius ?? effectiveSize.borderRadius;
 
     final primary = widget.customColor ?? AppColors.brandPrimary;
@@ -165,20 +182,34 @@ class _AppButtonState extends State<AppButton> {
         break;
 
       case AppButtonVariant.secondary:
-        bg = isDark
-            ? (_isHovered ? AppColors.darkCardHover : AppColors.darkCard)
-            : (_isHovered ? AppColors.lightBorder : AppColors.lightSurface);
-        fg = isDark ? AppColors.darkText : AppColors.lightText;
-        border = Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder);
+        bg = widget.isSelected
+            ? primary.withValues(alpha: isDark ? 0.22 : 0.12)
+            : (isDark
+                ? (_isHovered ? AppColors.darkCardHover : AppColors.darkCard)
+                : (_isHovered ? AppColors.lightBorder : AppColors.lightSurface));
+        fg = widget.isSelected
+            ? primary
+            : (isDark ? AppColors.darkText : AppColors.lightText);
+        border = Border.all(
+          color: widget.isSelected
+              ? primary.withValues(alpha: 0.6)
+              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+        );
         break;
 
       case AppButtonVariant.outline:
-        bg = _isHovered ? primary.withValues(alpha: 0.08) : Colors.transparent;
-        fg = enabled ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+        bg = widget.isSelected
+            ? primary.withValues(alpha: isDark ? 0.22 : 0.12)
+            : (_isHovered ? primary.withValues(alpha: 0.08) : Colors.transparent);
+        fg = widget.isSelected
+            ? primary
+            : (enabled ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext));
         border = Border.all(
-          color: enabled
-              ? (_isHovered ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder))
-              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          color: widget.isSelected
+              ? primary
+              : (enabled
+                  ? (_isHovered ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder))
+                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
         );
         break;
 
@@ -193,10 +224,14 @@ class _AppButtonState extends State<AppButton> {
         break;
 
       case AppButtonVariant.ghost:
-        bg = _isHovered
-            ? (isDark ? AppColors.darkBorder.withValues(alpha: 0.4) : AppColors.lightBorder.withValues(alpha: 0.4))
-            : Colors.transparent;
-        fg = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
+        bg = widget.isSelected
+            ? primary.withValues(alpha: isDark ? 0.22 : 0.12)
+            : (_isHovered
+                ? (isDark ? AppColors.darkBorder.withValues(alpha: 0.4) : AppColors.lightBorder.withValues(alpha: 0.4))
+                : Colors.transparent);
+        fg = widget.isSelected
+            ? primary
+            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
         break;
     }
 
@@ -215,21 +250,23 @@ class _AppButtonState extends State<AppButton> {
             children: [
               if (widget.icon != null) ...[
                 Icon(widget.icon, size: effectiveIconSize, color: fg),
-                SizedBox(width: effectiveSize == AppButtonSize.xs ? 4 : 6),
+                if (widget.label.isNotEmpty)
+                  SizedBox(width: effectiveSize == AppButtonSize.xs ? 4 : 6),
               ],
-              Text(
-                widget.label,
-                style: AppTextStyles.button.copyWith(
-                  color: fg,
-                  fontSize: effectiveFontSize,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
+              if (widget.label.isNotEmpty)
+                Text(
+                  widget.label,
+                  style: AppTextStyles.button.copyWith(
+                    color: fg,
+                    fontSize: effectiveFontSize,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
                 ),
-              ),
             ],
           );
 
-    return MouseRegion(
+    final buttonWidget = MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
@@ -244,7 +281,7 @@ class _AppButtonState extends State<AppButton> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
             height: effectiveHeight,
-            width: widget.isFullWidth ? double.infinity : widget.width,
+            width: effectiveWidth,
             padding: EdgeInsets.symmetric(horizontal: effectiveHorizPadding),
             decoration: BoxDecoration(
               color: bg,
@@ -257,6 +294,15 @@ class _AppButtonState extends State<AppButton> {
         ),
       ),
     );
+
+    if (widget.tooltip != null && widget.tooltip!.isNotEmpty) {
+      return Tooltip(
+        message: widget.tooltip!,
+        child: buttonWidget,
+      );
+    }
+
+    return buttonWidget;
   }
 }
 
@@ -272,6 +318,8 @@ class AppPrimaryButton extends AppButton {
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
+    super.isSelected = false,
+    super.tooltip,
     super.customColor,
     super.borderRadius,
   }) : super.primary();
@@ -288,6 +336,8 @@ class AppSecondaryButton extends AppButton {
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
+    super.isSelected = false,
+    super.tooltip,
     super.customColor,
     super.borderRadius,
   }) : super.secondary();
@@ -304,6 +354,8 @@ class AppGhostButton extends AppButton {
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
+    super.isSelected = false,
+    super.tooltip,
     super.customColor,
     super.borderRadius,
   }) : super.ghost();
@@ -320,6 +372,8 @@ class AppDangerButton extends AppButton {
     super.width,
     super.isLoading = false,
     super.isFullWidth = false,
+    super.isSelected = false,
+    super.tooltip,
     super.customColor,
     super.borderRadius,
   }) : super.danger();

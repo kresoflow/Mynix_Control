@@ -99,10 +99,50 @@ class _IngredientTabState extends State<IngredientTab> {
               Row(
                 children: [
                   if (_isManageMode) ...[
-                    AppGhostButton(
+                    Container(
+                      height: 38,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: _selectedIngredients.isNotEmpty
+                            ? AppColors.danger.withValues(alpha: isDark ? 0.2 : 0.1)
+                            : (isDark ? AppColors.darkCard : AppColors.lightCard),
+                        borderRadius: BorderRadius.circular(AppRadii.md),
+                        border: Border.all(
+                          color: _selectedIngredients.isNotEmpty
+                              ? AppColors.danger.withValues(alpha: 0.4)
+                              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            PhosphorIconsRegular.checkSquare,
+                            size: 16,
+                            color: _selectedIngredients.isNotEmpty
+                                ? AppColors.danger
+                                : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Выбрано: ${_selectedIngredients.length}',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: _selectedIngredients.isNotEmpty
+                                  ? AppColors.danger
+                                  : (isDark ? AppColors.darkText : AppColors.lightText),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    AppSecondaryButton(
                       label: 'Выбрать все',
                       icon: PhosphorIconsRegular.checkSquareOffset,
-                      height: 36,
+                      height: 38,
+                      size: AppButtonSize.md,
                       onPressed: () {
                         if (ingState is IngredientLoaded) _selectAll(ingState);
                       },
@@ -111,20 +151,23 @@ class _IngredientTabState extends State<IngredientTab> {
                     AppDangerButton(
                       label: 'Удалить (${_selectedIngredients.length})',
                       icon: PhosphorIconsRegular.trash,
-                      height: 36,
+                      height: 38,
+                      size: AppButtonSize.md,
                       onPressed: _selectedIngredients.isEmpty ? null : _confirmDeleteSelected,
                     ),
                     const SizedBox(width: 8),
                     AppGhostButton(
-                      label: 'Отмена',
-                      height: 36,
+                      label: 'Готово',
+                      icon: PhosphorIconsRegular.check,
+                      height: 38,
+                      size: AppButtonSize.md,
                       onPressed: () => setState(() {
                         _isManageMode = false;
                         _selectedIngredients.clear();
                       }),
                     ),
                   ] else ...[
-                    // View Switcher (Grid / List) using unified UI Kit AppSegmentedControl
+                    // Group 1: View Switcher (Grid / List)
                     AppSegmentedControl<bool>(
                       size: AppSegmentedSize.md,
                       selectedValue: _isGridView,
@@ -144,46 +187,17 @@ class _IngredientTabState extends State<IngredientTab> {
                     ),
                     const SizedBox(width: 8),
 
-                    // Actions Menu (...)
-                    PopupMenuButton<String>(
-                      icon: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                          ),
-                        ),
-                        child: Icon(
-                          PhosphorIconsRegular.dotsThreeVertical,
-                          size: 18,
-                          color: isDark ? AppColors.darkText : AppColors.lightText,
-                        ),
-                      ),
-                      tooltip: 'Действия',
-                      onSelected: (val) {
-                        if (val == 'manage') {
-                          setState(() => _isManageMode = true);
-                        }
-                      },
-                      itemBuilder: (ctx) => [
-                        const PopupMenuItem(
-                          value: 'manage',
-                          child: Row(
-                            children: [
-                              Icon(PhosphorIconsRegular.pencilSimple, size: 16),
-                              SizedBox(width: 10),
-                              Text('Режим управления'),
-                            ],
-                          ),
-                        ),
-                      ],
+                    // Group 2: Operations
+                    AppSecondaryButton(
+                      label: 'Управление',
+                      icon: PhosphorIconsRegular.pencilSimple,
+                      height: 38,
+                      size: AppButtonSize.md,
+                      onPressed: () => setState(() => _isManageMode = true),
                     ),
                     const SizedBox(width: 10),
 
-                    // Main CTA Button
+                    // Group 3: Main CTA Button
                     AppMenuButton(
                       label: 'Добавить',
                       icon: PhosphorIconsRegular.plus,
@@ -313,13 +327,13 @@ class _IngredientTabState extends State<IngredientTab> {
                               const SizedBox(height: 6),
                               Text(state.message.replaceAll('Exception: ', ''), style: const TextStyle(color: Colors.grey, fontSize: 13)),
                               const SizedBox(height: 16),
-                              ElevatedButton.icon(
+                              AppSecondaryButton(
+                                label: 'Повторить попытку',
+                                icon: PhosphorIconsRegular.arrowsClockwise,
                                 onPressed: () {
-                                  context.read<IngredientBloc>().add(LoadIngredients());
+                                  context.read<IngredientBloc>().add(const LoadIngredients());
                                   context.read<CategoryBloc>().add(LoadCategories());
                                 },
-                                icon: const Icon(PhosphorIconsRegular.arrowsClockwise, size: 16),
-                                label: const Text('Повторить попытку'),
                               ),
                             ],
                           ),
