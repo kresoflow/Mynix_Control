@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
-import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
-import 'package:mynix_frontend/features/pos/repository/menu_repository.dart';
-
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'receipt_row_data.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-
 
 Future<void> saveReceiveDocument({
   required BuildContext context,
@@ -30,8 +29,14 @@ Future<void> saveReceiveDocument({
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Внимание'),
-        content: const Text('Добавьте хотя бы одну позицию.'),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('ОК'))],
+        content: const Text('Добавьте хотя бы одну позицию из каталога.'),
+        actions: [
+          AppButton.primary(
+            label: 'ОК',
+            height: 36,
+            onPressed: () => Navigator.pop(ctx),
+          ),
+        ],
       ),
     );
     return;
@@ -49,66 +54,34 @@ Future<void> saveReceiveDocument({
   }
 
   try {
-    final repo = context.read<InventoryRepository>();
-    final menuRepo = context.read<MenuRepository>();
-
     final List<Map<String, dynamic>> docItems = [];
 
     for (var item in items) {
+      final hasText = item.nameController.text.trim().isNotEmpty || item.newName.trim().isNotEmpty;
+      if (item.ingredient == null && !hasText) {
+        continue;
+      }
+
+      if (item.ingredient == null) {
+        final rowName = item.nameController.text.trim().isNotEmpty
+            ? item.nameController.text.trim()
+            : item.newName.trim();
+        throw Exception(
+          'Позиция "$rowName" не найдена в каталоге. Приход возможен только для существующих карточек товаров.',
+        );
+      }
+
       int? finalIngredientId;
       int? finalRetailProductId;
 
-      if (item.ingredient != null) {
-        final isRetail = item.ingredient!.attributes?['is_retail'] == true;
-        if (isRetail) {
-          finalRetailProductId = item.ingredient!.id;
-        } else {
-          finalIngredientId = item.ingredient!.id;
-        }
-      } else if (item.newName.trim().isNotEmpty) {
-        if (categoryId == null) {
-          throw Exception('Не выбрана категория для новых товаров ("${item.newName}"). Укажите категорию сверху.');
-        }
-        if (true) {
-          final isRetail = tabIndex == 1;
-          if (isRetail) {
-            final attributes = <String, String>{};
-            final flavor = item.flavorController.text.trim();
-            final volume = item.volumeController.text.trim();
-            if (flavor.isNotEmpty) attributes['Вкус'] = flavor;
-            if (volume.isNotEmpty) attributes['Объем'] = '$volume ${item.selectedUnit}'.trim();
-
-            await menuRepo.createRetailProduct(
-              name: item.newName.trim(),
-              categoryId: categoryId,
-              unit: item.selectedUnit,
-              purchasePrice: item.price,
-              sellingPrice: item.sellPrice,
-              attributes: attributes.isNotEmpty ? attributes : null,
-              initialStock: 0,
-            );
-            finalRetailProductId = DateTime.now().millisecondsSinceEpoch;
-          } else {
-            await repo.createIngredient(
-              name: item.newName.trim(),
-              unit: item.selectedUnit,
-              minStockAlert: item.minStockAlert,
-              costPerUnit: item.price,
-              categoryId: categoryId,
-              initialStock: 0,
-            );
-            finalIngredientId = DateTime.now().millisecondsSinceEpoch;
-          }
-        }
+      final isRetail = item.ingredient!.attributes?['is_retail'] == true;
+      if (isRetail) {
+        finalRetailProductId = item.ingredient!.id;
       } else {
-        continue; // skip empty rows
+        finalIngredientId = item.ingredient!.id;
       }
 
-      double factor = 1.0;
-      if (item.ingredient != null) {
-        factor = getConversionFactor(item.selectedUnit, item.ingredient!.unit);
-      }
-
+      final factor = getConversionFactor(item.selectedUnit, item.ingredient!.unit);
       final dbQuantity = item.quantity * factor;
       final dbPricePerUnit = item.price / factor;
 
@@ -124,7 +97,7 @@ Future<void> saveReceiveDocument({
     }
 
     if (docItems.isEmpty) {
-      throw Exception('Нет товаров для прихода');
+      throw Exception('Нет товаров для прихода. Выберите хотя бы одну позицию из каталога.');
     }
 
     final data = {
@@ -142,11 +115,18 @@ Future<void> saveReceiveDocument({
 
     if (mounted) {
       context.read<DocumentBloc>().add(CreateDocument(data));
+      if (complete) {
+        try {
+          context.read<IngredientBloc>().add(const LoadIngredients());
+        } catch (_) {}
+      }
       Navigator.of(context).pop();
     }
   } catch (e) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
+      );
       setSavingState(false);
     }
   }

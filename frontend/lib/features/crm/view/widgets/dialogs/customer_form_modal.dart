@@ -5,6 +5,7 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
 
 class CustomerFormModal extends StatefulWidget {
@@ -64,6 +65,22 @@ class _CustomerFormModalState extends State<CustomerFormModal> {
     super.dispose();
   }
 
+  bool get _isDirty {
+    final c = widget.initialCustomer;
+    if (_nameController.text.trim() != (c?.name ?? '').trim()) return true;
+    final initPhone = (c?.phone ?? widget.initialPhone ?? '').trim();
+    if (_phoneController.text.trim() != initPhone) return true;
+    if (_emailController.text.trim() != (c?.email ?? '').trim()) return true;
+    if (_addressController.text.trim() != (c?.address ?? '').trim()) return true;
+    final initCredit = (c?.creditLimit != null && c!.creditLimit > 0) ? c.creditLimit.toStringAsFixed(0) : '';
+    if (_creditLimitController.text.trim() != initCredit) return true;
+    final initDiscount = (c?.discountPercent != null && c!.discountPercent > 0) ? c.discountPercent.toStringAsFixed(0) : '';
+    if (_discountController.text.trim() != initDiscount) return true;
+    if (_notesController.text.trim() != (c?.notes ?? '').trim()) return true;
+    if (_birthDate != c?.birthDate) return true;
+    return false;
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
@@ -89,20 +106,27 @@ class _CustomerFormModalState extends State<CustomerFormModal> {
     final isEdit = widget.initialCustomer != null;
     final symbol = CurrencyFormatter.symbol(context);
 
-    return MynixDialog(
-      title: isEdit ? 'Редактировать гостя' : 'Новый гость / клиент',
-      icon: isEdit ? PhosphorIconsRegular.userGear : PhosphorIconsRegular.userPlus,
-      width: 480,
-      actions: [
-        AppButton.secondary(
-          label: 'Отмена',
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        AppButton.primary(
-          label: isEdit ? 'Сохранить' : 'Создать',
-          onPressed: _submit,
-        ),
-      ],
+    return DirtyPopScope(
+      isDirty: _isDirty,
+      title: isEdit ? 'Отменить изменения?' : 'Отменить создание гостя?',
+      message: isEdit
+          ? 'Несохраненные изменения данных гостя будут потеряны. Выйти?'
+          : 'Все введенные данные о клиенте будут потеряны. Вы уверены?',
+      confirmLabel: 'Сбросить и выйти',
+      child: MynixDialog(
+        title: isEdit ? 'Редактировать гостя' : 'Новый гость / клиент',
+        icon: isEdit ? PhosphorIconsRegular.userGear : PhosphorIconsRegular.userPlus,
+        width: 480,
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          AppPrimaryButton(
+            label: isEdit ? 'Сохранить' : 'Создать',
+            onPressed: _submit,
+          ),
+        ],
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -201,7 +225,11 @@ class _CustomerFormModalState extends State<CustomerFormModal> {
                       if (_birthDate != null)
                         GestureDetector(
                           onTap: () => setState(() => _birthDate = null),
-                          child: const Icon(PhosphorIconsRegular.xCircle, size: 16, color: Colors.grey),
+                          child: Icon(
+                            PhosphorIconsRegular.xCircle,
+                            size: 16,
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          ),
                         ),
                     ],
                   ),
@@ -223,8 +251,9 @@ class _CustomerFormModalState extends State<CustomerFormModal> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildField({
     required TextEditingController controller,

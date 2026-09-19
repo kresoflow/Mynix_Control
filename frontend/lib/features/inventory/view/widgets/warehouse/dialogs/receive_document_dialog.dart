@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
 import 'receive_document/receipt_row_data.dart';
-import 'receive_document/receive_document_header.dart';
-import 'receive_document/receive_document_meta_row.dart';
-import 'receive_document/receive_document_table_header.dart';
 import 'receive_document/receive_document_footer.dart';
+import 'receive_document/receive_document_header.dart';
+import 'receive_document/receive_document_meta_section.dart';
 import 'receive_document/receive_document_processor.dart';
-import 'receive_document/receive_document_items_list.dart';
 import 'receive_document/receive_document_row_callbacks.dart';
+import 'receive_document/receive_document_table_section.dart';
 
 class ReceiveDocumentDialog extends StatefulWidget {
   const ReceiveDocumentDialog({super.key});
@@ -31,12 +28,12 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   final _invoiceNumberController = TextEditingController();
   final _reasonController = TextEditingController();
   final _paidAmountController = TextEditingController();
+  late final ValueNotifier<double> _totalSumNotifier;
   DateTime _documentDate = DateTime.now();
   int? _selectedSupplierId;
   bool _isAdHocPurchase = false;
   String _paymentStatus = 'unpaid';
   String _paymentMethod = 'cash';
-
   int _tabIndex = 1; // 1 = Товары витрины, 2 = Сырье
   int? _selectedParentId;
   int? _selectedChildId;
@@ -49,6 +46,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   @override
   void initState() {
     super.initState();
+    _totalSumNotifier = ValueNotifier<double>(0.0);
     context.read<DocumentBloc>().add(LoadSuppliers());
     _loadIngredients();
     _addItem();
@@ -59,10 +57,37 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     for (var item in _items) {
       item.dispose();
     }
+    _totalSumNotifier.dispose();
     _invoiceNumberController.dispose();
     _reasonController.dispose();
     _paidAmountController.dispose();
     super.dispose();
+  }
+
+  double _calculateTotal() {
+    double sum = 0.0;
+    for (var item in _items) {
+      sum += item.quantity * item.price;
+    }
+    return sum;
+  }
+
+  void _updateTotal() {
+    _totalSumNotifier.value = _calculateTotal();
+  }
+
+  bool get _isDirty {
+    if (_invoiceNumberController.text.trim().isNotEmpty) return true;
+    if (_reasonController.text.trim().isNotEmpty) return true;
+    if (_selectedSupplierId != null) return true;
+    if (_items.length > 1) return true;
+    for (final item in _items) {
+      if (item.ingredient != null) return true;
+      if (item.nameController.text.trim().isNotEmpty) return true;
+      if (item.price > 0 || (double.tryParse(item.priceController.text) ?? 0) > 0) return true;
+      if (item.flavorController.text.trim().isNotEmpty) return true;
+    }
+    return false;
   }
 
   Future<void> _loadIngredients() async {
@@ -76,13 +101,14 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
           _isLoadingIngredients = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) setState(() => _isLoadingIngredients = false);
     }
   }
 
   void _addItem() {
     setState(() => _items.add(ReceiptRowData()));
+    _updateTotal();
     ReceiveDocumentRowCallbacks.focusRow(_items.last.nameFocusNode);
   }
 
@@ -91,16 +117,23 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       _items[index].dispose();
       _items.removeAt(index);
     });
+    _updateTotal();
   }
 
   Future<void> _save({required bool complete}) async {
-    if (_items.isEmpty || _items.every((item) => item.ingredient == null && item.newName.trim().isEmpty)) {
+    if (_items.isEmpty || _items.every((item) => item.ingredient == null)) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Внимание'),
-          content: const Text('Добавьте хотя бы одну позицию.'),
-          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('ОК'))],
+          content: const Text('Добавьте хотя бы одну позицию из каталога.'),
+          actions: [
+            AppButton.primary(
+              label: 'ОК',
+              height: 36,
+              onPressed: () => Navigator.pop(ctx),
+            ),
+          ],
         ),
       );
       return;
@@ -143,11 +176,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     final width = MediaQuery.of(context).size.width * 0.95;
     final height = MediaQuery.of(context).size.height * 0.95;
 
-    double totalSum = 0;
-    for (var item in _items) {
-      totalSum += item.quantity * item.price;
-    }
-
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): () => _save(complete: true),
@@ -155,137 +183,91 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       },
       child: Focus(
         autofocus: true,
-        child: Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          insetPadding: const EdgeInsets.all(20),
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          child: Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  blurRadius: 40,
-                  offset: const Offset(0, 12),
+        child: DirtyPopScope(
+          isDirtyCheck: () => _isDirty,
+          title: 'Отменить приходную накладную?',
+          message: 'Все введенные позиции и данные документа будут сброшены. Выйти?',
+          confirmLabel: 'Сбросить накладную',
+          child: Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            insetPadding: const EdgeInsets.all(20),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            child: Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    ReceiveDocumentHeader(onClose: () => Navigator.of(context).pop()),
-                    BlocBuilder<DocumentBloc, DocumentState>(
-                      builder: (blocCtx, state) {
-                        return ReceiveDocumentMetaRow(
-                          suppliers: state.suppliers,
-                          selectedSupplierId: _selectedSupplierId,
-                          onSupplierChanged: (val) => setState(() => _selectedSupplierId = val),
-                          onAddSupplier: () async {
-                            final result = await showDialog<Map<String, dynamic>>(
-                              context: blocCtx,
-                              builder: (dialogCtx) => const CreateSupplierDialog(),
-                            );
-                            if (result != null && blocCtx.mounted) {
-                              blocCtx.read<DocumentBloc>().add(
-                                CreateSupplier(result['name'], contactInfo: result['contact_info']),
-                              );
-                            }
-                          },
-                          invoiceController: _invoiceNumberController,
-                          reasonController: _reasonController,
-                          documentDate: _documentDate,
-                          onDateChanged: (val) => setState(() => _documentDate = val),
-                          tabIndex: _tabIndex,
-                          onTabChanged: (val) => setState(() => _tabIndex = val),
-                          selectedParentId: _selectedParentId,
-                          selectedChildId: _selectedChildId,
-                          onParentChanged: (val) => setState(() {
-                            _selectedParentId = val;
-                            _selectedChildId = null;
-                          }),
-                          onChildChanged: (val) => setState(() => _selectedChildId = val),
-                          isAdHocPurchase: _isAdHocPurchase,
-                          onAdHocChanged: (val) => setState(() => _isAdHocPurchase = val),
-                        );
-                      },
-                    ),
-                    ReceiveDocumentTableHeader(currency: currency, tabIndex: _tabIndex),
-                    Expanded(
-                      child: ReceiveDocumentItemsList(
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.darkBg.withValues(alpha: 0.35),
+                    blurRadius: 40,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                      ReceiveDocumentHeader(onClose: () => Navigator.of(context).maybePop()),
+                      ReceiveDocumentMetaSection(
+                        selectedSupplierId: _selectedSupplierId,
+                        onSupplierChanged: (val) => setState(() => _selectedSupplierId = val),
+                        invoiceController: _invoiceNumberController,
+                        reasonController: _reasonController,
+                        documentDate: _documentDate,
+                        onDateChanged: (val) => setState(() => _documentDate = val),
+                        tabIndex: _tabIndex,
+                        onTabChanged: (val) => setState(() => _tabIndex = val),
+                        selectedParentId: _selectedParentId,
+                        selectedChildId: _selectedChildId,
+                        onParentChanged: (val) => setState(() {
+                          _selectedParentId = val;
+                          _selectedChildId = null;
+                        }),
+                        onChildChanged: (val) => setState(() => _selectedChildId = val),
+                        isAdHocPurchase: _isAdHocPurchase,
+                        onAdHocChanged: (val) => setState(() => _isAdHocPurchase = val),
+                      ),
+                      ReceiveDocumentTableSection(
                         isLoading: _isLoadingIngredients,
                         items: _items,
                         availableIngredients: _availableIngredients,
                         tabIndex: _tabIndex,
-                        onIngredientSelected: (i, sel) => ReceiveDocumentRowCallbacks.onRowIngredientSelected(
-                          items: _items,
-                          index: i,
-                          selection: sel,
-                          onStateUpdate: () => setState(() {}),
-                        ),
-                        onNameChanged: (i, val) => ReceiveDocumentRowCallbacks.onRowNameChanged(
-                          _items[i],
-                          val,
-                          () => setState(() => _items[i].ingredient = null),
-                        ),
-                        onNameSubmitted: (i) => ReceiveDocumentRowCallbacks.onRowNameSubmitted(_items[i], _tabIndex),
-                        onFlavorSubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].volumeFocusNode),
-                        onVolumeSubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].qtyFocusNode),
-                        onQtySubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].minStockAlertFocusNode),
-                        onMinStockAlertSubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].priceFocusNode),
-                        onPriceSubmitted: (i) => ReceiveDocumentRowCallbacks.focusRow(_items[i].sellPriceFocusNode),
-                        onSellPriceSubmitted: (i) => ReceiveDocumentRowCallbacks.onRowSellPriceSubmitted(
-                          items: _items,
-                          index: i,
-                          onAddItem: _addItem,
-                        ),
-                        onUnitChanged: (i, val) { if (val != null) setState(() => _items[i].selectedUnit = val); },
-                        onQtyChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].quantity = n); },
-                        onMinStockAlertChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].minStockAlert = n); },
-                        onPriceChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].price = n); },
-                        onSellPriceChanged: (i, val) { final n = double.tryParse(val); if (n != null) setState(() => _items[i].sellPrice = n); },
-                        onRemove: _removeItem,
+                        currency: currency,
+                        totalSumNotifier: _totalSumNotifier,
+                        onAddItem: _addItem,
+                        onRemoveItem: _removeItem,
+                        onTotalChanged: _updateTotal,
+                        onStateUpdate: (fn) => setState(fn),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        children: [
-                          TextButton.icon(
-                            onPressed: _addItem,
-                            icon: const Icon(PhosphorIconsRegular.plus),
-                            label: const Text('Добавить строку (Enter)'),
-                          ),
-                        ],
+                      ReceiveDocumentFooter(
+                        totalSum: _totalSumNotifier.value,
+                        totalSumListenable: _totalSumNotifier,
+                        currency: currency,
+                        isSaving: _isSaving,
+                        paymentStatus: _paymentStatus,
+                        paymentMethod: _paymentMethod,
+                        paidAmountController: _paidAmountController,
+                        onPaymentStatusChanged: (val) => setState(() => _paymentStatus = val),
+                        onPaymentMethodChanged: (val) => setState(() => _paymentMethod = val),
+                        onCancel: () => Navigator.of(context).maybePop(),
+                        onSaveDraft: () => _save(complete: false),
+                        onSaveComplete: () => _save(complete: true),
                       ),
-                    ),
-                    ReceiveDocumentFooter(
-                      totalSum: totalSum,
-                      currency: currency,
-                      isSaving: _isSaving,
-                      paymentStatus: _paymentStatus,
-                      paymentMethod: _paymentMethod,
-                      paidAmountController: _paidAmountController,
-                      onPaymentStatusChanged: (val) => setState(() => _paymentStatus = val),
-                      onPaymentMethodChanged: (val) => setState(() => _paymentMethod = val),
-                      onCancel: () => Navigator.of(context).pop(),
-                      onSaveDraft: () => _save(complete: false),
-                      onSaveComplete: () => _save(complete: true),
-                    ),
-                  ],
-                ),
-                if (_isSaving)
-                  Container(
-                    color: Colors.black54,
-                    child: const Center(child: CircularProgressIndicator()),
+                    ],
                   ),
-              ],
+                  if (_isSaving)
+                    Container(
+                      color: AppColors.darkBg.withValues(alpha: 0.54),
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

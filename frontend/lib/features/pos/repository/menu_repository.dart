@@ -36,8 +36,9 @@ class MenuRepository {
           id: json['id'] as int,
           name: fullName,
           price: (json['price'] as num?)?.toDouble() ?? 0.0,
-          categoryId: json['category_id']?.toString() ?? '0',
-          categoryName: json['category_name'] as String?,
+          categoryId: (json['category_id'] == null || json['category_id'] == 0 || json['category_id'] == '0')
+              ? ''
+              : json['category_id'].toString(),
           shortName: json['short_name'] as String?,
           tags: (json['tags'] as List?)?.map((e) => e.toString()).toList(),
           attributesJson: json['attributes'] != null ? jsonEncode(json['attributes']) : null,
@@ -72,10 +73,22 @@ class MenuRepository {
         'attributes': attributes,
         'barcode': barcode,
         'type': type,
-      });
+      },);
       return response.data['id'] as int;
     } catch (e) {
       throw Exception('Failed to create menu item: ${e.toString()}');
+    }
+  }
+
+  Future<List<dynamic>> createMenuItemsBulk(List<Map<String, dynamic>> items) async {
+    try {
+      final response = await _dio.post('/menu/bulk', data: items);
+      return response.data as List;
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to create menu items bulk');
+      }
+      throw Exception('Failed to create menu items bulk: ${e.toString()}');
     }
   }
 
@@ -105,7 +118,7 @@ class MenuRepository {
         'sort_order': sortOrder,
         'barcode': barcode,
         'parent_id': parentId,
-      });
+      },);
       return response.data['id'] as int;
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
@@ -115,9 +128,21 @@ class MenuRepository {
     }
   }
 
-  Future<void> deleteMenuItem(int id) async {
+  Future<List<dynamic>> createRetailProductsBulk(List<Map<String, dynamic>> items) async {
     try {
-      await _dio.delete('/menu/$id');
+      final response = await _dio.post('/retail-product/bulk', data: items);
+      return response.data as List;
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to create retail products bulk');
+      }
+      throw Exception('Failed to create retail products bulk: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteMenuItem(int id, {String mode = 'soft'}) async {
+    try {
+      await _dio.delete('/menu/$id', queryParameters: {'mode': mode});
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
         throw Exception(e.response?.data['detail'] ?? 'Failed to delete menu item');

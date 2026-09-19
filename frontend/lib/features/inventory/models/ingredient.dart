@@ -12,6 +12,7 @@ class Ingredient {
   final String? categoryName;
   final String? barcode;
   final int sortOrder;
+  final bool isArchived;
 
   bool get isRetail => attributes?['is_retail'] == true;
   String? get sku => attributes?['sku']?.toString();
@@ -30,6 +31,7 @@ class Ingredient {
     this.categoryName,
     this.barcode,
     this.sortOrder = 0,
+    this.isArchived = false,
   });
 
   String get displayCode {
@@ -57,6 +59,7 @@ class Ingredient {
       categoryName: json['category_name'],
       barcode: json['barcode'],
       sortOrder: (json['sort_order'] as int?) ?? 0,
+      isArchived: json['is_archived'] ?? false,
     );
   }
 }

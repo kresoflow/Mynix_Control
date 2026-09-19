@@ -32,6 +32,7 @@ class DocumentState extends Equatable {
     DocumentStatus? transactionsStatus,
     String? errorMessage,
     bool? isSubmitting,
+    bool clearError = false,
   }) {
     return DocumentState(
       status: status ?? this.status,
@@ -39,10 +40,13 @@ class DocumentState extends Equatable {
       suppliers: suppliers ?? this.suppliers,
       supplierTransactions: supplierTransactions ?? this.supplierTransactions,
       transactionsStatus: transactionsStatus ?? this.transactionsStatus,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
+
+  bool get hasError => errorMessage != null;
+  bool get isLoading => status == DocumentStatus.loading;
 
   @override
   List<Object?> get props => [

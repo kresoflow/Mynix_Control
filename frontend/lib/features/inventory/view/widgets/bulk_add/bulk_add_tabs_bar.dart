@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:mynix_frontend/core/theme/app_shadows.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
 
 class BulkAddTabsBar extends StatelessWidget {
   final int tabIndex;
@@ -41,9 +42,9 @@ class BulkAddTabsBar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+              color: isDark ? AppColors.darkCard : AppColors.lightBg,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder),
+              border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -55,7 +56,7 @@ class BulkAddTabsBar extends StatelessWidget {
                     duration: const Duration(milliseconds: 150),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: selected ? AppColors.brandPrimary : Colors.transparent,
+                      color: selected ? AppColors.brandPrimary : AppColors.transparent,
                       borderRadius: AppRadii.tabRadius,
                       boxShadow: selected ? AppShadows.tabGlow(AppColors.brandPrimary) : null,
                     ),
@@ -66,7 +67,7 @@ class BulkAddTabsBar extends StatelessWidget {
                           tabIcons[i],
                           size: 16,
                           color: selected
-                              ? Colors.white
+                              ? AppColors.pureWhite
                               : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                         ),
                         const SizedBox(width: 6),
@@ -76,7 +77,7 @@ class BulkAddTabsBar extends StatelessWidget {
                             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                             fontSize: 13,
                             color: selected
-                                ? Colors.white
+                                ? AppColors.pureWhite
                                 : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                           ),
                         ),
@@ -117,10 +118,10 @@ class BulkAddTabsBar extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+                  color: isDark ? AppColors.darkCard : AppColors.lightBg,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder,
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   ),
                 ),
                 child: Row(
@@ -156,9 +157,9 @@ class BulkAddTabsBar extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+                color: isDark ? AppColors.darkCard : AppColors.lightBg,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder),
+                border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -171,15 +172,11 @@ class BulkAddTabsBar extends StatelessWidget {
             ),
             const SizedBox(width: 16),
           ],
-          TextButton.icon(
+          AppSecondaryButton(
+            label: 'Строка',
+            icon: PhosphorIconsRegular.plus,
+            size: AppButtonSize.sm,
             onPressed: onAddRow,
-            icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-            label: const Text('Строка'),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.brandPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-            ),
           ),
         ],
       ),
@@ -196,7 +193,7 @@ class BulkAddTabsBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         margin: const EdgeInsets.only(right: 4),
         decoration: BoxDecoration(
-          color: selected ? AppColors.brandPrimary : Colors.transparent,
+          color: selected ? AppColors.brandPrimary : AppColors.transparent,
           borderRadius: AppRadii.tabRadius,
           boxShadow: selected ? AppShadows.tabGlow(AppColors.brandPrimary) : null,
         ),
@@ -206,7 +203,7 @@ class BulkAddTabsBar extends StatelessWidget {
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             fontSize: 13,
             color: selected
-                ? Colors.white
+                ? AppColors.pureWhite
                 : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
 import 'menu_item/menu_item_basic_fields.dart';
 import 'menu_item/menu_item_variations_section.dart';
 import 'menu_item/menu_item_modifier_groups_section.dart';
@@ -38,7 +39,10 @@ class _MenuItemModalState extends State<MenuItemModal> {
   @override
   void initState() {
     super.initState();
-    _selectedCategoryId = widget.preselectedCategoryId ?? int.tryParse(widget.existingItem?.categoryId ?? '');
+    final rawCat = widget.existingItem?.categoryId;
+    final parsedCat = (rawCat != null && rawCat.isNotEmpty && rawCat != '0') ? int.tryParse(rawCat) : null;
+    _selectedCategoryId = widget.preselectedCategoryId ?? parsedCat;
+    if (_selectedCategoryId == 0) _selectedCategoryId = null;
     _nameController = TextEditingController(text: widget.existingItem?.cleanName ?? '');
     _priceController = TextEditingController(text: widget.existingItem?.price.toString() ?? '');
     _barcodeController = TextEditingController(text: widget.existingItem?.barcode ?? '');
@@ -147,15 +151,40 @@ class _MenuItemModalState extends State<MenuItemModal> {
     }
   }
 
+  bool get _isDirty {
+    final initialName = widget.existingItem?.cleanName ?? '';
+    final initialPrice = widget.existingItem != null ? widget.existingItem!.price.toString() : '';
+    final initialBarcode = widget.existingItem?.barcode ?? '';
+    final initialSort = (widget.existingItem?.sortOrder ?? 0) > 0 ? widget.existingItem!.sortOrder.toString() : '';
+    final rawCat = widget.existingItem?.categoryId;
+    final parsedCat = (rawCat != null && rawCat.isNotEmpty && rawCat != '0') ? int.tryParse(rawCat) : null;
+    final initialCat = widget.preselectedCategoryId ?? parsedCat;
+
+    if (_nameController.text.trim() != initialName.trim()) return true;
+    if (_priceController.text.trim() != initialPrice.trim()) return true;
+    if (_barcodeController.text.trim() != initialBarcode.trim()) return true;
+    if (_sortOrderController.text.trim() != initialSort.trim()) return true;
+    if (_selectedCategoryId != (initialCat == 0 ? null : initialCat)) return true;
+    if (_hasModifiers) return true;
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existingItem != null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return MynixDialog(
-      title: isEditing ? 'Редактировать блюдо' : 'Новое блюдо',
-      icon: PhosphorIconsRegular.bowlFood,
-      width: 580,
+    return DirtyPopScope(
+      isDirtyCheck: () => _isDirty,
+      title: isEditing ? 'Отменить изменения?' : 'Отменить создание блюда?',
+      message: isEditing
+          ? 'Несохраненные изменения карточки блюда будут сброшены. Выйти?'
+          : 'Все введенные данные о блюде будут сброшены. Вы уверены?',
+      confirmLabel: 'Сбросить и выйти',
+      child: MynixDialog(
+        title: isEditing ? 'Редактировать блюдо' : 'Новое блюдо',
+        icon: PhosphorIconsRegular.bowlFood,
+        width: 580,
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -217,7 +246,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
       actions: [
         AppGhostButton(
           label: 'Отмена',
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).maybePop(),
         ),
         const SizedBox(width: 12),
         AppPrimaryButton(
@@ -227,6 +256,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
           onPressed: _submit,
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 }

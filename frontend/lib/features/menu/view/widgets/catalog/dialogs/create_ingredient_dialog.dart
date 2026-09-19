@@ -7,6 +7,7 @@ import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -15,14 +16,22 @@ import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplic
 
 void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int? initialCategoryId}) {
   final isEditing = itemToEdit != null;
-  final nameController = TextEditingController(text: itemToEdit?.name ?? '');
-  final sortOrderController = TextEditingController(text: (itemToEdit != null && itemToEdit.sortOrder > 0) ? itemToEdit.sortOrder.toString() : '');
-  final costController = TextEditingController(text: isEditing ? itemToEdit.costPerUnit.toInt().toString() : '0');
-  final alertController = TextEditingController(text: isEditing ? itemToEdit.minStockAlert.toInt().toString() : '0');
+  final initialName = itemToEdit?.name ?? '';
+  final initialSort = (itemToEdit != null && itemToEdit.sortOrder > 0) ? itemToEdit.sortOrder.toString() : '';
+  final initialCost = isEditing ? itemToEdit.costPerUnit.toInt().toString() : '0';
+  final initialAlert = isEditing ? itemToEdit.minStockAlert.toInt().toString() : '0';
+  final initialBarcode = isEditing ? itemToEdit.barcode ?? '' : '';
+  final initialUnit = itemToEdit?.unit ?? 'g';
+  final initialCat = (itemToEdit?.categoryId == 0) ? null : (itemToEdit?.categoryId ?? initialCategoryId);
+
+  final nameController = TextEditingController(text: initialName);
+  final sortOrderController = TextEditingController(text: initialSort);
+  final costController = TextEditingController(text: initialCost);
+  final alertController = TextEditingController(text: initialAlert);
   final initialStockController = TextEditingController(text: '0');
-  final barcodeController = TextEditingController(text: isEditing ? itemToEdit.barcode ?? '' : '');
-  String selectedUnit = itemToEdit?.unit ?? 'g';
-  int? selectedCategoryId = itemToEdit?.categoryId ?? initialCategoryId;
+  final barcodeController = TextEditingController(text: initialBarcode);
+  String selectedUnit = initialUnit;
+  int? selectedCategoryId = initialCat;
   final currency = context.read<SettingsBloc>().state.currency;
 
   String generateNextSku(int? catId) {
@@ -70,8 +79,42 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
             );
           }
 
-          return MynixDialog(
-            title: isEditing ? 'Редактировать сырье' : 'Новый ингредиент',
+          bool isDirty() {
+            if (nameController.text.trim() != initialName.trim()) return true;
+            if (selectedUnit != initialUnit) return true;
+            if (costController.text.trim() != initialCost.trim()) return true;
+            if (alertController.text.trim() != initialAlert.trim()) return true;
+            if (!isEditing && initialStockController.text.trim() != '0' && initialStockController.text.trim().isNotEmpty) return true;
+            if (barcodeController.text.trim() != initialBarcode.trim() && barcodeController.text.trim().isNotEmpty) return true;
+            if (sortOrderController.text.trim() != initialSort.trim()) return true;
+            if (selectedCategoryId != initialCat) return true;
+            return false;
+          }
+
+          InputDecoration inputDeco(String label, {Widget? prefixIcon, Widget? suffixIcon, String? hintText}) {
+            return InputDecoration(
+              labelText: label,
+              hintText: hintText,
+              prefixIcon: prefixIcon,
+              suffixIcon: suffixIcon,
+              filled: true,
+              fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+              border: OutlineInputBorder(
+                borderRadius: AppRadii.inputRadius,
+                borderSide: BorderSide.none,
+              ),
+            );
+          }
+
+          return DirtyPopScope(
+            isDirty: isDirty(),
+            title: isEditing ? 'Отменить изменения?' : 'Отменить создание?',
+            message: isEditing
+                ? 'Несохраненные изменения карточки сырья будут потеряны. Выйти?'
+                : 'Введенные данные будут потеряны. Выйти?',
+            confirmLabel: 'Сбросить и выйти',
+            child: MynixDialog(
+              title: isEditing ? 'Редактировать сырье' : 'Новый ингредиент',
             icon: PhosphorIconsRegular.leaf,
             width: 500,
             content: SingleChildScrollView(
@@ -80,15 +123,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                 children: [
                   TextFormField(
                     controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Название сырья',
-                      filled: true,
-                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadii.inputRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    decoration: inputDeco('Название сырья'),
                     autofocus: true,
                   ),
                   if (duplicateMatch != null)
@@ -106,15 +141,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: selectedUnit,
-                    decoration: InputDecoration(
-                      labelText: 'Единица измерения',
-                      filled: true,
-                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadii.inputRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    decoration: inputDeco('Единица измерения'),
                     dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                     items: const [
                       DropdownMenuItem(value: 'pcs', child: Text('Штуки (шт)')),
@@ -136,84 +163,49 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                     builder: (context, state) {
                       if (state is CategoryLoaded) {
                         final ingredientCategories = state.categories.where((c) => c.categoryType == 'ingredient').toList();
-                        if (ingredientCategories.isNotEmpty) {
-                          return DropdownButtonFormField<int>(
-                            initialValue: selectedCategoryId,
-                            decoration: InputDecoration(
-                              labelText: 'Категория',
-                              filled: true,
-                              fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                              border: OutlineInputBorder(
-                                borderRadius: AppRadii.inputRadius,
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                            items: [
-                              const DropdownMenuItem<int>(
-                                value: null,
-                                child: Text('Без категории'),
-                              ),
-                              ...ingredientCategories.map(
-                                (cat) => DropdownMenuItem(
-                                  value: cat.id,
-                                  child: Text(cat.name),
-                                ),
-                              ),
-                            ],
-                            onChanged: (val) {
-                              setState(() {
-                                selectedCategoryId = val;
-                                if (!isEditing || barcodeController.text.isEmpty || barcodeController.text.contains('-')) {
-                                  barcodeController.text = generateNextSku(val);
-                                }
-                              });
-                            },
-                          );
-                        }
+                        final bool hasMatchingCategory = selectedCategoryId != null &&
+                            selectedCategoryId != 0 &&
+                            ingredientCategories.any((c) => c.id == selectedCategoryId);
+                        final int? effectiveCategoryId = hasMatchingCategory ? selectedCategoryId : null;
+
+                        return DropdownButtonFormField<int?>(
+                          initialValue: effectiveCategoryId,
+                          decoration: inputDeco('Категория'),
+                          dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                          items: [
+                            const DropdownMenuItem<int?>(value: null, child: Text('Без категории')),
+                            ...ingredientCategories.map((cat) => DropdownMenuItem<int?>(value: cat.id, child: Text(cat.name))),
+                          ],
+                          onChanged: (val) {
+                            setState(() {
+                              selectedCategoryId = val;
+                              if (!isEditing || barcodeController.text.isEmpty || barcodeController.text.contains('-')) {
+                                barcodeController.text = generateNextSku(val);
+                              }
+                            });
+                          },
+                        );
                       }
-                      return const SizedBox();
+                      return const SizedBox.shrink();
                     },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: costController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: 'Себестоимость за ед. ($currency)',
-                      filled: true,
-                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadii.inputRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    decoration: inputDeco('Себестоимость за ед. ($currency)'),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: alertController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: 'Минимальный остаток (алерт)',
-                      filled: true,
-                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadii.inputRadius,
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    decoration: inputDeco('Минимальный остаток (алерт)'),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: barcodeController,
-                    decoration: InputDecoration(
-                      labelText: 'Артикул / SKU (или штрихкод)',
-                      filled: true,
-                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadii.inputRadius,
-                        borderSide: BorderSide.none,
-                      ),
+                    decoration: inputDeco(
+                      'Артикул / SKU (или штрихкод)',
                       prefixIcon: Icon(PhosphorIconsRegular.tag, color: AppColors.brandPrimary),
                       suffixIcon: IconButton(
                         icon: Icon(PhosphorIconsRegular.sparkle, color: AppColors.brandPrimary),
@@ -230,15 +222,9 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                   TextFormField(
                     controller: sortOrderController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Порядок сортировки (1, 2, 3...)',
+                    decoration: inputDeco(
+                      'Порядок сортировки (1, 2, 3...)',
                       hintText: 'Пусто = авто-очередь',
-                      filled: true,
-                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadii.inputRadius,
-                        borderSide: BorderSide.none,
-                      ),
                       prefixIcon: Icon(PhosphorIconsRegular.sortAscending, color: AppColors.brandPrimary),
                     ),
                   ),
@@ -247,15 +233,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                     TextFormField(
                       controller: initialStockController,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        labelText: 'Начальный остаток',
-                        filled: true,
-                        fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                        border: OutlineInputBorder(
-                          borderRadius: AppRadii.inputRadius,
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
+                      decoration: inputDeco('Начальный остаток'),
                     ),
                   ],
                 ],
@@ -264,7 +242,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
             actions: [
               AppGhostButton(
                 label: 'Отмена',
-                onPressed: () => Navigator.pop(ctx),
+                onPressed: () => Navigator.maybePop(ctx),
               ),
               const SizedBox(width: 12),
               AppPrimaryButton(
@@ -277,41 +255,40 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                   final stock = double.tryParse(initialStockController.text) ?? 0.0;
                   final sortOrder = int.tryParse(sortOrderController.text.trim()) ?? 0;
                   if (nameController.text.isNotEmpty) {
+                    final barcode = barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim();
                     if (isEditing) {
                       context.read<IngredientBloc>().add(
-                            UpdateIngredient(
-                              itemToEdit.id,
-                              {
-                                'name': nameController.text,
-                                'unit': selectedUnit,
-                                'cost_per_unit': cost,
-                                'min_stock_alert': alert,
-                                'category_id': selectedCategoryId,
-                                'sort_order': sortOrder,
-                                'barcode': barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim(),
-                              },
-                            ),
-                          );
+                        UpdateIngredient(itemToEdit.id, {
+                          'name': nameController.text,
+                          'unit': selectedUnit,
+                          'cost_per_unit': cost,
+                          'min_stock_alert': alert,
+                          'category_id': selectedCategoryId,
+                          'sort_order': sortOrder,
+                          'barcode': barcode,
+                        }),
+                      );
                     } else {
                       context.read<IngredientBloc>().add(
-                            CreateIngredient(
-                              name: nameController.text,
-                              unit: selectedUnit,
-                              costPerUnit: cost,
-                              minStockAlert: alert,
-                              categoryId: selectedCategoryId,
-                              initialStock: stock,
-                              sortOrder: sortOrder,
-                              barcode: barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim(),
-                            ),
-                          );
+                        CreateIngredient(
+                          name: nameController.text,
+                          unit: selectedUnit,
+                          costPerUnit: cost,
+                          minStockAlert: alert,
+                          categoryId: selectedCategoryId,
+                          initialStock: stock,
+                          sortOrder: sortOrder,
+                          barcode: barcode,
+                        ),
+                      );
                     }
                     Navigator.pop(ctx);
                   }
                 },
               ),
             ],
-          );
+          ),
+        );
         },
       );
     },

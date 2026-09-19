@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'bulk_input_decoration.dart';
-
+import 'create_category_quick_dialog.dart';
 
 class BulkAddCategorySelector extends StatelessWidget {
   final int tabIndex;
@@ -26,81 +26,6 @@ class BulkAddCategorySelector extends StatelessWidget {
     required this.onChildChanged,
   });
 
-  void _showCreateCategoryDialog(
-    BuildContext context,
-    String type,
-    int? parentId,
-    String? parentName,
-  ) {
-    final nameCtrl = TextEditingController();
-    bool asSubcategory = parentId != null;
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return AlertDialog(
-              title: const Text('Новая категория'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Название',
-                      border: OutlineInputBorder(),
-                    ),
-                    autofocus: true,
-                  ),
-                  if (parentId != null) ...[
-                    const SizedBox(height: 16),
-                    CheckboxListTile(
-                      title: Text('Создать внутри «$parentName»'),
-                      value: asSubcategory,
-                      onChanged: (val) {
-                        setStateDialog(() {
-                          asSubcategory = val ?? false;
-                        });
-                      },
-                    ),
-                  ],
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Отмена'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (nameCtrl.text.trim().isNotEmpty) {
-                      context.read<CategoryBloc>().add(
-                        CreateCategory(
-                          name: nameCtrl.text.trim(),
-                          categoryType: type,
-                          parentId: asSubcategory ? parentId : null,
-                        ),
-                      );
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Категория добавляется...'),
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('Создать'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (tabIndex < 0 || tabIndex > 3) return const SizedBox.shrink();
@@ -109,7 +34,11 @@ class BulkAddCategorySelector extends StatelessWidget {
     return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, catState) {
         if (catState is CategoryLoaded) {
-          final allowedType = tabIndex == 0 ? 'dish' : (tabIndex == 1 ? 'retail' : (tabIndex == 2 ? 'ingredient' : globalCategoryType ?? 'dish'));
+          final allowedType = tabIndex == 0
+              ? 'dish'
+              : (tabIndex == 1
+                  ? 'retail'
+                  : (tabIndex == 2 ? 'ingredient' : globalCategoryType ?? 'dish'));
           final allFiltered = catState.categories
               .where((c) => c.categoryType == allowedType)
               .toList();
@@ -122,7 +51,7 @@ class BulkAddCategorySelector extends StatelessWidget {
 
           final bool parentExists = parents.any((c) => c.id == selectedParentId);
           final int? safeParentId = parentExists ? selectedParentId : null;
-          
+
           bool childExists = children.any((c) => c.id == selectedChildId);
           if (childExists && safeParentId != null && selectedChildId != null) {
             final child = children.firstWhere((c) => c.id == selectedChildId);
@@ -140,7 +69,6 @@ class BulkAddCategorySelector extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -196,17 +124,17 @@ class BulkAddCategorySelector extends StatelessWidget {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF10141D) : AppColors.lightCard,
+                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.5)),
                     ),
                     child: IconButton(
                       icon: Icon(PhosphorIconsRegular.plus, size: 20, color: AppColors.brandPrimary),
-                      onPressed: () => _showCreateCategoryDialog(
-                        context,
-                        allowedType,
-                        safeParentId,
-                        parentName,
+                      onPressed: () => showCreateCategoryQuickDialog(
+                        context: context,
+                        type: allowedType,
+                        parentId: safeParentId,
+                        parentName: parentName,
                       ),
                       tooltip: 'Создать категорию',
                     ),
@@ -225,21 +153,21 @@ class BulkAddCategorySelector extends StatelessWidget {
                       color: AppColors.warning.withValues(alpha: isDark ? 0.35 : 0.25),
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Icon(
+                      Icon(
                         PhosphorIconsRegular.folderDashed,
                         size: 16,
                         color: AppColors.warning,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Режим корня: позиции будут добавлены без категории (на главный экран каталога).',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: isDark ? const Color(0xFFFFD54F) : const Color(0xFFB78103),
+                            color: AppColors.warning,
                           ),
                         ),
                       ),
@@ -254,6 +182,4 @@ class BulkAddCategorySelector extends StatelessWidget {
       },
     );
   }
-
-
 }

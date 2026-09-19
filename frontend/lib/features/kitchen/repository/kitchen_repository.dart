@@ -21,6 +21,15 @@ class KitchenRepository {
     }
   }
 
+  /// Revert order from ready back to cooking (Undo)
+  Future<void> undoOrderReady(int orderId) async {
+    try {
+      await apiClient.dio.post('/kitchen/kds/$orderId/undo');
+    } catch (e) {
+      throw Exception('Failed to revert order status: $e');
+    }
+  }
+
   /// Connect to WebSocket stream for realtime updates via singleton WebSocketService
   Stream<Map<String, dynamic>> connectToKitchenStream(String tenantId) {
     webSocketService.connect(tenantId);

@@ -26,6 +26,7 @@ class CatalogHeader extends StatelessWidget {
   final bool showArchived;
   final VoidCallback onShowArchivedToggle;
   final ValueChanged<String>? onSearchChanged;
+  final VoidCallback? onRestoreSelected;
   final VoidCallback? onToggleVisibilitySelected;
 
   const CatalogHeader({
@@ -50,6 +51,7 @@ class CatalogHeader extends StatelessWidget {
     required this.showArchived,
     required this.onShowArchivedToggle,
     this.onSearchChanged,
+    this.onRestoreSelected,
     this.onToggleVisibilitySelected,
   });
 
@@ -73,6 +75,7 @@ class CatalogHeader extends StatelessWidget {
               onClearSelection: onClearSelection,
               onSelectAllToggle: onSelectAllToggle,
               onDeleteSelected: onDeleteSelected,
+              onRestoreSelected: onRestoreSelected,
               onToggleVisibilitySelected: onToggleVisibilitySelected,
             )
           : (isMobile ? _buildMobileDefaultMode(context, colorScheme) : _buildDesktopDefaultMode(context, colorScheme)),

@@ -42,16 +42,19 @@ extension IngredientsPart on InventoryRepository {
   }
 
   Future<void> createIngredientsBulk(List<Map<String, dynamic>> items) async {
-    await Future.wait(items.map((item) => createIngredient(
-      name: item['name'],
-      unit: item['unit'],
-      minStockAlert: item['min_stock_alert'],
-      costPerUnit: item['cost_per_unit'],
-      categoryId: item['category_id'],
-      initialStock: item['initial_stock'] ?? 0.0,
-      sortOrder: item['sort_order'] ?? 0,
-      barcode: item['barcode'],
-    )));
+    try {
+      await _dio.post(
+        '/ingredients/bulk',
+        data: items,
+      );
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(
+          e.response?.data['detail'] ?? 'Failed to create ingredients bulk',
+        );
+      }
+      throw Exception('Failed to create ingredients bulk: ${e.toString()}');
+    }
   }
 
   Future<List<Ingredient>> getRetailProducts() async {
@@ -72,6 +75,7 @@ extension IngredientsPart on InventoryRepository {
           barcode: json['barcode'],
           categoryId: json['category_id'],
           categoryName: json['category_name'],
+          isArchived: json['is_archived'] ?? false,
         );
       }).toList();
     } catch (e) {
@@ -92,9 +96,9 @@ extension IngredientsPart on InventoryRepository {
     }
   }
 
-  Future<void> deleteIngredient(int id) async {
+  Future<void> deleteIngredient(int id, {String mode = 'soft'}) async {
     try {
-      await _dio.delete('/ingredients/$id');
+      await _dio.delete('/ingredients/$id', queryParameters: {'mode': mode});
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
         throw Exception(
@@ -102,6 +106,19 @@ extension IngredientsPart on InventoryRepository {
         );
       }
       throw Exception('Failed to delete ingredient: ${e.toString()}');
+    }
+  }
+
+  Future<void> restoreIngredient(int id) async {
+    try {
+      await _dio.post('/ingredients/$id/restore');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(
+          e.response?.data['detail'] ?? 'Failed to restore ingredient',
+        );
+      }
+      throw Exception('Failed to restore ingredient: ${e.toString()}');
     }
   }
 }

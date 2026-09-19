@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:mynix_frontend/features/settings/models/user_model.dart';
 import 'package:mynix_frontend/features/settings/bloc/user_bloc.dart';
 import 'package:mynix_frontend/core/utils/role_formatter.dart';
@@ -71,6 +72,19 @@ class _UserFormDialogState extends State<UserFormDialog> {
     super.dispose();
   }
 
+  bool get _isDirty {
+    final u = widget.userToEdit;
+    if (_fullNameController.text.trim() != (u?.fullName ?? '').trim()) return true;
+    if (_usernameController.text.trim() != (u?.username ?? '').trim()) return true;
+    if (_pinController.text.trim() != (u?.pinCode ?? '').trim()) return true;
+    if (_passwordController.text.isNotEmpty) return true;
+    final initRole = (u != null && u.roles.isNotEmpty)
+        ? u.roles.first
+        : (widget.roles.isNotEmpty ? widget.roles.first.name : 'Кассир');
+    if (_selectedRoleName != initRole) return true;
+    return false;
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
@@ -105,8 +119,15 @@ class _UserFormDialogState extends State<UserFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return MynixDialog(
-      title: _isEdit ? 'Редактировать сотрудника' : 'Новый сотрудник',
+    return DirtyPopScope(
+      isDirty: _isDirty,
+      title: _isEdit ? 'Отменить изменения?' : 'Отменить создание?',
+      message: _isEdit
+          ? 'Несохраненные изменения данных сотрудника будут потеряны. Выйти?'
+          : 'Все введенные данные сотрудника будут потеряны. Выйти?',
+      confirmLabel: 'Сбросить и выйти',
+      child: MynixDialog(
+        title: _isEdit ? 'Редактировать сотрудника' : 'Новый сотрудник',
       icon: PhosphorIconsRegular.user,
       width: 480,
       content: Form(
@@ -144,6 +165,13 @@ class _UserFormDialogState extends State<UserFormDialog> {
               ),
               keyboardType: TextInputType.number,
               maxLength: 4,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return null;
+                if (!RegExp(r'^\d{4}$').hasMatch(v.trim())) {
+                  return 'PIN-код должен содержать ровно 4 цифры';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -152,16 +180,18 @@ class _UserFormDialogState extends State<UserFormDialog> {
                   : (widget.roles.isNotEmpty ? widget.roles.first.name : null),
               decoration: const InputDecoration(labelText: 'Роль', border: OutlineInputBorder()),
               items: widget.roles
-                  .map((r) => DropdownMenuItem(
-                        value: r.name,
-                        child: Row(
-                          children: [
-                            Icon(RoleFormatter.getRoleIcon(r.name), size: 18, color: RoleFormatter.getRoleColor(r.name)),
-                            const SizedBox(width: 8),
-                            Text(RoleFormatter.formatName(r.name)),
-                          ],
-                        ),
-                      ))
+                  .map(
+                    (r) => DropdownMenuItem(
+                      value: r.name,
+                      child: Row(
+                        children: [
+                          Icon(RoleFormatter.getRoleIcon(r.name), size: 18, color: RoleFormatter.getRoleColor(r.name)),
+                          const SizedBox(width: 8),
+                          Text(RoleFormatter.formatName(r.name)),
+                        ],
+                      ),
+                    ),
+                  )
                   .toList(),
               onChanged: (val) {
                 if (val != null) setState(() => _selectedRoleName = val);
@@ -173,13 +203,14 @@ class _UserFormDialogState extends State<UserFormDialog> {
       actions: [
         AppGhostButton(
           label: 'Отмена',
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).maybePop(),
         ),
         AppPrimaryButton(
           label: _isEdit ? 'Сохранить' : 'Создать',
           onPressed: _submit,
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 }

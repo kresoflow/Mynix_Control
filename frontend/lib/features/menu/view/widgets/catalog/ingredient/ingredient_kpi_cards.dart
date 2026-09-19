@@ -12,7 +12,7 @@ class IngredientKpiCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final raw = ingredients.where((i) => !i.isRetail).toList();
+    final raw = ingredients.where((i) => !i.isRetail && !i.isArchived).toList();
 
     final int totalCount = raw.length;
     int alertCount = 0;

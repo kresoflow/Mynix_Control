@@ -10,122 +10,52 @@ from app.inventory.models import (
 )
 from app.pos.models import OrderItem
 
-async def _sync_child_variations(session: AsyncSession, parent_item: MenuItem, variations: list[dict]) -> list[dict]:
-    """
-    Syncs child MenuItem rows with the parent's variations list.
-    - Creates or updates child MenuItems (parent_id = parent_item.id).
-    - If a child variant is removed, checks OrderItem: if ordered -> sets is_available=False; else deletes.
-    - Attaches child.id into each variation dict so the frontend receives it.
-    """
-    if not variations:
-        stmt = select(MenuItem).where(MenuItem.parent_id == parent_item.id)
-        res = await session.execute(stmt)
-        for child in res.scalars().all():
-            order_res = await session.execute(select(OrderItem).where(OrderItem.menu_item_id == child.id).limit(1))
-            if order_res.scalars().first() is not None:
-                child.is_available = False
-                session.add(child)
-            else:
-                await session.delete(child)
-        return []
-
-    stmt = select(MenuItem).where(MenuItem.parent_id == parent_item.id)
-    res = await session.execute(stmt)
-    existing_children = {c.name: c for c in res.scalars().all()}
-    
-    updated_variations = []
-    seen_child_ids = set()
-
-    for idx, var in enumerate(variations):
-        var_name = str(var.get("name", "")).strip()
-        var_price = float(var.get("price", 0.0))
-        var_barcode = var.get("barcode")
-        child_full_name = f"{parent_item.name} ({var_name})"
-
-        child = existing_children.get(child_full_name) or existing_children.get(var_name)
-        if child:
-            child.name = child_full_name
-            child.price = var_price
-            child.category_id = parent_item.category_id
-            child.is_available = parent_item.is_available
-            child.sort_order = idx
-            if var_barcode:
-                child.barcode = var_barcode
-            session.add(child)
-        else:
-            child = MenuItem(
-                name=child_full_name,
-                category_id=parent_item.category_id,
-                price=var_price,
-                parent_id=parent_item.id,
-                is_available=parent_item.is_available,
-                sort_order=idx,
-                barcode=var_barcode,
-                type="dish",
-            )
-            session.add(child)
-        
-        await session.flush()
-        seen_child_ids.add(child.id)
-        
-        var_dict = dict(var)
-        var_dict["id"] = child.id
-        var_dict["price"] = var_price
-        updated_variations.append(var_dict)
-
-    for child in list(existing_children.values()):
-        if child.id not in seen_child_ids:
-            order_res = await session.execute(select(OrderItem).where(OrderItem.menu_item_id == child.id).limit(1))
-            if order_res.scalars().first() is not None:
-                child.is_available = False
-                session.add(child)
-            else:
-                recipe_stmt = select(Recipe).where(Recipe.menu_item_id == child.id)
-                r_res = await session.execute(recipe_stmt)
-                for r in r_res.scalars().all():
-                    await session.delete(r)
-                await session.delete(child)
-
-    await session.flush()
-    return updated_variations
-
-
 from sqlalchemy.orm.attributes import flag_modified
+from app.inventory.services.menu_variation_helper import _sync_child_variations, sync_child_variations
 
-async def create_menu_item(session: AsyncSession, data: dict) -> MenuItem:
-    raw_cat_id = data.get("category_id")
-    category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
+async def bulk_create_menu_items(session: AsyncSession, items_data: list[dict]) -> list[MenuItem]:
+    created_items: list[MenuItem] = []
+    for data in items_data:
+        raw_cat_id = data.get("category_id")
+        category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
 
-    menu_item = MenuItem(
-        name=data["name"],
-        short_name=data.get("short_name"),
-        tags=data.get("tags", []),
-        category_id=category_id,
-        price=data["price"],
-        description=data.get("description"),
-        image_url=data.get("image_url"),
-        is_available=data.get("is_available", True),
-        attributes=data.get("attributes"),
-        retail_product_id=data.get("retail_product_id"),
-        sort_order=data.get("sort_order", 0),
-        barcode=data.get("barcode"),
-        parent_id=data.get("parent_id"),
-        type=data.get("type", "dish"),
-    )
-    session.add(menu_item)
-    await session.flush()
-
-    attributes = data.get("attributes")
-    if attributes and isinstance(attributes, dict) and "variations" in attributes and attributes["variations"]:
-        updated_vars = await _sync_child_variations(session, menu_item, attributes.get("variations", []))
-        new_attrs = dict(attributes)
-        new_attrs["variations"] = updated_vars
-        menu_item.attributes = new_attrs
-        flag_modified(menu_item, "attributes")
+        menu_item = MenuItem(
+            name=data["name"],
+            short_name=data.get("short_name"),
+            tags=data.get("tags", []),
+            category_id=category_id,
+            price=data["price"],
+            description=data.get("description"),
+            image_url=data.get("image_url"),
+            is_available=data.get("is_available", True),
+            attributes=data.get("attributes"),
+            retail_product_id=data.get("retail_product_id"),
+            sort_order=data.get("sort_order", 0),
+            barcode=data.get("barcode"),
+            parent_id=data.get("parent_id"),
+            type=data.get("type", "dish"),
+        )
         session.add(menu_item)
         await session.flush()
 
-    return menu_item
+        attributes = data.get("attributes")
+        if attributes and isinstance(attributes, dict) and "variations" in attributes and attributes["variations"]:
+            updated_vars = await _sync_child_variations(session, menu_item, attributes.get("variations", []))
+            new_attrs = dict(attributes)
+            new_attrs["variations"] = updated_vars
+            menu_item.attributes = new_attrs
+            flag_modified(menu_item, "attributes")
+            session.add(menu_item)
+            await session.flush()
+
+        created_items.append(menu_item)
+
+    return created_items
+
+async def create_menu_item(session: AsyncSession, data: dict) -> MenuItem:
+    items = await bulk_create_menu_items(session, [data])
+    return items[0]
+
 
 async def delete_menu_item(session: AsyncSession, item_id: int, mode: str = "soft") -> dict:
     stmt = select(MenuItem).order_by(MenuItem.sort_order, MenuItem.id).where(MenuItem.id == item_id)

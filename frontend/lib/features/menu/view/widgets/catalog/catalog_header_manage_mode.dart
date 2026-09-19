@@ -13,6 +13,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
   final VoidCallback onClearSelection;
   final VoidCallback onSelectAllToggle;
   final VoidCallback onDeleteSelected;
+  final VoidCallback? onRestoreSelected;
   final VoidCallback? onToggleVisibilitySelected;
 
   const CatalogHeaderManageMode({
@@ -24,6 +25,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
     required this.onClearSelection,
     required this.onSelectAllToggle,
     required this.onDeleteSelected,
+    this.onRestoreSelected,
     this.onToggleVisibilitySelected,
   });
 
@@ -75,6 +77,18 @@ class CatalogHeaderManageMode extends StatelessWidget {
                     onPressed: selectedCount > 0 ? onToggleVisibilitySelected : null,
                   ),
                 ],
+                if (onRestoreSelected != null) ...[
+                  const SizedBox(width: 6),
+                  AppSecondaryButton(
+                    label: '',
+                    icon: PhosphorIconsRegular.arrowCounterClockwise,
+                    tooltip: 'Восстановить ($selectedCount)',
+                    height: 32,
+                    width: 32,
+                    size: AppButtonSize.sm,
+                    onPressed: selectedCount > 0 ? onRestoreSelected : null,
+                  ),
+                ],
                 const SizedBox(width: 6),
                 Expanded(
                   child: AppDangerButton(
@@ -111,6 +125,16 @@ class CatalogHeaderManageMode extends StatelessWidget {
               height: 38,
               size: AppButtonSize.md,
               onPressed: selectedCount > 0 ? onToggleVisibilitySelected : null,
+            ),
+            const SizedBox(width: 8),
+          ],
+          if (onRestoreSelected != null) ...[
+            AppSecondaryButton(
+              label: 'Восстановить ($selectedCount)',
+              icon: PhosphorIconsRegular.arrowCounterClockwise,
+              height: 38,
+              size: AppButtonSize.md,
+              onPressed: selectedCount > 0 ? onRestoreSelected : null,
             ),
             const SizedBox(width: 8),
           ],

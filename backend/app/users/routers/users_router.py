@@ -104,9 +104,30 @@ async def delete_user(
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
     """Deactivate a staff user."""
+    # Poka-yoke: Prevent self-deletion
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Нельзя удалить собственную учетную запись.",
+        )
+
     user = await svc.get_user_by_id(session, user_id)
     if not user or user.tenant_id != current_user.tenant_id:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Poka-yoke: Prevent deleting the last active owner of the tenant
+    is_owner = any(r.name == "owner" for r in (user.roles or []))
+    if is_owner:
+        all_users = await svc.list_users(session, current_user.tenant_id)
+        active_owners = [
+            u for u in all_users
+            if u.is_active and any(r.name == "owner" for r in (u.roles or []))
+        ]
+        if len(active_owners) <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Нельзя удалить единственного активного владельца заведения.",
+            )
 
     await svc.delete_user(session, user)
     return None

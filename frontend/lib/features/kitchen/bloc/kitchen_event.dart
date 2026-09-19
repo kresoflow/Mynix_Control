@@ -43,3 +43,12 @@ class MarkOrderReady extends KitchenEvent {
   @override
   List<Object?> get props => [orderId];
 }
+
+class UndoOrderReady extends KitchenEvent {
+  final Map<String, dynamic> order;
+  const UndoOrderReady(this.order);
+
+  @override
+  List<Object?> get props => [order];
+}
+

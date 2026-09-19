@@ -4,13 +4,12 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 
@@ -146,23 +145,48 @@ class IngredientGridView extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                                ),
+                              ),
+                              child: Text(
+                                item.displayCode,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontFamily: 'monospace',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            item.displayCode,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontFamily: 'monospace',
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                            if (item.isArchived)
+                              Container(
+                                margin: const EdgeInsets.only(left: 6),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: (isDark ? AppColors.darkCard : AppColors.lightCard),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Архив',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         if (isManageMode)
                           SizedBox(
@@ -190,30 +214,55 @@ class IngredientGridView extends StatelessWidget {
                                   showAddIngredientDialog(context, itemToEdit: item);
                                 } else if (val == 'delete') {
                                   _confirmDelete(context, item);
+                                } else if (val == 'restore') {
+                                  context.read<IngredientBloc>().add(RestoreIngredient(item.id));
                                 }
                               },
-                              itemBuilder: (ctx) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(PhosphorIconsRegular.pencilSimple, size: 16),
-                                      SizedBox(width: 8),
-                                      Text('Редактировать'),
+                              itemBuilder: (ctx) => item.isArchived
+                                  ? [
+                                      const PopupMenuItem(
+                                        value: 'restore',
+                                        child: Row(
+                                          children: [
+                                            Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 16),
+                                            SizedBox(width: 8),
+                                            Text('Восстановить'),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
+                                            SizedBox(width: 8),
+                                            Text('Удалить навсегда', style: TextStyle(color: AppColors.danger)),
+                                          ],
+                                        ),
+                                      ),
+                                    ]
+                                  : [
+                                      const PopupMenuItem(
+                                        value: 'edit',
+                                        child: Row(
+                                          children: [
+                                            Icon(PhosphorIconsRegular.pencilSimple, size: 16),
+                                            SizedBox(width: 8),
+                                            Text('Редактировать'),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(PhosphorIconsRegular.archive, size: 16, color: AppColors.danger),
+                                            SizedBox(width: 8),
+                                            Text('Архивировать', style: TextStyle(color: AppColors.danger)),
+                                          ],
+                                        ),
+                                      ),
                                     ],
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
-                                      SizedBox(width: 8),
-                                      Text('Удалить', style: TextStyle(color: AppColors.danger)),
-                                    ],
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                       ],
@@ -255,7 +304,10 @@ class IngredientGridView extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                            decoration: item.isArchived ? TextDecoration.lineThrough : null,
+                            color: item.isArchived
+                                ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)
+                                : (isDark ? AppColors.darkText : AppColors.lightText),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -318,36 +370,6 @@ class IngredientGridView extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context, Ingredient item) {
-    showDialog(
-      context: context,
-      builder: (ctx) => MynixDialog(
-        title: 'Удалить сырье?',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Сырьё «${item.name}» будет удалено со склада.\nЕсли позиция используется в техкартах, удаление будет заблокировано.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkSubtext
-                : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(ctx),
-          ),
-          AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<IngredientBloc>().add(DeleteIngredient(item.id));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
-    );
+    CatalogDeletionDialogs.confirmDeleteIngredient(context, item);
   }
 }

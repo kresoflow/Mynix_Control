@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/superadmin_repository.dart';
 
@@ -19,6 +20,7 @@ class TenantExplorerLoaded extends TenantExplorerState {
   final List<Map<String, dynamic>>? columns;
   final List<String>? primaryKeys;
   final List<Map<String, dynamic>>? rows;
+  final bool isTableLoading;
 
   const TenantExplorerLoaded({
     required this.tables,
@@ -26,6 +28,7 @@ class TenantExplorerLoaded extends TenantExplorerState {
     this.columns,
     this.primaryKeys,
     this.rows,
+    this.isTableLoading = false,
   });
 
   TenantExplorerLoaded copyWith({
@@ -34,6 +37,7 @@ class TenantExplorerLoaded extends TenantExplorerState {
     List<Map<String, dynamic>>? columns,
     List<String>? primaryKeys,
     List<Map<String, dynamic>>? rows,
+    bool? isTableLoading,
   }) {
     return TenantExplorerLoaded(
       tables: tables ?? this.tables,
@@ -41,11 +45,12 @@ class TenantExplorerLoaded extends TenantExplorerState {
       columns: columns ?? this.columns,
       primaryKeys: primaryKeys ?? this.primaryKeys,
       rows: rows ?? this.rows,
+      isTableLoading: isTableLoading ?? this.isTableLoading,
     );
   }
 
   @override
-  List<Object?> get props => [tables, selectedTable, columns, primaryKeys, rows];
+  List<Object?> get props => [tables, selectedTable, columns, primaryKeys, rows, isTableLoading];
 }
 
 class TenantExplorerError extends TenantExplorerState {
@@ -75,6 +80,10 @@ class TenantExplorerBloc extends Cubit<TenantExplorerState> {
         schemaName: schemaName,
       );
       emit(TenantExplorerLoaded(tables: tables));
+      if (tables.isNotEmpty) {
+        final defaultTable = tables.contains('menu_items') ? 'menu_items' : tables.first;
+        await loadTableData(defaultTable);
+      }
     } catch (e) {
       emit(TenantExplorerError(e.toString()));
     }
@@ -83,30 +92,42 @@ class TenantExplorerBloc extends Cubit<TenantExplorerState> {
   Future<void> loadTableData(String tableName) async {
     final currentState = state;
     if (currentState is! TenantExplorerLoaded) return;
-    
-    emit(TenantExplorerLoading());
+
+    emit(currentState.copyWith(selectedTable: tableName, isTableLoading: true));
     try {
       final data = await repository.getTableData(
         systemToken: systemToken,
         schemaName: schemaName,
         tableName: tableName,
       );
-      
-      final columns = List<Map<String, dynamic>>.from(data['columns']);
-      final pks = List<String>.from(data['primary_keys']);
-      final rows = List<Map<String, dynamic>>.from(data['rows']);
 
-      emit(currentState.copyWith(
-        selectedTable: tableName,
-        columns: columns,
-        primaryKeys: pks,
-        rows: rows,
-      ));
+      final rawColumns = (data['columns'] as List<dynamic>?) ?? [];
+      final columns = rawColumns
+          .map((c) => Map<String, dynamic>.from(c as Map))
+          .toList();
+
+      final rawPks = (data['primary_keys'] as List<dynamic>?) ?? [];
+      final pks = rawPks.map((k) => k.toString()).toList();
+
+      final rawRows = (data['rows'] as List<dynamic>?) ?? [];
+      final rows = rawRows
+          .map((r) => Map<String, dynamic>.from(r as Map))
+          .toList();
+
+      emit(
+        currentState.copyWith(
+          selectedTable: tableName,
+          columns: columns,
+          primaryKeys: pks,
+          rows: rows,
+          isTableLoading: false,
+        ),
+      );
     } catch (e) {
+      debugPrint('[TenantExplorerBloc] loadTableData error: $e');
       emit(TenantExplorerError(e.toString()));
-      // Reset back to loaded state after delay
       await Future.delayed(const Duration(seconds: 3));
-      if (!isClosed) emit(currentState);
+      if (!isClosed) emit(currentState.copyWith(isTableLoading: false));
     }
   }
 

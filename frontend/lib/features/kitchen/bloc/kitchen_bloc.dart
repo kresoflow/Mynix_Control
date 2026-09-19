@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'kitchen_event.dart';
 import 'kitchen_state.dart';
@@ -17,6 +18,7 @@ class KitchenBloc extends Bloc<KitchenEvent, KitchenState> {
     on<KitchenOrderReceived>(_onOrderReceived);
     on<KitchenOrderStatusUpdated>(_onOrderStatusUpdated);
     on<MarkOrderReady>(_onMarkOrderReady);
+    on<UndoOrderReady>(_onUndoOrderReady);
   }
 
   Future<void> _onFetchActiveOrders(FetchActiveOrders event, Emitter<KitchenState> emit) async {
@@ -128,7 +130,25 @@ class KitchenBloc extends Bloc<KitchenEvent, KitchenState> {
       }
     } catch (e) {
       // Could show error notification
-      print('Error marking order ready: $e');
+      debugPrint('Error marking order ready: $e');
+    }
+  }
+
+  Future<void> _onUndoOrderReady(UndoOrderReady event, Emitter<KitchenState> emit) async {
+    final orderId = event.order['id'] as int;
+    try {
+      await repository.undoOrderReady(orderId);
+      if (state is KitchenLoaded) {
+        final currentState = state as KitchenLoaded;
+        final restoredOrder = Map<String, dynamic>.from(event.order)..['status'] = 'cooking';
+        final updatedOrders = List<Map<String, dynamic>>.from(currentState.orders)
+          ..removeWhere((o) => o['id'] == orderId)
+          ..add(restoredOrder);
+        updatedOrders.sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
+        emit(currentState.copyWith(orders: updatedOrders));
+      }
+    } catch (e) {
+      debugPrint('Error undoing order ready: $e');
     }
   }
 

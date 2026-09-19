@@ -24,6 +24,19 @@ class DocumentStatus(str, Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
 
+class PaymentStatus(str, Enum):
+    UNPAID = "unpaid"
+    PARTIAL = "partial"
+    PAID = "paid"
+
+class PaymentMethod(str, Enum):
+    CASH = "cash"
+    CARD = "card"
+    BANK_TRANSFER = "bank_transfer"
+    ONLINE = "online"
+    DEBT = "debt"
+    OTHER = "other"
+
 class SupplierTransactionType(str, Enum):
     INVOICE = "invoice"          # Начисление по накладной
     PAYMENT = "payment"          # Выплата поставщику (гашение долга)

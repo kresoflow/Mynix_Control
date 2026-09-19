@@ -6,6 +6,8 @@ class Tenant {
   final String schemaName;
   final String address;
   final bool isActive;
+  final bool useKds;
+  final bool enableInventoryDeduction;
   final String createdAt;
 
   Tenant({
@@ -14,6 +16,8 @@ class Tenant {
     required this.schemaName,
     required this.address,
     required this.isActive,
+    this.useKds = true,
+    this.enableInventoryDeduction = true,
     required this.createdAt,
   });
 
@@ -22,9 +26,11 @@ class Tenant {
       id: json['id'],
       name: json['name'],
       schemaName: json['schema_name'],
-      address: json['address'],
-      isActive: json['is_active'],
-      createdAt: json['created_at'],
+      address: json['address'] ?? '',
+      isActive: json['is_active'] ?? true,
+      useKds: json['use_kds'] ?? true,
+      enableInventoryDeduction: json['enable_inventory_deduction'] ?? true,
+      createdAt: json['created_at'] ?? '',
     );
   }
 }
@@ -138,6 +144,52 @@ class SuperadminRepository {
     await dio.delete(
       '/system/tenants/$schemaName/tables/$tableName',
       data: pkPayload,
+      options: Options(headers: {'x-system-token': systemToken}),
+    );
+  }
+
+  Future<bool> toggleTenantStatus({
+    required String systemToken,
+    required int tenantId,
+    required bool isActive,
+  }) async {
+    final response = await dio.patch(
+      '/system/tenants/$tenantId/status',
+      data: {'is_active': isActive},
+      options: Options(headers: {'x-system-token': systemToken}),
+    );
+    return response.data['is_active'] as bool;
+  }
+
+  Future<void> updateTenant({
+    required String systemToken,
+    required int tenantId,
+    String? name,
+    String? address,
+    bool? useKds,
+    bool? enableInventoryDeduction,
+  }) async {
+    final payload = <String, dynamic>{};
+    if (name != null) payload['name'] = name;
+    if (address != null) payload['address'] = address;
+    if (useKds != null) payload['use_kds'] = useKds;
+    if (enableInventoryDeduction != null) {
+      payload['enable_inventory_deduction'] = enableInventoryDeduction;
+    }
+
+    await dio.put(
+      '/system/tenants/$tenantId',
+      data: payload,
+      options: Options(headers: {'x-system-token': systemToken}),
+    );
+  }
+
+  Future<void> deleteTenant({
+    required String systemToken,
+    required int tenantId,
+  }) async {
+    await dio.delete(
+      '/system/tenants/$tenantId',
       options: Options(headers: {'x-system-token': systemToken}),
     );
   }

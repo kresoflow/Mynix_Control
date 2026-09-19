@@ -26,7 +26,7 @@ class CreateTenantModulesSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(PhosphorIconsRegular.gear, size: 18, color: Color(0xFF6366F1)),
+            Icon(PhosphorIconsRegular.gear, size: 18, color: AppColors.brandPrimary),
             const SizedBox(width: 8),
             Text(
               '3. Модули и возможности',

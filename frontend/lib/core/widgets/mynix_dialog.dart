@@ -14,6 +14,7 @@ class MynixDialog extends StatelessWidget {
   final List<Widget> actions;
   final double width;
   final bool isDestructive;
+  final VoidCallback? onClose;
 
   const MynixDialog({
     super.key,
@@ -23,6 +24,7 @@ class MynixDialog extends StatelessWidget {
     required this.actions,
     this.width = 450,
     this.isDestructive = false,
+    this.onClose,
   });
 
   @override
@@ -80,7 +82,7 @@ class MynixDialog extends StatelessWidget {
                       PhosphorIconsRegular.x,
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                     ),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: onClose ?? () => Navigator.maybePop(context),
                     tooltip: 'Закрыть',
                     splashRadius: 24,
                   ),

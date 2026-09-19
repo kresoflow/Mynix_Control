@@ -20,7 +20,7 @@ class BulkAddHeader extends StatelessWidget {
               gradient: AppColors.brandGradient,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(PhosphorIconsRegular.listBullets, color: Colors.white, size: 18),
+            child: Icon(PhosphorIconsRegular.listBullets, color: AppColors.lightSurface, size: 18),
           ),
           const SizedBox(width: 12),
           Text(
@@ -37,7 +37,7 @@ class BulkAddHeader extends StatelessWidget {
               PhosphorIconsRegular.x,
               color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
             ),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.maybePop(context),
             tooltip: 'Закрыть',
           ),
         ],

@@ -4,7 +4,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
@@ -12,6 +11,7 @@ import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dar
 import 'package:mynix_frontend/features/pos/view/widgets/open_shift_modal.dart';
 import 'package:mynix_frontend/core/utils/role_formatter.dart';
 import 'package:mynix_frontend/core/widgets/profile/user_profile_modal.dart';
+import 'package:mynix_frontend/core/widgets/logout_confirm_dialog.dart';
 
 class AppBarProfileMenu extends StatelessWidget {
   final VoidCallback? onShiftTap;
@@ -89,7 +89,7 @@ class AppBarProfileMenu extends StatelessWidget {
         } else if (value == 'profile') {
           showUserProfileModal(context);
         } else if (value == 'logout') {
-          context.read<AuthBloc>().add(LoggedOut());
+          showLogoutConfirmDialog(context);
         }
       },
       itemBuilder: (context) => [
@@ -174,7 +174,7 @@ class AppBarProfileMenu extends StatelessWidget {
           value: 'logout',
           child: Row(
             children: [
-              Icon(PhosphorIconsRegular.signOut, color: AppColors.danger, size: 20),
+              const Icon(PhosphorIconsRegular.signOut, color: AppColors.danger, size: 20),
               const SizedBox(width: 12),
               Text('Выйти из аккаунта', style: AppTextStyles.body.copyWith(color: AppColors.danger)),
             ],

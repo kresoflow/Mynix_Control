@@ -1,6 +1,6 @@
 ---
 name: delivery_brand_vision
-description: Brandbook, Product Vision, and Core Identity for Mynix Delivery App. MUST be read before designing or building any UI for the delivery app.
+description: Brandbook, Product Vision, and Core Identity for Mynix Delivery App (courier, food delivery, tracking, customer client, delivery orders, mobile UI). Activate ALWAYS when working on delivery features, courier screens, delivery tracking, or delivery client flows.
 ---
 
 # Mynix Delivery: Brandbook & Product Vision

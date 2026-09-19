@@ -92,13 +92,13 @@ class IngredientHeader extends StatelessWidget {
                         size: AppButtonSize.md,
                         onPressed: () {
                           for (var itemId in selectedIngredients) {
-                            context.read<IngredientBloc>().add(DeleteIngredient(itemId));
+                            context.read<IngredientBloc>().add(DeleteIngredient(itemId, mode: 'soft'));
                           }
                           onSelectedIngredientsChanged({});
                           onManageModeChanged(false);
                           Navigator.pop(ctx);
                         },
-                        label: 'Удалить',
+                        label: 'Архивировать',
                       ),
                     ],
                   ),

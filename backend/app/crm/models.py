@@ -144,8 +144,8 @@ class CustomerCreate(SQLModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     address: Optional[str] = None
-    credit_limit: float = 0.0
-    discount_percent: float = 0.0
+    credit_limit: float = Field(default=0.0, ge=0.0)
+    discount_percent: float = Field(default=0.0, ge=0.0, le=100.0)
     notes: Optional[str] = None
     birth_date: Optional[date] = None
 
@@ -154,15 +154,15 @@ class CustomerUpdate(SQLModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     address: Optional[str] = None
-    credit_limit: Optional[float] = None
-    discount_percent: Optional[float] = None
+    credit_limit: Optional[float] = Field(default=None, ge=0.0)
+    discount_percent: Optional[float] = Field(default=None, ge=0.0, le=100.0)
     notes: Optional[str] = None
     is_active: Optional[bool] = None
     birth_date: Optional[date] = None
 
 class CustomerTransactionCreate(SQLModel):
     type: CustomerTransactionType = CustomerTransactionType.PAYMENT
-    amount: float
+    amount: float = Field(gt=0.0)
     payment_method: str = "cash"  # "cash", "transfer"
     comment: Optional[str] = None
     date: Optional[datetime] = None
@@ -181,7 +181,7 @@ class CustomerTransactionRead(SQLModel):
 
 class CreateBonusTransactionRequest(SQLModel):
     type: BonusTransactionType = BonusTransactionType.MANUAL_ACCRUAL
-    amount: float
+    amount: float = Field(gt=0.0)
     comment: Optional[str] = None
 
 class BonusTransactionRead(SQLModel):

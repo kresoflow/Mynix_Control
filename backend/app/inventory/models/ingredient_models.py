@@ -19,6 +19,7 @@ class Ingredient(TenantModel, table=True):
     sort_order: int = Field(default=0)
     attributes: Optional[dict] = Field(default_factory=dict, sa_column=Column(JSONB))
     barcode: Optional[str] = Field(default=None, max_length=50, index=True)
+    is_archived: bool = Field(default=False)
 
     # Relationships
     category: Optional[MenuCategory] = Relationship()
@@ -44,6 +45,7 @@ class IngredientRead(SQLModel):
     attributes: Optional[dict] = None
     is_low_stock: bool = False
     barcode: Optional[str] = None
+    is_archived: bool = False
 
 class IngredientCreate(SQLModel):
     name: str

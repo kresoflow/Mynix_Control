@@ -86,6 +86,17 @@ from fastapi.responses import JSONResponse
 from app.exceptions import AppException
 from app.system.telegram_service import send_error_alert
 
+def _cors_response(request: Request, status_code: int, content: dict) -> JSONResponse:
+    response = JSONResponse(status_code=status_code, content=content)
+    origin = request.headers.get("origin")
+    if origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Private-Network"] = "true"
+    else:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
 @app.exception_handler(AppException)
 async def app_exception_handler(request: Request, exc: AppException):
     if exc.status_code >= 500 and not settings.debug:
@@ -102,14 +113,16 @@ async def app_exception_handler(request: Request, exc: AppException):
                 path=request.url.path,
             )
         )
-    return JSONResponse(
+    return _cors_response(
+        request,
         status_code=exc.status_code,
         content={"detail": exc.detail, "extra": exc.extra},
     )
 
 @app.exception_handler(ValueError)
 async def value_error_handler(request: Request, exc: ValueError):
-    return JSONResponse(
+    return _cors_response(
+        request,
         status_code=400,
         content={"detail": str(exc)},
     )
@@ -132,7 +145,8 @@ async def generic_exception_handler(request: Request, exc: Exception):
                 path=request.url.path,
             )
         )
-    return JSONResponse(
+    return _cors_response(
+        request,
         status_code=500,
         content={"detail": f"Internal Server Error: {str(exc)}"},
     )

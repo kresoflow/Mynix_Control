@@ -60,8 +60,16 @@ class CreateTenantBusinessSection extends StatelessWidget {
                 onChanged: onSchemaManualChanged,
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) return 'Укажите схему БД';
-                  if (!RegExp(r'^[a-z][a-z0-9_]*$').hasMatch(val)) {
-                    return 'Только латинские буквы, цифры и подчеркивание';
+                  final clean = val.trim().toLowerCase();
+                  if (clean.length < 3 || clean.length > 30) {
+                    return 'Длина схемы от 3 до 30 символов';
+                  }
+                  if (!RegExp(r'^[a-z0-9_]{3,30}$').hasMatch(clean)) {
+                    return 'Только строчные латинские буквы, цифры и _';
+                  }
+                  const reserved = {'public', 'system', 'information_schema', 'pg_catalog', 'pg_toast'};
+                  if (reserved.contains(clean)) {
+                    return 'Схема "$clean" зарезервирована';
                   }
                   return null;
                 },

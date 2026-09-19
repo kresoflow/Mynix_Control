@@ -60,6 +60,7 @@ class ReceiveDocumentItemsList extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = items[index];
         return ReceiveDocumentItemRow(
+          items: items,
           item: item,
           index: index,
           isLast: index == items.length - 1,

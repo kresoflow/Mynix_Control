@@ -20,10 +20,10 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF10141D) : AppColors.lightBg,
+        color: isDark ? AppColors.darkSurface : AppColors.lightBg,
         border: Border.symmetric(
           horizontal: BorderSide(
-            color: isDark ? const Color(0xFF242C3D) : AppColors.lightBorder,
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
         ),
       ),

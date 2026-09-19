@@ -25,11 +25,14 @@ class _IngredientTabState extends State<IngredientTab> {
   int? _selectedCategoryId;
   bool _isManageMode = false;
   bool _isGridView = false;
+  bool _showArchived = false;
   final Set<int> _selectedIngredients = {};
   String _searchQuery = '';
 
   void _selectAll(IngredientLoaded state) {
-    final raw = state.ingredients.where((i) => !i.isRetail).toList();
+    final raw = state.ingredients
+        .where((i) => !i.isRetail && (_showArchived || !i.isArchived))
+        .toList();
     final filtered = _selectedCategoryId == null
         ? raw
         : raw.where((i) => i.categoryId == _selectedCategoryId).toList();
@@ -42,12 +45,12 @@ class _IngredientTabState extends State<IngredientTab> {
     showDialog(
       context: context,
       builder: (ctx) => MynixDialog(
-        title: 'Массовое удаление',
-        icon: PhosphorIconsRegular.trash,
+        title: 'Массовая архивация',
+        icon: PhosphorIconsRegular.archive,
         isDestructive: true,
         width: 420,
         content: Text(
-          'Удалить выбранные элементы (${_selectedIngredients.length} шт.) со склада?\nЕсли позиции используются в техкартах, удаление будет отклонено.',
+          'Архивировать выбранные элементы (${_selectedIngredients.length} шт.)?\nОни исчезнут из активных списков, но сохранятся в истории склада.',
           style: AppTextStyles.bodyMedium.copyWith(
             color: Theme.of(context).brightness == Brightness.dark
                 ? AppColors.darkSubtext
@@ -60,11 +63,11 @@ class _IngredientTabState extends State<IngredientTab> {
             onPressed: () => Navigator.pop(ctx),
           ),
           AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
+            label: 'Архивировать',
+            icon: PhosphorIconsRegular.archive,
             onPressed: () {
               for (var itemId in _selectedIngredients) {
-                context.read<IngredientBloc>().add(DeleteIngredient(itemId));
+                context.read<IngredientBloc>().add(DeleteIngredient(itemId, mode: 'soft'));
               }
               setState(() {
                 _selectedIngredients.clear();
@@ -213,6 +216,19 @@ class _IngredientTabState extends State<IngredientTab> {
                     ),
                     const SizedBox(width: 8),
 
+                    // Group 1.5: Archive Toggle
+                    AppSecondaryButton(
+                      label: '',
+                      icon: _showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray,
+                      tooltip: _showArchived ? 'Скрыть архивные' : 'Показать архивные',
+                      isSelected: _showArchived,
+                      height: 38,
+                      width: 38,
+                      size: AppButtonSize.md,
+                      onPressed: () => setState(() => _showArchived = !_showArchived),
+                    ),
+                    const SizedBox(width: 8),
+
                     // Group 2: Operations
                     AppSecondaryButton(
                       label: 'Выбрать',
@@ -274,6 +290,7 @@ class _IngredientTabState extends State<IngredientTab> {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is IngredientLoaded && categoryState is CategoryLoaded) {
                         final filteredList = state.ingredients.where((i) {
+                          if (!_showArchived && i.isArchived) return false;
                           if (_searchQuery.isEmpty) return true;
                           final q = _searchQuery.toLowerCase().trim();
                           return i.name.toLowerCase().contains(q) ||

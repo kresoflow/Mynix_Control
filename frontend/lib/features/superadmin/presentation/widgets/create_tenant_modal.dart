@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../bloc/superadmin_bloc.dart';
 import 'create_tenant_business_section.dart';
@@ -63,6 +63,44 @@ class _CreateTenantModalState extends State<CreateTenantModal> {
     }
   }
 
+  bool get _isDirty =>
+      _nameController.text.isNotEmpty ||
+      _addressController.text.isNotEmpty ||
+      _usernameController.text.isNotEmpty ||
+      _passwordController.text.isNotEmpty ||
+      _fullNameController.text.isNotEmpty;
+
+  void _onCancel() {
+    if (_isDirty) {
+      showDialog(
+        context: context,
+        builder: (ctx) => MynixDialog(
+          title: 'Отменить создание?',
+          icon: PhosphorIconsRegular.warningCircle,
+          isDestructive: true,
+          content: Text(
+            'Введенные данные не сохранятся. Вы действительно хотите закрыть окно?',
+            style: AppTextStyles.bodyMedium,
+          ),
+          actions: [
+            AppSecondaryButton(label: 'Продолжить', size: AppButtonSize.md, onPressed: () => Navigator.pop(ctx)),
+            const SizedBox(width: 8),
+            AppDangerButton(
+              label: 'Сбросить',
+              size: AppButtonSize.md,
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
   void _submit() {
     if (_formKey.currentState!.validate()) {
       context.read<SuperadminBloc>().createTenant(
@@ -84,117 +122,67 @@ class _CreateTenantModalState extends State<CreateTenantModal> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 620, maxHeight: 780),
-        child: Container(
-          margin: const EdgeInsets.all(20),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Modal Title Header
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        PhosphorIconsRegular.storefront,
-                        color: AppColors.brandPrimary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Новый Ресторан', style: AppTextStyles.h3),
-                          Text(
-                            'Создание заведения, базы данных тенанта и владельца',
-                            style: AppTextStyles.caption.copyWith(
-                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(PhosphorIconsRegular.x, size: 20),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Form Scroll Area
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        CreateTenantBusinessSection(
-                          nameController: _nameController,
-                          schemaController: _schemaController,
-                          currencyController: _currencyController,
-                          addressController: _addressController,
-                          onSchemaManualChanged: (_) => _isManualSchema = true,
-                        ),
-                        const SizedBox(height: 20),
-                        CreateTenantOwnerSection(
-                          fullNameController: _fullNameController,
-                          phoneController: _phoneController,
-                          emailController: _emailController,
-                          usernameController: _usernameController,
-                          passwordController: _passwordController,
-                          pinController: _pinController,
-                        ),
-                        const SizedBox(height: 20),
-                        CreateTenantModulesSection(
-                          useKds: _useKds,
-                          enableInventoryDeduction: _enableInventoryDeduction,
-                          onKdsChanged: (val) => setState(() => _useKds = val),
-                          onInventoryChanged: (val) => setState(() => _enableInventoryDeduction = val),
-                        ),
-                      ],
-                    ),
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _onCancel();
+      },
+      child: MynixDialog(
+        title: 'Новый Ресторан',
+        icon: PhosphorIconsRegular.storefront,
+        width: 620,
+        onClose: _onCancel,
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 520),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  CreateTenantBusinessSection(
+                    nameController: _nameController,
+                    schemaController: _schemaController,
+                    currencyController: _currencyController,
+                    addressController: _addressController,
+                    onSchemaManualChanged: (_) => _isManualSchema = true,
                   ),
-                ),
-                const SizedBox(height: 20),
-
-                // Submit Button
-                AppPrimaryButton(
-                  label: 'Создать и запустить',
-                  icon: PhosphorIconsRegular.rocketLaunch,
-                  onPressed: _submit,
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  CreateTenantOwnerSection(
+                    fullNameController: _fullNameController,
+                    phoneController: _phoneController,
+                    emailController: _emailController,
+                    usernameController: _usernameController,
+                    passwordController: _passwordController,
+                    pinController: _pinController,
+                  ),
+                  const SizedBox(height: 20),
+                  CreateTenantModulesSection(
+                    useKds: _useKds,
+                    enableInventoryDeduction: _enableInventoryDeduction,
+                    onKdsChanged: (val) => setState(() => _useKds = val),
+                    onInventoryChanged: (val) => setState(() => _enableInventoryDeduction = val),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+        actions: [
+          AppSecondaryButton(
+            label: 'Отмена',
+            size: AppButtonSize.md,
+            onPressed: _onCancel,
+          ),
+          const SizedBox(width: 8),
+          AppPrimaryButton(
+            label: 'Создать и запустить',
+            icon: PhosphorIconsRegular.rocketLaunch,
+            size: AppButtonSize.md,
+            onPressed: _submit,
+          ),
+        ],
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
 
@@ -150,17 +151,80 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
 
         const SizedBox(height: 18),
 
-        AppButton.danger(
-          label: 'Подтвердить и закрыть смену',
-          icon: PhosphorIconsRegular.lockKey,
-          isFullWidth: true,
+        SizedBox(
+          width: double.infinity,
           height: 48,
-          onPressed: () {
-            context.read<ShiftBloc>().add(CloseShiftRequested(_actualCash));
-            Navigator.of(context).pop();
-          },
+          child: AppDangerButton(
+            label: 'Подтвердить и закрыть смену',
+            icon: PhosphorIconsRegular.lockKey,
+            onPressed: () => _handleCloseShift(context, diff),
+          ),
         ),
       ],
     );
+  }
+
+  Future<void> _handleCloseShift(BuildContext context, double diff) async {
+    final symbol = CurrencyFormatter.symbol(context);
+
+    // Guard 1: Zero cash entered while positive expected cash
+    if (_actualCash <= 0 && widget.expectedCash > 0) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => MynixDialog(
+          title: 'Касса пуста?',
+          icon: PhosphorIconsRegular.warningOctagon,
+          isDestructive: true,
+          width: 440,
+          content: Text(
+            'Вы указали 0.00 $symbol наличных, хотя в кассе ожидается ${widget.expectedCash.toCurrency(context)}.\n\nЭто зафиксирует полную недостачу в кассе.\nВы действительно пересчитали ящик и там 0.00?',
+            style: AppTextStyles.bodyMedium,
+          ),
+          actions: [
+            AppGhostButton(label: 'Пересчитать', onPressed: () => Navigator.pop(ctx, false)),
+            AppDangerButton(
+              label: 'Да, в кассе пусто',
+              icon: PhosphorIconsRegular.lockKey,
+              onPressed: () => Navigator.pop(ctx, true),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+    }
+    // Guard 2: Discrepancy warning (shortage or surplus)
+    else if (diff.abs() > 0.01) {
+      final diffText = diff < 0
+          ? 'недостача ${diff.abs().toCurrency(context)}'
+          : 'излишек ${diff.toCurrency(context)}';
+      final confirmed = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => MynixDialog(
+          title: 'Подтвердите расхождение',
+          icon: PhosphorIconsRegular.warning,
+          isDestructive: diff < 0,
+          width: 440,
+          content: Text(
+            'Фактический остаток не сходится с кассой:\n$diffText.\n\nЗафиксировать закрытие смены с данным расхождением?',
+            style: AppTextStyles.bodyMedium,
+          ),
+          actions: [
+            AppGhostButton(label: 'Перепроверить', onPressed: () => Navigator.pop(ctx, false)),
+            AppDangerButton(
+              label: 'Закрыть с расхождением',
+              icon: PhosphorIconsRegular.check,
+              onPressed: () => Navigator.pop(ctx, true),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+    }
+
+    if (!context.mounted) return;
+    context.read<ShiftBloc>().add(CloseShiftRequested(_actualCash));
+    Navigator.of(context).pop();
   }
 }

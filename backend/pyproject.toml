@@ -2,7 +2,7 @@
 name = "mynix-control"
 version = "0.1.0"
 description = "Mynix Control POS & Restaurant Management Backend"
-readme = "README.md"
+readme = "ARCHITECTURE_MAP.md"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.18.4",

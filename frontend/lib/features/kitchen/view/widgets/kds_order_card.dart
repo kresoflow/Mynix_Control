@@ -4,6 +4,7 @@ import 'package:mynix_frontend/features/kitchen/bloc/kitchen_bloc.dart';
 import 'package:mynix_frontend/features/kitchen/bloc/kitchen_event.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'kds/kds_card_header.dart';
 import 'kds/kds_item_row.dart';
 
@@ -82,7 +83,7 @@ class _KdsOrderCardState extends State<KdsOrderCard> {
               ),
               Padding(
                 padding: const EdgeInsets.all(20),
-                child: _ReadyButton(orderId: orderId),
+                child: _ReadyButton(order: widget.order),
               ),
             ],
           ),
@@ -93,9 +94,9 @@ class _KdsOrderCardState extends State<KdsOrderCard> {
 }
 
 class _ReadyButton extends StatefulWidget {
-  final dynamic orderId;
+  final Map<String, dynamic> order;
 
-  const _ReadyButton({required this.orderId});
+  const _ReadyButton({required this.order});
 
   @override
   State<_ReadyButton> createState() => _ReadyButtonState();
@@ -111,7 +112,19 @@ class _ReadyButtonState extends State<_ReadyButton> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: () {
-          context.read<KitchenBloc>().add(MarkOrderReady(widget.orderId));
+          final kitchenBloc = context.read<KitchenBloc>();
+          final order = widget.order;
+          final orderId = order['id'] as int;
+          final orderNum = order['order_number'] ?? orderId;
+
+          kitchenBloc.add(MarkOrderReady(orderId));
+
+          AppToast.showUndo(
+            context,
+            message: 'Заказ #$orderNum передан на выдачу',
+            onUndo: () => kitchenBloc.add(UndoOrderReady(order)),
+            duration: const Duration(seconds: 5),
+          );
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -131,14 +144,14 @@ class _ReadyButtonState extends State<_ReadyButton> {
                 color: AppColors.success.withValues(alpha: 0.3),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
-              )
+              ),
             ] : [],
           ),
           alignment: Alignment.center,
           child: Text(
             'ГОТОВО',
             style: AppTextStyles.buttonLarge.copyWith(
-              color: _isHovered ? Colors.white : AppColors.success,
+              color: _isHovered ? AppColors.white : AppColors.success,
             ),
           ),
         ),

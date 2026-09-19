@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 
 import '../../models/pos_order.dart';
 import '../../bloc/orders_bloc.dart';
+import 'cancel_order_dialog.dart';
 
 class OrderDetailsDialog extends StatelessWidget {
   final PosOrder order;
@@ -25,14 +26,11 @@ class OrderDetailsDialog extends StatelessWidget {
     final canCancel = order.status != 'cancelled' && order.status != 'completed';
 
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       elevation: 0,
-      shadowColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide.none,
-      ),
+      shadowColor: AppColors.transparent,
+      surfaceTintColor: AppColors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
       child: Center(
         child: Container(
           width: 440,
@@ -42,7 +40,7 @@ class OrderDetailsDialog extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+                color: AppColors.black.withValues(alpha: isDark ? 0.4 : 0.1),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),
@@ -223,9 +221,12 @@ class OrderDetailsDialog extends StatelessWidget {
                         child: AppDangerButton(
                           label: 'Отменить этот чек',
                           icon: PhosphorIconsRegular.xCircle,
-                          onPressed: () {
-                            context.read<OrdersBloc>().add(CancelOrder(order.id));
-                            Navigator.pop(context);
+                          onPressed: () async {
+                            final reason = await CancelOrderDialog.show(context, order: order);
+                            if (reason != null && context.mounted) {
+                              context.read<OrdersBloc>().add(CancelOrder(order.id));
+                              Navigator.pop(context);
+                            }
                           },
                         ),
                       ),
@@ -250,27 +251,20 @@ class OrderDetailsDialog extends StatelessWidget {
     );
   }
 
-  String _localizeStatus(String status) {
-    switch (status) {
-      case 'new': return 'Новый';
-      case 'cooking': return 'Готовится';
-      case 'ready': return 'Готов к выдаче';
-      case 'completed': return 'Завершен';
-      case 'cancelled': return 'Отменен';
-      default: return status;
-    }
-  }
+  String _localizeStatus(String status) => switch (status) {
+        'new' => 'Новый',
+        'cooking' => 'Готовится',
+        'ready' => 'Готов к выдаче',
+        'completed' => 'Завершен',
+        'cancelled' => 'Отменен',
+        _ => status,
+      };
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'completed': return AppColors.success;
-      case 'cancelled': return AppColors.danger;
-      case 'new':
-      case 'cooking':
-      case 'ready':
-      default: return AppColors.warning;
-    }
-  }
+  Color _getStatusColor(String status) => switch (status) {
+        'completed' => AppColors.success,
+        'cancelled' => AppColors.danger,
+        _ => AppColors.warning,
+      };
 }
 
 class _DashedLinePainter extends CustomPainter {

@@ -4,7 +4,10 @@ from sqlmodel import Field, Relationship, SQLModel
 from sqlalchemy import Column
 from sqlalchemy import Enum as SAEnum
 from app.base_model import TenantModel
-from app.inventory.models.enums import DocumentType, DocumentStatus, SupplierTransactionType
+from app.inventory.models.enums import (
+    DocumentType, DocumentStatus, SupplierTransactionType,
+    PaymentStatus, PaymentMethod
+)
 from app.inventory.models.ingredient_models import Ingredient
 from app.inventory.models.retail_models import RetailProduct
 
@@ -36,8 +39,14 @@ class SupplierTransaction(TenantModel, table=True):
             nullable=False
         )
     )
-    amount: float = Field(default=0.0)  # Positive value (interpretation depends on type)
-    payment_method: Optional[str] = Field(default="cash", max_length=30)  # "cash", "card", "bank_transfer", "other"
+    amount: float = Field(default=0.0)
+    payment_method: Optional[PaymentMethod] = Field(
+        default=PaymentMethod.CASH,
+        sa_column=Column(
+            SAEnum(PaymentMethod, values_callable=lambda obj: [e.value for e in obj], native_enum=False),
+            nullable=True
+        )
+    )
     comment: Optional[str] = Field(default=None, max_length=255)
     date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     created_by: Optional[int] = Field(default=None, foreign_key="public.users.id")
@@ -69,9 +78,21 @@ class InventoryDocument(TenantModel, table=True):
     invoice_number: Optional[str] = Field(default=None, max_length=100)
     reason: Optional[str] = Field(default=None, max_length=255)
     total_amount: float = Field(default=0.0)
-    payment_status: Optional[str] = Field(default="unpaid", max_length=20)  # "unpaid", "paid", "partial"
+    payment_status: Optional[PaymentStatus] = Field(
+        default=PaymentStatus.UNPAID,
+        sa_column=Column(
+            SAEnum(PaymentStatus, values_callable=lambda obj: [e.value for e in obj], native_enum=False),
+            nullable=True
+        )
+    )
     paid_amount: float = Field(default=0.0)
-    payment_method: Optional[str] = Field(default="cash", max_length=30)  # "cash", "card", "bank_transfer", "debt"
+    payment_method: Optional[PaymentMethod] = Field(
+        default=PaymentMethod.CASH,
+        sa_column=Column(
+            SAEnum(PaymentMethod, values_callable=lambda obj: [e.value for e in obj], native_enum=False),
+            nullable=True
+        )
+    )
     created_by: Optional[int] = Field(default=None, foreign_key="public.users.id")
     
     # Relationships
@@ -127,7 +148,7 @@ class SupplierTransactionRead(SQLModel):
     document_id: Optional[int] = None
     type: SupplierTransactionType
     amount: float
-    payment_method: Optional[str] = "cash"
+    payment_method: Optional[PaymentMethod] = PaymentMethod.CASH
     comment: Optional[str] = None
     date: datetime
     created_by: Optional[int] = None
@@ -136,19 +157,19 @@ class SupplierTransactionRead(SQLModel):
 class SupplierTransactionCreate(SQLModel):
     type: SupplierTransactionType = SupplierTransactionType.PAYMENT
     amount: float
-    payment_method: str = "cash"
+    payment_method: PaymentMethod = PaymentMethod.CASH
     comment: Optional[str] = None
     date: Optional[datetime] = None
 
 class SupplierTransactionUpdate(SQLModel):
     amount: Optional[float] = None
-    payment_method: Optional[str] = None
+    payment_method: Optional[PaymentMethod] = None
     comment: Optional[str] = None
     date: Optional[datetime] = None
 
 class SupplierPaymentCreate(SQLModel):
     amount: float
-    payment_method: str = "cash"
+    payment_method: PaymentMethod = PaymentMethod.CASH
     comment: Optional[str] = None
 
 class InventoryDocumentItemRead(SQLModel):
@@ -183,9 +204,9 @@ class InventoryDocumentRead(SQLModel):
     invoice_number: Optional[str] = None
     reason: Optional[str] = None
     total_amount: float
-    payment_status: Optional[str] = None
+    payment_status: Optional[PaymentStatus] = None
     paid_amount: Optional[float] = None
-    payment_method: Optional[str] = None
+    payment_method: Optional[PaymentMethod] = None
     created_by: Optional[int] = None
 
 class InventoryDocumentCreate(SQLModel):
@@ -194,9 +215,9 @@ class InventoryDocumentCreate(SQLModel):
     supplier_id: Optional[int] = None
     invoice_number: Optional[str] = None
     reason: Optional[str] = None
-    payment_status: Optional[str] = "unpaid"
+    payment_status: Optional[PaymentStatus] = PaymentStatus.UNPAID
     paid_amount: Optional[float] = 0.0
-    payment_method: Optional[str] = "cash"
+    payment_method: Optional[PaymentMethod] = PaymentMethod.CASH
     items: List[InventoryDocumentItemCreate] = []
 
 class InventoryDocumentDetailRead(InventoryDocumentRead):

@@ -52,3 +52,27 @@ async def mark_order_ready(session: AsyncSession, order_id: int) -> Order:
     stmt_reload = select(Order).options(selectinload(Order.items)).where(Order.id == order.id)
     result_reload = await session.execute(stmt_reload)
     return result_reload.scalar_one()
+
+
+async def revert_order_to_cooking(session: AsyncSession, order_id: int) -> Order:
+    """
+    Revert order status from READY back to COOKING (Undo mechanism).
+    """
+    stmt = select(Order).where(Order.id == order_id)
+    result = await session.execute(stmt)
+    order = result.scalar_one_or_none()
+
+    if not order:
+        raise ValueError(f"Order #{order_id} not found")
+
+    if order.status != OrderStatus.READY:
+        raise ValueError(f"Order #{order_id} is not in READY status (current: {order.status.value})")
+
+    order.status = OrderStatus.COOKING
+    session.add(order)
+    await session.flush()
+
+    stmt_reload = select(Order).options(selectinload(Order.items)).where(Order.id == order.id)
+    result_reload = await session.execute(stmt_reload)
+    return result_reload.scalar_one()
+

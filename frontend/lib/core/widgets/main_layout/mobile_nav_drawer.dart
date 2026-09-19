@@ -7,13 +7,13 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/role_formatter.dart';
 import 'package:mynix_frontend/core/widgets/profile/user_profile_modal.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
 import 'package:mynix_frontend/features/pos/view/widgets/open_shift_modal.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:mynix_frontend/core/widgets/logout_confirm_dialog.dart';
 
 class MobileNavDrawer extends StatelessWidget {
   final String location;
@@ -222,7 +222,7 @@ class MobileNavDrawer extends StatelessWidget {
               title: const Text('Выйти', style: TextStyle(color: AppColors.danger)),
               onTap: () {
                 Navigator.pop(context);
-                context.read<AuthBloc>().add(LoggedOut());
+                showLogoutConfirmDialog(context);
               },
             ),
           ],

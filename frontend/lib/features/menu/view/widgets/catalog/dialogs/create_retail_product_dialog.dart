@@ -7,6 +7,7 @@ import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_radii.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -16,19 +17,25 @@ import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplic
 
 void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   final isEditing = itemToEdit != null;
-  final nameController = TextEditingController(text: itemToEdit?.cleanName ?? '');
-  final sortOrderController = TextEditingController(
-    text: (itemToEdit != null && itemToEdit.sortOrder > 0) ? itemToEdit.sortOrder.toString() : '',
-  );
-  final sellingPriceController = TextEditingController(
-    text: isEditing
-        ? (itemToEdit.price % 1 == 0 ? itemToEdit.price.toInt().toString() : itemToEdit.price.toString())
-        : '',
-  );
-  final barcodeController = TextEditingController(text: itemToEdit?.barcode ?? '');
-  int? selectedCategoryId = currentCategoryId ?? int.tryParse(itemToEdit?.categoryId ?? '');
+  final initialName = itemToEdit?.cleanName ?? '';
+  final initialSort = (itemToEdit != null && itemToEdit.sortOrder > 0) ? itemToEdit.sortOrder.toString() : '';
+  final initialPrice = isEditing
+      ? (itemToEdit.price % 1 == 0 ? itemToEdit.price.toInt().toString() : itemToEdit.price.toString())
+      : '';
+  final initialBarcode = itemToEdit?.barcode ?? '';
+  final rawCat = itemToEdit?.categoryId;
+  final parsedCat = (rawCat != null && rawCat.isNotEmpty && rawCat != '0') ? int.tryParse(rawCat) : null;
+  final initialCat = currentCategoryId ?? parsedCat;
+  final initialIcon = itemToEdit?.icon;
+
+  final nameController = TextEditingController(text: initialName);
+  final sortOrderController = TextEditingController(text: initialSort);
+  final sellingPriceController = TextEditingController(text: initialPrice);
+  final barcodeController = TextEditingController(text: initialBarcode);
+  int? selectedCategoryId = initialCat;
+  if (selectedCategoryId == 0) selectedCategoryId = null;
   String selectedUnit = 'pcs';
-  String? selectedIcon = itemToEdit?.icon;
+  String? selectedIcon = initialIcon;
   final currency = context.read<SettingsBloc>().state.currency;
 
   showDialog(
@@ -58,8 +65,42 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
             );
           }
 
-          return MynixDialog(
-            title: isEditing ? 'Редактировать товар' : 'Новый товар для витрины',
+          bool isDirty() {
+            if (nameController.text.trim() != initialName.trim()) return true;
+            if (sortOrderController.text.trim() != initialSort.trim()) return true;
+            if (sellingPriceController.text.trim() != initialPrice.trim()) return true;
+            if (barcodeController.text.trim() != initialBarcode.trim()) return true;
+            if (selectedCategoryId != initialCat) return true;
+            if (selectedUnit != 'pcs') return true;
+            if (selectedIcon != initialIcon) return true;
+            return false;
+          }
+
+          InputDecoration inputDeco(String label, {Widget? prefixIcon, String? suffixText, TextStyle? suffixStyle, String? hintText}) {
+            return InputDecoration(
+              labelText: label,
+              hintText: hintText,
+              prefixIcon: prefixIcon,
+              suffixText: suffixText,
+              suffixStyle: suffixStyle,
+              filled: true,
+              fillColor: inputBg,
+              border: OutlineInputBorder(
+                borderRadius: AppRadii.inputRadius,
+                borderSide: BorderSide.none,
+              ),
+            );
+          }
+
+          return DirtyPopScope(
+            isDirty: isDirty(),
+            title: isEditing ? 'Отменить изменения?' : 'Отменить создание товара?',
+            message: isEditing
+                ? 'Несохраненные изменения карточки товара будут сброшены. Выйти?'
+                : 'Все введенные данные о товаре будут сброшены. Вы уверены?',
+            confirmLabel: 'Сбросить и выйти',
+            child: MynixDialog(
+              title: isEditing ? 'Редактировать товар' : 'Новый товар для витрины',
             icon: PhosphorIconsRegular.storefront,
             width: 520,
             content: SingleChildScrollView(
@@ -68,14 +109,8 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                 children: [
                   TextFormField(
                     controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Название товара (Мясо, Вода, Сникерс)',
-                      filled: true,
-                      fillColor: inputBg,
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadii.inputRadius,
-                        borderSide: BorderSide.none,
-                      ),
+                    decoration: inputDeco(
+                      'Название товара (Мясо, Вода, Сникерс)',
                       prefixIcon: Icon(PhosphorIconsRegular.storefront, color: AppColors.brandPrimary),
                     ),
                     autofocus: true,
@@ -99,30 +134,21 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                           ? catState.categories.where((c) => c.categoryType == 'retail' && !c.isArchived).toList()
                           : [];
 
+                      final bool hasMatchingCategory = selectedCategoryId != null &&
+                          selectedCategoryId != 0 &&
+                          retailCategories.any((c) => c.id == selectedCategoryId);
+                      final int? effectiveCategoryId = hasMatchingCategory ? selectedCategoryId : null;
+
                       return DropdownButtonFormField<int?>(
-                        initialValue: selectedCategoryId,
+                        initialValue: effectiveCategoryId,
                         dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                        decoration: InputDecoration(
-                          labelText: 'Категория витрины',
-                          filled: true,
-                          fillColor: inputBg,
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadii.inputRadius,
-                            borderSide: BorderSide.none,
-                          ),
+                        decoration: inputDeco(
+                          'Категория витрины',
                           prefixIcon: Icon(PhosphorIconsRegular.folderPlus, color: AppColors.brandPrimary),
                         ),
                         items: [
-                          const DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text('Без категории (в корень каталога)'),
-                          ),
-                          ...retailCategories.map(
-                            (c) => DropdownMenuItem<int?>(
-                              value: c.id,
-                              child: Text(c.name),
-                            ),
-                          ),
+                          const DropdownMenuItem<int?>(value: null, child: Text('Без категории (в корень каталога)')),
+                          ...retailCategories.map((c) => DropdownMenuItem<int?>(value: c.id, child: Text(c.name))),
                         ],
                         onChanged: (val) => setState(() => selectedCategoryId = val),
                       );
@@ -136,18 +162,12 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                         child: TextFormField(
                           controller: sellingPriceController,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: InputDecoration(
-                            labelText: 'Цена продажи на кассе',
+                          decoration: inputDeco(
+                            'Цена продажи на кассе',
                             suffixText: currency,
                             suffixStyle: TextStyle(
                               fontWeight: FontWeight.w600,
                               color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                            ),
-                            filled: true,
-                            fillColor: inputBg,
-                            border: OutlineInputBorder(
-                              borderRadius: AppRadii.inputRadius,
-                              borderSide: BorderSide.none,
                             ),
                             prefixIcon: Icon(PhosphorIconsRegular.tag, color: AppColors.brandPrimary),
                           ),
@@ -159,14 +179,8 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                         child: DropdownButtonFormField<String>(
                           initialValue: selectedUnit,
                           dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                          decoration: InputDecoration(
-                            labelText: 'Ед. изм.',
-                            filled: true,
-                            fillColor: inputBg,
-                            border: OutlineInputBorder(
-                              borderRadius: AppRadii.inputRadius,
-                              borderSide: BorderSide.none,
-                            ),
+                          decoration: inputDeco(
+                            'Ед. изм.',
                             prefixIcon: Icon(PhosphorIconsRegular.scales, color: AppColors.brandPrimary),
                           ),
                           items: const [
@@ -189,14 +203,8 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                       Expanded(
                         child: TextFormField(
                           controller: barcodeController,
-                          decoration: InputDecoration(
-                            labelText: 'Штрихкод (опционально)',
-                            filled: true,
-                            fillColor: inputBg,
-                            border: OutlineInputBorder(
-                              borderRadius: AppRadii.inputRadius,
-                              borderSide: BorderSide.none,
-                            ),
+                          decoration: inputDeco(
+                            'Штрихкод (опционально)',
                             prefixIcon: Icon(PhosphorIconsRegular.barcode, color: AppColors.brandPrimary),
                           ),
                         ),
@@ -206,15 +214,9 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                         child: TextFormField(
                           controller: sortOrderController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Порядок в меню',
+                          decoration: inputDeco(
+                            'Порядок в меню',
                             hintText: '1, 2, 3... (пусто = авто)',
-                            filled: true,
-                            fillColor: inputBg,
-                            border: OutlineInputBorder(
-                              borderRadius: AppRadii.inputRadius,
-                              borderSide: BorderSide.none,
-                            ),
                             prefixIcon: Icon(PhosphorIconsRegular.sortAscending, color: AppColors.brandPrimary),
                           ),
                         ),
@@ -236,7 +238,7 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
             actions: [
               AppGhostButton(
                 label: 'Отмена',
-                onPressed: () => Navigator.pop(ctx),
+                onPressed: () => Navigator.maybePop(ctx),
               ),
               const SizedBox(width: 12),
               AppPrimaryButton(
@@ -256,35 +258,37 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                             attributes['icon'] = 'icon:$selectedIcon';
                           }
                           if (isEditing) {
-                            final Map<String, dynamic> data = {
-                              'name': nameController.text.trim(),
-                              'price': sPrice,
-                              'category_id': selectedCategoryId,
-                              'sort_order': sortOrder,
-                              'barcode': barcode,
-                              if (attributes.isNotEmpty) 'attributes': attributes,
-                            };
-                            context.read<MenuBloc>().add(UpdateMenuItem(itemToEdit.id, data));
+                            context.read<MenuBloc>().add(
+                              UpdateMenuItem(itemToEdit.id, {
+                                'name': nameController.text.trim(),
+                                'price': sPrice,
+                                'category_id': selectedCategoryId,
+                                'sort_order': sortOrder,
+                                'barcode': barcode,
+                                if (attributes.isNotEmpty) 'attributes': attributes,
+                              }),
+                            );
                           } else {
                             context.read<MenuBloc>().add(
-                                  CreateRetailProduct(
-                                    name: nameController.text.trim(),
-                                    categoryId: selectedCategoryId,
-                                    unit: selectedUnit,
-                                    purchasePrice: 0.0,
-                                    sellingPrice: sPrice,
-                                    sortOrder: sortOrder,
-                                    barcode: barcode,
-                                    attributes: attributes.isNotEmpty ? attributes : null,
-                                  ),
-                                );
+                              CreateRetailProduct(
+                                name: nameController.text.trim(),
+                                categoryId: selectedCategoryId,
+                                unit: selectedUnit,
+                                purchasePrice: 0.0,
+                                sellingPrice: sPrice,
+                                sortOrder: sortOrder,
+                                barcode: barcode,
+                                attributes: attributes.isNotEmpty ? attributes : null,
+                              ),
+                            );
                           }
                           Navigator.pop(ctx);
                         }
                       },
               ),
             ],
-          );
+          ),
+        );
         },
       );
     },

@@ -6,6 +6,7 @@ import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_ingredient_dialog.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 
@@ -226,13 +227,56 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                                 if (val == 'edit') {
                                   showAddIngredientDialog(context, itemToEdit: item);
                                 } else if (val == 'delete') {
-                                  context.read<IngredientBloc>().add(DeleteIngredient(item.id));
+                                  CatalogDeletionDialogs.confirmDeleteIngredient(context, item);
+                                } else if (val == 'restore') {
+                                  context.read<IngredientBloc>().add(RestoreIngredient(item.id));
                                 }
                               },
-                              itemBuilder: (ctx) => [
-                                const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                                const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
-                              ],
+                              itemBuilder: (ctx) => item.isArchived
+                                  ? [
+                                      const PopupMenuItem(
+                                        value: 'restore',
+                                        child: Row(
+                                          children: [
+                                            Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 16),
+                                            SizedBox(width: 8),
+                                            Text('Восстановить'),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
+                                            SizedBox(width: 8),
+                                            Text('Удалить навсегда', style: TextStyle(color: AppColors.danger)),
+                                          ],
+                                        ),
+                                      ),
+                                    ]
+                                  : [
+                                      const PopupMenuItem(
+                                        value: 'edit',
+                                        child: Row(
+                                          children: [
+                                            Icon(PhosphorIconsRegular.pencilSimple, size: 16),
+                                            SizedBox(width: 8),
+                                            Text('Редактировать'),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(PhosphorIconsRegular.archive, size: 16, color: AppColors.danger),
+                                            SizedBox(width: 8),
+                                            Text('Архивировать', style: TextStyle(color: AppColors.danger)),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                             ),
                           ],
                         ),

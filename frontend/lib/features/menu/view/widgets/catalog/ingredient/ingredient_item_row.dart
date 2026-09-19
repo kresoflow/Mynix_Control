@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/utils/icon_helper.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class IngredientItemRow extends StatelessWidget {
@@ -13,6 +16,7 @@ class IngredientItemRow extends StatelessWidget {
   final ValueChanged<bool?>? onSelect;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onRestore;
 
   const IngredientItemRow({
     super.key,
@@ -24,6 +28,7 @@ class IngredientItemRow extends StatelessWidget {
     this.onSelect,
     required this.onEdit,
     required this.onDelete,
+    this.onRestore,
   });
 
   @override
@@ -125,27 +130,17 @@ class IngredientItemRow extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                                  decoration: item.isArchived ? TextDecoration.lineThrough : null,
+                                  color: item.isArchived
+                                      ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)
+                                      : (isDark ? AppColors.darkText : AppColors.lightText),
                                 ),
                               ),
                             ),
-                          if (item.categoryId == null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              margin: const EdgeInsets.only(left: 8),
-                              decoration: BoxDecoration(
-                                color: AppColors.warning.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'Без категории',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.warning,
-                                ),
-                              ),
-                            ),
+                          if (item.isArchived)
+                            _buildTag('В архиве', isDark ? AppColors.darkSubtext : AppColors.lightSubtext, isDark ? AppColors.darkCard : AppColors.lightCard)
+                          else if (item.categoryId == null)
+                            _buildTag('Без категории', AppColors.warning, AppColors.warning.withValues(alpha: 0.15)),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -168,35 +163,15 @@ class IngredientItemRow extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: stockColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
+                          Container(width: 8, height: 8, decoration: BoxDecoration(color: stockColor, shape: BoxShape.circle)),
                           const SizedBox(width: 8),
-                          Text(
-                            '${item.currentStock.toStringAsFixed(1)} ${item.unit}',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: stockColor,
-                            ),
-                          ),
+                          Text('${item.currentStock.toStringAsFixed(1)} ${item.unit}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: stockColor)),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
-                        child: Text(
-                          'Алерт: ${item.minStockAlert.toStringAsFixed(1)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          ),
-                        ),
+                        child: Text('Алерт: ${item.minStockAlert.toStringAsFixed(1)}', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
                       ),
                     ],
                   ),
@@ -211,39 +186,35 @@ class IngredientItemRow extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            '${item.costPerUnit.toStringAsFixed(2)} $currency',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? AppColors.darkText : AppColors.lightText,
-                            ),
-                          ),
+                          Text('${item.costPerUnit.toStringAsFixed(2)} $currency', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText)),
                           const SizedBox(height: 2),
-                          Text(
-                            'за 1 ${item.unit}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                            ),
-                          ),
+                          Text('за 1 ${item.unit}', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
                         ],
                       ),
                       if (!isManageMode) ...[
                         const SizedBox(width: 8),
                         PopupMenuButton<String>(
-                          icon: Icon(
-                            PhosphorIconsRegular.dotsThreeVertical,
-                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          ),
+                          icon: Icon(PhosphorIconsRegular.dotsThreeVertical, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                           onSelected: (val) {
                             if (val == 'edit') onEdit();
                             if (val == 'delete') onDelete();
+                            if (val == 'restore') {
+                              if (onRestore != null) {
+                                onRestore!();
+                              } else {
+                                context.read<IngredientBloc>().add(RestoreIngredient(item.id));
+                              }
+                            }
                           },
-                          itemBuilder: (ctx) => [
-                            const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                            const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
-                          ],
+                          itemBuilder: (ctx) => item.isArchived
+                              ? [
+                                  _menuItem('restore', PhosphorIconsRegular.arrowCounterClockwise, 'Восстановить'),
+                                  _menuItem('delete', PhosphorIconsRegular.trash, 'Удалить навсегда', color: AppColors.danger),
+                                ]
+                              : [
+                                  _menuItem('edit', PhosphorIconsRegular.pencilSimple, 'Редактировать'),
+                                  _menuItem('delete', PhosphorIconsRegular.archive, 'Архивировать', color: AppColors.danger),
+                                ],
                         ),
                       ],
                     ],
@@ -253,6 +224,28 @@ class IngredientItemRow extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTag(String label, Color textColor, Color bgColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      margin: const EdgeInsets.only(left: 8),
+      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(4)),
+      child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: textColor)),
+    );
+  }
+
+  PopupMenuItem<String> _menuItem(String value, IconData icon, String label, {Color? color}) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 8),
+          Text(label, style: color != null ? TextStyle(color: color) : null),
+        ],
       ),
     );
   }

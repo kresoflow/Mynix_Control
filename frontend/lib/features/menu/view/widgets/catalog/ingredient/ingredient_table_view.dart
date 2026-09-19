@@ -3,13 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
 import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_item_row.dart';
 import 'package:mynix_frontend/features/pos/models/menu_category.dart';
 import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
@@ -137,36 +134,6 @@ class IngredientTableView extends StatelessWidget {
   }
 
   void _confirmDeleteIngredient(BuildContext context, Ingredient item) {
-    showDialog(
-      context: context,
-      builder: (ctx) => MynixDialog(
-        title: 'Удалить ингредиент?',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Сырьё «${item.name}» будет удалено со склада.\nЕсли позиция используется в техкартах блюд, удаление будет заблокировано.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkSubtext
-                : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(ctx),
-          ),
-          AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<IngredientBloc>().add(DeleteIngredient(item.id));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
-    );
+    CatalogDeletionDialogs.confirmDeleteIngredient(context, item);
   }
 }

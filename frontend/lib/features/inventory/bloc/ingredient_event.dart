@@ -84,7 +84,16 @@ class UpdateIngredient extends IngredientEvent {
 
 class DeleteIngredient extends IngredientEvent {
   final int id;
-  const DeleteIngredient(this.id);
+  final String mode;
+  const DeleteIngredient(this.id, {this.mode = 'soft'});
+
+  @override
+  List<Object?> get props => [id, mode];
+}
+
+class RestoreIngredient extends IngredientEvent {
+  final int id;
+  const RestoreIngredient(this.id);
 
   @override
   List<Object?> get props => [id];

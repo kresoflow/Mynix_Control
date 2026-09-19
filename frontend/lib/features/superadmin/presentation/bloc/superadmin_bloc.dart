@@ -44,6 +44,7 @@ class SuperadminBloc extends Cubit<SuperadminState> {
     emit(SuperadminLoading());
     try {
       final tenants = await repository.getTenants(_systemToken);
+      tenants.sort((a, b) => a.id.compareTo(b.id));
       emit(SuperadminLoaded(tenants));
     } catch (e) {
       emit(SuperadminError(e.toString()));
@@ -89,6 +90,55 @@ class SuperadminBloc extends Cubit<SuperadminState> {
         await Future.delayed(const Duration(seconds: 3));
         emit(currentState);
       }
+    }
+  }
+
+  Future<void> toggleTenantStatus(int tenantId, bool isActive) async {
+    try {
+      await repository.toggleTenantStatus(
+        systemToken: _systemToken,
+        tenantId: tenantId,
+        isActive: isActive,
+      );
+      await loadTenants();
+    } catch (e) {
+      emit(SuperadminError(e.toString()));
+    }
+  }
+
+  Future<void> updateTenant({
+    required int tenantId,
+    String? name,
+    String? address,
+    bool? useKds,
+    bool? enableInventoryDeduction,
+  }) async {
+    emit(SuperadminLoading());
+    try {
+      await repository.updateTenant(
+        systemToken: _systemToken,
+        tenantId: tenantId,
+        name: name,
+        address: address,
+        useKds: useKds,
+        enableInventoryDeduction: enableInventoryDeduction,
+      );
+      await loadTenants();
+    } catch (e) {
+      emit(SuperadminError(e.toString()));
+    }
+  }
+
+  Future<void> deleteTenant(int tenantId) async {
+    emit(SuperadminLoading());
+    try {
+      await repository.deleteTenant(
+        systemToken: _systemToken,
+        tenantId: tenantId,
+      );
+      await loadTenants();
+    } catch (e) {
+      emit(SuperadminError(e.toString()));
     }
   }
 }

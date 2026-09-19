@@ -35,21 +35,32 @@ class CreateMenuItem extends MenuEvent {
   List<Object?> get props => [name, price, category, sortOrder, barcode];
 }
 
+class CreateMenuItemsBulk extends MenuEvent {
+  final List<Map<String, dynamic>> items;
+  const CreateMenuItemsBulk({required this.items});
+  @override
+  List<Object?> get props => [items];
+}
+
+class CreateRetailProductsBulk extends MenuEvent {
+  final List<Map<String, dynamic>> items;
+  const CreateRetailProductsBulk({required this.items});
+  @override
+  List<Object?> get props => [items];
+}
+
 class DeleteMenuItem extends MenuEvent {
   final int id;
-
-  const DeleteMenuItem(this.id);
-
+  final String mode;
+  const DeleteMenuItem(this.id, {this.mode = 'soft'});
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [id, mode];
 }
 
 class UpdateMenuItem extends MenuEvent {
   final int id;
   final Map<String, dynamic> data;
-
   const UpdateMenuItem(this.id, this.data);
-
   @override
   List<Object?> get props => [id, data];
 }
@@ -57,9 +68,7 @@ class UpdateMenuItem extends MenuEvent {
 class UpdateRetailProduct extends MenuEvent {
   final int id;
   final Map<String, dynamic> data;
-
   const UpdateRetailProduct(this.id, this.data);
-
   @override
   List<Object?> get props => [id, data];
 }
@@ -92,7 +101,19 @@ class CreateRetailProduct extends MenuEvent {
   });
 
   @override
-  List<Object?> get props => [name, categoryId, unit, purchasePrice, sellingPrice, attributes, initialStock, minStockAlert, sortOrder, barcode, parentId];
+  List<Object?> get props => [
+        name,
+        categoryId,
+        unit,
+        purchasePrice,
+        sellingPrice,
+        attributes,
+        initialStock,
+        minStockAlert,
+        sortOrder,
+        barcode,
+        parentId,
+      ];
 }
 
 class CreateRetailProductGroup extends MenuEvent {
@@ -124,7 +145,6 @@ class MenuLoading extends MenuState {}
 class MenuLoaded extends MenuState {
   final List<MenuItem> items;
   const MenuLoaded({required this.items});
-  
   @override
   List<Object?> get props => [items];
 }
@@ -132,7 +152,6 @@ class MenuLoaded extends MenuState {
 class MenuError extends MenuState {
   final String message;
   const MenuError({required this.message});
-  
   @override
   List<Object?> get props => [message];
 }
@@ -145,8 +164,10 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
   MenuBloc(this.menuRepository) : super(MenuLoading()) {
     on<LoadMenu>(_onLoadMenu);
     on<CreateMenuItem>(_onCreateMenuItem);
+    on<CreateMenuItemsBulk>(_onCreateMenuItemsBulk);
     on<DeleteMenuItem>(_onDeleteMenuItem);
     on<CreateRetailProduct>(_onCreateRetailProduct);
+    on<CreateRetailProductsBulk>(_onCreateRetailProductsBulk);
     on<CreateRetailProductGroup>(_onCreateRetailProductGroup);
     on<UpdateMenuItem>(_onUpdateMenuItem);
     on<UpdateRetailProduct>(_onUpdateRetailProduct);
@@ -165,36 +186,49 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
   }
 
   Future<void> _onLoadMenu(LoadMenu event, Emitter<MenuState> emit) async {
-    emit(MenuLoading());
+    if (state is! MenuLoaded) {
+      emit(MenuLoading());
+    }
     try {
       final items = await menuRepository.getMenuItems();
       emit(MenuLoaded(items: items));
     } catch (e) {
-      emit(MenuError(message: e.toString()));
+      if (state is! MenuLoaded) {
+        emit(MenuError(message: e.toString()));
+      }
     }
   }
 
-  Future<void> _onCreateMenuItem(CreateMenuItem event, Emitter<MenuState> emit) async {
+  Future<void> _handleMenuAction(Future<void> Function() action, Emitter<MenuState> emit) async {
+    final currentItems = state is MenuLoaded ? (state as MenuLoaded).items : <MenuItem>[];
     try {
-      await menuRepository.createMenuItem(
+      await action();
+      add(LoadMenu());
+    } catch (e) {
+      emit(MenuError(message: e.toString().replaceFirst('Exception: ', '')));
+      if (currentItems.isNotEmpty) {
+        emit(MenuLoaded(items: currentItems));
+      } else {
+        add(LoadMenu());
+      }
+    }
+  }
+
+  Future<void> _onCreateMenuItem(CreateMenuItem event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.createMenuItem(
         name: event.name,
         price: event.price,
         category: event.category,
         sortOrder: event.sortOrder,
         attributes: event.attributes,
         barcode: event.barcode,
-      );
-      // Reload menu after creation
-      add(LoadMenu());
-    } catch (e) {
-      emit(MenuError(message: e.toString()));
-      add(LoadMenu());
-    }
-  }
+      ), emit,);
 
-  Future<void> _onCreateRetailProduct(CreateRetailProduct event, Emitter<MenuState> emit) async {
-    try {
-      await menuRepository.createRetailProduct(
+  Future<void> _onCreateMenuItemsBulk(CreateMenuItemsBulk event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.createMenuItemsBulk(event.items), emit);
+
+  Future<void> _onCreateRetailProduct(CreateRetailProduct event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.createRetailProduct(
         name: event.name,
         categoryId: event.categoryId,
         unit: event.unit,
@@ -205,78 +239,49 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
         sortOrder: event.sortOrder,
         barcode: event.barcode,
         parentId: event.parentId,
-      );
-      add(LoadMenu());
-    } catch (e) {
-      emit(MenuError(message: e.toString().replaceFirst('Exception: ', '')));
-      add(LoadMenu());
-    }
-  }
+      ), emit,);
 
-  Future<void> _onCreateRetailProductGroup(CreateRetailProductGroup event, Emitter<MenuState> emit) async {
-    try {
-      final double basePrice = event.variations.isNotEmpty 
-          ? (event.variations.first['price'] as num).toDouble() 
-          : 0.0;
-          
-      final parentId = await menuRepository.createMenuItem(
-        name: event.name,
-        category: event.categoryId?.toString() ?? '',
-        price: basePrice,
-        type: 'retail',
-        attributes: {
-          'icon': 'package',
-          if (event.flavor != null && event.flavor!.isNotEmpty) 'flavor': event.flavor,
-          'variations': event.variations,
-        },
-      );
+  Future<void> _onCreateRetailProductsBulk(CreateRetailProductsBulk event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.createRetailProductsBulk(event.items), emit);
 
-      for (var v in event.variations) {
-        await menuRepository.createRetailProduct(
-          name: v['name'] as String,
-          categoryId: event.categoryId,
-          unit: v['unit'] as String? ?? 'pcs',
-          purchasePrice: (v['purchasePrice'] as num?)?.toDouble() ?? 0.0,
-          sellingPrice: (v['price'] as num?)?.toDouble() ?? 0.0,
-          initialStock: (v['stock'] as num?)?.toDouble() ?? 0.0,
-          barcode: v['barcode'] as String?,
-          parentId: parentId,
+  Future<void> _onCreateRetailProductGroup(CreateRetailProductGroup event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() async {
+        final double basePrice = event.variations.isNotEmpty 
+            ? (event.variations.first['price'] as num).toDouble() 
+            : 0.0;
+            
+        final parentId = await menuRepository.createMenuItem(
+          name: event.name,
+          category: event.categoryId?.toString() ?? '',
+          price: basePrice,
+          type: 'retail',
+          attributes: {
+            'icon': 'package',
+            if (event.flavor != null && event.flavor!.isNotEmpty) 'flavor': event.flavor,
+            'variations': event.variations,
+          },
         );
-      }
-      add(LoadMenu());
-    } catch (e) {
-      emit(MenuError(message: e.toString().replaceFirst('Exception: ', '')));
-      add(LoadMenu());
-    }
-  }
 
-  Future<void> _onDeleteMenuItem(DeleteMenuItem event, Emitter<MenuState> emit) async {
-    try {
-      await menuRepository.deleteMenuItem(event.id);
-      add(LoadMenu());
-    } catch (e) {
-      emit(MenuError(message: e.toString().replaceFirst('Exception: ', '')));
-      add(LoadMenu());
-    }
-  }
+        for (var v in event.variations) {
+          await menuRepository.createRetailProduct(
+            name: v['name'] as String,
+            categoryId: event.categoryId,
+            unit: v['unit'] as String? ?? 'pcs',
+            purchasePrice: (v['purchasePrice'] as num?)?.toDouble() ?? 0.0,
+            sellingPrice: (v['price'] as num?)?.toDouble() ?? 0.0,
+            initialStock: 0.0,
+            barcode: v['barcode'] as String?,
+            parentId: parentId,
+          );
+        }
+      }, emit,);
 
-  Future<void> _onUpdateMenuItem(UpdateMenuItem event, Emitter<MenuState> emit) async {
-    try {
-      await menuRepository.updateMenuItem(event.id, event.data);
-      add(LoadMenu());
-    } catch (e) {
-      emit(MenuError(message: e.toString().replaceFirst('Exception: ', '')));
-      add(LoadMenu());
-    }
-  }
+  Future<void> _onDeleteMenuItem(DeleteMenuItem event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.deleteMenuItem(event.id, mode: event.mode), emit);
 
-  Future<void> _onUpdateRetailProduct(UpdateRetailProduct event, Emitter<MenuState> emit) async {
-    try {
-      await menuRepository.updateRetailProduct(event.id, event.data);
-      add(LoadMenu());
-    } catch (e) {
-      emit(MenuError(message: e.toString().replaceFirst('Exception: ', '')));
-      add(LoadMenu());
-    }
-  }
+  Future<void> _onUpdateMenuItem(UpdateMenuItem event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.updateMenuItem(event.id, event.data), emit);
+
+  Future<void> _onUpdateRetailProduct(UpdateRetailProduct event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.updateRetailProduct(event.id, event.data), emit);
 }

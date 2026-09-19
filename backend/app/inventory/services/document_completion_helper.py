@@ -4,6 +4,7 @@ Handles stock transaction creation, moving average recalculation, and supplier b
 """
 
 from typing import Optional
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.inventory.models import (
@@ -23,7 +24,7 @@ async def process_receipt_completion(
         if item.ingredient_id:
             ing = await session.get(Ingredient, item.ingredient_id)
             if not ing:
-                continue
+                raise HTTPException(status_code=400, detail=f"Ingredient with id {item.ingredient_id} not found")
 
             current_value = ing.current_stock * ing.cost_per_unit
             new_value = item.quantity * item.price_per_unit
@@ -47,7 +48,7 @@ async def process_receipt_completion(
         elif item.retail_product_id:
             ret = await session.get(RetailProduct, item.retail_product_id)
             if not ret:
-                continue
+                raise HTTPException(status_code=400, detail=f"Retail product with id {item.retail_product_id} not found")
 
             current_value = ret.current_stock * ret.cost
             new_value = item.quantity * item.price_per_unit
@@ -67,6 +68,8 @@ async def process_receipt_completion(
                 created_by=user_id,
             )
             session.add(txn)
+        else:
+            raise HTTPException(status_code=400, detail=f"Document item has neither ingredient_id nor retail_product_id")
 
 
 async def process_writeoff_completion(
@@ -79,7 +82,7 @@ async def process_writeoff_completion(
         if item.ingredient_id:
             ing = await session.get(Ingredient, item.ingredient_id)
             if not ing:
-                continue
+                raise HTTPException(status_code=400, detail=f"Ingredient with id {item.ingredient_id} not found")
 
             ing.current_stock -= item.quantity
             session.add(ing)
@@ -96,7 +99,7 @@ async def process_writeoff_completion(
         elif item.retail_product_id:
             ret = await session.get(RetailProduct, item.retail_product_id)
             if not ret:
-                continue
+                raise HTTPException(status_code=400, detail=f"Retail product with id {item.retail_product_id} not found")
 
             ret.current_stock -= item.quantity
             session.add(ret)
@@ -109,6 +112,8 @@ async def process_writeoff_completion(
                 created_by=user_id,
             )
             session.add(txn)
+        else:
+            raise HTTPException(status_code=400, detail=f"Document item has neither ingredient_id nor retail_product_id")
 
 
 async def process_inventory_completion(
@@ -123,7 +128,7 @@ async def process_inventory_completion(
         if item.ingredient_id:
             ing = await session.get(Ingredient, item.ingredient_id)
             if not ing:
-                continue
+                raise HTTPException(status_code=400, detail=f"Ingredient with id {item.ingredient_id} not found")
 
             diff = actual_quantity - ing.current_stock
             if diff != 0:
@@ -145,7 +150,7 @@ async def process_inventory_completion(
         elif item.retail_product_id:
             ret = await session.get(RetailProduct, item.retail_product_id)
             if not ret:
-                continue
+                raise HTTPException(status_code=400, detail=f"Retail product with id {item.retail_product_id} not found")
 
             diff = actual_quantity - ret.current_stock
             if diff != 0:
@@ -163,6 +168,9 @@ async def process_inventory_completion(
                 session.add(txn)
                 ret.current_stock = actual_quantity
                 session.add(ret)
+        else:
+            raise HTTPException(status_code=400, detail=f"Document item has neither ingredient_id nor retail_product_id")
+
 
 
 async def process_supplier_debt(

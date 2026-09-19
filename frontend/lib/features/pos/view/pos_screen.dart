@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/utils/audio_helper.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
@@ -154,8 +155,52 @@ class _PosScreenState extends State<PosScreen> {
 
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    return BlocListener<ShiftBloc, ShiftState>(
-      listener: (context, state) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final cartItems = context.read<CartBloc>().state.items;
+        if (cartItems.isEmpty) {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+          return;
+        }
+        final shouldLeave = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => MynixDialog(
+            title: 'В чеке есть товары',
+            icon: PhosphorIconsRegular.warning,
+            isDestructive: true,
+            width: 420,
+            content: Text(
+              'В текущем чеке ${cartItems.length} поз. При выходе чек будет сброшен. Вы действительно хотите покинуть кассу?',
+              style: AppTextStyles.bodyMedium,
+            ),
+            actions: [
+              AppGhostButton(
+                label: 'Остаться в кассе',
+                onPressed: () => Navigator.pop(ctx, false),
+              ),
+              AppDangerButton(
+                label: 'Сбросить и выйти',
+                icon: PhosphorIconsRegular.signOut,
+                onPressed: () {
+                  context.read<CartBloc>().add(ClearCart());
+                  Navigator.pop(ctx, true);
+                },
+              ),
+            ],
+          ),
+        );
+        if (shouldLeave == true && context.mounted) {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+        }
+      },
+      child: BlocListener<ShiftBloc, ShiftState>(
+        listener: (context, state) {
         if (state is ShiftClosedSuccessfully) {
           final diff = state.report['discrepancy'] ?? 0;
           if (diff == 0) {
@@ -234,7 +279,8 @@ class _PosScreenState extends State<PosScreen> {
           );
         },
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildActiveTablesBadge(bool isDark) {
@@ -349,11 +395,13 @@ class _PosScreenState extends State<PosScreen> {
     if (child != null) {
       final parent = menuState.items.where((i) => i.id == child.parentId).firstOrNull;
       if (parent != null) {
-        context.read<CartBloc>().add(AddItemToCart(
-          parent,
-          selectedOptionsJson: jsonEncode({'variation': child.cleanName, 'child_item_id': child.id}),
-          selectedOptionsPrice: child.price - parent.price,
-        ));
+        context.read<CartBloc>().add(
+          AddItemToCart(
+            parent,
+            selectedOptionsJson: jsonEncode({'variation': child.cleanName, 'child_item_id': child.id}),
+            selectedOptionsPrice: child.price - parent.price,
+          ),
+        );
         AppToast.showCart(context, '${parent.cleanName} (${child.cleanName})');
         return;
       }

@@ -1,11 +1,12 @@
 from typing import Annotated, Any, Dict
 import datetime
+import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import MetaData, Table, text
+from sqlalchemy import MetaData, Table, text, func, select
 
 from app.database import get_session
-from .tenant_router import require_system_admin
+from app.system.security import require_system_admin
 
 router = APIRouter(tags=["System — DB Inspector"])
 
@@ -73,21 +74,48 @@ async def list_schema_tables(
     return {"schema": schema_name, "tables": tables}
 
 
+async def _log_audit(session: AsyncSession, schema_name: str, table_name: str, action: str, details: str) -> None:
+    """Records destructive operations to public.system_audit_logs."""
+    try:
+        await session.execute(text("""
+            CREATE TABLE IF NOT EXISTS public.system_audit_logs (
+                id SERIAL PRIMARY KEY,
+                schema_name VARCHAR(64) NOT NULL,
+                table_name VARCHAR(64) NOT NULL,
+                action VARCHAR(16) NOT NULL,
+                details TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+            )
+        """))
+        await session.execute(
+            text("""
+                INSERT INTO public.system_audit_logs (schema_name, table_name, action, details)
+                VALUES (:schema_name, :table_name, :action, :details)
+            """),
+            {"schema_name": schema_name, "table_name": table_name, "action": action, "details": details[:1000]},
+        )
+    except Exception as ex:
+        print(f"Audit log notice: {ex}")
+
+
 @router.get("/tenants/{schema_name}/tables/{table_name}", dependencies=[Depends(require_system_admin)])
 async def get_table_data(
     schema_name: str,
     table_name: str,
     session: Annotated[AsyncSession, Depends(get_session)],
-    limit: int = 100,
+    limit: int = 50,
     offset: int = 0,
 ):
-    """Get columns and rows from a specific table."""
+    """Get columns and rows from a specific table with pagination."""
     try:
         conn = await session.connection()
         table_def, columns, pk_columns = await conn.run_sync(_reflect_table, schema_name, table_name)
     except Exception as e:
         print(f"Exception during reflection: {e}")
         raise HTTPException(status_code=404, detail=f"Table {table_name} not found in schema {schema_name}")
+
+    count_stmt = select(func.count()).select_from(table_def)
+    total_count = (await session.execute(count_stmt)).scalar() or 0
 
     stmt = table_def.select().limit(limit).offset(offset)
     result = await session.execute(stmt)
@@ -97,6 +125,9 @@ async def get_table_data(
         "table": table_name,
         "columns": columns,
         "primary_keys": pk_columns,
+        "total_count": total_count,
+        "limit": limit,
+        "offset": offset,
         "rows": rows,
     }
 
@@ -125,8 +156,9 @@ async def create_table_row(
     stmt = table_def.insert().values(**casted_payload).returning(table_def)
     try:
         result = await session.execute(stmt)
-        await session.commit()
         inserted_row = dict(result.fetchone()._mapping)
+        await _log_audit(session, schema_name, table_name, "INSERT", f"New row: {inserted_row.get('id', 'item')}")
+        await session.commit()
         return {"message": "Row created", "data": inserted_row}
     except Exception as e:
         await session.rollback()
@@ -172,6 +204,7 @@ async def update_table_row(
         result = await session.execute(stmt)
         if result.rowcount == 0:
             raise HTTPException(status_code=404, detail="Row not found")
+        await _log_audit(session, schema_name, table_name, "UPDATE", f"Keys: {pk_columns}, Updated: {update_values}")
         await session.commit()
         return {"message": "Row updated"}
     except Exception as e:
@@ -209,6 +242,7 @@ async def delete_table_row(
         result = await session.execute(stmt)
         if result.rowcount == 0:
             raise HTTPException(status_code=404, detail="Row not found")
+        await _log_audit(session, schema_name, table_name, "DELETE", f"Keys: {pk_columns}, Payload: {casted_pk_payload}")
         await session.commit()
         return {"message": "Row deleted"}
     except Exception as e:

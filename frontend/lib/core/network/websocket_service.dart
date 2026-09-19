@@ -5,10 +5,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketService {
-  static const String _baseWsUrl = String.fromEnvironment(
-    'WS_URL', 
-    defaultValue: 'ws://127.0.0.1:8000/ws'
-  );
+  static String get _baseWsUrl {
+    const envWs = String.fromEnvironment('WS_URL');
+    if (envWs.isNotEmpty) return envWs;
+    if (kIsWeb) {
+      final host = Uri.base.host;
+      if (host.isNotEmpty && (host == 'localhost' || host == '127.0.0.1')) {
+        return 'ws://$host:8000/ws';
+      }
+    }
+    return 'ws://127.0.0.1:8000/ws';
+  }
 
   WebSocketChannel? _channel;
   Timer? _pingTimer;

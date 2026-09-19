@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
@@ -54,7 +55,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showSuperadminDialog(BuildContext context) {
-    String token = '';
+    final defaultToken = kDebugMode ? 'super_secret_mynix_token_2026' : '';
+    final controller = TextEditingController(text: defaultToken);
     showDialog(
       context: context,
       builder: (ctx) => MynixDialog(
@@ -74,12 +76,22 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 12),
             AppTextField(
+              controller: controller,
               labelText: 'Мастер-токен',
               hintText: 'токен доступа...',
               obscureText: true,
               prefixIcon: const Icon(PhosphorIconsRegular.key, size: 18),
-              onChanged: (val) => token = val.trim(),
             ),
+            if (kDebugMode) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Dev токен: super_secret_mynix_token_2026',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.brandPrimary,
+                  fontSize: 11,
+                ),
+              ),
+            ],
           ],
         ),
         actions: [
@@ -92,6 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
             icon: PhosphorIconsRegular.signIn,
             onPressed: () {
               Navigator.pop(ctx);
+              final token = controller.text.trim();
               if (token.isNotEmpty) {
                 final apiClient = context.read<ApiClient>();
                 Navigator.push(

@@ -205,6 +205,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       onNavigateToHistory: (index) => setState(() => _navigationHistory = _navigationHistory.sublist(0, index + 1)),
                       onAddPressed: () => showAddCategoryDialog(context, currentCategoryId: _currentCategoryId),
                       addMenuBuilder: widget.addMenuBuilder,
+                      onRestoreSelected: () => _restoreSelected(currentCategories, currentItems),
                       onToggleVisibilitySelected: () => _toggleVisibilitySelected(currentCategories, currentItems),
                     ),
                     Expanded(
@@ -300,6 +301,33 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
     AppToast.showSuccess(
       context,
       targetVisible ? 'Элементы отображаются на кассе' : 'Элементы скрыты на кассе',
+      subtitle: '$count шт.',
+    );
+  }
+
+  void _restoreSelected(List<dynamic> currentCategories, List<dynamic> currentItems) {
+    final selectedCats = currentCategories.where((c) => _selectedCategories.contains(c.id)).toList();
+    final selectedDishes = currentItems.where((i) => _selectedItems.contains(i.id)).toList();
+    if (selectedCats.isEmpty && selectedDishes.isEmpty) return;
+
+    for (final cat in selectedCats) {
+      context.read<CategoryBloc>().add(RestoreCategory(cat.id));
+    }
+    for (final item in selectedDishes) {
+      context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true}));
+    }
+    context.read<CategoryBloc>().add(LoadCategories());
+
+    final count = selectedCats.length + selectedDishes.length;
+    setState(() {
+      _selectedCategories.clear();
+      _selectedItems.clear();
+      _manageMode = CategoryManageMode.none;
+    });
+
+    AppToast.showSuccess(
+      context,
+      'Восстановлено элементов',
       subtitle: '$count шт.',
     );
   }

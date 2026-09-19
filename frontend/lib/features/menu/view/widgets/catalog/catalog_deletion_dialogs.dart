@@ -7,10 +7,13 @@ import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 
 class CatalogDeletionDialogs {
   static void confirmDeleteCategory(BuildContext context, dynamic category) {
-    if (!category.isVisible) {
+    if (category.isArchived == true) {
       confirmHardDeleteCategory(context, category);
       return;
     }
@@ -18,12 +21,12 @@ class CatalogDeletionDialogs {
     showDialog(
       context: context,
       builder: (ctx) => MynixDialog(
-        title: 'Удаление категории',
-        icon: PhosphorIconsRegular.trash,
+        title: 'Архивация категории',
+        icon: PhosphorIconsRegular.archive,
         isDestructive: true,
         width: 420,
         content: Text(
-          'Удалить категорию «${category.name}»?\nВсе вложенные блюда и товары будут заархивированы и скрыты.',
+          'Архивировать категорию «${category.name}»?\nВсе вложенные блюда и товары будут заархивированы и скрыты.',
           style: AppTextStyles.bodyMedium.copyWith(
             color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
@@ -31,11 +34,10 @@ class CatalogDeletionDialogs {
         actions: [
           AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
           AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
+            label: 'Архивировать',
+            icon: PhosphorIconsRegular.archive,
             onPressed: () {
               context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'all'));
-              context.read<MenuBloc>().add(LoadMenu());
               Navigator.pop(ctx);
             },
           ),
@@ -53,7 +55,7 @@ class CatalogDeletionDialogs {
         isDestructive: true,
         width: 420,
         content: Text(
-          'Окончательно стереть категорию «${category.name}» из базы данных?\nЭто возможно только если по её товарам не было продаж.',
+          'Окончательно стереть категорию «${category.name}» из базы данных?\nЭто возможно только если по её товарам нет истории продаж.',
           style: AppTextStyles.bodyMedium.copyWith(
             color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
@@ -65,7 +67,6 @@ class CatalogDeletionDialogs {
             icon: PhosphorIconsRegular.trash,
             onPressed: () {
               context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'hard'));
-              context.read<MenuBloc>().add(LoadMenu());
               Navigator.pop(ctx);
             },
           ),
@@ -75,6 +76,11 @@ class CatalogDeletionDialogs {
   }
 
   static void confirmDeleteItem(BuildContext context, dynamic item) {
+    if (!item.isAvailable) {
+      confirmHardDeleteItem(context, item);
+      return;
+    }
+
     final displayName = item.cleanName ?? item.name;
     showDialog(
       context: context,
@@ -95,7 +101,37 @@ class CatalogDeletionDialogs {
             label: 'Архивировать',
             icon: PhosphorIconsRegular.archive,
             onPressed: () {
-              context.read<MenuBloc>().add(DeleteMenuItem(item.id));
+              context.read<MenuBloc>().add(DeleteMenuItem(item.id, mode: 'soft'));
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  static void confirmHardDeleteItem(BuildContext context, dynamic item) {
+    final displayName = item.cleanName ?? item.name;
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Удаление навсегда',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Окончательно удалить позицию «$displayName» из базы данных?\nЭто возможно только если по ней нет истории продаж.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
+        ),
+        actions: [
+          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+          AppDangerButton(
+            label: 'Удалить навсегда',
+            icon: PhosphorIconsRegular.trash,
+            onPressed: () {
+              context.read<MenuBloc>().add(DeleteMenuItem(item.id, mode: 'hard'));
               Navigator.pop(ctx);
             },
           ),
@@ -120,7 +156,9 @@ class CatalogDeletionDialogs {
         width: 420,
         content: Text(
           'Удалить выбранные элементы ($selectedCount шт.)?\nВложенные позиции будут архивированы.',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.lightSubtext),
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
         ),
         actions: [
           AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
@@ -129,14 +167,78 @@ class CatalogDeletionDialogs {
             icon: PhosphorIconsRegular.trash,
             onPressed: () {
               for (var itemId in selectedItems) {
-                context.read<MenuBloc>().add(DeleteMenuItem(itemId));
+                context.read<MenuBloc>().add(DeleteMenuItem(itemId, mode: 'soft'));
               }
               for (var catId in selectedCategories) {
                 context.read<CategoryBloc>().add(DeleteCategory(catId, mode: 'all'));
               }
-              context.read<MenuBloc>().add(LoadMenu());
               Navigator.pop(ctx);
               onCleared();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  static void confirmDeleteIngredient(BuildContext context, Ingredient item) {
+    if (item.isArchived) {
+      confirmHardDeleteIngredient(context, item);
+      return;
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Архивация сырья',
+        icon: PhosphorIconsRegular.archive,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Архивировать позицию «${item.name}»?\nОна исчезнет из активных списков, но сохранится в истории движения склада.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
+        ),
+        actions: [
+          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+          AppDangerButton(
+            label: 'Архивировать',
+            icon: PhosphorIconsRegular.archive,
+            onPressed: () {
+              context.read<IngredientBloc>().add(DeleteIngredient(item.id, mode: 'soft'));
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  static void confirmHardDeleteIngredient(BuildContext context, Ingredient item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (ctx) => MynixDialog(
+        title: 'Удаление навсегда',
+        icon: PhosphorIconsRegular.trash,
+        isDestructive: true,
+        width: 420,
+        content: Text(
+          'Окончательно удалить позицию сырья «${item.name}» из базы данных?\nЭто возможно только если по ней нет документов, проводок и связей с техкартами.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
+        ),
+        actions: [
+          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+          AppDangerButton(
+            label: 'Удалить навсегда',
+            icon: PhosphorIconsRegular.trash,
+            onPressed: () {
+              context.read<IngredientBloc>().add(DeleteIngredient(item.id, mode: 'hard'));
+              Navigator.pop(ctx);
             },
           ),
         ],

@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'bulk_add/dish_row.dart';
-import 'bulk_add/ingredient_row.dart';
-import 'bulk_add/retail_row.dart';
-import 'bulk_add/category_row.dart';
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
+import 'bulk_add/bulk_add_controller.dart';
 import 'bulk_add/bulk_add_header.dart';
 import 'bulk_add/bulk_add_tabs_bar.dart';
 import 'bulk_add/bulk_add_category_selector.dart';
 import 'bulk_add/bulk_add_list_widget.dart';
 import 'bulk_add/bulk_add_footer.dart';
 import 'bulk_add/bulk_add_save_helper.dart';
-import 'bulk_add/bulk_add_presets.dart';
 
 class BulkAddModal extends StatefulWidget {
   final int initialTabIndex;
@@ -32,14 +27,10 @@ class BulkAddModal extends StatefulWidget {
 }
 
 class _BulkAddModalState extends State<BulkAddModal> {
-  int _tabIndex = 0; // 0 = Блюда, 1 = Товары витрины, 2 = Сырье, 3 = Папки
+  final BulkAddController _controller = BulkAddController();
+  int _tabIndex = 0;
   int? _selectedParentId;
   int? _selectedChildId;
-
-  final List<DishRowData> _dishRows = [];
-  final List<RetailRowData> _retailRows = [];
-  final List<IngredientRowData> _ingredientRows = [];
-  final List<CategoryRowData> _categoryRows = [];
   String _categoryType = 'dish';
 
   @override
@@ -53,36 +44,12 @@ class _BulkAddModalState extends State<BulkAddModal> {
 
   void _addRow() {
     setState(() {
-      if (_tabIndex == 0) {
-        _dishRows.add(DishRowData());
-      } else if (_tabIndex == 1) {
-        final newRow = RetailRowData();
-        if (_retailRows.isNotEmpty) {
-          newRow.selectedUnit = _retailRows.last.selectedUnit;
-        }
-        _retailRows.add(newRow);
-      } else if (_tabIndex == 2) {
-        final newRow = IngredientRowData();
-        if (_ingredientRows.isNotEmpty) {
-          newRow.selectedUnit = _ingredientRows.last.selectedUnit;
-        }
-        _ingredientRows.add(newRow);
-      } else {
-        _categoryRows.add(CategoryRowData());
-      }
+      _controller.addRow(_tabIndex);
     });
-    _focusRow(
-      _tabIndex == 0
-          ? _dishRows.last.firstFocusNode
-          : (_tabIndex == 1
-              ? _retailRows.last.firstFocusNode
-              : (_tabIndex == 2
-                  ? _ingredientRows.last.firstFocusNode
-                  : _categoryRows.last.firstFocusNode)),
-    );
+    _focusNode(_controller.getLastFocusNode(_tabIndex));
   }
 
-  void _focusRow(FocusNode node) {
+  void _focusNode(FocusNode node) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (node.canRequestFocus) {
         node.requestFocus();
@@ -92,75 +59,51 @@ class _BulkAddModalState extends State<BulkAddModal> {
 
   void _duplicateRow(int index) {
     setState(() {
-      if (_tabIndex == 0) {
-        _dishRows.insert(index + 1, _dishRows[index].clone());
-      } else if (_tabIndex == 1) {
-        _retailRows.insert(index + 1, _retailRows[index].clone());
-      } else if (_tabIndex == 2) {
-        _ingredientRows.insert(index + 1, _ingredientRows[index].clone());
-      } else {
-        _categoryRows.insert(index + 1, _categoryRows[index].clone());
-      }
+      _controller.duplicateRow(_tabIndex, index);
     });
-    _focusRow(
-      _tabIndex == 0
-          ? _dishRows[index + 1].firstFocusNode
-          : (_tabIndex == 1
-              ? _retailRows[index + 1].firstFocusNode
-              : (_tabIndex == 2
-                  ? _ingredientRows[index + 1].firstFocusNode
-                  : _categoryRows[index + 1].firstFocusNode)),
-    );
+    _focusNode(_controller.getRowFocusNode(_tabIndex, index + 1));
   }
 
   void _removeRow(int index) {
     setState(() {
-      if (_tabIndex == 0) {
-        _dishRows.removeAt(index);
-      } else if (_tabIndex == 1) {
-        _retailRows.removeAt(index);
-      } else if (_tabIndex == 2) {
-        _ingredientRows.removeAt(index);
-      } else {
-        _categoryRows.removeAt(index);
-      }
+      _controller.removeRow(_tabIndex, index);
     });
   }
 
   void _loadPreset(String presetType) {
-    final catState = context.read<CategoryBloc>().state;
-    final Map<String, int> catMap = {};
-    if (catState is CategoryLoaded) {
-      for (var c in catState.categories) {
-        catMap[c.name.toLowerCase().trim()] = c.id;
-      }
-    }
-
     setState(() {
-      BulkAddPresets.loadPreset(
+      _controller.loadPreset(
+        context: context,
         tabIndex: _tabIndex,
         presetType: presetType,
         categoryType: _categoryType,
-        catMap: catMap,
-        dishRows: _dishRows,
-        retailRows: _retailRows,
-        ingredientRows: _ingredientRows,
-        categoryRows: _categoryRows,
       );
     });
   }
 
-  void _saveAll() {
-    performBulkSave(
+  Future<void> _saveAll() async {
+    await performBulkSave(
       context: context,
       tabIndex: _tabIndex,
       targetCategoryId: _selectedChildId ?? _selectedParentId,
-      dishRows: _dishRows,
-      ingredientRows: _ingredientRows,
-      retailRows: _retailRows,
-      categoryRows: _categoryRows,
+      dishRows: _controller.dishRows,
+      ingredientRows: _controller.ingredientRows,
+      retailRows: _controller.retailRows,
+      categoryRows: _controller.categoryRows,
       globalCategoryType: _categoryType,
     );
+  }
+
+  bool get _isDirty {
+    final hasDishes = _controller.dishRows.any((r) => r.nameController.text.trim().isNotEmpty);
+    final hasRetail = _controller.retailRows.any((r) => r.nameController.text.trim().isNotEmpty);
+    final hasIngs = _controller.ingredientRows.any((r) => r.nameController.text.trim().isNotEmpty);
+    final hasCats = _controller.categoryRows.any((r) => r.nameController.text.trim().isNotEmpty);
+    final hasMultipleRows = _controller.dishRows.length > 1 ||
+        _controller.retailRows.length > 1 ||
+        _controller.ingredientRows.length > 1 ||
+        _controller.categoryRows.length > 1;
+    return hasDishes || hasRetail || hasIngs || hasCats || hasMultipleRows;
   }
 
   @override
@@ -174,11 +117,16 @@ class _BulkAddModalState extends State<BulkAddModal> {
       },
       child: Focus(
         autofocus: true,
-        child: Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-          elevation: 0,
-          child: Container(
+        child: DirtyPopScope(
+          isDirtyCheck: () => _isDirty,
+          title: 'Отменить массовое добавление?',
+          message: 'Все введенные строки и данные будут сброшены. Вы уверены, что хотите выйти?',
+          confirmLabel: 'Сбросить строки',
+          child: Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+            elevation: 0,
+            child: Container(
             width: MediaQuery.of(context).size.width * 0.95,
             height: MediaQuery.of(context).size.height * 0.88,
             decoration: BoxDecoration(
@@ -186,7 +134,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.25),
+                  color: AppColors.darkBg.withValues(alpha: 0.25),
                   blurRadius: 40,
                   offset: const Offset(0, 12),
                 ),
@@ -201,11 +149,20 @@ class _BulkAddModalState extends State<BulkAddModal> {
                   tabIndex: _tabIndex,
                   categoryType: _categoryType,
                   onTabSelected: (i) => setState(() {
+                    // Сбрасываем категорию при переключении между доменами
+                    // (dish/retail/ingredient — разные типы категорий)
+                    const tabTypes = ['dish', 'retail', 'ingredient', null];
+                    final prevType = tabTypes[_tabIndex];
+                    final nextType = tabTypes[i < 4 ? i : 3];
+                    if (prevType != nextType) {
+                      _selectedParentId = null;
+                      _selectedChildId = null;
+                    }
                     _tabIndex = i;
-                    if ((i == 0 && _dishRows.isEmpty) ||
-                        (i == 1 && _retailRows.isEmpty) ||
-                        (i == 2 && _ingredientRows.isEmpty) ||
-                        (i == 3 && _categoryRows.isEmpty)) {
+                    if ((i == 0 && _controller.dishRows.isEmpty) ||
+                        (i == 1 && _controller.retailRows.isEmpty) ||
+                        (i == 2 && _controller.ingredientRows.isEmpty) ||
+                        (i == 3 && _controller.categoryRows.isEmpty)) {
                       _addRow();
                     }
                   }),
@@ -242,10 +199,10 @@ class _BulkAddModalState extends State<BulkAddModal> {
                     padding: const EdgeInsets.symmetric(horizontal: 28),
                     child: BulkAddListWidget(
                       tabIndex: _tabIndex,
-                      dishRows: _dishRows,
-                      retailRows: _retailRows,
-                      ingredientRows: _ingredientRows,
-                      categoryRows: _categoryRows,
+                      dishRows: _controller.dishRows,
+                      retailRows: _controller.retailRows,
+                      ingredientRows: _controller.ingredientRows,
+                      categoryRows: _controller.categoryRows,
                       onAddRow: _addRow,
                       onDuplicateRow: _duplicateRow,
                       onRemoveRow: _removeRow,
@@ -261,23 +218,13 @@ class _BulkAddModalState extends State<BulkAddModal> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   void dispose() {
-    for (var r in _dishRows) {
-      r.firstFocusNode.dispose();
-    }
-    for (var r in _retailRows) {
-      r.firstFocusNode.dispose();
-    }
-    for (var r in _ingredientRows) {
-      r.firstFocusNode.dispose();
-    }
-    for (var r in _categoryRows) {
-      r.firstFocusNode.dispose();
-    }
+    _controller.dispose();
     super.dispose();
   }
 }

@@ -80,6 +80,22 @@ async def close_shift(
     if not shift:
         raise ValueError("Cannot close shift: no open shift found.")
 
+    # Poka-yoke: Check for unfinalized orders or active tables
+    active_stmt = select(func.count(Order.id)).where(
+        Order.shift_id == shift.id,
+        Order.status.in_([
+            OrderStatus.NEW.value,
+            OrderStatus.COOKING.value,
+            OrderStatus.READY.value,
+        ]),
+    )
+    active_res = await session.execute(active_stmt)
+    active_count = int(active_res.scalar() or 0)
+    if active_count > 0:
+        raise ValueError(
+            f"Невозможно закрыть смену: обнаружено {active_count} активных (незакрытых) заказов или столов. Завершите или отмените их перед закрытием кассы."
+        )
+
     expected = await calculate_expected_cash(session, shift.id, shift.opening_cash)
 
     shift.closed_by = user_id
@@ -101,6 +117,9 @@ async def record_expense(
     description: str,
 ) -> CashTransaction:
     """Record a cash expense during an open shift (e.g., buying napkins)."""
+    if amount <= 0:
+        raise ValueError("Сумма расхода должна быть больше 0.")
+
     shift = await get_open_shift(session)
     if not shift:
         raise ValueError("Cannot record expense: no open shift.")
@@ -131,31 +150,17 @@ async def get_x_report(
     if not shift:
         raise ValueError(f"Shift #{shift_id} not found.")
 
-    # Calculate Cash Sales
-    stmt_cash = select(func.coalesce(func.sum(Order.total), 0)).where(
-        Order.shift_id == shift_id,
-        Order.payment_method == PaymentMethod.CASH.value,
-        Order.status != OrderStatus.CANCELLED.value,
-    )
-    res_cash = await session.execute(stmt_cash)
-    cash_sales = float(res_cash.scalar() or 0.0)
-
-    # Calculate Transfer Sales
-    stmt_transfer = select(func.coalesce(func.sum(Order.total), 0)).where(
-        Order.shift_id == shift_id,
-        Order.payment_method.in_([PaymentMethod.TRANSFER.value, PaymentMethod.CARD.value]),
-        Order.status != OrderStatus.CANCELLED.value,
-    )
-    res_transfer = await session.execute(stmt_transfer)
-    transfer_sales = float(res_transfer.scalar() or 0.0)
-
-    # Total Orders Count
-    stmt_count = select(func.count(Order.id)).where(
-        Order.shift_id == shift_id,
-        Order.status != OrderStatus.CANCELLED.value,
-    )
-    res_count = await session.execute(stmt_count)
-    orders_count = int(res_count.scalar() or 0)
+    # Consolidated Sales & Orders Count
+    stmt_sales = select(
+        func.coalesce(func.sum(case((Order.payment_method == PaymentMethod.CASH.value, Order.total), else_=0)), 0),
+        func.coalesce(func.sum(case((Order.payment_method.in_([PaymentMethod.TRANSFER.value, PaymentMethod.CARD.value]), Order.total), else_=0)), 0),
+        func.count(Order.id),
+    ).where(Order.shift_id == shift_id, Order.status != OrderStatus.CANCELLED.value)
+    res_sales = await session.execute(stmt_sales)
+    row_sales = res_sales.one()
+    cash_sales = float(row_sales[0] or 0.0)
+    transfer_sales = float(row_sales[1] or 0.0)
+    orders_count = int(row_sales[2] or 0)
 
     # Total Items Sold Count
     stmt_items = (

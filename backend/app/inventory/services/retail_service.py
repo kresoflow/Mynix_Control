@@ -4,13 +4,62 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.inventory.models import (
-    MenuItem, RetailProduct, RetailProductRead,
-    StockTransaction, StockTransactionType
+    MenuItem, RetailProduct, RetailProductRead
 )
-from app.inventory.services.menu_service import _sync_child_variations
+from app.inventory.services.menu_variation_helper import _sync_child_variations
+
+async def bulk_create_retail_products(session: AsyncSession, items_data: list[dict], user_id: int = 1) -> list[RetailProduct]:
+    created_products: list[RetailProduct] = []
+    for data in items_data:
+        raw_cat_id = data.get("category_id")
+        category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
+
+        retail_product = RetailProduct(
+            name=data["name"],
+            category_id=category_id,
+            price=data["selling_price"],
+            cost=data["purchase_price"],
+            unit=data["unit"],
+            min_stock_alert=data.get("min_stock_alert", 0.0),
+            barcode=data.get("barcode"),
+            current_stock=0.0,
+            is_available=True,
+            attributes=data.get("attributes"),
+            sort_order=data.get("sort_order", 0),
+        )
+        session.add(retail_product)
+        await session.flush()
+
+        menu_item = MenuItem(
+            name=data["name"],
+            short_name=data.get("short_name"),
+            tags=data.get("tags", []),
+            category_id=category_id,
+            retail_product_id=retail_product.id,
+            price=data["selling_price"],
+            type="retail",
+            barcode=data.get("barcode"),
+            sort_order=data.get("sort_order", 0),
+            is_available=True,
+            attributes=data.get("attributes"),
+            parent_id=data.get("parent_id"),
+        )
+        session.add(menu_item)
+        await session.flush()
+
+        attributes = data.get("attributes")
+        if attributes and isinstance(attributes, dict) and "variations" in attributes and attributes["variations"]:
+            updated_vars = await _sync_child_variations(session, menu_item, attributes.get("variations", []))
+            attributes["variations"] = updated_vars
+            menu_item.attributes = attributes
+            session.add(menu_item)
+            await session.flush()
+
+        created_products.append(retail_product)
+
+    return created_products
 
 async def create_retail_product(session: AsyncSession, data: dict, user_id: int = 1) -> MenuItem:
-    initial_stock = data.get("initial_stock", 0.0)
     raw_cat_id = data.get("category_id")
     category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
 
@@ -22,24 +71,13 @@ async def create_retail_product(session: AsyncSession, data: dict, user_id: int 
         unit=data["unit"],
         min_stock_alert=data.get("min_stock_alert", 0.0),
         barcode=data.get("barcode"),
-        current_stock=initial_stock,
+        current_stock=0.0,
         is_available=True,
         attributes=data.get("attributes"),
         sort_order=data.get("sort_order", 0),
     )
     session.add(retail_product)
     await session.flush()
-
-    if initial_stock > 0:
-        txn = StockTransaction(
-            retail_product_id=retail_product.id,
-            type=StockTransactionType.RECEIPT,
-            quantity=initial_stock,
-            reason="Начальный остаток при создании",
-            created_by=user_id,
-        )
-        session.add(txn)
-        await session.flush()
 
     menu_item = MenuItem(
         name=data["name"],

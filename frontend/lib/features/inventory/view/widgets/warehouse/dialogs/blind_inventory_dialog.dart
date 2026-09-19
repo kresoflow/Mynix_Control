@@ -11,6 +11,7 @@ import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
 import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class BlindInventoryDialog extends StatefulWidget {
@@ -38,6 +39,8 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
     }
     super.dispose();
   }
+
+  bool get _isDirty => _controllers.values.any((c) => c.text.trim().isNotEmpty);
 
   Future<void> _submit(List<Ingredient> ingredients) async {
     setState(() => _isLoading = true);
@@ -80,7 +83,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
       await repo.completeDocument(doc.id);
 
       if (mounted) {
-        context.read<IngredientBloc>().add(LoadIngredients());
+        context.read<IngredientBloc>().add(const LoadIngredients());
         try {
           context.read<DocumentBloc>().add(const LoadDocuments());
         } catch (_) {}
@@ -101,79 +104,95 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return MynixDialog(
-      title: 'Слепая Инвентаризация',
-      icon: PhosphorIconsRegular.clipboardText,
-      width: 600,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Введите фактическое количество товара на полках', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 16),
-          ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-            child: BlocBuilder<IngredientBloc, IngredientState>(
-              builder: (context, state) {
-                if (state is IngredientLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is IngredientLoaded) {
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: state.ingredients.length,
-                    separatorBuilder: (_, __) => Divider(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.5)),
-                    itemBuilder: (context, index) {
-                      final item = state.ingredients[index];
-                      if (!_controllers.containsKey(item.id)) {
-                        _controllers[item.id] = TextEditingController();
-                      }
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(item.name, style: AppTextStyles.bodyMedium),
-                        subtitle: Text(
-                          item.attributes?['is_retail'] == true ? 'Витрина' : 'Сырье',
-                          style: AppTextStyles.caption.copyWith(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                        ),
-                        trailing: SizedBox(
-                          width: 150,
-                          child: TextField(
-                            controller: _controllers[item.id],
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            decoration: InputDecoration(
-                              labelText: 'Факт (${item.unit})',
-                              border: const OutlineInputBorder(),
-                              isDense: true,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return DirtyPopScope(
+      isDirtyCheck: () => _isDirty,
+      title: 'Отменить инвентаризацию?',
+      message: 'Все введенные фактические остатки будут сброшены. Вы уверены, что хотите выйти?',
+      confirmLabel: 'Сбросить и выйти',
+      child: MynixDialog(
+        title: 'Слепая Инвентаризация',
+        icon: PhosphorIconsRegular.clipboardText,
+        width: 600,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Введите фактическое количество товара на полках',
+              style: AppTextStyles.caption.copyWith(
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+              child: BlocBuilder<IngredientBloc, IngredientState>(
+                builder: (context, state) {
+                  if (state is IngredientLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is IngredientLoaded) {
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: state.ingredients.length,
+                      separatorBuilder: (_, __) => Divider(
+                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.5),
+                      ),
+                      itemBuilder: (context, index) {
+                        final item = state.ingredients[index];
+                        if (!_controllers.containsKey(item.id)) {
+                          _controllers[item.id] = TextEditingController();
+                        }
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(item.name, style: AppTextStyles.bodyMedium),
+                          subtitle: Text(
+                            item.attributes?['is_retail'] == true ? 'Витрина' : 'Сырье',
+                            style: AppTextStyles.caption.copyWith(
+                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }
-                return const Center(child: Text('Ошибка загрузки'));
-              },
+                          trailing: SizedBox(
+                            width: 150,
+                            child: TextField(
+                              controller: _controllers[item.id],
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                labelText: 'Факт (${item.unit})',
+                                border: const OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  return const Center(child: Text('Ошибка загрузки'));
+                },
+              ),
             ),
+          ],
+        ),
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: _isLoading ? null : () => Navigator.maybePop(context),
+          ),
+          const SizedBox(width: 16),
+          BlocBuilder<IngredientBloc, IngredientState>(
+            builder: (context, state) {
+              return AppPrimaryButton(
+                label: 'Завершить',
+                isLoading: _isLoading,
+                onPressed: _isLoading || state is! IngredientLoaded
+                    ? null
+                    : () => _submit(state.ingredients),
+              );
+            },
           ),
         ],
       ),
-      actions: [
-        AppGhostButton(
-          label: 'Отмена',
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-        ),
-        const SizedBox(width: 16),
-        BlocBuilder<IngredientBloc, IngredientState>(
-          builder: (context, state) {
-            return AppPrimaryButton(
-              label: 'Завершить',
-              isLoading: _isLoading,
-              onPressed: _isLoading || state is! IngredientLoaded
-                  ? null
-                  : () => _submit(state.ingredients),
-            );
-          },
-        ),
-      ],
     );
   }
 }

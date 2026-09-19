@@ -4,10 +4,11 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:mynix_frontend/core/theme/app_colors.dart';
 import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/role_formatter.dart';
+import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/logout_confirm_dialog.dart';
 import 'package:mynix_frontend/core/widgets/profile/user_profile_modal.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
 
 class MobileSettingsUserHeader extends StatelessWidget {
   final bool isDark;
@@ -101,27 +102,19 @@ class MobileSettingsUserHeader extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: AppSecondaryButton(
+                  size: AppButtonSize.sm,
                   onPressed: () => showUserProfileModal(context),
-                  icon: Icon(PhosphorIconsRegular.userGear, size: 16, color: AppColors.brandPrimary),
-                  label: const Text('Профиль и PIN', style: TextStyle(fontSize: 12)),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+                  icon: PhosphorIconsRegular.userGear,
+                  label: 'Профиль и PIN',
                 ),
               ),
               const SizedBox(width: 8),
-              OutlinedButton.icon(
-                onPressed: () => context.read<AuthBloc>().add(LoggedOut()),
-                icon: const Icon(PhosphorIconsRegular.signOut, size: 16, color: AppColors.danger),
-                label: const Text('Выйти', style: TextStyle(fontSize: 12, color: AppColors.danger)),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  side: BorderSide(color: AppColors.danger.withValues(alpha: 0.3)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+              AppDangerButton(
+                size: AppButtonSize.sm,
+                onPressed: () => showLogoutConfirmDialog(context),
+                icon: PhosphorIconsRegular.signOut,
+                label: 'Выйти',
               ),
             ],
           ),

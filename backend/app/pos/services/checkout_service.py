@@ -16,7 +16,7 @@ from app.inventory import services as inventory_svc
 from app.pos.services.shift_service import get_open_shift
 from app.pos.services.checkout_payment_helper import process_customer_checkout, process_cash_income
 from app.users.models import Tenant
-from app.exceptions import NotFoundError
+from app.exceptions import NotFoundError, ConflictError
 
 
 async def get_next_order_number(session: AsyncSession, shift_id: int) -> int:
@@ -319,6 +319,12 @@ async def reject_order(session: AsyncSession, current_user, order_id: int, reaso
     order = await get_order_by_id(session, order_id)
     if not order:
         raise NotFoundError(f"Заказ #{order_id} не найден")
+
+    # Poka-yoke: Prevent rejecting already completed or cancelled orders
+    if order.status in (OrderStatus.COMPLETED, OrderStatus.CANCELLED, OrderStatus.COMPLETED.value, OrderStatus.CANCELLED.value):
+        raise ConflictError(
+            f"Невозможно отклонить заказ #{order_id}: он уже находится в статусе «{order.status}»."
+        )
 
     order.status = OrderStatus.CANCELLED
     if reason:

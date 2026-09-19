@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
-import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
-import 'package:mynix_frontend/features/pos/repository/menu_repository.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'receipt_row_data.dart';
 
 class ReceiveDocumentProcessor {
@@ -30,75 +30,36 @@ class ReceiveDocumentProcessor {
     double paidAmount = 0.0,
     String paymentMethod = 'cash',
   }) async {
-    final repo = context.read<InventoryRepository>();
-    final menuRepo = context.read<MenuRepository>();
-
     final List<Map<String, dynamic>> docItems = [];
 
     for (var item in items) {
-      int? finalIngredientId;
-      int? finalRetailProductId;
-
-      if (item.ingredient != null) {
-        final isRetail = item.ingredient!.attributes?['is_retail'] == true;
-        if (isRetail) {
-          finalRetailProductId = item.ingredient!.id;
-        } else {
-          finalIngredientId = item.ingredient!.id;
-        }
-      } else if (item.newName.trim().isNotEmpty) {
-        if (categoryId == null) {
-          throw Exception(
-            'Не выбрана категория для новых товаров ("${item.newName}"). Укажите категорию сверху.',
-          );
-        }
-        String unitKey = 'pcs';
-        switch (item.selectedUnit) {
-          case 'кг': unitKey = 'kg'; break;
-          case 'г': unitKey = 'g'; break;
-          case 'л': unitKey = 'l'; break;
-          case 'мл': unitKey = 'ml'; break;
-          case 'шт':
-          case 'порц':
-          default:
-            unitKey = 'pcs'; break;
-        }
-
-        if (tabIndex == 1) {
-          final Map<String, dynamic> attributes = {};
-          final flavor = item.flavorController.text.trim();
-          final volume = item.volumeController.text.trim();
-          if (flavor.isNotEmpty) attributes['Вкус'] = flavor;
-          if (volume.isNotEmpty) attributes['Объем'] = '$volume ${item.selectedUnit}'.trim();
-
-          finalRetailProductId = await menuRepo.createRetailProduct(
-            name: item.newName.trim(),
-            categoryId: categoryId,
-            unit: unitKey,
-            purchasePrice: item.price,
-            sellingPrice: item.price,
-            attributes: attributes.isNotEmpty ? attributes : null,
-            initialStock: 0,
-          );
-        } else {
-          finalIngredientId = await repo.createIngredient(
-            name: item.newName.trim(),
-            unit: unitKey,
-            minStockAlert: 0,
-            costPerUnit: item.price,
-            categoryId: categoryId,
-            initialStock: 0,
-          );
-        }
-      } else {
+      // If row is completely empty (no text and no ingredient), skip it
+      final hasText = item.nameController.text.trim().isNotEmpty || item.newName.trim().isNotEmpty;
+      if (item.ingredient == null && !hasText) {
         continue;
       }
 
-      double factor = 1.0;
-      if (item.ingredient != null) {
-        factor = getConversionFactor(item.selectedUnit, item.ingredient!.unit);
+      // Strictly enforce that every non-empty row references an existing catalog item
+      if (item.ingredient == null) {
+        final rowName = item.nameController.text.trim().isNotEmpty 
+            ? item.nameController.text.trim() 
+            : item.newName.trim();
+        throw Exception(
+          'Позиция "$rowName" не найдена в каталоге. Приход возможен только для существующих карточек товаров.',
+        );
       }
 
+      int? finalIngredientId;
+      int? finalRetailProductId;
+
+      final isRetail = item.ingredient!.attributes?['is_retail'] == true;
+      if (isRetail) {
+        finalRetailProductId = item.ingredient!.id;
+      } else {
+        finalIngredientId = item.ingredient!.id;
+      }
+
+      final factor = getConversionFactor(item.selectedUnit, item.ingredient!.unit);
       final dbQuantity = item.quantity * factor;
       final dbPricePerUnit = item.price / factor;
 
@@ -112,7 +73,7 @@ class ReceiveDocumentProcessor {
     }
 
     if (docItems.isEmpty) {
-      throw Exception('Нет товаров для прихода');
+      throw Exception('Нет товаров для прихода. Выберите хотя бы одну позицию из каталога.');
     }
 
     final data = {
@@ -130,6 +91,11 @@ class ReceiveDocumentProcessor {
 
     if (context.mounted) {
       context.read<DocumentBloc>().add(CreateDocument(data));
+      if (complete) {
+        try {
+          context.read<IngredientBloc>().add(const LoadIngredients());
+        } catch (_) {}
+      }
       Navigator.of(context).pop();
     }
   }

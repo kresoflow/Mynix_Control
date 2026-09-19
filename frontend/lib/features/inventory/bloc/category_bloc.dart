@@ -59,12 +59,17 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     DeleteCategoriesBulk event,
     Emitter<CategoryState> emit,
   ) async {
+    final currentCategories = state is CategoryLoaded ? (state as CategoryLoaded).categories : <MenuCategory>[];
     try {
       await repository.deleteCategoriesBulk(event.ids, mode: event.mode);
       add(LoadCategories());
     } catch (e) {
-      emit(CategoryError(message: e.toString()));
-      add(LoadCategories());
+      emit(CategoryError(message: e.toString().replaceFirst('Exception: ', '')));
+      if (currentCategories.isNotEmpty) {
+        emit(CategoryLoaded(categories: currentCategories));
+      } else {
+        add(LoadCategories());
+      }
     }
   }
 
@@ -145,6 +150,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     DeleteCategory event,
     Emitter<CategoryState> emit,
   ) async {
+    final currentCategories = state is CategoryLoaded ? (state as CategoryLoaded).categories : <MenuCategory>[];
     try {
       await repository.deleteCategory(event.id, mode: event.mode);
       add(LoadCategories());
@@ -152,7 +158,11 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       emit(
         CategoryError(message: e.toString().replaceFirst('Exception: ', '')),
       );
-      add(LoadCategories());
+      if (currentCategories.isNotEmpty) {
+        emit(CategoryLoaded(categories: currentCategories));
+      } else {
+        add(LoadCategories());
+      }
     }
   }
 }

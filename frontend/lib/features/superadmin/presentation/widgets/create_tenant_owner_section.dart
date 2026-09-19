@@ -31,7 +31,7 @@ class CreateTenantOwnerSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(PhosphorIconsRegular.shieldCheck, size: 18, color: AppColors.success),
+            const Icon(PhosphorIconsRegular.shieldCheck, size: 18, color: AppColors.success),
             const SizedBox(width: 8),
             Text(
               '2. Данные Владельца (Owner)',

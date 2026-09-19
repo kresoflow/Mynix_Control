@@ -9,7 +9,7 @@ class ReceiptRowData {
   double sellPrice;
   double minStockAlert;
   String selectedUnit;
-  
+
   final TextEditingController nameController;
   final TextEditingController flavorController;
   final TextEditingController volumeController;
@@ -17,7 +17,7 @@ class ReceiptRowData {
   final TextEditingController minStockAlertController;
   final TextEditingController priceController;
   final TextEditingController sellPriceController;
-  
+
   final FocusNode nameFocusNode;
   final FocusNode flavorFocusNode;
   final FocusNode volumeFocusNode;
@@ -25,6 +25,8 @@ class ReceiptRowData {
   final FocusNode minStockAlertFocusNode;
   final FocusNode priceFocusNode;
   final FocusNode sellPriceFocusNode;
+
+  late final ValueNotifier<double> rowTotalNotifier;
 
   ReceiptRowData({
     this.ingredient,
@@ -47,7 +49,13 @@ class ReceiptRowData {
         qtyFocusNode = FocusNode(),
         minStockAlertFocusNode = FocusNode(),
         priceFocusNode = FocusNode(),
-        sellPriceFocusNode = FocusNode();
+        sellPriceFocusNode = FocusNode() {
+    rowTotalNotifier = ValueNotifier<double>(quantity * price);
+  }
+
+  void updateTotal() {
+    rowTotalNotifier.value = quantity * price;
+  }
 
   void dispose() {
     nameController.dispose();
@@ -64,5 +72,6 @@ class ReceiptRowData {
     minStockAlertFocusNode.dispose();
     priceFocusNode.dispose();
     sellPriceFocusNode.dispose();
+    rowTotalNotifier.dispose();
   }
 }

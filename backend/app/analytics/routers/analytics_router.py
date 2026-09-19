@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from datetime import datetime, date, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -30,7 +30,22 @@ def get_start_end(period: str, start: Optional[date] = None, end: Optional[date]
         start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         end_date = now.replace(month=12, day=31, hour=23, minute=59, second=59)
         group_by = "month"
-    elif period == "custom" and start and end:
+    elif period == "custom":
+        if not start or not end:
+            raise HTTPException(
+                status_code=400,
+                detail="Для произвольного периода необходимо указать даты начала (start) и окончания (end)",
+            )
+        if start > end:
+            raise HTTPException(
+                status_code=400,
+                detail="Дата начала не может быть позже даты окончания",
+            )
+        if (end - start).days > 366:
+            raise HTTPException(
+                status_code=400,
+                detail="Максимальный диапазон выборки аналитики составляет 366 дней",
+            )
         start_date = datetime.combine(start, datetime.min.time())
         end_date = datetime.combine(end, datetime.max.time())
         days = (end_date - start_date).days

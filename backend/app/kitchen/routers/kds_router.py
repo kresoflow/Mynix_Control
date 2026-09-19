@@ -65,3 +65,24 @@ async def api_mark_order_ready(
         return {"status": "ok", "order_id": order.id, "new_status": order.status}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post(
+    "/{order_id}/undo",
+    dependencies=[Depends(require_any_permission("orders:update_status", "kitchen:view", "orders:create"))],
+)
+async def api_undo_order_ready(
+    order_id: int,
+    current_user: CurrentUser,
+    session: TenantSession,
+):
+    """
+    Revert an order from READY back to COOKING status (KDS Undo).
+    """
+    try:
+        order = await kds_service.revert_order_to_cooking(session, order_id)
+        await notify_kitchen_status_update(current_user.tenant_id, order.id, order.status)
+        return {"status": "ok", "order_id": order.id, "new_status": order.status}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+

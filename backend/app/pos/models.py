@@ -234,11 +234,11 @@ class CashTransaction(TenantModel, table=True):
 
 
 class OpenShiftRequest(SQLModel):
-    opening_cash: float
+    opening_cash: float = Field(default=0.0, ge=0.0)
 
 
 class CloseShiftRequest(SQLModel):
-    closing_cash_actual: float
+    closing_cash_actual: float = Field(default=0.0, ge=0.0)
 
 
 class OrderItemCreate(SQLModel):
@@ -253,7 +253,7 @@ class CreateOrderRequest(SQLModel):
     items: list[OrderItemCreate]
     payment_method: PaymentMethod = PaymentMethod.CASH
     customer_id: Optional[int] = None
-    bonus_spent: float = 0.0
+    bonus_spent: float = Field(default=0.0, ge=0.0)
     note: Optional[str] = None
     client_uuid: Optional[str] = None
     table_number: Optional[str] = None

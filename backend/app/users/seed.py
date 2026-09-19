@@ -36,6 +36,7 @@ PERMISSIONS = [
     ("kitchen:view", "View kitchen order screen"),
     # Inventory
     ("inventory:manage", "Add/edit ingredients, recipes, receive stock"),
+    ("inventory:create", "Create ingredients and raw materials"),
     ("inventory:view", "View stock levels and menu items"),
     # Users & Roles
     ("users:manage", "Create/edit/deactivate staff accounts"),
@@ -44,6 +45,7 @@ PERMISSIONS = [
     ("analytics:view", "View dashboards, reports, food cost analysis"),
     # Menu
     ("menu:manage", "Create/edit menu items and prices"),
+    ("menu:create", "Create menu items and retail products"),
     ("menu:view", "View menu (all staff can)"),
     # Settings & System
     ("settings:manage", "Manage store and tenant settings"),
@@ -68,10 +70,10 @@ ROLE_TEMPLATES = {
             "cashbox:operate", "cashbox:view", "cashbox:expense",
             "shifts:open", "shifts:close", "shifts:view",
             "kitchen:view",
-            "inventory:manage", "inventory:view",
+            "inventory:manage", "inventory:create", "inventory:view",
             "users:manage", "roles:manage",
             "analytics:view",
-            "menu:manage", "menu:view",
+            "menu:manage", "menu:create", "menu:view",
             "settings:manage",
             "crm:manage", "crm:view",
         ],

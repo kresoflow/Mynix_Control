@@ -5,6 +5,8 @@ import 'package:mynix_frontend/core/theme/app_text_styles.dart';
 import 'package:mynix_frontend/core/utils/currency_formatter.dart';
 import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
 import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:mynix_frontend/core/widgets/app_toast.dart';
 import 'package:mynix_frontend/features/crm/models/customer.dart';
 import 'package:mynix_frontend/features/crm/models/customer_transaction.dart';
 
@@ -45,9 +47,37 @@ class _CustomerPaymentModalState extends State<CustomerPaymentModal> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final amount = double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
-    if (amount <= 0) return;
+    if (amount <= 0) {
+      AppToast.showError(context, 'Укажите сумму', subtitle: 'Сумма операции должна быть больше нуля');
+      return;
+    }
+
+    if (!_isDeposit && widget.customer.balance < 0) {
+      final debt = widget.customer.balance.abs();
+      if (amount > debt) {
+        final excess = amount - debt;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => MynixDialog(
+            title: 'Сумма превышает долг',
+            icon: PhosphorIconsRegular.info,
+            width: 440,
+            content: Text(
+              'Текущий долг гостя составляет ${debt.toCurrency(context)}.\nВы ввели ${amount.toCurrency(context)} (переплата ${excess.toCurrency(context)}).\n\nЗачислить переплату на депозит гостя?',
+              style: AppTextStyles.bodyMedium,
+            ),
+            actions: [
+              AppGhostButton(label: 'Скорректировать', onPressed: () => Navigator.pop(ctx, false)),
+              AppPrimaryButton(label: 'Зачислить на депозит', onPressed: () => Navigator.pop(ctx, true)),
+            ],
+          ),
+        );
+        if (confirmed != true || !mounted) return;
+      }
+    }
 
     final txnType = _isDeposit
         ? CustomerTransactionType.deposit.toApiString()
@@ -62,7 +92,9 @@ class _CustomerPaymentModalState extends State<CustomerPaymentModal> {
           : (_isDeposit ? 'Внесение депозита' : 'Погашение долга'),
     });
 
-    Navigator.of(context).pop();
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -70,21 +102,24 @@ class _CustomerPaymentModalState extends State<CustomerPaymentModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
     final symbol = CurrencyFormatter.symbol(context);
+    final isDirty = _amountController.text.trim().isNotEmpty || _commentController.text.trim().isNotEmpty;
 
-    return MynixDialog(
-      title: _isDeposit ? 'Внесение депозита' : 'Погашение долга',
-      icon: _isDeposit ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.money,
-      width: 440,
-      actions: [
-        AppButton.secondary(
-          label: 'Отмена',
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        AppButton.primary(
-          label: 'Провести',
-          onPressed: _submit,
-        ),
-      ],
+    return DirtyPopScope(
+      isDirty: isDirty,
+      child: MynixDialog(
+        title: _isDeposit ? 'Внесение депозита' : 'Погашение долга',
+        icon: _isDeposit ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.money,
+        width: 440,
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.maybePop(context),
+          ),
+          AppPrimaryButton(
+            label: 'Провести',
+            onPressed: _submit,
+          ),
+        ],
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -173,7 +208,8 @@ class _CustomerPaymentModalState extends State<CustomerPaymentModal> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildTypeTab({required String label, required bool isSelected, required VoidCallback onTap, required bool isDark}) {
@@ -184,7 +220,7 @@ class _CustomerPaymentModalState extends State<CustomerPaymentModal> {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? (isDark ? AppColors.darkSurface : AppColors.lightSurface) : Colors.transparent,
+          color: isSelected ? (isDark ? AppColors.darkSurface : AppColors.lightSurface) : AppColors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(

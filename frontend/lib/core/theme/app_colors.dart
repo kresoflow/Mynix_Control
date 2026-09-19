@@ -24,6 +24,11 @@ abstract class AppColors {
   static Color lightBorder    = const Color(0xFF9CA3AF);
   static Color lightText      = const Color(0xFF000000);
   static Color lightSubtext   = const Color(0xFF4B5563);
+  static const Color transparent = Color(0x00000000);
+  static const Color pureWhite   = Color(0xFFFFFFFF);
+  static const Color pureBlack   = Color(0xFF000000);
+  static const Color white       = pureWhite;
+  static const Color black       = pureBlack;
 
   // ── Semantic ───────────────────────────────────────────────────────────────
   static const Color success = Color(0xFF16A34A);

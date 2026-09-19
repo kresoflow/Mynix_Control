@@ -41,6 +41,7 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
     on<ReceiveStock>(_onReceiveStock);
     on<UpdateIngredient>(_onUpdateIngredient);
     on<DeleteIngredient>(_onDeleteIngredient);
+    on<RestoreIngredient>(_onRestoreIngredient);
 
     _wsSubscription = webSocketService.messages.listen((data) {
       if (data['event'] == 'inventory_updated' && state is IngredientLoaded) {
@@ -144,7 +145,20 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
     Emitter<IngredientState> emit,
   ) async {
     try {
-      await repository.deleteIngredient(event.id);
+      await repository.deleteIngredient(event.id, mode: event.mode);
+      add(LoadIngredients());
+    } catch (e) {
+      emit(IngredientError(message: e.toString()));
+      add(LoadIngredients());
+    }
+  }
+
+  Future<void> _onRestoreIngredient(
+    RestoreIngredient event,
+    Emitter<IngredientState> emit,
+  ) async {
+    try {
+      await repository.restoreIngredient(event.id);
       add(LoadIngredients());
     } catch (e) {
       emit(IngredientError(message: e.toString()));

@@ -1,5 +1,6 @@
-from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
+import time
+from typing import Annotated, Dict, List
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +11,65 @@ from app.users.models import (
     TokenResponse, PinLoginRequest, UserRead, VerifyPinRequest, User, UpdateProfileRequest, Tenant
 )
 from sqlmodel import select
+
+MAX_PIN_ATTEMPTS = 5
+PIN_WINDOW_SECONDS = 300.0   # 5 minutes sliding window
+PIN_LOCKOUT_SECONDS = 300.0  # 5 minutes lockout
+
+_pin_failed_attempts: Dict[str, List[float]] = {}
+_pin_locked_keys: Dict[str, float] = {}
+
+
+def get_client_ip(request: Request) -> str:
+    """Extract client IP handling x-forwarded-for headers."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return "unknown"
+
+
+def check_pin_rate_limit(key: str) -> None:
+    now = time.time()
+    lockout_expiry = _pin_locked_keys.get(key)
+    if lockout_expiry is not None:
+        if now < lockout_expiry:
+            retry_after = int(lockout_expiry - now)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Слишком много неверных попыток ввода PIN-кода. Доступ заблокирован на {retry_after} сек.",
+                headers={"Retry-After": str(retry_after)},
+            )
+        else:
+            _pin_locked_keys.pop(key, None)
+            _pin_failed_attempts.pop(key, None)
+
+
+def record_pin_failed_attempt(key: str) -> None:
+    now = time.time()
+    attempts = [t for t in _pin_failed_attempts.get(key, []) if now - t < PIN_WINDOW_SECONDS]
+    attempts.append(now)
+    _pin_failed_attempts[key] = attempts
+    if len(attempts) >= MAX_PIN_ATTEMPTS:
+        _pin_locked_keys[key] = now + PIN_LOCKOUT_SECONDS
+        _pin_failed_attempts.pop(key, None)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Превышен лимит неверных попыток ввода PIN (5 попыток). Доступ заблокирован на 5 минут.",
+            headers={"Retry-After": str(int(PIN_LOCKOUT_SECONDS))},
+        )
+    remaining = MAX_PIN_ATTEMPTS - len(attempts)
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=f"Неверный PIN-код. Осталось попыток до блокировки: {remaining}",
+    )
+
+
+def reset_pin_attempts(key: str) -> None:
+    _pin_failed_attempts.pop(key, None)
+    _pin_locked_keys.pop(key, None)
+
 
 router = APIRouter(tags=["Authentication"])
 
@@ -41,16 +101,20 @@ async def login(
 
 @router.post("/auth/pin", response_model=TokenResponse)
 async def login_by_pin(
+    request: Request,
     data: PinLoginRequest,
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
     """Quick PIN login for booth workers (no keyboard needed)."""
+    ip = get_client_ip(request)
+    rate_key = f"pin_login_{data.tenant_id}_{ip}"
+    check_pin_rate_limit(rate_key)
+
     user = await svc.authenticate_by_pin(session, data.pin_code, data.tenant_id)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid PIN code",
-        )
+        record_pin_failed_attempt(rate_key)
+
+    reset_pin_attempts(rate_key)
 
     permissions = svc.collect_permissions(user)
     token = svc.create_access_token(
@@ -64,13 +128,18 @@ async def login_by_pin(
 
 @router.post("/auth/verify-pin")
 async def verify_pin(
+    request: Request,
     data: VerifyPinRequest,
     current_user: CurrentUser,
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
     """Verify owner or manager PIN to unlock protected financial data."""
+    rate_key = f"pin_verify_{current_user.tenant_id}_{current_user.id}"
+    check_pin_rate_limit(rate_key)
+
     # 1. Check current logged-in user's pin_code
     if current_user.pin_code and current_user.pin_code == data.pin_code:
+        reset_pin_attempts(rate_key)
         return {"valid": True, "username": current_user.username}
 
     # 2. Check if any active user in this tenant with manager/admin privileges has this PIN
@@ -82,9 +151,10 @@ async def verify_pin(
     res = await session.execute(stmt)
     user = res.scalars().first()
     if user:
+        reset_pin_attempts(rate_key)
         return {"valid": True, "username": user.username}
 
-    raise HTTPException(status_code=400, detail="Неверный PIN-код")
+    record_pin_failed_attempt(rate_key)
 
 
 @router.get("/auth/me", response_model=UserRead)

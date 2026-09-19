@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mynix_frontend/core/network/api_client.dart';
@@ -53,6 +54,7 @@ const bool kEnableDevicePreview = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ServicesBinding.instance.channelBuffers.allowOverflow('flutter/lifecycle', true);
   usePathUrlStrategy();
   Bloc.observer = AppBlocObserver();
 

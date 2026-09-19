@@ -126,18 +126,17 @@ class BulkAddPresets {
       row.nameController.text = item['name'] as String;
       row.selectedUnit = item['unit'] as String;
       row.costController.text = (item['cost'] as num).toString();
-      row.alertController.text = (item['alert'] as num).toString();
       ingredientRows.add(row);
     }
   }
 
   static void _loadRetailPreset(Map<String, int> catMap, List<RetailRowData> retailRows) {
     final List<Map<String, dynamic>> preset = [
-      {'name': 'Coca-Cola Classic 0.5л (ПЭТ)', 'sell': 75.0, 'purchase': 42.0, 'stock': 24.0, 'alert': 12.0, 'barcode': '5449000000996', 'category': 'Бутилированные напитки'},
-      {'name': 'Fanta Orange 0.5л (ПЭТ)', 'sell': 75.0, 'purchase': 42.0, 'stock': 24.0, 'alert': 12.0, 'barcode': '5449000011527', 'category': 'Бутилированные напитки'},
-      {'name': 'Sprite 0.5л (ПЭТ)', 'sell': 75.0, 'purchase': 42.0, 'stock': 24.0, 'alert': 12.0, 'barcode': '5449000011558', 'category': 'Бутилированные напитки'},
-      {'name': 'Вода Bonaqua 0.5л', 'sell': 50.0, 'purchase': 25.0, 'stock': 30.0, 'alert': 15.0, 'barcode': '5449000131805', 'category': 'Бутилированные напитки'},
-      {'name': 'Чипсы Lays с солью 80г', 'sell': 120.0, 'purchase': 75.0, 'stock': 20.0, 'alert': 10.0, 'barcode': '4600648011234', 'category': 'Снэки и чипсы'},
+      {'name': 'Coca-Cola Classic 0.5л (ПЭТ)', 'sell': 75.0, 'purchase': 42.0, 'alert': 12.0, 'barcode': '5449000000996', 'category': 'Бутилированные напитки'},
+      {'name': 'Fanta Orange 0.5л (ПЭТ)', 'sell': 75.0, 'purchase': 42.0, 'alert': 12.0, 'barcode': '5449000011527', 'category': 'Бутилированные напитки'},
+      {'name': 'Sprite 0.5л (ПЭТ)', 'sell': 75.0, 'purchase': 42.0, 'alert': 12.0, 'barcode': '5449000011558', 'category': 'Бутилированные напитки'},
+      {'name': 'Вода Bonaqua 0.5л', 'sell': 50.0, 'purchase': 25.0, 'alert': 15.0, 'barcode': '5449000131805', 'category': 'Бутилированные напитки'},
+      {'name': 'Чипсы Lays с солью 80г', 'sell': 120.0, 'purchase': 75.0, 'alert': 10.0, 'barcode': '4600648011234', 'category': 'Снэки и чипсы'},
     ];
 
     retailRows.clear();
@@ -148,10 +147,7 @@ class BulkAddPresets {
         categoryName: catName,
       );
       row.nameController.text = item['name'] as String;
-      row.purchaseController.text = (item['purchase'] as num).toString();
       row.sellController.text = (item['sell'] as num).toString();
-      row.stockController.text = (item['stock'] as num).toString();
-      row.alertController.text = (item['alert'] as num).toString();
       row.barcodeController.text = (item['barcode'] as String?) ?? '';
       retailRows.add(row);
     }

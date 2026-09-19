@@ -146,8 +146,13 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                 ? catState.categories.where((c) => c.categoryType == 'dish' && !c.isArchived).toList()
                 : [];
 
+            final bool hasMatchingCategory = widget.selectedCategoryId != null &&
+                widget.selectedCategoryId != 0 &&
+                dishCategories.any((c) => c.id == widget.selectedCategoryId);
+            final int? effectiveCategoryId = hasMatchingCategory ? widget.selectedCategoryId : null;
+
             return DropdownButtonFormField<int?>(
-              initialValue: widget.selectedCategoryId,
+              initialValue: effectiveCategoryId,
               dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
               decoration: InputDecoration(
                 labelText: 'Категория блюда',
