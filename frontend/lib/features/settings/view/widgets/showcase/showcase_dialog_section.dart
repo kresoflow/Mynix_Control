@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -99,7 +99,7 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
                   showDialog(
                     context: context,
                     builder: (ctx) => AppDialog(
-                      title: 'Стандартный Mynix Dialog',
+                      title: 'Стандартный AppDialog',
                       icon: PhosphorIconsRegular.sparkle,
                       content: const Text(
                         'Это диалоговое окно использует скругления AppRadii.dialog (20px), кнопки размера LG и мягкие тени.',

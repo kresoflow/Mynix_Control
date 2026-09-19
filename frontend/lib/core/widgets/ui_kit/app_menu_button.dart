@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -29,7 +29,7 @@ class AppMenuDivider extends AppMenuEntryBase {
   const AppMenuDivider();
 }
 
-/// Unified Dropdown Action Button for Mynix Control
+/// Unified Dropdown Action Button for Kreso Flow
 class AppMenuButton extends StatelessWidget {
   final String label;
   final IconData? icon;

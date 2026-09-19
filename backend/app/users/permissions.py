@@ -1,5 +1,5 @@
 """
-Mynix Control - Centralized Permission Registry (PBAC).
+Kreso Flow - Centralized Permission Registry (PBAC).
 Defines all atomic permissions as a strongly-typed StrEnum to eliminate string hardcode.
 """
 from enum import Enum

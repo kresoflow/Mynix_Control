@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -68,7 +68,7 @@ void main() async {
 
   final appWidget = DevicePreview(
     enabled: kEnableDevicePreview,
-    builder: (context) => const RetailOSApp(),
+    builder: (context) => const KresoApp(),
   );
 
   if (kReleaseMode) {
@@ -87,14 +87,14 @@ void main() async {
 }
 
 
-class RetailOSApp extends StatefulWidget {
-  const RetailOSApp({super.key});
+class KresoApp extends StatefulWidget {
+  const KresoApp({super.key});
 
   @override
-  State<RetailOSApp> createState() => _RetailOSAppState();
+  State<KresoApp> createState() => _KresoAppState();
 }
 
-class _RetailOSAppState extends State<RetailOSApp> {
+class _KresoAppState extends State<KresoApp> {
   late final AuthRepository _authRepository;
   late final MenuRepository _menuRepository;
   late final OrderRepository _orderRepository;

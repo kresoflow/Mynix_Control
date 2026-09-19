@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 
 void main() {
@@ -23,7 +23,7 @@ void main() {
       final supplier = Supplier(
         id: 15,
         name: 'Новый Поставщик',
-        contactInfo: 'supplier@mynix.local',
+        contactInfo: 'supplier@kreso.local',
         isActive: true,
         balance: 0.0,
       );
@@ -31,7 +31,7 @@ void main() {
       final json = supplier.toJson();
       expect(json['id'], equals(15));
       expect(json['name'], equals('Новый Поставщик'));
-      expect(json['contact_info'], equals('supplier@mynix.local'));
+      expect(json['contact_info'], equals('supplier@kreso.local'));
       expect(json['balance'], equals(0.0));
     });
   });

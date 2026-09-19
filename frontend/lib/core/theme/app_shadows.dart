@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Mynix Design System — BoxShadow & Ambient Glow Tokens
+/// Kreso Flow Design System — BoxShadow & Ambient Glow Tokens
 abstract class AppShadows {
   // Легкая тень для светлой темы
   static final List<BoxShadow> light = [

@@ -5,7 +5,7 @@ Coordinate and oversee optimization, bug fixes, and responsibility separation be
 
 ## 🔒 My Identity
 - Archetype: sentinel
-- Working directory: d:\Mynix_Control\.agents\sentinel
+- Working directory: d:\Kreso_Flow\.agents\sentinel
 - Orchestrator: 5a569932-6bfa-4ef5-aea0-fa7863f302b0
 - Victory Auditor: to be spawned on victory claim
 
@@ -31,4 +31,4 @@ Coordinate and oversee optimization, bug fixes, and responsibility separation be
 - **Retry count**: 0
 
 ## Artifact Index
-- d:\Mynix_Control\.agents\ORIGINAL_REQUEST.md — Authoritative record of user request
+- d:\Kreso_Flow\.agents\ORIGINAL_REQUEST.md — Authoritative record of user request

@@ -6,7 +6,7 @@ from app.inventory.models.category_models import MenuCategory
 from app.inventory.models.menu_models import MenuItem
 
 async def main():
-    engine = create_async_engine("postgresql+asyncpg://mynix:mynix_secret@127.0.0.1:5444/mynix_control")
+    engine = create_async_engine("postgresql+asyncpg://kreso:kreso_secret@127.0.0.1:5444/kreso_flow")
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
     # We will seed into tenant_1
@@ -135,7 +135,7 @@ async def main():
         pizzas = [
             ("Маргарита", 59), ("Мясная", 71), ("Цезарь", 65), ("Пепперони", 63),
             ("С двойной пепперони", 75), ("Барбекю", 73), ("Ассорти", 70), ("4 сыра", 72),
-            ("4 сезона", 78), ("Пицца SCafe", 81), ("Пицца с курицей", 61), ("Пицца с грибами", 66)
+            ("4 сезона", 78), ("Пицца Kreso", 81), ("Пицца с курицей", 61), ("Пицца с грибами", 66)
         ]
         for name, price in pizzas:
             items.append(MenuItem(name=name, category_id=cat_pizza.id, price=price, type="dish"))
@@ -144,7 +144,7 @@ async def main():
         burgers = [
             ("Дабл Бургер", 37), ("Бест Бургер", 28), ("Бургер по-мексикански", 30),
             ("Бургер классический", 30), ("Бургер Гота", 25), ("Чикен Бургер", 20),
-            ("Бургер SCafe", 49)
+            ("Бургер Kreso", 49)
         ]
         for name, price in burgers:
             items.append(MenuItem(name=name, category_id=cat_burgers.id, price=price, type="dish"))

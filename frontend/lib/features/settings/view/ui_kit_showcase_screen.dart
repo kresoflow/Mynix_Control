@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
@@ -26,7 +26,7 @@ class UiKitShowcaseScreen extends StatelessWidget {
           children: [
             // Page Header
             AppPageHeader(
-              title: 'Mynix UI Kit & Design System Gallery',
+              title: 'Kreso UI Kit & Design System Gallery',
               subtitle: 'Живая витрина стандартизированных компонентов, размеров и токенов',
               kpiChips: const [
                 AppKpiChip(icon: PhosphorIconsRegular.cube, label: '5 Размеров кнопок'),

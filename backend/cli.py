@@ -125,7 +125,7 @@ async def seed_inventory(count: int = 50):
     print("Посев завершен! Откройте приложение и наслаждайтесь данными.")
 
 def main():
-    parser = argparse.ArgumentParser(description="Mynix Control Developer CLI Swarm")
+    parser = argparse.ArgumentParser(description="Kreso Flow Developer CLI Swarm")
     subparsers = parser.add_subparsers(dest="command", required=True)
     
     # Команда WIPE

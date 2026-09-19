@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Mynix Brand Color System — Dynamic Theme Tokens
+/// Kreso Flow Brand Color System — Dynamic Theme Tokens
 abstract class AppColors {
   // ── Brand Accents (Dynamic) ────────────────────────────────────────────────
   static Color brandPrimary   = const Color(0xFF0284C7); // Sky / Cobalt Blue

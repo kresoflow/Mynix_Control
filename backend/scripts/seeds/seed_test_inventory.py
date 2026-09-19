@@ -8,7 +8,7 @@ from app.inventory.models.recipe_models import Recipe
 from app.inventory.models.enums import UnitType
 
 async def main():
-    engine = create_async_engine("postgresql+asyncpg://mynix:mynix_secret@127.0.0.1:5444/mynix_control")
+    engine = create_async_engine("postgresql+asyncpg://kreso:kreso_secret@127.0.0.1:5444/kreso_flow")
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
     schema = "tenant_1"

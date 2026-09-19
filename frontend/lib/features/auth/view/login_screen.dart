@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       GestureDetector(
                         onLongPress: () => _showSuperadminDialog(context),
                         child: Text(
-                          'Mynix Control',
+                          'Kreso Flow',
                           style: AppTextStyles.h1.copyWith(
                             fontSize: 24,
                             color: AppColors.brandPrimary,

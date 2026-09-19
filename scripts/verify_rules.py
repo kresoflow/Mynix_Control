@@ -107,13 +107,13 @@ class RuleChecker:
                 line_no = content.count("\n", 0, match.start()) + 1
                 self.errors.append(
                     f"[MULTI-TENANCY] {rel}:{line_no} Forbidden 'tenant_id' Field found! "
-                    f"Mynix uses schema-based isolation (search_path)."
+                    f"Kreso Flow uses schema-based isolation (search_path)."
                 )
             for match in col_pattern.finditer(content):
                 line_no = content.count("\n", 0, match.start()) + 1
                 self.errors.append(
                     f"[MULTI-TENANCY] {rel}:{line_no} Forbidden 'tenant_id' Column found! "
-                    f"Mynix uses schema-based isolation (search_path)."
+                    f"Kreso Flow uses schema-based isolation (search_path)."
                 )
 
     def check_file_line_limits(self):
@@ -267,7 +267,7 @@ class RuleChecker:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Mynix Control Architectural Linter")
+    parser = argparse.ArgumentParser(description="Kreso Flow Architectural Linter")
     parser.add_argument("--strict", action="store_true", help="Treat all warnings as errors")
     parser.add_argument("--target", type=str, default=None, help="Specific file or directory pattern to scan")
     args = parser.parse_args()

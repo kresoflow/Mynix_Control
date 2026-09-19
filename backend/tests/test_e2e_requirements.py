@@ -1,5 +1,5 @@
 """
-Mynix Control — End-to-End Requirements Test Suite
+Kreso Flow — End-to-End Requirements Test Suite
 Authoritative source: ORIGINAL_REQUEST.md & PROJECT.md
 
 Tiers covered:
@@ -970,7 +970,7 @@ class TestTier4RealWorldWorkflows:
 
         # 3. Bulk create retail items
         retail_payload = [
-            {"name": "Термокружка Mynix Black", "selling_price": 1200.0, "purchase_price": 600.0, "unit": "pcs"},
+            {"name": "Термокружка Kreso Black", "selling_price": 1200.0, "purchase_price": 600.0, "unit": "pcs"},
             {"name": "Зерновой кофе в пачке 250г", "selling_price": 650.0, "purchase_price": 350.0, "unit": "pcs"},
         ]
         retail_resp = await async_client.post("/api/v1/retail-product/bulk", json=retail_payload, headers=headers)

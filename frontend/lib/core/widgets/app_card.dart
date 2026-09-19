@@ -1,8 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
-/// Hoverable card with Mynix Ember styling.
+/// Hoverable card with Kreso Flow Ember styling.
 /// Use [AppCard] instead of Flutter's [Card] across the whole app.
 class AppCard extends StatefulWidget {
   const AppCard({

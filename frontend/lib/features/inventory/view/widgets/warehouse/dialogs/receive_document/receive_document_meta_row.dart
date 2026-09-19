@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -111,7 +111,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
               ),
               const SizedBox(width: 12),
 
-              // 3. Дата и время документа (Mynix Smart DateTime Picker)
+              // 3. Дата и время документа (AppDateTimePicker)
               Expanded(
                 flex: 3,
                 child: SizedBox(

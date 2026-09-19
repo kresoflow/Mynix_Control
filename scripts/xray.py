@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ═══════════════════════════════════════════════════════════════════════════════
-                   MYNIX CONTROL — INTERACTIVE CODEBASE X-RAY (v2.0)
+                   KRESO FLOW — INTERACTIVE CODEBASE X-RAY (v2.0)
                      Unified Architectural & Security Console
 ═══════════════════════════════════════════════════════════════════════════════
 """
@@ -523,7 +523,7 @@ def build_html_content(engine: XRayEngine) -> str:
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Mynix Control — Codebase X-Ray Radar</title>
+  <title>Kreso Flow — Codebase X-Ray Radar</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {{ --bg: #0B0E14; --card: #10141D; --border: #1E2433; --text: #E2E8F0; --muted: #8492A6; --primary: #3B82F6; --green: #10B981; --red: #EF4444; --yellow: #F59E0B; }}
@@ -553,7 +553,7 @@ def build_html_content(engine: XRayEngine) -> str:
 <body>
   <div class="container">
     <div class="header">
-      <h2>🔬 Mynix Control — Interactive Codebase Radar</h2>
+      <h2>🔬 Kreso Flow — Interactive Codebase Radar</h2>
       <span class="badge badge-green">LIVE AUDIT REPORT</span>
     </div>
     <div class="kpi-grid">
@@ -647,7 +647,7 @@ def print_header(engine: XRayEngine):
     c_dead = len(engine.dead_models)
 
     print(f"{Color.BOLD}{Color.CYAN}╔════════════════════════════════════════════════════════════════════════════╗{Color.RESET}")
-    print(f"{Color.BOLD}{Color.CYAN}║             MYNIX CONTROL — INTERACTIVE CODEBASE X-RAY CONSOLE             ║{Color.RESET}")
+    print(f"{Color.BOLD}{Color.CYAN}║             KRESO FLOW — INTERACTIVE CODEBASE X-RAY CONSOLE                ║{Color.RESET}")
     print(f"{Color.BOLD}{Color.CYAN}╚════════════════════════════════════════════════════════════════════════════╝{Color.RESET}")
     print(f"  {c('📊 Кодовая база:', Color.WHITE)} {c(f'{c_files} файлов', Color.BOLD)} | {c(f'{c_lines:,} LOC', Color.GREEN)} | {c(f'{c_routes} роутов API', Color.BLUE)} | {c(f'{c_red} файлов >300L', Color.RED)} | {c(f'{c_dead} мертвых моделей', Color.YELLOW)}")
     print(f"{Color.GRAY}──────────────────────────────────────────────────────────────────────────────{Color.RESET}")
@@ -957,7 +957,7 @@ def show_module_detail(engine: XRayEngine, title: str, data: Dict[str, Any]):
 # MAIN DISPATCHER
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="Mynix Control X-Ray Audit System")
+    parser = argparse.ArgumentParser(description="Kreso Flow X-Ray Audit System")
     parser.add_argument("--json", action="store_true", help="Dump full audit report in JSON to stdout (for AI agents)")
     parser.add_argument("--html", nargs="?", const="xray_report.html", help="Generate standalone HTML dashboard report and exit")
     parser.add_argument("--security", action="store_true", help="Run non-interactive security audit and exit")

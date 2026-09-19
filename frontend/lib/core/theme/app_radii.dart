@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Mynix Design System — Strict SaaS Border Radius Tokens
+/// Kreso Flow Design System — Strict SaaS Border Radius Tokens
 abstract class AppRadii {
   // Базовые скругления (Strict & Sharp)
   static const double xs  = 4.0;

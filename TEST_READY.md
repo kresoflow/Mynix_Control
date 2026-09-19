@@ -1,4 +1,4 @@
-# Mynix Control — Test Readiness Report (TEST_READY)
+# Kreso Flow — Test Readiness Report (TEST_READY)
 
 **Date**: 2026-09-14  
 **Author**: Test Writer M4 (E2E Testing Track Specialist)  
@@ -111,7 +111,7 @@ All requirements from `ORIGINAL_REQUEST.md` (R1, R2, R3) and interface contracts
 ### Backend Pytest
 ```
 platform win32 -- Python 3.12.10, pytest-9.0.3, pluggy-1.6.0
-rootdir: D:\Mynix_Control\backend
+rootdir: D:\Kreso_Flow\backend
 configfile: pytest.ini
 plugins: anyio-4.13.0, asyncio-1.4.0
 
@@ -132,13 +132,13 @@ tests\test_users.py ..                                                   [100%]
 
 ### Frontend Tests
 ```
-00:00 +0: loading D:/Mynix_Control/frontend/test/api_test.dart
-00:00 +0: D:/Mynix_Control/frontend/test/widget_test.dart: UI Kit AppButton Widget Tests Renders AppButton with primary variant and triggers onPressed
-00:01 +1: D:/Mynix_Control/frontend/test/widget_test.dart: UI Kit AppButton Widget Tests AppButton disabled state does not trigger callback
-00:01 +2: D:/Mynix_Control/frontend/test/widget_test.dart: UI Kit AppButton Widget Tests AppButtonSize dimensions conform to Design System token scale
-00:01 +3: D:/Mynix_Control/frontend/test/widget_test.dart: Inventory Domain Models Serialization & Invariants Ingredient fromJson deserializes and computes displayCode correctly
-00:01 +4: D:/Mynix_Control/frontend/test/widget_test.dart: Inventory Domain Models Serialization & Invariants Ingredient displayCode falls back to barcode then #id
-00:01 +5: D:/Mynix_Control/frontend/test/widget_test.dart: Inventory Domain Models Serialization & Invariants InventoryDocumentItem serialization roundtrip
+00:00 +0: loading D:/Kreso_Flow/frontend/test/api_test.dart
+00:00 +0: D:/Kreso_Flow/frontend/test/widget_test.dart: UI Kit AppButton Widget Tests Renders AppButton with primary variant and triggers onPressed
+00:01 +1: D:/Kreso_Flow/frontend/test/widget_test.dart: UI Kit AppButton Widget Tests AppButton disabled state does not trigger callback
+00:01 +2: D:/Kreso_Flow/frontend/test/widget_test.dart: UI Kit AppButton Widget Tests AppButtonSize dimensions conform to Design System token scale
+00:01 +3: D:/Kreso_Flow/frontend/test/widget_test.dart: Inventory Domain Models Serialization & Invariants Ingredient fromJson deserializes and computes displayCode correctly
+00:01 +4: D:/Kreso_Flow/frontend/test/widget_test.dart: Inventory Domain Models Serialization & Invariants Ingredient displayCode falls back to barcode then #id
+00:01 +5: D:/Kreso_Flow/frontend/test/widget_test.dart: Inventory Domain Models Serialization & Invariants InventoryDocumentItem serialization roundtrip
 00:01 +6: All tests passed!
 ```
 
@@ -148,14 +148,14 @@ tests\test_users.py ..                                                   [100%]
 
 ```powershell
 # 1. Backend E2E requirements suite
-cd d:\Mynix_Control\backend
+cd d:\Kreso_Flow\backend
 .\.venv\Scripts\python -m pytest tests/test_e2e_requirements.py -v
 
 # 2. Complete backend regression test suite
 .\.venv\Scripts\python -m pytest tests/ -v
 
 # 3. Frontend test suite
-cd d:\Mynix_Control\frontend
+cd d:\Kreso_Flow\frontend
 flutter test
 ```
 

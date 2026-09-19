@@ -1,5 +1,5 @@
 """
-Alembic env.py — configured for SQLModel + Mynix Control.
+Alembic env.py — configured for SQLModel + Kreso Flow.
 
 Imports ALL module models so Alembic can detect them for autogenerate.
 Uses sync DATABASE_URL_SYNC from app config.

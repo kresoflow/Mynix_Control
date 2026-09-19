@@ -80,7 +80,7 @@ class LocalPosServer {
           ..statusCode = HttpStatus.ok
           ..write(jsonEncode({
             'status': 'ok',
-            'app': 'Mynix Control Master POS',
+            'app': 'Kreso Flow Master POS',
             'ip': localIpAddress,
             'port': port,
             'pending_orders': PosOutboxService.pendingCount,

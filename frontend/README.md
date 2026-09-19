@@ -1,6 +1,6 @@
-# retail_os_frontend
+# Kreso Flow Frontend
 
-A new Flutter project.
+A new Flutter project for Kreso Flow.
 
 ## Getting Started
 

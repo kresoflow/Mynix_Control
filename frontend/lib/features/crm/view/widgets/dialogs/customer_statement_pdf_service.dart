@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -59,7 +59,7 @@ class CustomerStatementPdfService {
                       pw.Image(pw.MemoryImage(logoBytes), width: 36, height: 36),
                       pw.SizedBox(width: 10),
                       pw.Text(
-                        'MYNIX CONTROL',
+                        'KRESO FLOW',
                         style: pw.TextStyle(color: darkColor, fontSize: 16, fontWeight: pw.FontWeight.bold),
                       ),
                     ],

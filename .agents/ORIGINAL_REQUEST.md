@@ -5,7 +5,7 @@
 <USER_REQUEST>
 Оптимизация, устранение багов и разделение зон ответственности модальных окон «Массовое добавление» (Каталог/Номенклатура) и «Приход товара» (Склад/Накладные).
 
-Working directory: d:/Mynix_Control
+Working directory: d:/Kreso_Flow
 
 ## Requirements
 
@@ -20,7 +20,7 @@ Working directory: d:/Mynix_Control
 ### R3. Высокая производительность и Keyboard-First UX
 - Навигация по таблицам по клавише `Enter` и стрелкам без необходимости кликать мышью.
 - Изоляция перерисовки строк таблицы (исключение лагов при 100+ позициях).
-- Полное соответствие дизайн-системе Mynix Control (`AppPrimaryButton`, `AppColors`, правила микро-архитектуры).
+- Полное соответствие дизайн-системе Kreso Flow (`AppPrimaryButton`, `AppColors`, правила микро-архитектуры).
 
 ## Acceptance Criteria
 

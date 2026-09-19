@@ -1,4 +1,4 @@
-# Mynix Control — Backend Architecture Map
+# Kreso Flow — Backend Architecture Map
 **Стек:** Python 3.12, FastAPI, SQLModel / SQLAlchemy 2.0 (asyncpg), PostgreSQL (Multi-Tenancy по схемам).  
 **Порядок отображения:** **100% точное соответствие проводнику VS Code (Explorer)**: каталог за каталогом, файл за файлом, включая виртуальные окружения и служебные кэши.
 

@@ -1,9 +1,9 @@
-# Mynix Control — Test Infrastructure & Quality Specification (TEST_INFRA)
+# Kreso Flow — Test Infrastructure & Quality Specification (TEST_INFRA)
 
 ## 1. Test Philosophy
 
 ### 1.1 Opaque-Box & Requirement-Driven Testing
-Testing in Mynix Control adheres strictly to **opaque-box (black-box), requirement-driven verification**. Every automated test is derived directly from user requirements (`ORIGINAL_REQUEST.md`) and system interface contracts (`PROJECT.md`). Rather than asserting internal implementation details or private methods, tests stimulate public API routes, BLoC events, and database transaction boundaries, evaluating observable behavior:
+Testing in Kreso Flow adheres strictly to **opaque-box (black-box), requirement-driven verification**. Every automated test is derived directly from user requirements (`ORIGINAL_REQUEST.md`) and system interface contracts (`PROJECT.md`). Rather than asserting internal implementation details or private methods, tests stimulate public API routes, BLoC events, and database transaction boundaries, evaluating observable behavior:
 - HTTP status codes, response payloads, and headers.
 - Persistent entity state in PostgreSQL (simulated via SQLite in-memory with PostgreSQL dialect extensions).
 - Domain invariants, financial calculations, and inventory balances.
@@ -82,7 +82,7 @@ Per user requirement **R2**:
 #### Running Backend Tests (Windows PowerShell)
 ```powershell
 # Navigate to backend directory
-cd d:\Mynix_Control\backend
+cd d:\Kreso_Flow\backend
 
 # Run the complete test suite
 .\.venv\Scripts\python -m pytest tests/ -v
@@ -100,7 +100,7 @@ cd d:\Mynix_Control\backend
 #### Running Frontend Tests (Windows PowerShell)
 ```powershell
 # Navigate to frontend directory
-cd d:\Mynix_Control\frontend
+cd d:\Kreso_Flow\frontend
 
 # Run Flutter tests
 flutter test

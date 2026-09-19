@@ -1,4 +1,4 @@
-# Mynix Control — Frontend Architecture Map
+# Kreso Flow — Frontend Architecture Map
 **Стек:** Flutter 3.x, Dart, BLoC (`flutter_bloc` + `equatable`), Dio, Feature-Driven Architecture.  
 **Дизайн-система:** Строгий UI Kit, шкала размеров `AppButtonSize`, запрет сырых `Colors.*` и стандартных кнопок.  
 **Порядок отображения:** **100% точное соответствие проводнику VS Code (Explorer)**: каталог за каталогом, файл за файлом, включая слои архитектуры внутри каждой фичи.
@@ -34,7 +34,7 @@ frontend/
 │
 ├── assets/                           # [4] Статические медиа-ресурсы
 │   ├── icons/                        # Пиктограммы способов оплаты, категорий и статусов
-│   └── images/                       # Логотипы Mynix, плейсхолдеры товаров
+│   └── images/                       # Логотипы Kreso Flow, плейсхолдеры товаров
 │
 ├── build/                            # [5] Каталог скомпилированных бинарных артефактов сборки Flutter
 ├── ios/                              # [6] Нативный проект iOS (iPad для кассы и кухни)

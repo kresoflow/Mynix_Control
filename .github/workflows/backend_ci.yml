@@ -40,4 +40,4 @@ jobs:
 
       - name: Verify Docker Build
         working-directory: ./backend
-        run: docker build -t mynix-backend:ci .
+        run: docker build -t kreso-backend:ci .

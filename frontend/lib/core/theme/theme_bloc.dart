@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
 
 enum ThemePalette {
-  ember, // Классический Mynix (☀️ Basic / 🌙 Ember)
+  ember, // Классический Kreso (☀️ Basic / 🌙 Ember)
   cream, // Тёплый крем (☀️ Soft Cream / 🌙 Dark Espresso)
   ocean, // Морской неон (☀️ High Contrast / 🌙 Deep Ocean)
 }
@@ -65,8 +65,8 @@ class ThemeState extends Equatable {
 }
 
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
-  static const _kThemeModeKey = 'mynix_theme_mode';
-  static const _kThemePaletteKey = 'mynix_theme_palette';
+  static const _kThemeModeKey = 'kreso_theme_mode';
+  static const _kThemePaletteKey = 'kreso_theme_palette';
 
   ThemeBloc() : super(const ThemeState(mode: ThemeMode.dark, palette: ThemePalette.ocean)) {
     on<LoadSavedTheme>(_onLoadSavedTheme);
