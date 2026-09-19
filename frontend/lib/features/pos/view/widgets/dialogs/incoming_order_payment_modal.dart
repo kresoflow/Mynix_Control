@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 
 class IncomingOrderPaymentModal extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -62,7 +62,7 @@ class _IncomingOrderPaymentModalState extends State<IncomingOrderPaymentModal> {
     final total = (widget.order['total'] as num?)?.toDouble() ?? 0.0;
     final tableNum = widget.order['table_number']?.toString() ?? 'Зал';
 
-    return MynixDialog(
+    return AppDialog(
       title: 'Оплата заказа #$orderNum',
       icon: PhosphorIconsBold.creditCard,
       width: 440,

@@ -1,33 +1,33 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/utils/audio_helper.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
-import 'package:mynix_frontend/core/network/websocket_service.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/utils/audio_helper.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/core/network/websocket_service.dart';
 
 
-import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
-import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
-import 'package:mynix_frontend/features/pos/repository/order_repository.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:mynix_frontend/features/orders/bloc/orders_bloc.dart';
-import 'package:mynix_frontend/features/orders/view/orders_screen.dart';
-import 'package:mynix_frontend/features/kitchen/view/kitchen_screen.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_nav_cubit.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
+import 'package:kreso_frontend/features/orders/view/orders_screen.dart';
+import 'package:kreso_frontend/features/kitchen/view/kitchen_screen.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 import 'widgets/pos_mobile_layout.dart';
 import 'widgets/pos_desktop_layout.dart';
@@ -168,7 +168,7 @@ class _PosScreenState extends State<PosScreen> {
         }
         final shouldLeave = await showDialog<bool>(
           context: context,
-          builder: (ctx) => MynixDialog(
+          builder: (ctx) => AppDialog(
             title: 'В чеке есть товары',
             icon: PhosphorIconsRegular.warning,
             isDestructive: true,

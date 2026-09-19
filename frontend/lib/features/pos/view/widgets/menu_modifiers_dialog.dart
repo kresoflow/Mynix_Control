@@ -1,8 +1,8 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'modifiers/mini_cart_item.dart';
@@ -142,7 +142,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return MynixDialog(
+    return AppDialog(
       title: widget.item.cleanName,
       icon: PhosphorIconsRegular.hamburger,
       width: 850,

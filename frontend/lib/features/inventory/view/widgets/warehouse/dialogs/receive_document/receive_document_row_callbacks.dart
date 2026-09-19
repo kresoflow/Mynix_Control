@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_data.dart';
 import 'receive_document_unit_helper.dart';
 

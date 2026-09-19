@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/features/inventory/models/document.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/features/inventory/models/document.dart';
 
 class DocumentDetailItemsTable extends StatelessWidget {
   final InventoryDocument doc;

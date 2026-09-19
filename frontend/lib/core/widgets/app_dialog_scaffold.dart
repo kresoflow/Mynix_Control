@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
-import 'package:mynix_frontend/core/theme/app_shadows.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 class AppDialogScaffold extends StatelessWidget {
   final String title;

@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/utils/icon_helper.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
+import 'package:kreso_frontend/core/utils/icon_helper.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 
 class StockCategoryAccordion extends StatelessWidget {
   final String categoryName;

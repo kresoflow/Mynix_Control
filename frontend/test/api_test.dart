@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mynix_frontend/features/inventory/models/supplier.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 
 void main() {
   group('Supplier API & Domain Model Serialization', () {

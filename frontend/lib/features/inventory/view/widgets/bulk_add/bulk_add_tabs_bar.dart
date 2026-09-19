@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
-import 'package:mynix_frontend/core/theme/app_shadows.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 
 class BulkAddTabsBar extends StatelessWidget {
   final int tabIndex;

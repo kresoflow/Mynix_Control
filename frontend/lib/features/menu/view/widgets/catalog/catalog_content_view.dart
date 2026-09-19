@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'catalog_enums.dart';
 import 'catalog_item_widgets.dart';
 

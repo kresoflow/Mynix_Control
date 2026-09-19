@@ -1,30 +1,30 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'color_picker_utils.dart';
 import 'hsv_color_plane.dart';
 import 'hue_slider.dart';
 
-class MynixColorPickerDialog extends StatefulWidget {
+class AppColorPickerDialog extends StatefulWidget {
   final Color? initialColor;
 
-  const MynixColorPickerDialog({super.key, this.initialColor});
+  const AppColorPickerDialog({super.key, this.initialColor});
 
   static Future<String?> show(BuildContext context, {String? initialHex}) async {
     final initColor = ColorPickerUtils.parseHex(initialHex) ?? const Color(0xFFE65100);
     return showDialog<String?>(
       context: context,
-      builder: (context) => MynixColorPickerDialog(initialColor: initColor),
+      builder: (context) => AppColorPickerDialog(initialColor: initColor),
     );
   }
 
   @override
-  State<MynixColorPickerDialog> createState() => _MynixColorPickerDialogState();
+  State<AppColorPickerDialog> createState() => _AppColorPickerDialogState();
 }
 
-class _MynixColorPickerDialogState extends State<MynixColorPickerDialog> {
+class _AppColorPickerDialogState extends State<AppColorPickerDialog> {
   late double _hue;
   late double _saturation;
   late double _value;
@@ -84,7 +84,7 @@ class _MynixColorPickerDialogState extends State<MynixColorPickerDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = _currentColor;
 
-    return MynixDialog(
+    return AppDialog(
       title: 'Выбор цвета категории',
       icon: PhosphorIconsRegular.palette,
       width: 440,

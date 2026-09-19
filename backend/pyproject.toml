@@ -1,7 +1,7 @@
 [project]
-name = "mynix-control"
+name = "kreso-flow"
 version = "0.1.0"
-description = "Mynix Control POS & Restaurant Management Backend"
+description = "Kreso Flow POS & Restaurant Management Backend"
 readme = "ARCHITECTURE_MAP.md"
 requires-python = ">=3.12"
 dependencies = [

@@ -1,17 +1,17 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/features/pos/repository/menu_repository.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/bulk_add_controller.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/bulk_add_footer.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/bulk_add_payload_builder.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/dish_row.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/ingredient_row.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/retail_row.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add/category_row.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/features/pos/repository/menu_repository.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_add_controller.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_add_footer.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_add_payload_builder.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/dish_row.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/ingredient_row.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/retail_row.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/category_row.dart';
 
 class _MockDio extends Fake implements Dio {}
 

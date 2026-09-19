@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 
 class DialogModifierGroupsList extends StatelessWidget {
   final List<dynamic> modifierGroups;

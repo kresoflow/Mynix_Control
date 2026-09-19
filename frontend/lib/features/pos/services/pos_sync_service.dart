@@ -1,6 +1,6 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
 import 'pos_outbox_service.dart';
 
 class PosSyncService {

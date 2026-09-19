@@ -1,4 +1,4 @@
-# Mynix Control - Global Rules
+# Kreso Flow - Global Rules
 
 Эти правила являются абсолютным фундаментом архитектуры. Их нарушение недопустимо.
 

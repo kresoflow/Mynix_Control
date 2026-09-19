@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../bloc/superadmin_bloc.dart';
 import 'create_tenant_business_section.dart';
@@ -74,7 +74,7 @@ class _CreateTenantModalState extends State<CreateTenantModal> {
     if (_isDirty) {
       showDialog(
         context: context,
-        builder: (ctx) => MynixDialog(
+        builder: (ctx) => AppDialog(
           title: 'Отменить создание?',
           icon: PhosphorIconsRegular.warningCircle,
           isDestructive: true,
@@ -127,7 +127,7 @@ class _CreateTenantModalState extends State<CreateTenantModal> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _onCancel();
       },
-      child: MynixDialog(
+      child: AppDialog(
         title: 'Новый Ресторан',
         icon: PhosphorIconsRegular.storefront,
         width: 620,

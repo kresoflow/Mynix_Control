@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/menu/services/duplicate_detector.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_menu_item_dialog.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/create_menu_item_dialog.dart';
 
 class MenuItemBasicFields extends StatefulWidget {
   final TextEditingController nameController;

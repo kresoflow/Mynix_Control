@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock_tab.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/documents_journal_tab.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/suppliers_tab.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient_tab.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/recipe_tab.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock_tab.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/documents_journal_tab.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/suppliers_tab.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient_tab.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/recipe_tab.dart';
 
 class WarehouseScreen extends StatefulWidget {
   const WarehouseScreen({super.key});

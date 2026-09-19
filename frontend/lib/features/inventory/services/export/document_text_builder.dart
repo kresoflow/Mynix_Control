@@ -1,6 +1,6 @@
-import 'package:intl/intl.dart';
-import 'package:mynix_frontend/features/inventory/models/document.dart';
-import 'package:mynix_frontend/features/inventory/services/export/document_pdf_builder.dart';
+﻿import 'package:intl/intl.dart';
+import 'package:kreso_frontend/features/inventory/models/document.dart';
+import 'package:kreso_frontend/features/inventory/services/export/document_pdf_builder.dart';
 
 class DocumentTextBuilder {
   /// CSV export with UTF-8 BOM for Excel Cyrillic support

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/settings_ui_components.dart';
 
 class SystemSettingsTab extends StatelessWidget {
   final bool isDark;

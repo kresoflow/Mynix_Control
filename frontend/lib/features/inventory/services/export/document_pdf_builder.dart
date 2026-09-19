@@ -1,10 +1,10 @@
-import 'package:flutter/services.dart';
+﻿import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
-import 'package:mynix_frontend/features/inventory/models/document.dart';
+import 'package:kreso_frontend/core/theme/app_logo_base64.dart';
+import 'package:kreso_frontend/features/inventory/models/document.dart';
 
 class DocumentPdfBuilder {
   static String formatPaymentStatus(String status) {

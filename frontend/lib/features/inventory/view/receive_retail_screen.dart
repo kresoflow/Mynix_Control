@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/features/inventory/bloc/receive_retail_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/receive_retail_event.dart';
-import 'package:mynix_frontend/features/inventory/bloc/receive_retail_state.dart';
-import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/features/inventory/bloc/receive_retail_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/receive_retail_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/receive_retail_state.dart';
+import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'widgets/receive_retail_item_widget.dart';
 
 class ReceiveRetailScreen extends StatelessWidget {

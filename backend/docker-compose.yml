@@ -1,26 +1,26 @@
 # ══════════════════════════════════════════════════════════
-# Mynix Control
+# Kreso Flow
 # Docker Compose: PostgreSQL + Redis (development)
 # ══════════════════════════════════════════════════════════
 
-name: scafe
+name: kresoflow
 
 services:
   # ── PostgreSQL ───────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
-    container_name: mynix_postgres
+    container_name: kreso_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: mynix
-      POSTGRES_PASSWORD: mynix_secret
-      POSTGRES_DB: mynix_control
+      POSTGRES_USER: kreso
+      POSTGRES_PASSWORD: kreso_secret
+      POSTGRES_DB: kreso_flow
     ports:
       - "5444:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mynix -d mynix_control"]
+      test: ["CMD-SHELL", "pg_isready -U kreso -d kreso_flow"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -28,7 +28,7 @@ services:
   # ── Redis ────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
-    container_name: mynix_redis
+    container_name: kreso_redis
     restart: unless-stopped
     ports:
       - "6379:6379"

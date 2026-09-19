@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
 
 class SuppliersTableHeader extends StatelessWidget {
   const SuppliersTableHeader({super.key});

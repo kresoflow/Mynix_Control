@@ -1,10 +1,10 @@
-# Project: Mynix Control — Bulk Add & Goods Receipt Optimization
+﻿# Project: Kreso Flow — Bulk Add & Goods Receipt Optimization
 
 ## Architecture
 
-Mynix Control employs a modern client-server architecture with multi-tenant schema isolation:
+Kreso Flow employs a modern client-server architecture with multi-tenant schema isolation:
 - **Backend**: FastAPI + SQLModel + PostgreSQL (via `asyncpg`). Multi-tenancy operates via PostgreSQL schemas (`search_path` set per request via `TenantSession`), with zero `tenant_id` columns in business models. Role- and domain-based access control (PBAC) is enforced using `require_permission(...)` decorators.
-- **Frontend**: Flutter + Dart with Feature-Driven Architecture (`lib/features/<module>`). State management is strictly handled by `BLoC` + `Equatable`. Networking is isolated in Repositories (using `Dio`) injected via `RepositoryProvider`. UI adheres strictly to the Mynix Control Design System (`AppColors`, `AppPrimaryButton`, `AppButtonSize`, `AppRadii`).
+- **Frontend**: Flutter + Dart with Feature-Driven Architecture (`lib/features/<module>`). State management is strictly handled by `BLoC` + `Equatable`. Networking is isolated in Repositories (using `Dio`) injected via `RepositoryProvider`. UI adheres strictly to the Kreso Flow Design System (`AppColors`, `AppPrimaryButton`, `AppButtonSize`, `AppRadii`).
 - **Domain Separation**:
   - **Catalog (Menu)**: Nomenclature definition (dishes, retail items, categories, ingredients, pricing, variations, barcodes, units). Responsible for card management with zero initial physical stock.
   - **Warehouse (Inventory)**: Physical stock tracking and movements. Stock quantities are increased strictly through movement documents (`InventoryDocument` with status `completed`, e.g., Goods Receipt / Инвентаризация). Goods Receipt operates strictly upon pre-existing nomenclature items from the Catalog.

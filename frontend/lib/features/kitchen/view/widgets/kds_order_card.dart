@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/kitchen/bloc/kitchen_bloc.dart';
-import 'package:mynix_frontend/features/kitchen/bloc/kitchen_event.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/features/kitchen/bloc/kitchen_bloc.dart';
+import 'package:kreso_frontend/features/kitchen/bloc/kitchen_event.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'kds/kds_card_header.dart';
 import 'kds/kds_item_row.dart';
 

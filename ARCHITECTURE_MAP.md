@@ -1,5 +1,5 @@
-# Mynix Control — Master Repository Architecture Map
-**Проект:** Mynix Control — Enterprise ERP / POS система для ресторанов, кафе и ритейла.  
+﻿# Kreso Flow — Master Repository Architecture Map
+**Проект:** Kreso Flow — Enterprise ERP / POS система для ресторанов, кафе и ритейла.  
 **Порядок отображения:** **100% точное соответствие проводнику VS Code (Explorer)**: каталог за каталогом, файл за файлом, включая виртуальные окружения и служебные кэши.
 
 ---
@@ -17,7 +17,7 @@
 ## 2. Полная структура корня репозитория (Точно по проводнику VS Code)
 
 ```
-d:\Mynix_Control/
+d:\Kreso Flow_Control/
 ├── .agents/                          # Каталог агентной системы и базы стандартов
 │   ├── sentinel/                     # Мониторинг и супервизия мульти-агентных сессий
 │   ├── skills/                       # 7 инженерных навыков: art_director, delivery, fastapi, flutter, product_designer, qa, refactor

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'bulk_add/bulk_add_controller.dart';
 import 'bulk_add/bulk_add_header.dart';
 import 'bulk_add/bulk_add_tabs_bar.dart';

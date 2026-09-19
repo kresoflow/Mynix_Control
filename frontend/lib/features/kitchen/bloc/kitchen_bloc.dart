@@ -1,11 +1,11 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'kitchen_event.dart';
 import 'kitchen_state.dart';
 import '../repository/kitchen_repository.dart';
-import 'package:mynix_frontend/core/network/websocket_service.dart';
-import 'package:mynix_frontend/core/utils/audio_helper.dart';
+import 'package:kreso_frontend/core/network/websocket_service.dart';
+import 'package:kreso_frontend/core/utils/audio_helper.dart';
 
 class KitchenBloc extends Bloc<KitchenEvent, KitchenState> {
   final KitchenRepository repository;

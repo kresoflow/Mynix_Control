@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 
 class SuperadminErrorView extends StatelessWidget {
   final String message;
@@ -57,7 +57,7 @@ class SuperadminErrorView extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               isTokenError
-                  ? 'Указанный системный токен отклонён сервером (403 Forbidden).\nДля управления мульти-тенант кластером требуется актуальный system_admin_token из конфигурации бэкенда.\n(В dev-режиме: super_secret_mynix_token_2026)'
+                  ? 'Указанный системный токен отклонён сервером (403 Forbidden).\nДля управления мульти-тенант кластером требуется актуальный system_admin_token из конфигурации бэкенда.\n(В dev-режиме: super_secret_kreso_token_2026)'
                   : message,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,

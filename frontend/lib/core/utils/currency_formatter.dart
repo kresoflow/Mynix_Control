@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 
 class CurrencyFormatter {
   static String format(BuildContext context, num amount) {

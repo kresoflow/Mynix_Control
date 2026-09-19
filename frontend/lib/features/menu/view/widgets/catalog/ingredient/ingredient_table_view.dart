@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_item_row.dart';
-import 'package:mynix_frontend/features/pos/models/menu_category.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_item_row.dart';
+import 'package:kreso_frontend/features/pos/models/menu_category.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 
 class IngredientTableView extends StatelessWidget {
   final List<Ingredient> ingredients;

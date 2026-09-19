@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
-import 'package:mynix_frontend/features/pos/repository/order_repository.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_event.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
+import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
 
 Future<void> showLogoutConfirmDialog(BuildContext context) {
   return showDialog<void>(
@@ -56,7 +56,7 @@ class _LogoutConfirmDialogState extends State<LogoutConfirmDialog> {
         final activeTables = snapshot.data ?? [];
         final hasActiveTables = activeTables.isNotEmpty;
 
-        return MynixDialog(
+        return AppDialog(
           title: hasActiveTables ? 'Внимание: открытые столы!' : 'Выход из системы',
           icon: hasActiveTables
               ? PhosphorIconsRegular.warning

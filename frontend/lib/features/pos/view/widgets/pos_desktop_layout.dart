@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/pos_menu_grid.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/pos_cart.dart';
-import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/pos_menu_grid.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/pos_cart.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 
 class PosDesktopLayout extends StatelessWidget {
   const PosDesktopLayout({super.key});

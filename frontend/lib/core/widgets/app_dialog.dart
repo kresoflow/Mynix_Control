@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
-import 'package:mynix_frontend/core/theme/app_shadows.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-/// Универсальный компонент для всех модальных окон в Mynix Control.
+/// Универсальный компонент для всех модальных окон в дизайн-системе Kreso Flow.
 /// Заменяет стандартный AlertDialog, обеспечивая единый премиальный стиль.
-class MynixDialog extends StatelessWidget {
+class AppDialog extends StatelessWidget {
   final String title;
   final IconData icon;
   final Widget content;
@@ -16,7 +16,7 @@ class MynixDialog extends StatelessWidget {
   final bool isDestructive;
   final VoidCallback? onClose;
 
-  const MynixDialog({
+  const AppDialog({
     super.key,
     required this.title,
     required this.icon,

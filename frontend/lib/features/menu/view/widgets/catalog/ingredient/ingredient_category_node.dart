@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/utils/icon_helper.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/app_nav_tile.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
-import 'package:mynix_frontend/features/pos/models/menu_category.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/icon_helper.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_nav_tile.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:kreso_frontend/features/pos/models/menu_category.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class IngredientCategoryNode extends StatefulWidget {

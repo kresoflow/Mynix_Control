@@ -1,12 +1,12 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mynix_frontend/core/utils/audio_helper.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document/receipt_row_data.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document/receive_document_row_callbacks.dart';
+import 'package:kreso_frontend/core/utils/audio_helper.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document/receipt_row_data.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document/receive_document_row_callbacks.dart';
 
 InventoryRepository createTestRepository() {
   final dio = Dio(BaseOptions(baseUrl: 'http://localhost'));

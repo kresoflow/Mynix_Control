@@ -1,6 +1,6 @@
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/features/pos/models/menu_category.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+﻿import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/features/pos/models/menu_category.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 
 class DuplicateMatch<T> {
   final T item;

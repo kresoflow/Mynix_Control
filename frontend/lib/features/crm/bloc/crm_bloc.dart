@@ -1,9 +1,9 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/crm/bloc/crm_event.dart';
-import 'package:mynix_frontend/features/crm/bloc/crm_state.dart';
-import 'package:mynix_frontend/features/crm/models/bonus_transaction.dart';
-import 'package:mynix_frontend/features/crm/models/customer_transaction.dart';
-import 'package:mynix_frontend/features/crm/repository/crm_repository.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kreso_frontend/features/crm/bloc/crm_event.dart';
+import 'package:kreso_frontend/features/crm/bloc/crm_state.dart';
+import 'package:kreso_frontend/features/crm/models/bonus_transaction.dart';
+import 'package:kreso_frontend/features/crm/models/customer_transaction.dart';
+import 'package:kreso_frontend/features/crm/repository/crm_repository.dart';
 
 class CrmBloc extends Bloc<CrmEvent, CrmState> {
   final CrmRepository repository;

@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
-import 'package:mynix_frontend/features/pos/services/lan/local_pos_server.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/features/pos/services/lan/local_pos_server.dart';
 import '../../services/lan_settings_service.dart';
 import 'lan_client_settings_section.dart';
 

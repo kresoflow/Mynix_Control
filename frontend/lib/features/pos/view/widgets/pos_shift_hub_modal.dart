@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
-import 'package:mynix_frontend/features/pos/repository/shift_repository.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_event.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
 
 import 'shift_hub/shift_x_report_tab.dart';
 import 'shift_hub/shift_z_close_tab.dart';
@@ -107,7 +107,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
           }
         }
 
-        return MynixDialog(
+        return AppDialog(
           title: 'Управление сменой',
           icon: PhosphorIconsRegular.vault,
           width: 500,

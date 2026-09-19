@@ -48,7 +48,7 @@ class ReceiptPrinter:
         total: float,
         payment_method: str,
         cashier_name: str,
-        tenant_name: str = "Mynix Control",
+        tenant_name: str = "Kreso Flow",
     ) -> bool:
         """
         Print a customer receipt.

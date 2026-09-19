@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/utils/icon_helper.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/icon_helper.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 
 class RecipeDishTile extends StatelessWidget {
   final dynamic item;

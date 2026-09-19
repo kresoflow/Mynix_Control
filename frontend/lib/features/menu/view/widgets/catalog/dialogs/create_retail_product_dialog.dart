@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/core/widgets/icon_picker_field.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import 'package:mynix_frontend/features/menu/services/duplicate_detector.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
+import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
 
 void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   final isEditing = itemToEdit != null;
@@ -99,7 +99,7 @@ void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, M
                 ? 'Несохраненные изменения карточки товара будут сброшены. Выйти?'
                 : 'Все введенные данные о товаре будут сброшены. Вы уверены?',
             confirmLabel: 'Сбросить и выйти',
-            child: MynixDialog(
+            child: AppDialog(
               title: isEditing ? 'Редактировать товар' : 'Новый товар для витрины',
             icon: PhosphorIconsRegular.storefront,
             width: 520,

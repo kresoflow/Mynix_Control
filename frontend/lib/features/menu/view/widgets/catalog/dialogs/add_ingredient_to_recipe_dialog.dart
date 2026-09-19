@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 
 void showAddIngredientToRecipeDialog(BuildContext context, int menuItemId, List<dynamic> ingredients) {
   int? selectedIngredientId;

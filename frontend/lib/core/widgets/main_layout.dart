@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'main_layout/desktop_layout.dart';
 import 'main_layout/mobile_layout.dart';
 

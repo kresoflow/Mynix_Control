@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/create_ingredient_dialog.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
-import 'package:mynix_frontend/core/utils/icon_helper.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/create_ingredient_dialog.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
+import 'package:kreso_frontend/core/utils/icon_helper.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
 
 
 class IngredientListWidget extends StatefulWidget {

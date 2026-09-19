@@ -1,11 +1,11 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:mynix_frontend/core/utils/uuid_helper.dart';
-import 'package:mynix_frontend/features/pos/models/cart_item.dart';
-import 'package:mynix_frontend/features/pos/models/offline_order_payload.dart';
-import 'package:mynix_frontend/features/pos/services/pos_outbox_service.dart';
-import 'package:mynix_frontend/features/pos/services/lan/local_pos_client.dart';
-import 'package:mynix_frontend/features/settings/services/lan_settings_service.dart';
+import 'package:kreso_frontend/core/utils/uuid_helper.dart';
+import 'package:kreso_frontend/features/pos/models/cart_item.dart';
+import 'package:kreso_frontend/features/pos/models/offline_order_payload.dart';
+import 'package:kreso_frontend/features/pos/services/pos_outbox_service.dart';
+import 'package:kreso_frontend/features/pos/services/lan/local_pos_client.dart';
+import 'package:kreso_frontend/features/settings/services/lan_settings_service.dart';
 
 class OrderRepository {
   final Dio _dio;

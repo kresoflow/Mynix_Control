@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/lan_settings_card.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/settings_ui_components.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/lan_settings_card.dart';
 
 class HardwareSettingsTab extends StatelessWidget {
   final bool isDark;

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mynix Control - Architectural Invariant Verification Tool
+Kreso Flow - Architectural Invariant Verification Tool
 Enforces core rules from AGENTS.md:
   1. Multi-Tenancy: Zero 'tenant_id' in backend domain models.
   2. PBAC: Protected endpoints in router.py files.
@@ -234,7 +234,7 @@ class RuleChecker:
 
     def run(self) -> int:
         print(c("==================================================", C.CYAN))
-        print(c("       MYNIX CONTROL — ARCHITECTURAL LINTER       ", C.BOLD + C.CYAN))
+        print(c("        KRESO FLOW — ARCHITECTURAL LINTER         ", C.BOLD + C.CYAN))
         print(c("==================================================", C.CYAN))
 
         self.check_backend_multi_tenancy()

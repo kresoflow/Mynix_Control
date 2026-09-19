@@ -1,9 +1,9 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
-import 'package:mynix_frontend/features/inventory/repository/inventory_repository.dart';
-import 'package:mynix_frontend/core/network/websocket_service.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:kreso_frontend/core/network/websocket_service.dart';
 import 'ingredient_event.dart';
 
 abstract class IngredientState extends Equatable {

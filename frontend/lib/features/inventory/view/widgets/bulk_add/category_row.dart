@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
+import 'package:kreso_frontend/core/widgets/icon_picker_field.dart';
 import 'bulk_input_decoration.dart';
 
 class CategoryRowData {

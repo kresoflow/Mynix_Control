@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'color_picker_utils.dart';
-import 'mynix_color_picker_dialog.dart';
+import 'app_color_picker_dialog.dart';
 
 class ColorPickerField extends StatelessWidget {
   final String? selectedColor;
@@ -23,7 +23,7 @@ class ColorPickerField extends StatelessWidget {
 
     return InkWell(
       onTap: () async {
-        final result = await MynixColorPickerDialog.show(context, initialHex: selectedColor);
+        final result = await AppColorPickerDialog.show(context, initialHex: selectedColor);
         if (result != null) {
           onColorSelected(result.isEmpty ? null : result);
         }

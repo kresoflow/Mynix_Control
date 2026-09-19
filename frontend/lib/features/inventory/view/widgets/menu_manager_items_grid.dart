@@ -1,12 +1,12 @@
-import 'menu_item_modal.dart';
+﻿import 'menu_item_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
 
 
 class MenuManagerItemsGrid extends StatelessWidget {

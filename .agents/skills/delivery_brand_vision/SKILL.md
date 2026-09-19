@@ -1,11 +1,11 @@
----
+﻿---
 name: delivery_brand_vision
-description: Brandbook, Product Vision, and Core Identity for Mynix Delivery App (courier, food delivery, tracking, customer client, delivery orders, mobile UI). Activate ALWAYS when working on delivery features, courier screens, delivery tracking, or delivery client flows.
+description: Brandbook, Product Vision, and Core Identity for Kreso Delivery App (courier, food delivery, tracking, customer client, delivery orders, mobile UI). Activate ALWAYS when working on delivery features, courier screens, delivery tracking, or delivery client flows.
 ---
 
-# Mynix Delivery: Brandbook & Product Vision
+# Kreso Delivery: Brandbook & Product Vision
 
-This skill acts as the absolute source of truth for the Mynix Delivery App identity. As an AI Agent, you MUST follow these guidelines strictly when making architectural or UI decisions.
+This skill acts as the absolute source of truth for the Kreso Delivery App identity. As an AI Agent, you MUST follow these guidelines strictly when making architectural or UI decisions.
 
 ## 1. Market Context & Mission
 **Context:** Absolute pioneer (First-Mover) in Kulob, Tajikistan. No top-tier IT competitors. Current market uses taxis or manual couriers.
@@ -18,7 +18,7 @@ This skill acts as the absolute source of truth for the Mynix Delivery App ident
 4. **Gamification:** Deep loyalty programs and subscriptions to lock in the user base.
 
 ## 3. Brand Identity & Art Direction
-When building or refactoring UI for Mynix Delivery, enforce these rules:
+When building or refactoring UI for Kreso Delivery, enforce these rules:
 
 * **Emotion:** A blend of Premium/Strict (Trust) and Cyber/Tech (Speed/Innovation).
 * **Color Palette:** Deep, absorbing dark modes by default. Avoid generic whites unless necessary for contrast. 

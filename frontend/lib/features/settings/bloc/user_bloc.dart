@@ -1,7 +1,7 @@
-import 'package:equatable/equatable.dart';
+﻿import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/settings/models/user_model.dart';
-import 'package:mynix_frontend/features/settings/repository/user_repository.dart';
+import 'package:kreso_frontend/features/settings/models/user_model.dart';
+import 'package:kreso_frontend/features/settings/repository/user_repository.dart';
 
 abstract class UserEvent extends Equatable {
   const UserEvent();

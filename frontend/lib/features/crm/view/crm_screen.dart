@@ -1,21 +1,21 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/features/crm/bloc/crm_bloc.dart';
-import 'package:mynix_frontend/features/crm/bloc/crm_event.dart';
-import 'package:mynix_frontend/features/crm/bloc/crm_state.dart';
-import 'package:mynix_frontend/features/crm/models/customer.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/customer_kpi_cards.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/customer_filter_bar.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/customer_table_header.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/customer_row.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_form_modal.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_details_dialog.dart';
-import 'package:mynix_frontend/features/crm/view/widgets/dialogs/customer_payment_modal.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/crm/bloc/crm_bloc.dart';
+import 'package:kreso_frontend/features/crm/bloc/crm_event.dart';
+import 'package:kreso_frontend/features/crm/bloc/crm_state.dart';
+import 'package:kreso_frontend/features/crm/models/customer.dart';
+import 'package:kreso_frontend/features/crm/view/widgets/customer_kpi_cards.dart';
+import 'package:kreso_frontend/features/crm/view/widgets/customer_filter_bar.dart';
+import 'package:kreso_frontend/features/crm/view/widgets/customer_table_header.dart';
+import 'package:kreso_frontend/features/crm/view/widgets/customer_row.dart';
+import 'package:kreso_frontend/features/crm/view/widgets/dialogs/customer_form_modal.dart';
+import 'package:kreso_frontend/features/crm/view/widgets/dialogs/customer_details_dialog.dart';
+import 'package:kreso_frontend/features/crm/view/widgets/dialogs/customer_payment_modal.dart';
 
 class CrmScreen extends StatefulWidget {
   const CrmScreen({super.key});
@@ -94,7 +94,7 @@ class _CrmScreenState extends State<CrmScreen> {
   void _confirmDelete(Customer customer) {
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Удалить гостя?',
         icon: PhosphorIconsRegular.trash,
         isDestructive: true,

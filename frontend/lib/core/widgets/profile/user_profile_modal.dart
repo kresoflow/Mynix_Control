@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
-import 'package:mynix_frontend/features/auth/repository/auth_repository.dart';
-import 'package:mynix_frontend/core/utils/role_formatter.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/features/auth/repository/auth_repository.dart';
+import 'package:kreso_frontend/core/utils/role_formatter.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_event.dart';
 
 void showUserProfileModal(BuildContext context) {
   showDialog(
@@ -115,7 +115,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
 
     final initial = _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'U';
 
-    return MynixDialog(
+    return AppDialog(
       title: 'Мой профиль',
       icon: PhosphorIconsRegular.userCircle,
       width: 440,

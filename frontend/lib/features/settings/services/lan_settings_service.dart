@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mynix_frontend/features/pos/services/lan/local_pos_client.dart';
-import 'package:mynix_frontend/features/pos/services/lan/local_pos_server.dart';
+import 'package:kreso_frontend/features/pos/services/lan/local_pos_client.dart';
+import 'package:kreso_frontend/features/pos/services/lan/local_pos_server.dart';
 
 class LanSettingsData {
   final bool isLanEnabled;

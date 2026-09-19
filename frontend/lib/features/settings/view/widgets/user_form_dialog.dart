@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
-import 'package:mynix_frontend/features/settings/models/user_model.dart';
-import 'package:mynix_frontend/features/settings/bloc/user_bloc.dart';
-import 'package:mynix_frontend/core/utils/role_formatter.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/features/settings/models/user_model.dart';
+import 'package:kreso_frontend/features/settings/bloc/user_bloc.dart';
+import 'package:kreso_frontend/core/utils/role_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class UserFormDialog extends StatefulWidget {
@@ -126,7 +126,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
           ? 'Несохраненные изменения данных сотрудника будут потеряны. Выйти?'
           : 'Все введенные данные сотрудника будут потеряны. Выйти?',
       confirmLabel: 'Сбросить и выйти',
-      child: MynixDialog(
+      child: AppDialog(
         title: _isEdit ? 'Редактировать сотрудника' : 'Новый сотрудник',
       icon: PhosphorIconsRegular.user,
       width: 480,

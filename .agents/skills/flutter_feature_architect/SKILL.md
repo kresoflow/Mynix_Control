@@ -1,6 +1,6 @@
----
+﻿---
 name: flutter_feature_architect
-description: Архитектурные стандарты Flutter для Mynix Control (Feature-Driven, BLoC, Repository, UI Kit). Активируй ВСЕГДА при любых задачах фронтенда: создание или изменение экранов, виджетов, модалок, диалогов, кнопок, таблиц, форм, карточек, меню, каталога, склада, POS, заказов, BLoC, состояний, верстки Flutter.
+description: Архитектурные стандарты Flutter для Kreso Flow (Feature-Driven, BLoC, Repository, UI Kit). Активируй ВСЕГДА при любых задачах фронтенда: создание или изменение экранов, виджетов, модалок, диалогов, кнопок, таблиц, форм, карточек, меню, каталога, склада, POS, заказов, BLoC, состояний, верстки Flutter.
 ---
 
 # Flutter Feature Architect Standards

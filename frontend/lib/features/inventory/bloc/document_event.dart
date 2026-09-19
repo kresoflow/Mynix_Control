@@ -1,5 +1,5 @@
-import 'package:equatable/equatable.dart';
-import 'package:mynix_frontend/features/inventory/models/supplier_transaction.dart';
+﻿import 'package:equatable/equatable.dart';
+import 'package:kreso_frontend/features/inventory/models/supplier_transaction.dart';
 
 abstract class DocumentEvent extends Equatable {
   const DocumentEvent();

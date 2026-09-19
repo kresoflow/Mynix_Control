@@ -1,6 +1,6 @@
----
+﻿---
 name: fastapi_feature_architect
-description: Архитектурные стандарты Backend для Mynix Control (FastAPI, SQLModel, PostgreSQL multi-tenancy, PBAC). Активируй ВСЕГДА при любых задачах бэкенда: создание или изменение эндпоинтов, API, роутеров, сервисов, моделей БД, миграций, PBAC-разрешений, транзакций склада, списаний, чеков, заказов, кассы, смен, авторизации.
+description: Архитектурные стандарты Backend для Kreso Flow (FastAPI, SQLModel, PostgreSQL multi-tenancy, PBAC). Активируй ВСЕГДА при любых задачах бэкенда: создание или изменение эндпоинтов, API, роутеров, сервисов, моделей БД, миграций, PBAC-разрешений, транзакций склада, списаний, чеков, заказов, кассы, смен, авторизации.
 ---
 
 # FastAPI Feature Architect Standards

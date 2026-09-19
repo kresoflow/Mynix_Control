@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/features/superadmin/domain/superadmin_repository.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/features/superadmin/domain/superadmin_repository.dart';
 import 'bloc/superadmin_bloc.dart';
 import 'widgets/create_tenant_modal.dart';
 import 'widgets/tenant_card.dart';
@@ -51,7 +51,7 @@ class _SuperadminScreenState extends State<SuperadminScreen> {
   void _confirmExit() {
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Выйти из консоли?',
         icon: PhosphorIconsRegular.signOut,
         isDestructive: true,

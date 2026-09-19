@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class ShowcaseDialogSection extends StatefulWidget {
   final bool isDark;
@@ -98,7 +98,7 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
                 onPressed: () {
                   showDialog(
                     context: context,
-                    builder: (ctx) => MynixDialog(
+                    builder: (ctx) => AppDialog(
                       title: 'Стандартный Mynix Dialog',
                       icon: PhosphorIconsRegular.sparkle,
                       content: const Text(

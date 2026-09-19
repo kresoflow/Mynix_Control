@@ -1,5 +1,5 @@
-import 'package:dio/dio.dart';
-import 'package:mynix_frontend/features/analytics/models/analytics_models.dart';
+﻿import 'package:dio/dio.dart';
+import 'package:kreso_frontend/features/analytics/models/analytics_models.dart';
 import 'package:intl/intl.dart';
 
 class AnalyticsRepository {

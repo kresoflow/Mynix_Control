@@ -1,7 +1,7 @@
-# Mynix Control — Official Design System & UI Specification (DESIGN.md)
+﻿# Kreso Flow — Official Design System & UI Specification (DESIGN.md)
 
 ## 1. Visual Theme & Atmosphere
-Mynix Control is an enterprise-grade ERP, POS, and Warehouse operating system for modern restaurants and retail chains.
+Kreso Flow is an enterprise-grade ERP, POS, and Warehouse operating system for modern restaurants and retail chains.
 The visual identity follows an ultra-clean, high-density, **Linear & Stripe-grade aesthetic**:
 - **Silent & Data-First:** The UI never screams at the user. Data (revenue, stock, tables, tickets) is the hero; chrome and containers elegantly frame the content.
 - **Multi-Layered Depth:** Interfaces use calibrated surface luminance rather than harsh borders.
@@ -165,13 +165,13 @@ All buttons MUST strictly conform to the 5-tier size matrix:
 - **ALWAYS** use `AppPrimaryButton`, `AppSecondaryButton`, `AppGhostButton`, `AppMenuButton`.
 - **ALWAYS** use `AppColors.*` tokens for all styling and borders.
 - **ALWAYS** use `AppButtonSize.md` (36px) for toolbar/header actions and `AppButtonSize.lg` (44-48px) for modals.
-- **ALWAYS** wrap modal dialogs in `MynixDialog` with `AppRadii.dialog`.
+- **ALWAYS** wrap modal dialogs in `AppDialog` with `AppRadii.dialog`.
 - **ALWAYS** support both Dark and Light themes with dynamic contrast.
 
 ---
 
 ## 8. Agent Prompt & Implementation Guide
-When implementing or modifying any UI in Mynix Control:
+When implementing or modifying any UI in Kreso Flow:
 1. Reference this `DESIGN.md` as the ultimate visual source of truth.
 2. Ensure zero `flutter analyze` errors and zero deprecation warnings.
 3. Keep widgets modular, decoupled, and cleanly composed inside `lib/features/<feature>/view/widgets/`.

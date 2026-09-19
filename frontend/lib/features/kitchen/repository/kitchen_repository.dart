@@ -1,5 +1,5 @@
-import 'package:mynix_frontend/core/network/api_client.dart';
-import 'package:mynix_frontend/core/network/websocket_service.dart';
+﻿import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/core/network/websocket_service.dart';
 
 class KitchenRepository {
   /// Get active orders (new and cooking)

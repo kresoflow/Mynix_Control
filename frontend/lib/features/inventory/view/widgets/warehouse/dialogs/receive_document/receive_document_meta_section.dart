@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_state.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart';
 import 'receive_document_meta_row.dart';
 
 class ReceiveDocumentMetaSection extends StatelessWidget {

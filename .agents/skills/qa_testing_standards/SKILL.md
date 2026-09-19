@@ -1,6 +1,6 @@
----
+﻿---
 name: qa_testing_standards
-description: Стандарты тестирования и обеспечения качества для Mynix Control (pytest, flutter test, flutter analyze, e2e, регрессионные тесты, линтеры, PBAC-проверки). Активируй ВСЕГДА при любых задачах тестирования, верификации, написании unit/e2e тестов, проверке регрессий, запуске pytest или flutter analyze.
+description: Стандарты тестирования и обеспечения качества для Kreso Flow (pytest, flutter test, flutter analyze, e2e, регрессионные тесты, линтеры, PBAC-проверки). Активируй ВСЕГДА при любых задачах тестирования, верификации, написании unit/e2e тестов, проверке регрессий, запуске pytest или flutter analyze.
 ---
 
 # QA & Security Testing Standards

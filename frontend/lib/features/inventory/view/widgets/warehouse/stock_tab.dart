@@ -1,21 +1,21 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_pill_filters.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_capital_chart_card.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/stock/stock_low_inventory_widget.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/pos/models/menu_category.dart';
-import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_pill_filters.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_capital_chart_card.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_low_inventory_widget.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/pos/models/menu_category.dart';
+import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
 
 class StockTab extends StatefulWidget {
   final String filter;

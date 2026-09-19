@@ -1,18 +1,18 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/app_nav_tile.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_nav_tile.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 
-class MynixNavRail extends StatelessWidget {
+class AppNavRail extends StatelessWidget {
   final bool isOpen;
   final String location;
   final ValueChanged<String> onRouteSelected;
 
-  const MynixNavRail({
+  const AppNavRail({
     super.key,
     required this.isOpen,
     required this.location,

@@ -1,4 +1,4 @@
-package com.mynix.retail_os_frontend
+package com.kresoflow.app
 
 import io.flutter.embedding.android.FlutterActivity
 

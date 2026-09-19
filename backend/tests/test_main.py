@@ -7,7 +7,7 @@ async def test_health_check():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         response = await ac.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "service": "Mynix Control"}
+    assert response.json() == {"status": "ok", "service": "Kreso Flow"}
 
 @pytest.mark.asyncio
 async def test_root():
@@ -15,5 +15,5 @@ async def test_root():
         response = await ac.get("/")
     assert response.status_code == 200
     data = response.json()
-    assert data["service"] == "Mynix Control"
+    assert data["service"] == "Kreso Flow"
     assert "version" in data

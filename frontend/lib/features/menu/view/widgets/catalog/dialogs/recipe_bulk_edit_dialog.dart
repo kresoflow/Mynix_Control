@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 import 'recipe_bulk_edit/recipe_row_state.dart';
 import 'recipe_bulk_edit/ingredient_picker_dialog.dart';

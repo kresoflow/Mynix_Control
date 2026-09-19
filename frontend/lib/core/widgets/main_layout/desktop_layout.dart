@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/shift_state.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/open_shift_modal.dart';
-import 'mynix_app_bar.dart';
-import 'mynix_nav_rail.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/open_shift_modal.dart';
+import 'app_nav_bar.dart';
+import 'app_nav_rail.dart';
 
 class DesktopLayout extends StatefulWidget {
   final Widget child;
@@ -28,7 +28,7 @@ class _DesktopLayoutState extends State<DesktopLayout> {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-      appBar: MynixAppBar(
+      appBar: AppNavBar(
         onCashTap: () {
           final state = context.read<ShiftBloc>().state;
           if (state is ShiftOpen) {
@@ -45,7 +45,7 @@ class _DesktopLayoutState extends State<DesktopLayout> {
       ),
       body: Row(
         children: [
-          MynixNavRail(
+          AppNavRail(
             isOpen: _isSidebarOpen,
             location: widget.location,
             onRouteSelected: (route) => context.go(route),

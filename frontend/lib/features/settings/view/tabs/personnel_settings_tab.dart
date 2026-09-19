@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/utils/role_formatter.dart';
-import 'package:mynix_frontend/features/settings/models/user_model.dart';
-import 'package:mynix_frontend/features/settings/bloc/user_bloc.dart';
-import 'package:mynix_frontend/features/settings/repository/user_repository.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/user_form_dialog.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/utils/role_formatter.dart';
+import 'package:kreso_frontend/features/settings/models/user_model.dart';
+import 'package:kreso_frontend/features/settings/bloc/user_bloc.dart';
+import 'package:kreso_frontend/features/settings/repository/user_repository.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/settings_ui_components.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/user_form_dialog.dart';
 
 class PersonnelSettingsTab extends StatelessWidget {
   final bool isDark;
@@ -217,7 +217,7 @@ class _PersonnelSettingsView extends StatelessWidget {
     final name = user.fullName.isNotEmpty ? user.fullName : '@${user.username}';
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Удалить сотрудника?',
         icon: PhosphorIconsRegular.trash,
         isDestructive: true,

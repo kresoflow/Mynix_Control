@@ -1,10 +1,10 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/menu_modifiers_dialog.dart';
+import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/menu_modifiers_dialog.dart';
 
 void handlePosItemClick(BuildContext context, MenuItem item) {
   final List<MenuItem> allItems = context.read<MenuBloc>().state is MenuLoaded

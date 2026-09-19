@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/menu_modifiers_dialog.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/menu_modifiers_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'catalog_dialogs.dart';
 import 'catalog_header.dart';
@@ -11,7 +11,7 @@ import 'catalog_content_view.dart';
 import 'catalog_enums.dart';
 import 'catalog_skeleton.dart';
 import 'catalog_deletion_dialogs.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
 
 class CatalogBrowserTab extends StatefulWidget {
   final String categoryType;

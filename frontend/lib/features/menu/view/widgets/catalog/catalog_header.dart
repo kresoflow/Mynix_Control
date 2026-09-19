@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'catalog_enums.dart';
 import 'catalog_header_manage_mode.dart';
 import 'catalog_breadcrumbs.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class CatalogHeader extends StatelessWidget {
   final CategoryManageMode manageMode;

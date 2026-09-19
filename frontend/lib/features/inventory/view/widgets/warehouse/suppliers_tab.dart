@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_event.dart';
-import 'package:mynix_frontend/features/inventory/bloc/document_state.dart';
-import 'package:mynix_frontend/features/inventory/models/supplier.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/edit_supplier_dialog.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/supplier_settlement/supplier_settlement_dialog.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/warehouse/dialogs/supplier_payment_dialog.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_state.dart';
+import 'package:kreso_frontend/features/inventory/models/supplier.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/edit_supplier_dialog.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/supplier_settlement/supplier_settlement_dialog.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/supplier_payment_dialog.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/widgets/skeleton_loader.dart';
+import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
 import 'supplier_row.dart';
 import 'suppliers_table_header.dart';
 
@@ -88,7 +88,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
   void _confirmDelete(BuildContext ctx, Supplier supplier) {
     showDialog(
       context: ctx,
-      builder: (dCtx) => MynixDialog(
+      builder: (dCtx) => AppDialog(
         title: 'Удалить поставщика?',
         icon: PhosphorIconsRegular.trash,
         isDestructive: true,

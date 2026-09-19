@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/features/analytics/bloc/analytics_bloc.dart';
-import 'package:mynix_frontend/features/analytics/bloc/analytics_event.dart';
-import 'package:mynix_frontend/features/analytics/bloc/analytics_state.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/features/analytics/bloc/analytics_bloc.dart';
+import 'package:kreso_frontend/features/analytics/bloc/analytics_event.dart';
+import 'package:kreso_frontend/features/analytics/bloc/analytics_state.dart';
 import '../widgets/dashboard_kpi_grid.dart';
 import '../widgets/revenue_chart_card.dart';
 import '../widgets/category_pie_chart_card.dart';

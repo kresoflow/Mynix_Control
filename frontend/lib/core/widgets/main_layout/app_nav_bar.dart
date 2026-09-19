@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
-import 'package:mynix_frontend/core/theme/theme_bloc.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/sync_status_badge.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_logo_base64.dart';
+import 'package:kreso_frontend/core/theme/theme_bloc.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/sync_status_badge.dart';
 import 'icon_btn.dart';
 import 'app_bar_profile_menu.dart';
 
-class MynixAppBar extends StatelessWidget implements PreferredSizeWidget {
+class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCashTap;
   final VoidCallback onToggleSidebar;
 
-  const MynixAppBar({super.key, required this.onCashTap, required this.onToggleSidebar});
+  const AppNavBar({super.key, required this.onCashTap, required this.onToggleSidebar});
 
   @override
   Size get preferredSize => const Size.fromHeight(56);

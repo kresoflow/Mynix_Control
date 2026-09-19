@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
-import 'package:mynix_frontend/features/analytics/bloc/analytics_bloc.dart';
-import 'package:mynix_frontend/features/analytics/bloc/analytics_event.dart';
-import 'package:mynix_frontend/features/analytics/repository/analytics_repository.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/features/analytics/bloc/analytics_bloc.dart';
+import 'package:kreso_frontend/features/analytics/bloc/analytics_event.dart';
+import 'package:kreso_frontend/features/analytics/repository/analytics_repository.dart';
 import 'tabs/dashboard_summary_tab.dart';
 import 'tabs/order_history_tab.dart';
 import 'tabs/shift_history_analytics_tab.dart';

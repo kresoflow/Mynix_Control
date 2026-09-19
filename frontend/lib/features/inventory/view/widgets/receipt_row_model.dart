@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 
 class ReceiptRowModel {
   Ingredient? ingredient;

@@ -1,9 +1,9 @@
-name: mynix-prod
+name: kreso-prod
 
 services:
   backend:
     build: .
-    container_name: mynix_backend
+    container_name: kreso_backend
     restart: always
     env_file: .env
     ports:
@@ -21,18 +21,18 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: mynix_postgres
+    container_name: kreso_postgres
     restart: always
     environment:
-      POSTGRES_USER: mynix
-      POSTGRES_PASSWORD: mynix_secret
-      POSTGRES_DB: mynix_control
+      POSTGRES_USER: kreso
+      POSTGRES_PASSWORD: kreso_secret
+      POSTGRES_DB: kreso_flow
     ports:
       - "127.0.0.1:5432:5432" # Bind to localhost only for security
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mynix -d mynix_control"]
+      test: ["CMD-SHELL", "pg_isready -U kreso -d kreso_flow"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -44,7 +44,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: mynix_redis
+    container_name: kreso_redis
     restart: always
     ports:
       - "127.0.0.1:6379:6379" # Bind to localhost only for security

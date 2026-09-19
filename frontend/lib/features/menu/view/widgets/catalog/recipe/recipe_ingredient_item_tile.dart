@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/utils/icon_helper.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/features/inventory/bloc/recipe_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/recipe_event.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/icon_helper.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 
 class RecipeIngredientItemTile extends StatelessWidget {
   final Map<String, dynamic> recipe;
@@ -141,7 +141,7 @@ class RecipeIngredientItemTile extends StatelessWidget {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (ctx) => MynixDialog(
+                  builder: (ctx) => AppDialog(
                     title: 'Удаление ингредиента',
                     icon: PhosphorIconsRegular.trash,
                     isDestructive: true,

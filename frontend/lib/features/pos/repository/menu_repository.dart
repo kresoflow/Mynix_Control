@@ -1,6 +1,6 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 
 class MenuRepository {
   final Dio _dio;

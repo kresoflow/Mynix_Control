@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
-import 'package:mynix_frontend/features/pos/bloc/cart_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 import 'pos_checkout_chips.dart';
 
 class PosCheckoutPanelPaymentMethods extends StatelessWidget {

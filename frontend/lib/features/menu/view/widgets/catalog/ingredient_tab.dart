@@ -1,18 +1,18 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_category_sidebar.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_kpi_cards.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_grid_view.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_category_sidebar.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_kpi_cards.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_grid_view.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 
 class IngredientTab extends StatefulWidget {
   const IngredientTab({super.key});
@@ -44,7 +44,7 @@ class _IngredientTabState extends State<IngredientTab> {
   void _confirmDeleteSelected() {
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Массовая архивация',
         icon: PhosphorIconsRegular.archive,
         isDestructive: true,

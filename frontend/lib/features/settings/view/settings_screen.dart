@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
-import 'package:mynix_frontend/core/widgets/ui_kit/ui_kit.dart';
-import 'package:mynix_frontend/features/settings/view/tabs/general_settings_tab.dart';
-import 'package:mynix_frontend/features/settings/view/tabs/hardware_settings_tab.dart';
-import 'package:mynix_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
-import 'package:mynix_frontend/features/settings/view/tabs/system_settings_tab.dart';
-import 'package:mynix_frontend/features/settings/view/ui_kit_showcase_screen.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/settings_category_tile.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/mobile_settings_user_header.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/features/settings/view/tabs/general_settings_tab.dart';
+import 'package:kreso_frontend/features/settings/view/tabs/hardware_settings_tab.dart';
+import 'package:kreso_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
+import 'package:kreso_frontend/features/settings/view/tabs/system_settings_tab.dart';
+import 'package:kreso_frontend/features/settings/view/ui_kit_showcase_screen.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/settings_category_tile.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/mobile_settings_user_header.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

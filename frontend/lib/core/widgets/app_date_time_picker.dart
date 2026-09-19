@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'date_time_picker_calendar.dart';
 import 'date_time_picker_time_row.dart';
 
-/// Кастомное премиальное модальное окно выбора Даты и Времени в дизайн-системе Mynix Control.
-Future<DateTime?> showMynixDateTimePicker(
+/// Кастомное премиальное модальное окно выбора Даты и Времени в дизайн-системе Kreso Flow.
+Future<DateTime?> showAppDateTimePicker(
   BuildContext context, {
   DateTime? initialDateTime,
   DateTime? firstDate,
@@ -15,7 +15,7 @@ Future<DateTime?> showMynixDateTimePicker(
 }) {
   return showDialog<DateTime>(
     context: context,
-    builder: (ctx) => _MynixDateTimePickerDialog(
+    builder: (ctx) => _AppDateTimePickerDialog(
       initialDateTime: initialDateTime ?? DateTime.now(),
       firstDate: firstDate ?? DateTime(2020),
       lastDate: lastDate ?? DateTime(2035),
@@ -23,22 +23,22 @@ Future<DateTime?> showMynixDateTimePicker(
   );
 }
 
-class _MynixDateTimePickerDialog extends StatefulWidget {
+class _AppDateTimePickerDialog extends StatefulWidget {
   final DateTime initialDateTime;
   final DateTime firstDate;
   final DateTime lastDate;
 
-  const _MynixDateTimePickerDialog({
+  const _AppDateTimePickerDialog({
     required this.initialDateTime,
     required this.firstDate,
     required this.lastDate,
   });
 
   @override
-  State<_MynixDateTimePickerDialog> createState() => _MynixDateTimePickerDialogState();
+  State<_AppDateTimePickerDialog> createState() => _AppDateTimePickerDialogState();
 }
 
-class _MynixDateTimePickerDialogState extends State<_MynixDateTimePickerDialog> {
+class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
   late DateTime _displayedMonth;
   late DateTime _selectedDate;
   late TextEditingController _hourController;
@@ -97,7 +97,7 @@ class _MynixDateTimePickerDialogState extends State<_MynixDateTimePickerDialog> 
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return MynixDialog(
+    return AppDialog(
       title: 'Дата и время документа',
       icon: PhosphorIconsRegular.calendarBlank,
       width: 420,

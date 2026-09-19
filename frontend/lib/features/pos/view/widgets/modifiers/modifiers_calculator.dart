@@ -1,5 +1,5 @@
-import 'dart:convert';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
+﻿import 'dart:convert';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 
 class ModifiersCalculator {
   static double calculateModifiersPrice({

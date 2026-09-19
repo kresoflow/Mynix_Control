@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/pos_nav_cubit.dart';
-import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_nav_cubit.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/components/pos_breadcrumb_bar.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/components/pos_empty_state.dart';
-import 'package:mynix_frontend/features/pos/view/widgets/components/pos_menu_grid_view.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/components/pos_breadcrumb_bar.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/components/pos_empty_state.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/components/pos_menu_grid_view.dart';
 
 class PosMenuGrid extends StatefulWidget {
   const PosMenuGrid({super.key});

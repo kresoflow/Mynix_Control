@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:mynix_frontend/features/analytics/models/analytics_models.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/features/analytics/models/analytics_models.dart';
 import 'dashboard_metric_card.dart';
 
 class DashboardKpiGrid extends StatelessWidget {

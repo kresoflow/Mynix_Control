@@ -1,7 +1,7 @@
-import 'package:equatable/equatable.dart';
-import 'package:mynix_frontend/features/crm/models/customer.dart';
-import 'package:mynix_frontend/features/crm/models/customer_transaction.dart';
-import 'package:mynix_frontend/features/crm/models/bonus_transaction.dart';
+﻿import 'package:equatable/equatable.dart';
+import 'package:kreso_frontend/features/crm/models/customer.dart';
+import 'package:kreso_frontend/features/crm/models/customer_transaction.dart';
+import 'package:kreso_frontend/features/crm/models/bonus_transaction.dart';
 
 abstract class CrmState extends Equatable {
   const CrmState();

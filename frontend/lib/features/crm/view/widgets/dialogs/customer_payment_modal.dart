@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
-import 'package:mynix_frontend/features/crm/models/customer.dart';
-import 'package:mynix_frontend/features/crm/models/customer_transaction.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/features/crm/models/customer.dart';
+import 'package:kreso_frontend/features/crm/models/customer_transaction.dart';
 
 class CustomerPaymentModal extends StatefulWidget {
   final Customer customer;
@@ -61,7 +61,7 @@ class _CustomerPaymentModalState extends State<CustomerPaymentModal> {
         final confirmed = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
-          builder: (ctx) => MynixDialog(
+          builder: (ctx) => AppDialog(
             title: 'Сумма превышает долг',
             icon: PhosphorIconsRegular.info,
             width: 440,
@@ -106,7 +106,7 @@ class _CustomerPaymentModalState extends State<CustomerPaymentModal> {
 
     return DirtyPopScope(
       isDirty: isDirty,
-      child: MynixDialog(
+      child: AppDialog(
         title: _isDeposit ? 'Внесение депозита' : 'Погашение долга',
         icon: _isDeposit ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.money,
         width: 440,

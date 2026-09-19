@@ -1,5 +1,5 @@
-import 'package:equatable/equatable.dart';
-import 'package:mynix_frontend/features/analytics/models/analytics_models.dart';
+﻿import 'package:equatable/equatable.dart';
+import 'package:kreso_frontend/features/analytics/models/analytics_models.dart';
 
 abstract class AnalyticsState extends Equatable {
   const AnalyticsState();

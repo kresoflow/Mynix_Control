@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/features/orders/models/pos_order.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/orders/models/pos_order.dart';
 
 class CancelOrderDialog extends StatefulWidget {
   final PosOrder order;
@@ -47,7 +47,7 @@ class _CancelOrderDialogState extends State<CancelOrderDialog> {
     final subtextColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
     final isCustom = _selectedReason == 'Другая причина';
 
-    return MynixDialog(
+    return AppDialog(
       title: 'Отмена чека #${widget.order.orderNumber}',
       icon: PhosphorIconsRegular.warningCircle,
       isDestructive: true,

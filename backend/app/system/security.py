@@ -82,7 +82,7 @@ async def require_system_admin(
 
             # Fire Telegram Security Alert in background
             alert_text = (
-                f"🚨 <b>Mynix Security Alert</b>\n"
+                f"🚨 <b>Kreso Security Alert</b>\n"
                 f"Обнаружен брутфорс токена суперадмина!\n"
                 f"<b>IP:</b> <code>{ip}</code>\n"
                 f"<b>Действие:</b> IP заблокирован на 15 минут."

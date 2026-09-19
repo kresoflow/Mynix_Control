@@ -16,12 +16,12 @@ class Settings(BaseSettings):
     )
 
     # ── Application ──────────────────────────────────────────────
-    app_name: str = "Mynix Control"
+    app_name: str = "Kreso Flow"
     debug: bool = True
 
     # ── Database (PostgreSQL) ────────────────────────────────────
-    database_url: str = "postgresql+asyncpg://mynix:mynix_secret@127.0.0.1:5444/mynix_control"
-    database_url_sync: str = "postgresql+psycopg2://mynix:mynix_secret@127.0.0.1:5444/mynix_control"
+    database_url: str = "postgresql+asyncpg://kreso:kreso_secret@127.0.0.1:5444/kreso_flow"
+    database_url_sync: str = "postgresql+psycopg2://kreso:kreso_secret@127.0.0.1:5444/kreso_flow"
 
     # ── Redis ────────────────────────────────────────────────────
     redis_url: str = "redis://127.0.0.1:6379/0"
@@ -33,10 +33,10 @@ class Settings(BaseSettings):
 
     # ── Seed defaults ────────────────────────────────────────────
     owner_default_username: str = "owner"
-    owner_default_password: str = "mynix2025"
+    owner_default_password: str = "kreso2026"
     
     # ── System Admin ─────────────────────────────────────────────
-    system_admin_token: str = "super_secret_mynix_token_2026"
+    system_admin_token: str = "super_secret_kreso_token_2026"
 
     # ── Monitoring & Alerting (Sentry & Telegram) ────────────────
     sentry_dsn: str = "https://ee579c86969f6643e4786fef0ebd98a6@o4511875643015168.ingest.de.sentry.io/4511875720544336"

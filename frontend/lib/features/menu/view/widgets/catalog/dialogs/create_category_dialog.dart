@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/core/widgets/icon_picker_field.dart';
-import 'package:mynix_frontend/core/widgets/color_picker/color_picker_field.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/core/widgets/icon_picker_field.dart';
+import 'package:kreso_frontend/core/widgets/color_picker/color_picker_field.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import 'package:mynix_frontend/features/menu/services/duplicate_detector.dart';
-import 'package:mynix_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
+import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
 
 void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynamic itemToEdit, String type = 'dish', bool isBulk = false}) {
   final isEditing = itemToEdit != null;
@@ -52,7 +52,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
             );
           }
 
-          return MynixDialog(
+          return AppDialog(
             title: titleText,
             icon: PhosphorIconsRegular.folderPlus,
             width: 500,

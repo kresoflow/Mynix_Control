@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
 
 class OrdersSkeleton extends StatelessWidget {
   final int count;

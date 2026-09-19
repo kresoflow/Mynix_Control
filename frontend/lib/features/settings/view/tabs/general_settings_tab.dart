@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:mynix_frontend/features/settings/repository/settings_repository.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/settings_ui_components.dart';
-import 'package:mynix_frontend/features/settings/view/widgets/theme_appearance_settings_card.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
-import 'package:mynix_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/features/settings/repository/settings_repository.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/settings_ui_components.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/theme_appearance_settings_card.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 
 class GeneralSettingsTab extends StatefulWidget {
   final bool isDark;

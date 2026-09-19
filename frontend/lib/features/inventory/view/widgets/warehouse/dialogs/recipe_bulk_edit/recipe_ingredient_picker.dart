@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> availableIngredients) {
   final Map<String, List<dynamic>> grouped = {};

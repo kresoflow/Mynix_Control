@@ -1,13 +1,13 @@
-import 'package:flutter/services.dart';
+﻿import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
-import 'package:mynix_frontend/features/crm/models/customer.dart';
-import 'package:mynix_frontend/features/crm/models/customer_transaction.dart';
-import 'package:mynix_frontend/features/inventory/services/export_helper_stub.dart'
-    if (dart.library.html) 'package:mynix_frontend/features/inventory/services/export_helper_web.dart' as export_helper;
+import 'package:kreso_frontend/core/theme/app_logo_base64.dart';
+import 'package:kreso_frontend/features/crm/models/customer.dart';
+import 'package:kreso_frontend/features/crm/models/customer_transaction.dart';
+import 'package:kreso_frontend/features/inventory/services/export_helper_stub.dart'
+    if (dart.library.html) 'package:kreso_frontend/features/inventory/services/export_helper_web.dart' as export_helper;
 
 class CustomerStatementPdfService {
   static Future<Uint8List> generatePdfBytes(

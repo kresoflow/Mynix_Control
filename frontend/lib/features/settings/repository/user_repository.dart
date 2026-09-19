@@ -1,5 +1,5 @@
-import 'package:mynix_frontend/core/network/api_client.dart';
-import 'package:mynix_frontend/features/settings/models/user_model.dart';
+﻿import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/features/settings/models/user_model.dart';
 
 class UserRepository {
   Future<List<StaffUser>> getUsers() async {

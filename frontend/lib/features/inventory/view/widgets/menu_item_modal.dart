@@ -1,14 +1,14 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/pos/models/menu_item.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_radii.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'menu_item/menu_item_basic_fields.dart';
 import 'menu_item/menu_item_variations_section.dart';
 import 'menu_item/menu_item_modifier_groups_section.dart';
@@ -181,7 +181,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
           ? 'Несохраненные изменения карточки блюда будут сброшены. Выйти?'
           : 'Все введенные данные о блюде будут сброшены. Вы уверены?',
       confirmLabel: 'Сбросить и выйти',
-      child: MynixDialog(
+      child: AppDialog(
         title: isEditing ? 'Редактировать блюдо' : 'Новое блюдо',
         icon: PhosphorIconsRegular.bowlFood,
         width: 580,

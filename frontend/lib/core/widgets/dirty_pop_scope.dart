@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 
 /// Shows a standard confirmation dialog before discarding unsaved form data.
 Future<bool> showDiscardChangesDialog(
@@ -15,7 +15,7 @@ Future<bool> showDiscardChangesDialog(
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final result = await showDialog<bool>(
     context: context,
-    builder: (ctx) => MynixDialog(
+    builder: (ctx) => AppDialog(
       title: title ?? 'Несохраненные изменения',
       icon: PhosphorIconsRegular.warning,
       isDestructive: true,

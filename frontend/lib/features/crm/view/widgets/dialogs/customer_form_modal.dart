@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/utils/currency_formatter.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/dirty_pop_scope.dart';
-import 'package:mynix_frontend/features/crm/models/customer.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/features/crm/models/customer.dart';
 
 class CustomerFormModal extends StatefulWidget {
   final Customer? initialCustomer;
@@ -113,7 +113,7 @@ class _CustomerFormModalState extends State<CustomerFormModal> {
           ? 'Несохраненные изменения данных гостя будут потеряны. Выйти?'
           : 'Все введенные данные о клиенте будут потеряны. Вы уверены?',
       confirmLabel: 'Сбросить и выйти',
-      child: MynixDialog(
+      child: AppDialog(
         title: isEdit ? 'Редактировать гостя' : 'Новый гость / клиент',
         icon: isEdit ? PhosphorIconsRegular.userGear : PhosphorIconsRegular.userPlus,
         width: 480,

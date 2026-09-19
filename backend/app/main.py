@@ -1,5 +1,5 @@
 """
-Mynix Control Backend
+Kreso Flow Backend
 FastAPI application entry point.
 
 Registers all module routers, runs seed on startup, connects to DB.
@@ -60,11 +60,11 @@ if not settings.debug and settings.sentry_dsn:
             send_default_pii=True,
             traces_sample_rate=0.2,
         )
-        print("[Mynix] Sentry active (Production Mode)")
+        print("[Kreso Flow] Sentry active (Production Mode)")
     except Exception as _e:
-        print(f"[Mynix] Sentry init notice: {_e}")
+        print(f"[Kreso Flow] Sentry init notice: {_e}")
 else:
-    print("[Mynix] Local Development Mode - Sentry disabled")
+    print("[Kreso Flow] Local Development Mode - Sentry disabled")
 
 app = FastAPI(
     title=settings.app_name,
@@ -196,7 +196,7 @@ async def health_check():
 @app.get("/system/test-error", tags=["System"])
 async def trigger_test_error():
     """Trigger intentional test error to verify Sentry and Telegram alerts."""
-    raise RuntimeError("🧪 Тестовая ошибка мониторинга Mynix Control")
+    raise RuntimeError("🧪 Тестовая ошибка мониторинга Kreso Flow")
 
 
 @app.get("/", tags=["System"])

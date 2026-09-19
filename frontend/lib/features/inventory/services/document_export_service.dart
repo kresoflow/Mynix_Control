@@ -1,10 +1,10 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
-import 'package:mynix_frontend/features/inventory/models/document.dart';
-import 'package:mynix_frontend/features/inventory/services/export/document_pdf_builder.dart';
-import 'package:mynix_frontend/features/inventory/services/export/document_text_builder.dart';
+import 'package:kreso_frontend/features/inventory/models/document.dart';
+import 'package:kreso_frontend/features/inventory/services/export/document_pdf_builder.dart';
+import 'package:kreso_frontend/features/inventory/services/export/document_text_builder.dart';
 import 'export_helper_stub.dart'
     if (dart.library.html) 'export_helper_web.dart' as export_helper;
 

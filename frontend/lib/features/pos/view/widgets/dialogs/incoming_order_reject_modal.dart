@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/app_text_field.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_text_field.dart';
 
 class IncomingOrderRejectModal extends StatefulWidget {
   final int orderNumber;
@@ -70,7 +70,7 @@ class _IncomingOrderRejectModalState extends State<IncomingOrderRejectModal> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return MynixDialog(
+    return AppDialog(
       title: 'Отклонить заказ #${widget.orderNumber}?',
       icon: PhosphorIconsBold.warningCircle,
       isDestructive: true,

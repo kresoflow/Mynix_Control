@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:mynix_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:mynix_frontend/features/inventory/models/ingredient.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:mynix_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 
 class CatalogDeletionDialogs {
   static void confirmDeleteCategory(BuildContext context, dynamic category) {
@@ -20,7 +20,7 @@ class CatalogDeletionDialogs {
 
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Архивация категории',
         icon: PhosphorIconsRegular.archive,
         isDestructive: true,
@@ -49,7 +49,7 @@ class CatalogDeletionDialogs {
   static void confirmHardDeleteCategory(BuildContext context, dynamic category) {
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Удаление навсегда',
         icon: PhosphorIconsRegular.trash,
         isDestructive: true,
@@ -84,7 +84,7 @@ class CatalogDeletionDialogs {
     final displayName = item.cleanName ?? item.name;
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Архивация позиции',
         icon: PhosphorIconsRegular.archive,
         isDestructive: true,
@@ -114,7 +114,7 @@ class CatalogDeletionDialogs {
     final displayName = item.cleanName ?? item.name;
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Удаление навсегда',
         icon: PhosphorIconsRegular.trash,
         isDestructive: true,
@@ -149,7 +149,7 @@ class CatalogDeletionDialogs {
     final selectedCount = selectedItems.length + selectedCategories.length;
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Массовое удаление',
         icon: PhosphorIconsRegular.trash,
         isDestructive: true,
@@ -190,7 +190,7 @@ class CatalogDeletionDialogs {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Архивация сырья',
         icon: PhosphorIconsRegular.archive,
         isDestructive: true,
@@ -220,7 +220,7 @@ class CatalogDeletionDialogs {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Удаление навсегда',
         icon: PhosphorIconsRegular.trash,
         isDestructive: true,

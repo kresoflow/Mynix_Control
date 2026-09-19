@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/widgets/ui_kit/app_nav_tile.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_nav_tile.dart';
 
 class SettingsCategory {
   final IconData icon;

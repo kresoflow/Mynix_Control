@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/widgets/has_permission.dart';
-import 'package:mynix_frontend/features/kitchen/view/kds_board.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/has_permission.dart';
+import 'package:kreso_frontend/features/kitchen/view/kds_board.dart';
 
 class KitchenScreen extends StatelessWidget {
   const KitchenScreen({super.key});

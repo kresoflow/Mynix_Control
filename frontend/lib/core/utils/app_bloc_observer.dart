@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
 
 /// Global BLoC observer for exception capture, telemetry, and debugging.
 class AppBlocObserver extends BlocObserver {

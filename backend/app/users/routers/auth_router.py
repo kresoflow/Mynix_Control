@@ -164,7 +164,7 @@ async def me(
 ):
     """Return current user profile with roles, permissions, and tenant details."""
     tenant = await session.get(Tenant, current_user.tenant_id)
-    tenant_name = tenant.name if tenant else "Mynix Point"
+    tenant_name = tenant.name if tenant else "Kreso Point"
     tenant_address = tenant.address if tenant else None
 
     return UserRead(
@@ -208,7 +208,7 @@ async def update_me(
     await session.flush()
 
     tenant = await session.get(Tenant, current_user.tenant_id)
-    tenant_name = tenant.name if tenant else "Mynix Point"
+    tenant_name = tenant.name if tenant else "Kreso Point"
     tenant_address = tenant.address if tenant else None
 
     return UserRead(

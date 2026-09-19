@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mynix_frontend/core/theme/app_colors.dart';
-import 'package:mynix_frontend/core/theme/app_text_styles.dart';
-import 'package:mynix_frontend/core/theme/app_logo_base64.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_event.dart';
-import 'package:mynix_frontend/features/auth/bloc/auth_state.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_logo_base64.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_event.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:mynix_frontend/core/network/api_client.dart';
-import 'package:mynix_frontend/features/superadmin/domain/superadmin_repository.dart';
-import 'package:mynix_frontend/features/superadmin/presentation/bloc/superadmin_bloc.dart';
-import 'package:mynix_frontend/features/superadmin/presentation/superadmin_screen.dart';
-import 'package:mynix_frontend/core/widgets/app_toast.dart';
-import 'package:mynix_frontend/core/widgets/mynix_dialog.dart';
-import 'package:mynix_frontend/core/widgets/app_button.dart';
-import 'package:mynix_frontend/core/widgets/app_text_field.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/features/superadmin/domain/superadmin_repository.dart';
+import 'package:kreso_frontend/features/superadmin/presentation/bloc/superadmin_bloc.dart';
+import 'package:kreso_frontend/features/superadmin/presentation/superadmin_screen.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_text_field.dart';
 
 import 'widgets/pin_keypad.dart';
 
@@ -55,11 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showSuperadminDialog(BuildContext context) {
-    final defaultToken = kDebugMode ? 'super_secret_mynix_token_2026' : '';
+    final defaultToken = kDebugMode ? 'super_secret_kreso_token_2026' : '';
     final controller = TextEditingController(text: defaultToken);
     showDialog(
       context: context,
-      builder: (ctx) => MynixDialog(
+      builder: (ctx) => AppDialog(
         title: 'Супер-администратор',
         icon: PhosphorIconsRegular.shieldCheck,
         content: Column(
@@ -85,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (kDebugMode) ...[
               const SizedBox(height: 8),
               Text(
-                'Dev токен: super_secret_mynix_token_2026',
+                'Dev токен: super_secret_kreso_token_2026',
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.brandPrimary,
                   fontSize: 11,
