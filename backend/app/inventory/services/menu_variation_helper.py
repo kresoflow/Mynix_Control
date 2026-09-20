@@ -1,15 +1,16 @@
-﻿from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from app.inventory.models import MenuItem, Recipe
+from app.inventory.models import MenuItem, Recipe, RetailProduct
 from app.pos.models import OrderItem
 
 async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, variations: list[dict]) -> list[dict]:
     """
     Syncs child MenuItem rows with the parent's variations list.
     - Creates or updates child MenuItems (parent_id = parent_item.id).
+    - If parent is 'retail', creates/syncs corresponding RetailProduct for each child variation.
     - If a child variant is removed, checks OrderItem: if ordered -> sets is_available=False; else deletes.
-    - Attaches child.id into each variation dict so the frontend receives it.
+    - Attaches child.id and retail_product_id into each variation dict so the frontend receives it.
     """
     if not variations:
         stmt = select(MenuItem).where(MenuItem.parent_id == parent_item.id)
@@ -32,17 +33,56 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
 
     for idx, var in enumerate(variations):
         var_name = str(var.get("name", "")).strip()
-        var_price = float(var.get("price", 0.0))
+        var_price = float(var.get("price", var.get("selling_price", 0.0)))
         var_barcode = var.get("barcode")
-        child_full_name = f"{parent_item.name} ({var_name})"
+        child_full_name = f"{parent_item.name} ({var_name})" if not var_name.startswith(parent_item.name) else var_name
 
         child = existing_children.get(child_full_name) or existing_children.get(var_name)
+        item_type = parent_item.type or "dish"
+
+        child_retail_id = None
+        if item_type == "retail":
+            unit_val = str(var.get("unit") or "pcs")
+            cost_val = float(var.get("purchase_price") or var.get("purchasePrice") or var.get("cost") or 0.0)
+            
+            if child and child.retail_product_id:
+                child_retail = await session.get(RetailProduct, child.retail_product_id)
+                if child_retail:
+                    child_retail.name = child_full_name
+                    child_retail.price = var_price
+                    child_retail.cost = cost_val
+                    child_retail.barcode = var_barcode
+                    child_retail.category_id = parent_item.category_id
+                    child_retail.is_available = parent_item.is_available
+                    session.add(child_retail)
+                    child_retail_id = child_retail.id
+            
+            if not child_retail_id:
+                new_retail = RetailProduct(
+                    name=child_full_name,
+                    category_id=parent_item.category_id,
+                    price=var_price,
+                    cost=cost_val,
+                    unit=unit_val,
+                    barcode=var_barcode,
+                    current_stock=float(var.get("initial_stock", 0.0)),
+                    min_stock_alert=float(var.get("min_stock_alert", 0.0)),
+                    is_available=parent_item.is_available,
+                    sort_order=idx,
+                )
+                session.add(new_retail)
+                await session.flush()
+                child_retail_id = new_retail.id
+
         if child:
             child.name = child_full_name
             child.price = var_price
             child.category_id = parent_item.category_id
             child.is_available = parent_item.is_available
             child.sort_order = idx
+            child.type = item_type
+            if child_retail_id:
+                child.retail_product_id = child_retail_id
             if var_barcode:
                 child.barcode = var_barcode
             session.add(child)
@@ -55,7 +95,8 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
                 is_available=parent_item.is_available,
                 sort_order=idx,
                 barcode=var_barcode,
-                type="dish",
+                type=item_type,
+                retail_product_id=child_retail_id,
             )
             session.add(child)
         
@@ -65,6 +106,8 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
         var_dict = dict(var)
         var_dict["id"] = child.id
         var_dict["price"] = var_price
+        if child_retail_id:
+            var_dict["retail_product_id"] = child_retail_id
         updated_variations.append(var_dict)
 
     for child in list(existing_children.values()):
@@ -78,6 +121,10 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
                 r_res = await session.execute(recipe_stmt)
                 for r in r_res.scalars().all():
                     await session.delete(r)
+                if child.retail_product_id:
+                    child_ret = await session.get(RetailProduct, child.retail_product_id)
+                    if child_ret:
+                        await session.delete(child_ret)
                 await session.delete(child)
 
     await session.flush()

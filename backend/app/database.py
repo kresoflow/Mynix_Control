@@ -109,6 +109,12 @@ async def auto_migrate_tenant_schemas() -> None:
             await conn.execute(text("ALTER TABLE public.users ADD COLUMN IF NOT EXISTS pin_code VARCHAR(10) DEFAULT '1234'"))
             await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS phone VARCHAR(50)'))
             await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS email VARCHAR(255)'))
+            
+            # Ensure unique constraint on public.roles(name)
+            res_uq = await conn.execute(text("SELECT 1 FROM pg_constraint WHERE conname = 'uq_roles_name'"))
+            if not res_uq.scalar():
+                await conn.execute(text("ALTER TABLE public.roles ADD CONSTRAINT uq_roles_name UNIQUE (name)"))
+
             # Ensure atomic permissions and roles exist in public schema
             from app.users.seed import PERMISSIONS, ROLE_TEMPLATES
             for code, desc in PERMISSIONS:

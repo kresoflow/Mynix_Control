@@ -171,26 +171,38 @@ async def seed_database(session: AsyncSession) -> None:
     # 3. Create global roles
     role_map = {}
     for role_name, template in ROLE_TEMPLATES.items():
-        role = Role(
-            name=role_name,
-            description=template["description"],
-            is_superuser=template["is_superuser"],
-        )
-        session.add(role)
-        await session.flush()
+        existing_role_res = await session.execute(select(Role).where(Role.name == role_name))
+        existing_role = existing_role_res.scalars().first()
+        if existing_role:
+            role = existing_role
+        else:
+            role = Role(
+                name=role_name,
+                description=template["description"],
+                is_superuser=template["is_superuser"],
+            )
+            session.add(role)
+            await session.flush()
 
         for perm_code in template["permissions"]:
             if perm_code in perm_map:
-                link = RolePermission(
-                    role_id=role.id,
-                    permission_id=perm_map[perm_code].id,
+                existing_link = await session.execute(
+                    select(RolePermission).where(
+                        RolePermission.role_id == role.id,
+                        RolePermission.permission_id == perm_map[perm_code].id,
+                    )
                 )
-                session.add(link)
+                if not existing_link.scalars().first():
+                    link = RolePermission(
+                        role_id=role.id,
+                        permission_id=perm_map[perm_code].id,
+                    )
+                    session.add(link)
 
         role_map[role_name] = role
 
     await session.flush()
-    print(f"  - {len(ROLE_TEMPLATES)} shared roles created")
+    print(f"  - {len(ROLE_TEMPLATES)} shared roles created or verified")
 
     # ── 4. Create owner accounts ─────────────────────────────────
     hashed = hash_password(settings.owner_default_password)

@@ -85,7 +85,7 @@ class Role(TimestampMixin, table=True):
     __table_args__ = {"schema": "public"}
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str = Field(max_length=50, index=True)
+    name: str = Field(max_length=50, unique=True, index=True)
     description: str = Field(default="", max_length=255)
     is_superuser: bool = Field(default=False)  # owner bypass flag
 

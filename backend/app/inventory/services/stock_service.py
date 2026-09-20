@@ -32,21 +32,27 @@ async def deduct_ingredients(
         if not menu_item:
             continue
 
-        if menu_item.type == "retail" and menu_item.retail_product_id:
-            retail_product = await session.get(RetailProduct, menu_item.retail_product_id)
-            if retail_product:
-                retail_product.current_stock -= order_qty
-                session.add(retail_product)
+        if menu_item.type == "retail":
+            ret_id = menu_item.retail_product_id
+            if not ret_id and menu_item.parent_id:
+                parent_menu = await session.get(MenuItem, menu_item.parent_id)
+                if parent_menu:
+                    ret_id = parent_menu.retail_product_id
+            if ret_id:
+                retail_product = await session.get(RetailProduct, ret_id)
+                if retail_product:
+                    retail_product.current_stock -= order_qty
+                    session.add(retail_product)
 
-                txn = StockTransaction(
-                    retail_product_id=retail_product.id,
-                    type=StockTransactionType.AUTO_DEDUCTION,
-                    quantity=-float(order_qty),
-                    reason=f"Order auto-deduction: retail_item={target_item_id} x{order_qty}",
-                    created_by=user_id,
-                )
-                session.add(txn)
-                transactions.append(txn)
+                    txn = StockTransaction(
+                        retail_product_id=retail_product.id,
+                        type=StockTransactionType.AUTO_DEDUCTION,
+                        quantity=-float(order_qty),
+                        reason=f"Order auto-deduction: retail_item={target_item_id} x{order_qty}",
+                        created_by=user_id,
+                    )
+                    session.add(txn)
+                    transactions.append(txn)
         else:
             stmt = (
                 select(Recipe)

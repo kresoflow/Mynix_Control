@@ -37,6 +37,7 @@ async def test_superadmin_brute_force_protection():
             headers={"X-System-Token": settings.system_admin_token},
         )
         assert blocked_correct_resp.status_code == 429
+    reset_rate_limiter()
 
 
 @pytest.mark.asyncio

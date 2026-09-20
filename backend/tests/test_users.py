@@ -63,6 +63,10 @@ async def test_user_creation_and_login(async_client: AsyncClient, db_session):
 
 @pytest.mark.asyncio
 async def test_pin_login(async_client: AsyncClient, db_session):
+    from app.users.routers.auth_router import _pin_failed_attempts, _pin_locked_keys
+    _pin_failed_attempts.clear()
+    _pin_locked_keys.clear()
+
     tenant = Tenant(name="Test Cafe", schema_name="tenant_test_2", is_active=True)
     db_session.add(tenant)
     await db_session.commit()

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -160,7 +160,8 @@ class MenuGridItem extends StatelessWidget {
                               final prices = item.variationPrices!.cast<num>();
                               if (prices.length > 3) {
                                 final minPrice = prices.reduce((num a, num b) => a < b ? a : b);
-                                return 'От ${minPrice.toCurrency(context)}';
+                                final maxPrice = prices.reduce((num a, num b) => a > b ? a : b);
+                                return '${minPrice.toCurrency(context)} — ${maxPrice.toCurrency(context)}';
                               }
                               return prices.map((p) => p.toCurrency(context)).join(' | ');
                             }

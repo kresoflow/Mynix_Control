@@ -65,24 +65,73 @@ class MenuItem extends Equatable {
   }
 
   String? get attributesString {
+    String? flavor;
+    final List<String> variationLabels = [];
+
     if (attributesJson != null && attributesJson!.isNotEmpty) {
       try {
         final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
-        if (attrs['flavor'] != null && attrs['flavor'].toString().isNotEmpty) {
-          return attrs['flavor'].toString();
+        if (attrs['flavor'] != null && attrs['flavor'].toString().trim().isNotEmpty) {
+          flavor = attrs['flavor'].toString().trim();
         }
-        if (attrs['modifier_groups'] != null) {
+
+        if (attrs['variations'] != null && attrs['variations'] is List) {
+          final vars = attrs['variations'] as List;
+          for (var v in vars) {
+            if (v is Map && v['name'] != null) {
+              String vName = v['name'].toString().trim();
+              final cName = cleanName.trim();
+              if (vName.startsWith(cName)) {
+                vName = vName.substring(cName.length).trim();
+              }
+              if (vName.startsWith('(') && vName.endsWith(')')) {
+                vName = vName.substring(1, vName.length - 1).trim();
+              }
+              if (flavor != null && flavor.isNotEmpty && vName.startsWith(flavor)) {
+                vName = vName.substring(flavor.length).trim();
+              }
+              if (vName.isNotEmpty) {
+                variationLabels.add(vName);
+              }
+            }
+          }
+        }
+
+        if (flavor == null && attrs['modifier_groups'] != null) {
           final groups = attrs['modifier_groups'] as List;
           for (var group in groups) {
             if (group['name'] == 'Вкус') {
               final modifiers = group['modifiers'] as List;
               if (modifiers.isNotEmpty) {
-                return modifiers.first['name'].toString();
+                flavor = modifiers.first['name'].toString().trim();
+                break;
               }
             }
           }
         }
       } catch (_) {}
+    }
+
+    String? varSummary;
+    if (variationLabels.isNotEmpty) {
+      if (variationLabels.length == 1) {
+        varSummary = variationLabels.first;
+      } else if (variationLabels.length <= 3) {
+        varSummary = variationLabels.join(', ');
+      } else {
+        varSummary = '${variationLabels.length} вариаций';
+      }
+    }
+
+    if (flavor != null && flavor.isNotEmpty) {
+      if (varSummary != null && varSummary.isNotEmpty) {
+        return '$flavor • $varSummary';
+      }
+      return flavor;
+    }
+
+    if (varSummary != null && varSummary.isNotEmpty) {
+      return varSummary;
     }
 
     final noType = name.split('|TYPE|')[0];

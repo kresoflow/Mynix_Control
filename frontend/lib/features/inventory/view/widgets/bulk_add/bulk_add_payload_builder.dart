@@ -1,4 +1,4 @@
-﻿import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
@@ -154,12 +154,15 @@ List<Map<String, dynamic>> buildRetailPayload({
     if (volumes.isEmpty) volumes.add('');
     final uLabel = _unitLabels[row.selectedUnit] ?? '';
     final bool hasOptions = !(flavors.length == 1 && flavors[0] == '' && volumes.length == 1 && volumes[0] == '');
+    final String stockUnit = (hasOptions && row.selectedUnit != 'pcs' && volumes.any((v) => v.isNotEmpty))
+        ? 'pcs'
+        : row.selectedUnit;
 
     if (!hasOptions) {
       items.add({
         'name': baseName,
         'category_id': row.categoryId ?? targetCategoryId,
-        'unit': row.selectedUnit,
+        'unit': stockUnit,
         'purchase_price': 0.0,
         'selling_price': sells.isNotEmpty ? (double.tryParse(sells.first) ?? 0.0) : 0.0,
         'initial_stock': 0.0,
@@ -180,7 +183,7 @@ List<Map<String, dynamic>> buildRetailPayload({
 
         variations.add({
           'name': nameParts.join(' '),
-          'unit': row.selectedUnit,
+          'unit': stockUnit,
           'purchase_price': 0.0,
           'purchasePrice': 0.0,
           'price': sell,
@@ -195,7 +198,7 @@ List<Map<String, dynamic>> buildRetailPayload({
       items.add({
         'name': baseName,
         'category_id': row.categoryId ?? targetCategoryId,
-        'unit': row.selectedUnit,
+        'unit': stockUnit,
         'purchase_price': 0.0,
         'selling_price': firstSell,
         'initial_stock': 0.0,

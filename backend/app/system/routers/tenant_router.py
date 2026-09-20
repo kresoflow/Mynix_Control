@@ -65,7 +65,7 @@ async def create_tenant(
     3. Creates the owner user
     """
     existing = await session.execute(select(Tenant).where(Tenant.schema_name == data.schema_name))
-    if existing.scalar_one_or_none():
+    if existing.scalars().first():
         raise HTTPException(status_code=400, detail="Tenant with this schema_name already exists")
 
     new_tenant = Tenant(
@@ -84,8 +84,8 @@ async def create_tenant(
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create schema: {str(e)}")
 
-    owner_role = await session.execute(select(Role).where(Role.name == "owner"))
-    owner_role = owner_role.scalar_one_or_none()
+    owner_role_res = await session.execute(select(Role).where(Role.name == "owner"))
+    owner_role = owner_role_res.scalars().first()
 
     if not owner_role:
         raise HTTPException(status_code=500, detail="Owner role not found in system")
