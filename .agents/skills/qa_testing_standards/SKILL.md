@@ -77,6 +77,10 @@ async def make_tenant_client(
     )
     return tenant, {"Authorization": f"Bearer {token}"}
 
+# [АНТИПАТТЕРН] Строго запрещено ставить is_superuser=True в тестовых фикстурах
+# бизнес-пользователей (кассир, официант, кладовщик). Суперпользователь обходит
+# PBAC-проверку в dependencies.py, маскируя отсутствие записей прав в БД.
+
 # ─── 1. Тест изоляции тенантов (Cross-Tenant Isolation / IDOR) ────────────────
 @pytest.mark.asyncio
 async def test_tenant_isolation(async_client: AsyncClient, db_session: AsyncSession):
@@ -125,8 +129,8 @@ async def test_transaction_rollback_on_failure(async_client: AsyncClient, db_ses
     assert res.status_code == 400
 
     # [ИНВАРИАНТ] Прямая проверка БД: откат не оставил мусорных записей в дочерней таблице
-    # db_items = (await db_session.execute(select(SubEntityModel))).scalars().all()
-    # assert len(db_items) == 0
+    db_items = (await db_session.execute(select(SubEntityModel))).scalars().all()
+    assert len(db_items) == 0
 
 # ─── 3. Тест PBAC авторизации (Permissions Enforcement) ──────────────────────
 @pytest.mark.asyncio

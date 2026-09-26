@@ -230,5 +230,5 @@ async def test_gift_card_validation_errors(async_client: AsyncClient, db_session
 
     # Дубликат
     resp_dup = await async_client.post("/api/v1/gift-cards", json={"code": "GC-UNIQUE-01", "initial_balance": 1000.0}, headers=headers)
-    assert resp_dup.status_code == 400
+    assert resp_dup.status_code == 409
     assert "уже зарегистрирована" in resp_dup.json()["detail"]

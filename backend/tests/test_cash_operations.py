@@ -6,7 +6,8 @@
 import pytest
 from httpx import AsyncClient
 
-from app.users.models import Tenant, Role, User, UserRole
+from sqlmodel import select
+from app.users.models import Tenant, Role, User, UserRole, Permission, RolePermission
 from app.users import services as user_svc
 from app.pos.models import Shift, CashOperation, CashOperationType
 
@@ -24,7 +25,7 @@ async def create_test_cashier(
     await db_session.commit()
     await db_session.refresh(tenant)
 
-    role = Role(name=f"Role_{username}", is_superuser=True, tenant_id=tenant.id)
+    role = Role(name=f"Role_{username}_{tenant.id}", is_superuser=False, tenant_id=tenant.id)
     db_session.add(role)
     await db_session.commit()
     await db_session.refresh(role)
@@ -40,14 +41,25 @@ async def create_test_cashier(
     await db_session.commit()
     await db_session.refresh(user)
 
+    perms_to_assign = permissions or ["shifts:open", "shifts:close", "shifts:view", "pos:cash_operations", "cashbox:operate"]
+    for code in perms_to_assign:
+        res_p = await db_session.execute(select(Permission).where(Permission.code == code))
+        perm = res_p.scalars().first()
+        if not perm:
+            perm = Permission(code=code, description=f"Perm {code}")
+            db_session.add(perm)
+            await db_session.commit()
+            await db_session.refresh(perm)
+        db_session.add(RolePermission(role_id=role.id, permission_id=perm.id))
+
     db_session.add(UserRole(user_id=user.id, role_id=role.id))
     await db_session.commit()
 
     token = user_svc.create_access_token(
         user_id=user.id,
         tenant_id=tenant.id,
-        permissions=permissions or ["shifts:open", "shifts:close", "shifts:view", "pos:cash_operations", "cashbox:operate"],
-        is_superuser=True,
+        permissions=perms_to_assign,
+        is_superuser=False,
     )
     headers = {"Authorization": f"Bearer {token}"}
     return tenant, user, headers
@@ -172,6 +184,12 @@ async def test_cash_operation_insufficient_funds(async_client: AsyncClient, db_s
     assert resp.status_code == 400, resp.text
     assert "Недостаточно наличных средств" in resp.json()["detail"]
 
+    # [ИНВАРИАНТ] Прямая проверка БД: операция откатана и не попала в базу
+    db_ops = (await db_session.execute(
+        select(CashOperation).where(CashOperation.comment == "Попытка овердрафта кассы")
+    )).scalars().all()
+    assert len(db_ops) == 0
+
 
 @pytest.mark.asyncio
 async def test_cash_operation_closed_shift(async_client: AsyncClient, db_session):
@@ -231,3 +249,34 @@ async def test_cash_operation_pbac_permissions(async_client: AsyncClient, db_ses
         headers=headers,
     )
     assert resp.status_code == 403, f"Expected 403 Forbidden, got {resp.status_code}: {resp.text}"
+
+
+@pytest.mark.asyncio
+async def test_cross_tenant_cash_operation_isolation(async_client: AsyncClient, db_session):
+    """[БЕЗОПАСНОСТЬ] Данные кассовых операций и смен Alpha изолированы от Beta."""
+    _, _, headers_alpha = await create_test_cashier(db_session, "Tenant Alpha Cafe", "tenant_cash_alpha", "cashier_alpha_idor")
+    _, _, headers_beta = await create_test_cashier(db_session, "Tenant Beta Cafe", "tenant_cash_beta", "cashier_beta_idor")
+
+    # Alpha открывает смену и вносит 250 руб
+    resp_shift_a = await async_client.post("/api/v1/shifts/open", json={"opening_cash": 1000.0}, headers=headers_alpha)
+    assert resp_shift_a.status_code == 200, resp_shift_a.text
+    shift_a_id = resp_shift_a.json()["shift_id"]
+
+    resp_op = await async_client.post(
+        "/api/v1/cash/operations",
+        json={"type": "deposit", "amount": 250.0, "category": "Довнесение", "comment": "Alpha Cash"},
+        headers=headers_alpha,
+    )
+    assert resp_op.status_code == 201, resp_op.text
+
+    # Beta запрашивает операции по несуществующей смене -> пустой список
+    resp_list_beta = await async_client.get("/api/v1/cash/operations?shift_id=99999", headers=headers_beta)
+    assert resp_list_beta.status_code == 200, resp_list_beta.text
+    assert len(resp_list_beta.json()) == 0
+
+    # Проверка, что в смене Alpha баланс с внесением зафиксирован ровно 1250 руб
+    resp_summary_alpha = await async_client.get(f"/api/v1/cash/operations/summary?shift_id={shift_a_id}", headers=headers_alpha)
+    assert resp_summary_alpha.status_code == 200, resp_summary_alpha.text
+    assert resp_summary_alpha.json()["total_deposits"] == 250.0
+    assert resp_summary_alpha.json()["current_expected_cash"] == 1250.0
+

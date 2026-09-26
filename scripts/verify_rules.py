@@ -119,6 +119,38 @@ class RuleChecker:
                     f"Kreso Flow uses schema-based isolation (search_path)."
                 )
 
+    def check_backend_pbac(self):
+        """Rule 2: Ensure router endpoints are protected by PBAC dependencies."""
+        backend_app = self.root / "backend" / "app"
+        if not backend_app.exists():
+            return
+
+        router_files = list(backend_app.rglob("*router*.py")) + list(backend_app.rglob("router.py"))
+        exempt_routers = {"auth_router.py", "database_router.py"}
+
+        for r_file in router_files:
+            rel = r_file.relative_to(self.root).as_posix()
+            if self.target and self.target not in rel:
+                continue
+            if r_file.name in exempt_routers:
+                continue
+
+            try:
+                content = r_file.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                continue
+
+            has_pbac = (
+                "require_permission" in content
+                or "require_any_permission" in content
+                or "CurrentUser" in content
+                or "get_current_user" in content
+            )
+            if not has_pbac and "@router." in content:
+                self.warnings.append(
+                    f"[PBAC DEBT] {rel} defines routes but lacks require_permission / require_any_permission guards."
+                )
+
     def check_file_line_limits(self):
         """Rule 3: File limits: Warning > 250, Error > 300 (or >350 for cohesive domain files)."""
         # Backend routers and services
@@ -264,6 +296,7 @@ class RuleChecker:
         print(c("==================================================", C.CYAN))
 
         self.check_backend_multi_tenancy()
+        self.check_backend_pbac()
         self.check_file_line_limits()
         self.check_taboo_micro_files()
         self.check_design_system()

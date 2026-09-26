@@ -59,7 +59,7 @@ async def issue_gift_card(
         existing = await session.execute(select(GiftCard).where(GiftCard.code == code))
         if existing.scalars().first() is not None:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_409_CONFLICT,
                 detail=f"Подарочная карта с кодом '{code}' уже зарегистрирована",
             )
 
@@ -100,7 +100,7 @@ async def redeem_gift_card(
     user_id: Optional[int] = None,
 ) -> GiftCard:
     """Списывает средства с баланса подарочной карты при оплате чека."""
-    card = await session.get(GiftCard, card_id)
+    card = await session.get(GiftCard, card_id, with_for_update=True)
     if not card:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Подарочная карта не найдена")
     if not card.is_active or card.status == GiftCardStatus.BLOCKED:
@@ -150,7 +150,7 @@ async def top_up_gift_card(
     user_id: Optional[int] = None,
 ) -> GiftCard:
     """Пополняет баланс существующей подарочной карты."""
-    card = await session.get(GiftCard, card_id)
+    card = await session.get(GiftCard, card_id, with_for_update=True)
     if not card:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Подарочная карта не найдена")
     if not card.is_active or card.status == GiftCardStatus.BLOCKED:
