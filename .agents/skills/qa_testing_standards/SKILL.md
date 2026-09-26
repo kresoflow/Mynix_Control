@@ -23,7 +23,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from app.users.permissions import Perm
-from app.users.models import Tenant, Role, User, UserRole
+from app.users.models import Tenant, Role, User, UserRole, Permission, RolePermission
 from app.users import services as user_svc
 
 # ─── Вспомогательный хелпер генерации изолированных клиентов тенантов ─────────
@@ -34,7 +34,7 @@ async def make_tenant_client(
     schema_name: str,
     permissions: list[str] | None = None,
 ) -> tuple[Tenant, dict[str, str]]:
-    """[БЕЗОПАСНОСТЬ] Создает тенант, роль, пользователя и возвращает Bearer-заголовки."""
+    """[БЕЗОПАСНОСТЬ] Создает тенант, роль, пользователя с правами в БД и возвращает Bearer-заголовки."""
     tenant = Tenant(name=tenant_name, schema_name=schema_name, is_active=True)
     db_session.add(tenant)
     await db_session.commit()
@@ -42,7 +42,7 @@ async def make_tenant_client(
 
     user = User(
         tenant_id=tenant.id,
-        username=f"usr_{schema_name}",
+        username=f"usr_{schema_name}_{tenant.id}",
         full_name=f"User {tenant_name}",
         hashed_password="hash",
         is_active=True,
@@ -50,6 +50,24 @@ async def make_tenant_client(
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
+
+    if permissions:
+        role = Role(name=f"Role_{schema_name}_{tenant.id}", is_superuser=False, tenant_id=tenant.id)
+        db_session.add(role)
+        await db_session.commit()
+        await db_session.refresh(role)
+
+        for code in permissions:
+            res_p = await db_session.execute(select(Permission).where(Permission.code == code))
+            perm = res_p.scalars().first()
+            if not perm:
+                perm = Permission(code=code, description=f"Perm {code}")
+                db_session.add(perm)
+                await db_session.commit()
+                await db_session.refresh(perm)
+            db_session.add(RolePermission(role_id=role.id, permission_id=perm.id))
+        db_session.add(UserRole(user_id=user.id, role_id=role.id))
+        await db_session.commit()
 
     token = user_svc.create_access_token(
         user_id=user.id,
@@ -107,7 +125,7 @@ async def test_transaction_rollback_on_failure(async_client: AsyncClient, db_ses
     assert res.status_code == 400
 
     # [ИНВАРИАНТ] Прямая проверка БД: откат не оставил мусорных записей в дочерней таблице
-    # db_items = (await db_session.exec(select(SubEntityModel))).all()
+    # db_items = (await db_session.execute(select(SubEntityModel))).scalars().all()
     # assert len(db_items) == 0
 
 # ─── 3. Тест PBAC авторизации (Permissions Enforcement) ──────────────────────

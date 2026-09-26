@@ -75,19 +75,20 @@ class DomainWorkflowService:
         """
         # [ИНВАРИАНТ] Идемпотентность: проверка повторного запроса с тем же client_uuid
         if client_uuid:
-            existing_tx = (
-                await session.exec(
-                    select(TransactionAudit).where(TransactionAudit.client_uuid == client_uuid)
-                )
-            ).first()
+            audit_res = await session.execute(
+                select(TransactionAudit).where(TransactionAudit.client_uuid == client_uuid)
+            )
+            existing_tx = audit_res.scalars().first()
             if existing_tx:
                 # [ИНВАРИАНТ] Идемпотентный no-op: возвращаем исходную сущность со статусом 200
-                return (
-                    await session.exec(select(DomainEntity).where(DomainEntity.id == existing_tx.entity_id))
-                ).one()
+                entity_res = await session.execute(
+                    select(DomainEntity).where(DomainEntity.id == existing_tx.entity_id)
+                )
+                return entity_res.scalars().one()
 
-        # [ТРАНЗАКЦИЯ] Все связанные изменения строго внутри session.begin()
-        async with session.begin():
+        # [ТРАНЗАКЦИЯ] Атомарный контекст (savepoint при уже открытой сессии get_tenant_session)
+        tx_context = session.begin_nested() if session.in_transaction() else session.begin()
+        async with tx_context:
             # 1. Блокируем строку агрегата на чтение/запись до коммита транзакции
             stmt = (
                 select(DomainEntity)
@@ -95,7 +96,8 @@ class DomainWorkflowService:
                 .with_for_update()  # <-- Защита от Double Spending / Race Condition
                 .options(selectinload(DomainEntity.sub_items))  # <-- Защита от MissingGreenlet
             )
-            entity = (await session.exec(stmt)).first()
+            res = await session.execute(stmt)
+            entity = res.scalars().first()
             if not entity:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -121,8 +123,8 @@ class DomainWorkflowService:
             )
             session.add(audit_record)
 
-            # Автоматический commit() при успешном выходе из блока begin()
-            # При любом исключении происходит немедленный rollback()
+            # [ТРАНЗАКЦИЯ] Фиксация изменений
+            await session.commit()
 
         await session.refresh(entity)
         return entity
@@ -180,11 +182,11 @@ class DomainQueryService:
             count_stmt = count_stmt.where(col(DomainEntity.name).ilike(f"%{search_query.strip()}%"))
 
         # 3. Выполнение подсчета и пагинации
-        total_count = (await session.exec(count_stmt)).one()
+        total_count = (await session.execute(count_stmt)).scalar_one()
         stmt = stmt.order_by(DomainEntity.id.desc()).offset(skip).limit(safe_limit)
-        items = (await session.exec(stmt)).all()
+        items = (await session.execute(stmt)).scalars().all()
 
-        return items, total_count
+        return list(items), total_count
 ```
 
 ---
