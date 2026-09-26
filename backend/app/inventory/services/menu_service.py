@@ -64,36 +64,67 @@ async def delete_menu_item(session: AsyncSession, item_id: int, mode: str = "sof
     
     if not item:
         raise HTTPException(status_code=404, detail="Menu item not found")
-        
-    order_stmt = select(OrderItem).where(OrderItem.menu_item_id == item_id).limit(1)
-    order_res = await session.execute(order_stmt)
-    has_orders = order_res.scalars().first() is not None
 
     if mode == "hard":
-        if has_orders:
-            raise HTTPException(
-                status_code=400,
-                detail="Невозможно удалить товар навсегда: по нему есть история продаж. Товар будет заархивирован."
-            )
-        recipe_stmt = select(Recipe).where(Recipe.menu_item_id == item_id)
-        recipe_res = await session.execute(recipe_stmt)
-        for r in recipe_res.scalars().all():
-            await session.delete(r)
-        
+        # Проверка истории заказов для товара и всех дочерних вариаций
+        all_item_ids = [item_id]
         child_stmt = select(MenuItem).where(MenuItem.parent_id == item_id)
         child_res = await session.execute(child_stmt)
-        for c in child_res.scalars().all():
-            c_r_stmt = select(Recipe).where(Recipe.menu_item_id == c.id)
-            c_r_res = await session.execute(c_r_stmt)
-            for cr in c_r_res.scalars().all():
-                await session.delete(cr)
+        children = child_res.scalars().all()
+        for c in children:
+            all_item_ids.append(c.id)
+
+        order_stmt = select(OrderItem).where(OrderItem.menu_item_id.in_(all_item_ids)).limit(1)
+        order_res = await session.execute(order_stmt)
+        if order_res.scalars().first() is not None:
+            raise HTTPException(
+                status_code=400,
+                detail="Невозможно удалить товар навсегда: по нему есть история продаж. Товар останется в архиве."
+            )
+
+        # Проверка складских проводок для штучных товаров витрины
+        all_rp_ids = []
+        if item.retail_product_id:
+            all_rp_ids.append(item.retail_product_id)
+        for c in children:
+            if c.retail_product_id:
+                all_rp_ids.append(c.retail_product_id)
+
+        if all_rp_ids:
+            txn_stmt = select(StockTransaction).where(StockTransaction.retail_product_id.in_(all_rp_ids)).limit(1)
+            txn_res = await session.execute(txn_stmt)
+            if txn_res.scalars().first() is not None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Невозможно удалить товар навсегда: по нему есть складские проводки. Товар останется в архиве."
+                )
+
+        # Удаление техкарт и связанных сущностей без истории
+        for c_id in all_item_ids:
+            recipe_stmt = select(Recipe).where(Recipe.menu_item_id == c_id)
+            recipe_res = await session.execute(recipe_stmt)
+            for r in recipe_res.scalars().all():
+                await session.delete(r)
+
+        for c in children:
+            if c.retail_product_id:
+                rp_res = await session.execute(select(RetailProduct).where(RetailProduct.id == c.retail_product_id))
+                rp = rp_res.scalar_one_or_none()
+                if rp:
+                    await session.delete(rp)
             await session.delete(c)
+
+        if item.retail_product_id:
+            rp_res = await session.execute(select(RetailProduct).where(RetailProduct.id == item.retail_product_id))
+            rp = rp_res.scalar_one_or_none()
+            if rp:
+                await session.delete(rp)
 
         await session.delete(item)
         await session.flush()
-        return {"status": "deleted", "message": "Товар успешно удален."}
+        return {"status": "deleted", "message": "Товар успешно удален навсегда."}
 
-    # Soft delete (archive)
+    # Soft delete (Архивация - режим по умолчанию с любого рабочего экрана)
     item.is_available = False
     session.add(item)
     child_stmt = select(MenuItem).where(MenuItem.parent_id == item_id)
@@ -104,6 +135,61 @@ async def delete_menu_item(session: AsyncSession, item_id: int, mode: str = "sof
 
     await session.flush()
     return {"status": "archived", "message": "Товар заархивирован."}
+
+
+async def restore_menu_item(session: AsyncSession, item_id: int) -> MenuItem:
+    """
+    Восстанавливает позицию меню из архива с защитой от коллизий дубликатов (Poka-Yoke).
+    
+    [ИНВАРИАНТ]  Запрещено восстанавливать позицию, если в той же категории уже есть активная позиция с таким же именем.
+    """
+    stmt = select(MenuItem).where(MenuItem.id == item_id)
+    result = await session.execute(stmt)
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Товар не найден")
+
+    # Извлекаем чистое имя позиции
+    clean_name = item.name.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0].strip()
+
+    # Проверяем наличие активного тезки в целевой категории
+    dup_stmt = select(MenuItem).where(
+        MenuItem.category_id == item.category_id,
+        MenuItem.is_available == True,
+        MenuItem.id != item.id
+    )
+    dup_res = await session.execute(dup_stmt)
+    for existing in dup_res.scalars().all():
+        existing_clean = existing.name.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0].strip()
+        if existing_clean.lower() == clean_name.lower():
+            existing_is_retail = '|TYPE|retail' in existing.name
+            item_is_retail = '|TYPE|retail' in item.name
+            if existing_is_retail == item_is_retail:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"В этой категории уже есть активная позиция «{existing_clean}». Переименуйте или удалите активный дубликат перед восстановлением из архива."
+                )
+
+    item.is_available = True
+    session.add(item)
+    child_stmt = select(MenuItem).where(MenuItem.parent_id == item_id)
+    child_res = await session.execute(child_stmt)
+    for c in child_res.scalars().all():
+        c.is_available = True
+        session.add(c)
+
+    await session.flush()
+    return item
+
+async def bulk_delete_menu_items(session: AsyncSession, item_ids: list[int], mode: str = "soft") -> dict:
+    results = []
+    for item_id in item_ids:
+        try:
+            res = await delete_menu_item(session, item_id, mode=mode)
+            results.append(res)
+        except Exception:
+            pass
+    return {"status": "ok", "deleted_count": len(results)}
 
 async def list_menu_items(session: AsyncSession) -> list[MenuItemRead]:
     stmt = (

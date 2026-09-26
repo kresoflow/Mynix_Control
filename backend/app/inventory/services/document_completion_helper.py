@@ -22,7 +22,7 @@ async def process_receipt_completion(
     """Process receipt document items, update moving average cost, and create RECEIPT transactions."""
     for item in doc.items:
         if item.ingredient_id:
-            ing = await session.get(Ingredient, item.ingredient_id)
+            ing = await session.get(Ingredient, item.ingredient_id, with_for_update=True)
             if not ing:
                 raise HTTPException(status_code=400, detail=f"Ingredient with id {item.ingredient_id} not found")
 
@@ -46,7 +46,7 @@ async def process_receipt_completion(
             session.add(txn)
 
         elif item.retail_product_id:
-            ret = await session.get(RetailProduct, item.retail_product_id)
+            ret = await session.get(RetailProduct, item.retail_product_id, with_for_update=True)
             if not ret:
                 raise HTTPException(status_code=400, detail=f"Retail product with id {item.retail_product_id} not found")
 
@@ -80,7 +80,7 @@ async def process_writeoff_completion(
     """Process write-off document items and decrease stock levels."""
     for item in doc.items:
         if item.ingredient_id:
-            ing = await session.get(Ingredient, item.ingredient_id)
+            ing = await session.get(Ingredient, item.ingredient_id, with_for_update=True)
             if not ing:
                 raise HTTPException(status_code=400, detail=f"Ingredient with id {item.ingredient_id} not found")
 
@@ -97,7 +97,7 @@ async def process_writeoff_completion(
             session.add(txn)
 
         elif item.retail_product_id:
-            ret = await session.get(RetailProduct, item.retail_product_id)
+            ret = await session.get(RetailProduct, item.retail_product_id, with_for_update=True)
             if not ret:
                 raise HTTPException(status_code=400, detail=f"Retail product with id {item.retail_product_id} not found")
 
@@ -126,7 +126,7 @@ async def process_inventory_completion(
         actual_quantity = item.quantity
 
         if item.ingredient_id:
-            ing = await session.get(Ingredient, item.ingredient_id)
+            ing = await session.get(Ingredient, item.ingredient_id, with_for_update=True)
             if not ing:
                 raise HTTPException(status_code=400, detail=f"Ingredient with id {item.ingredient_id} not found")
 
@@ -148,7 +148,7 @@ async def process_inventory_completion(
                 session.add(ing)
 
         elif item.retail_product_id:
-            ret = await session.get(RetailProduct, item.retail_product_id)
+            ret = await session.get(RetailProduct, item.retail_product_id, with_for_update=True)
             if not ret:
                 raise HTTPException(status_code=400, detail=f"Retail product with id {item.retail_product_id} not found")
 

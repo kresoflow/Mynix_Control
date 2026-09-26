@@ -1,4 +1,4 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -18,9 +18,11 @@ class _MockDio extends Fake implements Dio {}
 class _TrackingMenuRepository extends MenuRepository {
   int bulkMenuItemsCallCount = 0;
   int bulkRetailProductsCallCount = 0;
+  int bulkDeleteMenuItemsCallCount = 0;
   int getMenuItemsCallCount = 0;
   List<Map<String, dynamic>> lastMenuItemsPayload = [];
   List<Map<String, dynamic>> lastRetailProductsPayload = [];
+  List<int> lastDeleteIds = [];
 
   _TrackingMenuRepository() : super(_MockDio());
 
@@ -49,6 +51,12 @@ class _TrackingMenuRepository extends MenuRepository {
     bulkRetailProductsCallCount++;
     lastRetailProductsPayload = items;
     return items.map((e) => {'id': 200, ...e}).toList();
+  }
+
+  @override
+  Future<void> deleteMenuItemsBulk(List<int> ids, {String mode = 'auto'}) async {
+    bulkDeleteMenuItemsCallCount++;
+    lastDeleteIds = ids;
   }
 }
 
@@ -100,6 +108,26 @@ void main() {
 
       expect(repo.bulkRetailProductsCallCount, 1);
       expect(repo.lastRetailProductsPayload.length, 2);
+      expect(repo.getMenuItemsCallCount, 1);
+      await bloc.close();
+    });
+
+    test('MenuBloc processes DeleteMenuItemsBulk in a single call and reloads menu once (Network Storm Elimination)', () async {
+      final repo = _TrackingMenuRepository();
+      final bloc = MenuBloc(repo);
+
+      bloc.add(const DeleteMenuItemsBulk([101, 102, 103], mode: 'auto'));
+
+      await expectLater(
+        bloc.stream,
+        emitsInOrder([
+          isA<MenuLoading>(),
+          isA<MenuLoaded>(),
+        ]),
+      );
+
+      expect(repo.bulkDeleteMenuItemsCallCount, 1);
+      expect(repo.lastDeleteIds, [101, 102, 103]);
       expect(repo.getMenuItemsCallCount, 1);
       await bloc.close();
     });

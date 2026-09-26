@@ -26,5 +26,11 @@ async def restore_category(category_id: int, current_user: CurrentUser, session:
     return await svc.restore_category(session, category_id)
 
 @router.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission("menu:manage"))])
-async def delete_category(category_id: int, current_user: CurrentUser, session: TenantSession, mode: str = "all"):
+async def delete_category(category_id: int, current_user: CurrentUser, session: TenantSession, mode: str = "soft"):
     await svc.delete_category(session, category_id, mode=mode)
+
+@router.post("/categories/bulk-delete", dependencies=[Depends(require_permission("menu:manage"))])
+async def bulk_delete_categories(data: dict, current_user: CurrentUser, session: TenantSession):
+    category_ids = data.get("ids", [])
+    mode = data.get("mode", "soft")
+    return await svc.bulk_delete_categories(session, category_ids, mode=mode)

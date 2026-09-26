@@ -16,6 +16,7 @@ class Perm(str, Enum):
     CASHBOX_OPERATE = "cashbox:operate"
     CASHBOX_VIEW = "cashbox:view"
     CASHBOX_EXPENSE = "cashbox:expense"
+    POS_CASH_OPERATIONS = "pos:cash_operations"
 
     # Shifts
     SHIFTS_OPEN = "shifts:open"
@@ -46,6 +47,11 @@ class Perm(str, Enum):
     CRM_MANAGE = "crm:manage"
     CRM_VIEW = "crm:view"
 
+    # Gift Cards
+    GIFTCARDS_MANAGE = "giftcards:manage"
+    GIFTCARDS_VIEW = "giftcards:view"
+
     # Settings & System
     SETTINGS_MANAGE = "settings:manage"
     SYSTEM_MANAGE = "system:manage"
+

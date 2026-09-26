@@ -64,17 +64,39 @@ class MenuItem extends Equatable {
     return name.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];
   }
 
-  String? get attributesString {
-    String? flavor;
-    final List<String> variationLabels = [];
-
+  /// Извлекает название вкуса из атрибутов или групп модификаторов.
+  ///
+  /// [ИНВАРИАНТ] Для товаров витрины вкус хранится в `attrs['flavor']` либо в модификаторе 'Вкус'.
+  String? get flavorString {
     if (attributesJson != null && attributesJson!.isNotEmpty) {
       try {
         final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
         if (attrs['flavor'] != null && attrs['flavor'].toString().trim().isNotEmpty) {
-          flavor = attrs['flavor'].toString().trim();
+          return attrs['flavor'].toString().trim();
         }
+        if (attrs['modifier_groups'] != null) {
+          final groups = attrs['modifier_groups'] as List;
+          for (var group in groups) {
+            if (group['name'] == 'Вкус') {
+              final modifiers = group['modifiers'] as List;
+              if (modifiers.isNotEmpty) {
+                return modifiers.first['name'].toString().trim();
+              }
+            }
+          }
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
 
+  /// Возвращает список меток вариаций (фасовок) без повторения названия товара и вкуса.
+  List<String> get variationLabels {
+    final List<String> labels = [];
+    final flavor = flavorString;
+    if (attributesJson != null && attributesJson!.isNotEmpty) {
+      try {
+        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
         if (attrs['variations'] != null && attrs['variations'] is List) {
           final vars = attrs['variations'] as List;
           for (var v in vars) {
@@ -90,49 +112,47 @@ class MenuItem extends Equatable {
               if (flavor != null && flavor.isNotEmpty && vName.startsWith(flavor)) {
                 vName = vName.substring(flavor.length).trim();
               }
-              if (vName.isNotEmpty) {
-                variationLabels.add(vName);
+              if (vName.startsWith('•')) {
+                vName = vName.substring(1).trim();
               }
-            }
-          }
-        }
-
-        if (flavor == null && attrs['modifier_groups'] != null) {
-          final groups = attrs['modifier_groups'] as List;
-          for (var group in groups) {
-            if (group['name'] == 'Вкус') {
-              final modifiers = group['modifiers'] as List;
-              if (modifiers.isNotEmpty) {
-                flavor = modifiers.first['name'].toString().trim();
-                break;
+              if (vName.isNotEmpty) {
+                labels.add(vName);
               }
             }
           }
         }
       } catch (_) {}
     }
+    return labels;
+  }
 
-    String? varSummary;
-    if (variationLabels.isNotEmpty) {
-      if (variationLabels.length == 1) {
-        varSummary = variationLabels.first;
-      } else if (variationLabels.length <= 3) {
-        varSummary = variationLabels.join(', ');
-      } else {
-        varSummary = '${variationLabels.length} вариаций';
-      }
+  /// Краткая сводка вариаций/фасовок для карточки каталога и витрины.
+  ///
+  /// [UI-KIT] Форматирует список фасовок:
+  /// - 1 вариация: "100г"
+  /// - 2–3 вариации: "50г  200г  300г"
+  /// - 4+ вариаций: "N вариаций"
+  String? get variationsSummary {
+    final labels = variationLabels;
+    if (labels.isEmpty) return null;
+    if (labels.length == 1) {
+      return labels.first;
+    } else if (labels.length <= 3) {
+      return labels.join('  ');
+    } else {
+      return '${labels.length} вариаций';
     }
+  }
 
-    if (flavor != null && flavor.isNotEmpty) {
-      if (varSummary != null && varSummary.isNotEmpty) {
-        return '$flavor • $varSummary';
-      }
-      return flavor;
+  /// Полная строка атрибутов (Вкус • Фасовка).
+  String? get attributesString {
+    final f = flavorString;
+    final v = variationsSummary;
+    if (f != null && f.isNotEmpty && v != null && v.isNotEmpty) {
+      return '$f • $v';
     }
-
-    if (varSummary != null && varSummary.isNotEmpty) {
-      return varSummary;
-    }
+    if (f != null && f.isNotEmpty) return f;
+    if (v != null && v.isNotEmpty) return v;
 
     final noType = name.split('|TYPE|')[0];
     if (noType.contains('|ATTR|')) {

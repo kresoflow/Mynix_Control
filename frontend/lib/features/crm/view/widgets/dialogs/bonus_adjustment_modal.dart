@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -37,7 +37,7 @@ class _BonusAdjustmentModalState extends State<BonusAdjustmentModal> {
 
   @override
   void dispose() {
-    _amountController.disposeWidget();
+    _amountController.dispose();
     _commentController.dispose();
     super.dispose();
   }

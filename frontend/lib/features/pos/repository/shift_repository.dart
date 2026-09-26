@@ -84,5 +84,73 @@ class ShiftRepository {
       throw Exception('Failed to load shifts history: $e');
     }
   }
+
+  /// Create cash operation (deposit or withdrawal / petty cash / collection)
+  Future<Map<String, dynamic>> createCashOperation({
+    required String type,
+    required double amount,
+    required String category,
+    String? comment,
+    String? clientUuid,
+    int? shiftId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/cash/operations',
+        data: {
+          'type': type,
+          'amount': amount,
+          'category': category,
+          if (comment != null && comment.isNotEmpty) 'comment': comment,
+          if (clientUuid != null) 'client_uuid': clientUuid,
+          if (shiftId != null) 'shift_id': shiftId,
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        final detail = e.response?.data['detail'];
+        if (detail != null) throw Exception(detail.toString());
+      }
+      throw Exception('Не удалось провести операцию по кассе: $e');
+    }
+  }
+
+  /// Fetch cash operations list
+  Future<List<Map<String, dynamic>>> getCashOperations({
+    int? shiftId,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/cash/operations',
+        queryParameters: {
+          if (shiftId != null) 'shift_id': shiftId,
+          'limit': limit,
+          'offset': offset,
+        },
+      );
+      final list = response.data as List<dynamic>? ?? [];
+      return list.map((e) => e as Map<String, dynamic>).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch cash operations: $e');
+    }
+  }
+
+  /// Fetch cash operations summary
+  Future<Map<String, dynamic>> getCashOperationsSummary({int? shiftId}) async {
+    try {
+      final response = await _dio.get(
+        '/cash/operations/summary',
+        queryParameters: {
+          if (shiftId != null) 'shift_id': shiftId,
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to fetch cash operations summary: $e');
+    }
+  }
 }
 

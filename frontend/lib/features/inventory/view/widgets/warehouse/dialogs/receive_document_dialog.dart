@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -97,7 +97,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       final retail = await repo.getRetailProducts();
       if (mounted) {
         setState(() {
-          _availableIngredients = [...ingredients, ...retail];
+          _availableIngredients = [...ingredients, ...retail].where((i) => !i.isArchived).toList();
           _isLoadingIngredients = false;
         });
       }

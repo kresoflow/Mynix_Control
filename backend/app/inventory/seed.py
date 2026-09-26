@@ -141,7 +141,7 @@ async def seed_inventory(session: AsyncSession) -> None:
     tenants = (await session.execute(select(Tenant))).scalars().all()
     
     for tenant in tenants:
-        await session.execute(text(f'SET search_path TO "{tenant.schema_name}"'))
+        await session.execute(text(f'SET search_path TO "{tenant.schema_name}", public'))
         existing = await session.execute(select(Ingredient).limit(1))
         if existing.scalar() is not None:
             print(f">> Inventory already seeded for {tenant.schema_name}, skipping.")
@@ -222,7 +222,7 @@ async def seed_inventory(session: AsyncSession) -> None:
                     type=StockTransactionType.RECEIPT,
                     quantity=rp_data["stock"],
                     reason="Начальный остаток при создании",
-                    created_by=1,
+                    created_by=None,
                 )
                 session.add(txn)
                 await session.flush()

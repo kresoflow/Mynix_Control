@@ -17,6 +17,10 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.base_model import TenantModel
+from app.pos.models_cash_operation import (
+    CashOperation, CashOperationType, CashOperationCreate,
+    CashOperationRead, CashOperationsSummary
+)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

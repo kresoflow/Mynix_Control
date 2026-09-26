@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> availableIngredients) {
   final Map<String, List<dynamic>> grouped = {};
   for (var ing in availableIngredients) {
+    if (ing.isArchived == true) continue;
     final catName = ing.categoryName ?? 'Без категории';
     grouped.putIfAbsent(catName, () => []).add(ing);
   }

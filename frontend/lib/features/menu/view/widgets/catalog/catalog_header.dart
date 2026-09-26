@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'catalog_enums.dart';
 import 'catalog_header_manage_mode.dart';
 import 'catalog_breadcrumbs.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class CatalogHeader extends StatelessWidget {
@@ -24,6 +25,7 @@ class CatalogHeader extends StatelessWidget {
   final int? currentCategoryId;
   final String rootTitle;
   final bool showArchived;
+  final int archivedCount;
   final VoidCallback onShowArchivedToggle;
   final ValueChanged<String>? onSearchChanged;
   final VoidCallback? onRestoreSelected;
@@ -49,6 +51,7 @@ class CatalogHeader extends StatelessWidget {
     required this.currentCategoryId,
     required this.rootTitle,
     required this.showArchived,
+    this.archivedCount = 0,
     required this.onShowArchivedToggle,
     this.onSearchChanged,
     this.onRestoreSelected,
@@ -98,7 +101,7 @@ class CatalogHeader extends StatelessWidget {
                 size: AppButtonSize.sm,
                 onPressed: onNavigateUp,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 8),
             ],
             Expanded(
               child: CatalogBreadcrumbs(
@@ -110,30 +113,37 @@ class CatalogHeader extends StatelessWidget {
               ),
             ),
             if (onSearchChanged != null) ...[
+              const SizedBox(width: 8),
               AppSearchField(
                 mode: AppSearchMode.collapsible,
                 size: AppSearchFieldSize.sm,
                 hintText: 'Поиск...',
                 onChanged: onSearchChanged,
               ),
-              const SizedBox(width: 6),
             ],
-            AppSecondaryButton(
-              label: '',
-              icon: showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray,
-              tooltip: showArchived ? 'Скрыть архивные' : 'Показать архивные',
-              isSelected: showArchived,
-              height: 32,
-              width: 32,
-              size: AppButtonSize.sm,
-              onPressed: onShowArchivedToggle,
-            ),
           ],
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             _buildViewModeToggle(isMobile: true),
+            const SizedBox(width: 8),
+            Badge(
+              isLabelVisible: archivedCount > 0,
+              label: Text('$archivedCount', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+              backgroundColor: AppColors.brandPrimary,
+              offset: const Offset(3, -3),
+              child: AppSecondaryButton(
+                label: '',
+                icon: PhosphorIconsRegular.archive,
+                tooltip: showArchived ? 'Скрыть архив' : (archivedCount > 0 ? 'Архив ($archivedCount)' : 'Архив'),
+                isSelected: showArchived,
+                height: 32,
+                width: 32,
+                size: AppButtonSize.sm,
+                onPressed: onShowArchivedToggle,
+              ),
+            ),
             const SizedBox(width: 8),
             AppSecondaryButton(
               label: 'Выбрать',
@@ -194,18 +204,24 @@ class CatalogHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
         ],
-        AppSecondaryButton(
-          label: '',
-          icon: showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray,
-          tooltip: showArchived ? 'Скрыть архивные' : 'Показать архивные',
-          isSelected: showArchived,
-          height: 38,
-          width: 38,
-          size: AppButtonSize.md,
-          onPressed: onShowArchivedToggle,
-        ),
-        const SizedBox(width: 8),
         _buildViewModeToggle(isMobile: false),
+        const SizedBox(width: 8),
+        Badge(
+          isLabelVisible: archivedCount > 0,
+          label: Text('$archivedCount', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          backgroundColor: AppColors.brandPrimary,
+          offset: const Offset(4, -4),
+          child: AppSecondaryButton(
+            label: '',
+            icon: PhosphorIconsRegular.archive,
+            tooltip: showArchived ? 'Скрыть архив' : (archivedCount > 0 ? 'Архив ($archivedCount)' : 'Архив'),
+            isSelected: showArchived,
+            height: 38,
+            width: 38,
+            size: AppButtonSize.md,
+            onPressed: onShowArchivedToggle,
+          ),
+        ),
         const SizedBox(width: 12),
 
         // ── Group 2: Operations ──────────────────────────────────────

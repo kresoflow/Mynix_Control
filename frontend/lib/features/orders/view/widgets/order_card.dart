@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -173,7 +173,12 @@ class _OrderCardState extends State<OrderCard> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Text(
-            widget.order.items.map((e) => '${e.quantity}x ${e.menuItemName}').join(', '),
+            widget.order.items.map((e) {
+              if (e.optionsSummary != null) {
+                return '${e.quantity}x ${e.cleanName} (${e.optionsSummary})';
+              }
+              return '${e.quantity}x ${e.cleanName}';
+            }).join(', '),
             style: AppTextStyles.bodyMedium.copyWith(
               color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
               height: 1.3,

@@ -87,7 +87,7 @@ extension CategoriesPart on InventoryRepository {
     }
   }
 
-  Future<void> deleteCategory(int id, {String mode = 'all'}) async {
+  Future<void> deleteCategory(int id, {String mode = 'auto'}) async {
     try {
       await _dio.delete('/categories/$id?mode=$mode');
     } catch (e) {
@@ -100,7 +100,16 @@ extension CategoriesPart on InventoryRepository {
     }
   }
 
-  Future<void> deleteCategoriesBulk(List<int> ids, {String mode = 'all'}) async {
-    await Future.wait(ids.map((id) => deleteCategory(id, mode: mode)));
+  Future<void> deleteCategoriesBulk(List<int> ids, {String mode = 'auto'}) async {
+    try {
+      await _dio.post('/categories/bulk-delete', data: {'ids': ids, 'mode': mode});
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(
+          e.response?.data['detail'] ?? 'Failed to delete categories in bulk',
+        );
+      }
+      throw Exception('Failed to delete categories in bulk: ${e.toString()}');
+    }
   }
 }

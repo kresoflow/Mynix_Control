@@ -85,7 +85,7 @@ class RestoreCategory extends CategoryEvent {
 class DeleteCategory extends CategoryEvent {
   final int id;
   final String mode;
-  const DeleteCategory(this.id, {this.mode = 'all'});
+  const DeleteCategory(this.id, {this.mode = 'auto'});
 
   @override
   List<Object?> get props => [id, mode];
@@ -94,7 +94,7 @@ class DeleteCategory extends CategoryEvent {
 class DeleteCategoriesBulk extends CategoryEvent {
   final List<int> ids;
   final String mode;
-  const DeleteCategoriesBulk(this.ids, {this.mode = 'all'});
+  const DeleteCategoriesBulk(this.ids, {this.mode = 'auto'});
 
   @override
   List<Object?> get props => [ids, mode];

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -24,7 +24,7 @@ class WriteOffAddItemBar extends StatelessWidget {
           return const Iterable<Ingredient>.empty();
         }
         final q = textEditingValue.text.toLowerCase().trim();
-        return availableIngredients.where((item) => item.name.toLowerCase().contains(q));
+        return availableIngredients.where((item) => !item.isArchived && item.name.toLowerCase().contains(q));
       },
       onSelected: onIngredientSelected,
       fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {

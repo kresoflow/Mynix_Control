@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
@@ -40,7 +40,7 @@ class BulkAddCategorySelector extends StatelessWidget {
                   ? 'retail'
                   : (tabIndex == 2 ? 'ingredient' : globalCategoryType ?? 'dish'));
           final allFiltered = catState.categories
-              .where((c) => c.categoryType == allowedType)
+              .where((c) => c.categoryType == allowedType && !c.isArchived)
               .toList();
           final parents = allFiltered.where((c) => c.parentId == null).toList();
           final allChildren = allFiltered

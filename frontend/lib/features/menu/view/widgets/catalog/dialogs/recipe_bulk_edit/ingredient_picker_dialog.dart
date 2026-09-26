@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
@@ -40,6 +40,7 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
 
     // Filter ingredients
     final filtered = widget.availableIngredients.where((ing) {
+      if (ing.isArchived == true) return false;
       if (_searchQuery.isEmpty) return true;
       final q = _searchQuery.toLowerCase().trim();
       final name = (ing.name as String? ?? '').toLowerCase();

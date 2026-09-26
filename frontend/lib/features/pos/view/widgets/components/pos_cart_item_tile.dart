@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,17 +21,35 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
     try {
       final map = jsonDecode(jsonStr);
       final List<String> parts = [];
+      final String? flavor = widget.cartItem.menuItem.flavorString;
+
       if (map['variation'] != null) {
         String varName = map['variation'].toString();
         varName = varName.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];
-        varName = varName.replaceAll(widget.cartItem.menuItem.cleanName, '').trim();
-        if (widget.cartItem.menuItem.attributesString != null) {
-          varName = varName.replaceAll(widget.cartItem.menuItem.attributesString!, '').trim();
+        final cleanName = widget.cartItem.menuItem.cleanName.trim();
+        if (varName.startsWith(cleanName)) {
+          varName = varName.substring(cleanName.length).trim();
         }
+        if (varName.startsWith('(') && varName.endsWith(')')) {
+          varName = varName.substring(1, varName.length - 1).trim();
+        }
+        if (varName.startsWith('•')) {
+          varName = varName.substring(1).trim();
+        }
+
+        if (flavor != null && flavor.isNotEmpty) {
+          if (!varName.contains(flavor)) {
+            varName = '$flavor • $varName';
+          }
+        }
+
         if (varName.isNotEmpty) {
           parts.add(varName);
         }
+      } else if (flavor != null && flavor.isNotEmpty) {
+        parts.add(flavor);
       }
+
       if (map['modifiers'] != null) {
         for (var m in map['modifiers']) {
           if (m['name'] != null) {
@@ -85,23 +103,31 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (item.menuItem.attributesString != null)
+                  if (item.selectedOptionsJson != null) ...[
+                    () {
+                      final optionsStr = _parseSelectedOptions(item.selectedOptionsJson!);
+                      if (optionsStr.isNotEmpty) {
+                        return Text(
+                          optionsStr,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.brandPrimary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }(),
+                  ] else if (item.menuItem.attributesString != null) ...[
                     Text(
                       item.menuItem.attributesString!,
                       style: AppTextStyles.caption.copyWith(fontSize: 11),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  if (item.selectedOptionsJson != null)
-                    Text(
-                      _parseSelectedOptions(item.selectedOptionsJson!),
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.brandPrimary,
-                        fontSize: 10,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  ],
                 ],
               ),
             ),

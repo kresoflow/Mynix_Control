@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
@@ -10,26 +10,47 @@ import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'dart:ui';
 
 void showOpenShiftDialog(BuildContext context) {
-  final controller = TextEditingController();
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-
   showDialog(
     context: context,
-    builder: (ctx) => AppDialog(
+    builder: (ctx) => const _OpenShiftDialog(),
+  );
+}
+
+class _OpenShiftDialog extends StatefulWidget {
+  const _OpenShiftDialog();
+
+  @override
+  State<_OpenShiftDialog> createState() => _OpenShiftDialogState();
+}
+
+class _OpenShiftDialogState extends State<_OpenShiftDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return AppDialog(
       title: 'Открытие смены',
       icon: PhosphorIconsRegular.wallet,
       width: 400,
       actions: [
         AppButton.secondary(
           label: 'Отмена',
-          onPressed: () => Navigator.of(ctx).pop(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         AppButton.primary(
           label: 'Открыть смену',
           onPressed: () {
-            final amount = double.tryParse(controller.text.replaceAll(',', '.')) ?? 0.0;
+            final amount = double.tryParse(_controller.text.replaceAll(',', '.')) ?? 0.0;
             context.read<ShiftBloc>().add(OpenShiftRequested(amount));
-            Navigator.of(ctx).pop();
+            Navigator.of(context).pop();
           },
         ),
       ],
@@ -46,7 +67,7 @@ void showOpenShiftDialog(BuildContext context) {
           ),
           const SizedBox(height: 16),
           TextField(
-            controller: controller,
+            controller: _controller,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             autofocus: true,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -59,8 +80,8 @@ void showOpenShiftDialog(BuildContext context) {
           ),
         ],
       ),
-    ),
-  );
+    );
+  }
 }
 
 class OpenShiftModal extends StatefulWidget {

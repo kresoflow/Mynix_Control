@@ -53,6 +53,9 @@ PERMISSIONS = [
     # CRM & Customers
     ("crm:manage", "Manage customers and debt ledger"),
     ("crm:view", "View customers and ledger"),
+    # Gift Cards
+    ("giftcards:manage", "Issue, redeem, and manage gift cards"),
+    ("giftcards:view", "View gift cards and transaction history"),
 ]
 
 # ── Role templates with their permission sets ────────────────────
@@ -76,6 +79,7 @@ ROLE_TEMPLATES = {
             "menu:manage", "menu:create", "menu:view",
             "settings:manage",
             "crm:manage", "crm:view",
+            "giftcards:manage", "giftcards:view",
         ],
     },
     "cashier": {
@@ -87,6 +91,7 @@ ROLE_TEMPLATES = {
             "shifts:open", "shifts:close", "shifts:view",
             "menu:view",
             "crm:view", "crm:manage",
+            "giftcards:manage", "giftcards:view",
         ],
     },
     "waiter": {

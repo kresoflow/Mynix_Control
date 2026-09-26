@@ -6,11 +6,13 @@ import 'package:kreso_frontend/core/widgets/app_card.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../catalog_enums.dart';
+import '../catalog_deletion_dialogs.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/color_picker/color_picker_utils.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_status_badge.dart';
 
 class MenuGridItem extends StatelessWidget {
   final MenuItem item;
@@ -135,9 +137,35 @@ class MenuGridItem extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (item.attributesString != null) ...[
-                          const SizedBox(height: 2),
-                          Text(item.attributesString!, style: AppTextStyles.caption.copyWith(fontSize: 11), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        if (item.flavorString != null || item.variationsSummary != null) ...[
+                          const SizedBox(height: 4),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 4,
+                            runSpacing: 4,
+                            children: [
+                              if (item.flavorString != null)
+                                AppStatusBadge(
+                                  label: item.flavorString!,
+                                  variant: AppBadgeVariant.warning,
+                                  height: 20,
+                                ),
+                              if (item.variationsSummary != null)
+                                AppStatusBadge(
+                                  label: item.variationsSummary!,
+                                  variant: AppBadgeVariant.info,
+                                  height: 20,
+                                ),
+                            ],
+                          ),
+                        ] else if (item.attributesString != null) ...[
+                          const SizedBox(height: 4),
+                          AppStatusBadge(
+                            label: item.attributesString!,
+                            variant: AppBadgeVariant.neutral,
+                            height: 20,
+                          ),
                         ],
                       ],
                     ),
@@ -163,7 +191,7 @@ class MenuGridItem extends StatelessWidget {
                                 final maxPrice = prices.reduce((num a, num b) => a > b ? a : b);
                                 return '${minPrice.toCurrency(context)} — ${maxPrice.toCurrency(context)}';
                               }
-                              return prices.map((p) => p.toCurrency(context)).join(' | ');
+                              return prices.map((p) => p.toCurrency(context)).join('  ');
                             }
                             return (item.price as num).toCurrency(context);
                           }(),
@@ -191,12 +219,15 @@ class MenuGridItem extends StatelessWidget {
                       onDelete();
                     } else if (val == 'restore') {
                       onRestore();
+                    } else if (val == 'hard_delete') {
+                      CatalogDeletionDialogs.confirmHardDeleteItem(context, item);
                     }
                   },
                   itemBuilder: (ctx) => [
                     if (item.isAvailable) const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                    if (item.isAvailable) const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: AppColors.danger))),
+                    if (item.isAvailable) const PopupMenuItem(value: 'delete', child: Text('В архив', style: TextStyle(color: AppColors.danger))),
                     if (!item.isAvailable) const PopupMenuItem(value: 'restore', child: Text('Восстановить', style: TextStyle(color: AppColors.success))),
+                    if (!item.isAvailable) const PopupMenuItem(value: 'hard_delete', child: Text('Удалить навсегда', style: TextStyle(color: AppColors.danger))),
                   ],
                 ),
               ),

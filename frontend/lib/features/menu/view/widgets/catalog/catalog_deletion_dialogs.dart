@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -18,6 +18,7 @@ class CatalogDeletionDialogs {
       return;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AppDialog(
@@ -26,9 +27,10 @@ class CatalogDeletionDialogs {
         isDestructive: true,
         width: 420,
         content: Text(
-          'Архивировать категорию «${category.name}»?\nВсе вложенные блюда и товары будут заархивированы и скрыты.',
+          'Переместить категорию «${category.name}» в архив?\n'
+          'Все её позиции будут скрыты из кассы и активных списков, но сохранятся в архиве.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
         ),
         actions: [
@@ -37,7 +39,7 @@ class CatalogDeletionDialogs {
             label: 'Архивировать',
             icon: PhosphorIconsRegular.archive,
             onPressed: () {
-              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'all'));
+              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'soft'));
               Navigator.pop(ctx);
             },
           ),
@@ -47,6 +49,7 @@ class CatalogDeletionDialogs {
   }
 
   static void confirmHardDeleteCategory(BuildContext context, dynamic category) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AppDialog(
@@ -55,9 +58,9 @@ class CatalogDeletionDialogs {
         isDestructive: true,
         width: 420,
         content: Text(
-          'Окончательно стереть категорию «${category.name}» из базы данных?\nЭто возможно только если по её товарам нет истории продаж.',
+          'Окончательно стереть категорию «${category.name}» из базы данных?\nЭто действие необратимо и возможно только если по её товарам нет истории продаж и склада.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
         ),
         actions: [
@@ -81,6 +84,7 @@ class CatalogDeletionDialogs {
       return;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayName = item.cleanName ?? item.name;
     showDialog(
       context: context,
@@ -90,9 +94,10 @@ class CatalogDeletionDialogs {
         isDestructive: true,
         width: 420,
         content: Text(
-          'Архивировать позицию «$displayName»?\nОна исчезнет с кассы, но сохранится в отчетах.',
+          'Переместить позицию «$displayName» в архив?\n'
+          'Она исчезнет из кассы и накладных, но её всегда можно будет восстановить из архива.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
         ),
         actions: [
@@ -111,6 +116,7 @@ class CatalogDeletionDialogs {
   }
 
   static void confirmHardDeleteItem(BuildContext context, dynamic item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayName = item.cleanName ?? item.name;
     showDialog(
       context: context,
@@ -120,9 +126,9 @@ class CatalogDeletionDialogs {
         isDestructive: true,
         width: 420,
         content: Text(
-          'Окончательно удалить позицию «$displayName» из базы данных?\nЭто возможно только если по ней нет истории продаж.',
+          'Окончательно удалить позицию «$displayName» из базы данных?\nЭто действие необратимо и возможно только если по ней нет истории продаж и склада.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
         ),
         actions: [
@@ -146,31 +152,37 @@ class CatalogDeletionDialogs {
     required Set<int> selectedCategories,
     required VoidCallback onCleared,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final selectedCount = selectedItems.length + selectedCategories.length;
     showDialog(
       context: context,
       builder: (ctx) => AppDialog(
-        title: 'Массовое удаление',
-        icon: PhosphorIconsRegular.trash,
+        title: 'Массовая архивация',
+        icon: PhosphorIconsRegular.archive,
         isDestructive: true,
         width: 420,
         content: Text(
-          'Удалить выбранные элементы ($selectedCount шт.)?\nВложенные позиции будут архивированы.',
+          'Переместить выбранные элементы ($selectedCount шт.) в архив?\n'
+          'Они будут скрыты из кассы, но сохранятся в архиве.',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
         ),
         actions: [
           AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
           AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
+            label: 'Архивировать',
+            icon: PhosphorIconsRegular.archive,
             onPressed: () {
-              for (var itemId in selectedItems) {
-                context.read<MenuBloc>().add(DeleteMenuItem(itemId, mode: 'soft'));
+              if (selectedItems.isNotEmpty) {
+                context.read<MenuBloc>().add(
+                  DeleteMenuItemsBulk(selectedItems.toList(), mode: 'soft'),
+                );
               }
-              for (var catId in selectedCategories) {
-                context.read<CategoryBloc>().add(DeleteCategory(catId, mode: 'all'));
+              if (selectedCategories.isNotEmpty) {
+                context.read<CategoryBloc>().add(
+                  DeleteCategoriesBulk(selectedCategories.toList(), mode: 'soft'),
+                );
               }
               Navigator.pop(ctx);
               onCleared();

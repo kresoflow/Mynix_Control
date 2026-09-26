@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/core/widgets/icon_picker_field.dart';
@@ -49,6 +49,42 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
               queryName: nameController.text.trim(),
               categoryType: type,
               excludeCategoryId: itemToEdit?.id,
+            );
+          }
+
+          void showDuplicateBlockedDialog(BuildContext dialogCtx, dynamic existingItem) {
+            showDialog(
+              context: dialogCtx,
+              builder: (alertCtx) => AppDialog(
+                title: 'Категория уже существует',
+                icon: PhosphorIconsRegular.warningCircle,
+                width: 440,
+                content: Text(
+                  'Категория «${existingItem.name}» уже есть в каталоге.\n\nОткрыть существующую категорию для редактирования?',
+                  style: const TextStyle(fontSize: 14, height: 1.4),
+                ),
+                actions: [
+                  AppGhostButton(
+                    label: 'Отмена',
+                    onPressed: () => Navigator.pop(alertCtx),
+                  ),
+                  const SizedBox(width: 8),
+                  AppPrimaryButton(
+                    label: 'Открыть карточку',
+                    icon: PhosphorIconsRegular.arrowSquareOut,
+                    onPressed: () {
+                      Navigator.pop(alertCtx);
+                      Navigator.pop(dialogCtx);
+                      showAddCategoryDialog(
+                        context,
+                        currentCategoryId: currentCategoryId,
+                        itemToEdit: existingItem,
+                        type: type,
+                      );
+                    },
+                  ),
+                ],
+              ),
             );
           }
 
@@ -173,6 +209,11 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                   final finalColor = selectedColor;
                   
                   if (nameController.text.isNotEmpty) {
+                    if (!isEditing && !isBulk && duplicateMatch != null) {
+                      showDuplicateBlockedDialog(ctx, duplicateMatch.item);
+                      return;
+                    }
+
                     if (isEditing) {
                       context.read<CategoryBloc>().add(
                             UpdateCategory(

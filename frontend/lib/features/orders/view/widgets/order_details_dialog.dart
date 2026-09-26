@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -130,17 +130,21 @@ class OrderDetailsDialog extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.menuItemName,
+                          item.cleanName,
                           style: AppTextStyles.body.copyWith(
                             fontWeight: FontWeight.w600,
                             color: isDark ? AppColors.darkText : AppColors.lightText,
                           ),
                         ),
-                        if (item.selectedOptions != null && item.selectedOptions!.isNotEmpty) ...[
+                        if (item.optionsSummary != null) ...[
                           const SizedBox(height: 2),
                           Text(
-                            'С модификаторами',
-                            style: AppTextStyles.caption.copyWith(color: subtext, fontSize: 11),
+                            item.optionsSummary!,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.brandPrimary,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                         const SizedBox(height: 4),

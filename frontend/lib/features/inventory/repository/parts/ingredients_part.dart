@@ -62,6 +62,8 @@ extension IngredientsPart on InventoryRepository {
       final response = await _dio.get('/inventory/retail/');
       final data = response.data as List;
       return data.map((json) {
+        final bool isAvailable = json['is_available'] as bool? ?? true;
+        final bool isArchived = json['is_archived'] as bool? ?? (!isAvailable);
         return Ingredient(
           id: json['id'],
           name: json['name'],
@@ -75,7 +77,7 @@ extension IngredientsPart on InventoryRepository {
           barcode: json['barcode'],
           categoryId: json['category_id'],
           categoryName: json['category_name'],
-          isArchived: json['is_archived'] ?? false,
+          isArchived: isArchived,
         );
       }).toList();
     } catch (e) {

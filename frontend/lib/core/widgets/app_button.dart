@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -146,6 +146,15 @@ class AppButton extends StatefulWidget {
 class _AppButtonState extends State<AppButton> {
   bool _isHovered = false;
   bool _isPressed = false;
+  int _lastTapTime = 0;
+
+  void _handleTap() {
+    if (widget.onPressed == null || widget.isLoading) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastTapTime < 400) return;
+    _lastTapTime = now;
+    widget.onPressed!();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -287,7 +296,7 @@ class _AppButtonState extends State<AppButton> {
         onTapDown: enabled ? (_) => setState(() => _isPressed = true) : null,
         onTapUp: enabled ? (_) => setState(() => _isPressed = false) : null,
         onTapCancel: enabled ? () => setState(() => _isPressed = false) : null,
-        onTap: enabled ? widget.onPressed : null,
+        onTap: enabled ? _handleTap : null,
         child: AnimatedScale(
           scale: _isPressed ? 0.97 : (_isHovered ? 1.01 : 1.0),
           duration: const Duration(milliseconds: 100),
@@ -302,7 +311,10 @@ class _AppButtonState extends State<AppButton> {
               border: border,
               boxShadow: shadow,
             ),
-            child: Center(child: content),
+            child: Center(
+              widthFactor: (widget.isFullWidth || widget.width != null) ? null : 1.0,
+              child: content,
+            ),
           ),
         ),
       ),

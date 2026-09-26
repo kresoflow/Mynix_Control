@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
@@ -74,9 +74,10 @@ class BulkReceiptRowWidget extends StatelessWidget {
                     return const Iterable<Ingredient>.empty();
                   }
                   return ingredients.where((Ingredient option) {
-                    return option.name.toLowerCase().contains(
-                      textEditingValue.text.toLowerCase(),
-                    );
+                    return !option.isArchived &&
+                        option.name.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                   });
                 },
                 onSelected: (Ingredient selection) {

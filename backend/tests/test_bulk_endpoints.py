@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from httpx import AsyncClient
 from sqlmodel import select
 from app.users.models import Tenant, Role, User, UserRole
@@ -288,3 +288,39 @@ async def test_document_completion_rejects_bogus_item_ids(async_client: AsyncCli
     txns = (await db_session.execute(select(StockTransaction).where(StockTransaction.ingredient_id == real_ing_id))).scalars().all()
     assert len(txns) == 1
     assert txns[0].quantity == 100.0
+
+@pytest.mark.asyncio
+async def test_bulk_delete_menu_items_and_categories_smart_purge(async_client: AsyncClient, db_session, auth_setup):
+    admin_headers = auth_setup["admin_headers"]
+
+    # 1. Create a category
+    cat_resp = await async_client.post("/api/v1/categories/", json={"name": "Десерты", "category_type": "dish"}, headers=admin_headers)
+    assert cat_resp.status_code == 200
+    cat_id = cat_resp.json()["id"]
+
+    # 2. Create menu items in this category
+    item_resp = await async_client.post("/api/v1/menu/", json={
+        "name": "Чизкейк Нью-Йорк",
+        "price": 300.0,
+        "category_id": cat_id,
+        "type": "dish"
+    }, headers=admin_headers)
+    assert item_resp.status_code == 201
+    item_id = item_resp.json()["id"]
+
+    # 3. Bulk delete menu items in "hard" mode (no orders -> hard delete)
+    del_resp = await async_client.post("/api/v1/menu/bulk-delete", json={"ids": [item_id], "mode": "hard"}, headers=admin_headers)
+    assert del_resp.status_code == 200
+
+    # Verify item is physically deleted
+    db_item = await db_session.get(MenuItem, item_id)
+    assert db_item is None
+
+    # 4. Bulk delete category in "hard" mode (no orders -> hard delete)
+    cat_del_resp = await async_client.post("/api/v1/categories/bulk-delete", json={"ids": [cat_id], "mode": "hard"}, headers=admin_headers)
+    assert cat_del_resp.status_code == 200
+
+    from app.inventory.models import MenuCategory
+    db_cat = await db_session.get(MenuCategory, cat_id)
+    assert db_cat is None
+

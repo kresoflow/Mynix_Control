@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -65,6 +65,7 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
       duplicateMatch = DuplicateDetector.findMenuItemDuplicate(
         items: menuState.items,
         queryName: widget.nameController.text,
+        isRetail: false,
         queryBarcode: widget.barcodeController.text,
         currentCategoryId: widget.selectedCategoryId,
         excludeItemId: widget.excludeItemId,
@@ -74,12 +75,54 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        BlocBuilder<CategoryBloc, CategoryState>(
+          builder: (context, catState) {
+            final dishCategories = catState is CategoryLoaded
+                ? catState.categories.where((c) => c.categoryType == 'dish' && !c.isArchived).toList()
+                : [];
+
+            final bool hasMatchingCategory = widget.selectedCategoryId != null &&
+                widget.selectedCategoryId != 0 &&
+                dishCategories.any((c) => c.id == widget.selectedCategoryId);
+            final int? effectiveCategoryId = hasMatchingCategory ? widget.selectedCategoryId : null;
+
+            return DropdownButtonFormField<int?>(
+              initialValue: effectiveCategoryId,
+              dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+              decoration: InputDecoration(
+                labelText: 'Категория блюда',
+                filled: true,
+                fillColor: inputBg,
+                border: OutlineInputBorder(
+                  borderRadius: AppRadii.inputRadius,
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Icon(PhosphorIconsRegular.folderPlus, color: AppColors.brandPrimary),
+              ),
+              items: [
+                const DropdownMenuItem<int?>(
+                  value: null,
+                  child: Text('Без категории (в корень каталога)'),
+                ),
+                ...dishCategories.map(
+                  (c) => DropdownMenuItem<int?>(
+                    value: c.id,
+                    child: Text(c.name),
+                  ),
+                ),
+              ],
+              onChanged: widget.onCategoryChanged,
+            );
+          },
+        ),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               flex: 2,
               child: TextFormField(
                 controller: widget.nameController,
+                autofocus: widget.excludeItemId == null,
                 decoration: InputDecoration(
                   labelText: 'Название блюда',
                   filled: true,
@@ -92,7 +135,6 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                 ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return 'Обязательное поле';
-                  if (duplicateMatch != null) return 'Позиция уже существует';
                   return null;
                 },
               ),
@@ -139,47 +181,6 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
               );
             },
           ),
-        const SizedBox(height: 16),
-        BlocBuilder<CategoryBloc, CategoryState>(
-          builder: (context, catState) {
-            final dishCategories = catState is CategoryLoaded
-                ? catState.categories.where((c) => c.categoryType == 'dish' && !c.isArchived).toList()
-                : [];
-
-            final bool hasMatchingCategory = widget.selectedCategoryId != null &&
-                widget.selectedCategoryId != 0 &&
-                dishCategories.any((c) => c.id == widget.selectedCategoryId);
-            final int? effectiveCategoryId = hasMatchingCategory ? widget.selectedCategoryId : null;
-
-            return DropdownButtonFormField<int?>(
-              initialValue: effectiveCategoryId,
-              dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              decoration: InputDecoration(
-                labelText: 'Категория блюда',
-                filled: true,
-                fillColor: inputBg,
-                border: OutlineInputBorder(
-                  borderRadius: AppRadii.inputRadius,
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: Icon(PhosphorIconsRegular.folderPlus, color: AppColors.brandPrimary),
-              ),
-              items: [
-                const DropdownMenuItem<int?>(
-                  value: null,
-                  child: Text('Без категории (в корень каталога)'),
-                ),
-                ...dishCategories.map(
-                  (c) => DropdownMenuItem<int?>(
-                    value: c.id,
-                    child: Text(c.name),
-                  ),
-                ),
-              ],
-              onChanged: widget.onCategoryChanged,
-            );
-          },
-        ),
         const SizedBox(height: 16),
         Row(
           children: [

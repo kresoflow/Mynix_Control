@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -197,7 +197,7 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
                             context: context,
                             builder: (_) => RecipeBulkEditDialog(
                               menuItemId: activeTargetId,
-                              availableIngredients: ingState.ingredients.where((i) => !i.isRetail).toList(),
+                              availableIngredients: ingState.ingredients.where((i) => !i.isRetail && !i.isArchived).toList(),
                               currentRecipes: currentRecipes,
                             ),
                           );

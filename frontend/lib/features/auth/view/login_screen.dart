@@ -54,76 +54,80 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showSuperadminDialog(BuildContext context) {
+  void _showSuperadminDialog(BuildContext context) async {
     final defaultToken = kDebugMode ? 'super_secret_kreso_token_2026' : '';
     final controller = TextEditingController(text: defaultToken);
-    showDialog(
-      context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Супер-администратор',
-        icon: PhosphorIconsRegular.shieldCheck,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Введите мастер-токен для доступа к платформе:',
-              style: AppTextStyles.caption.copyWith(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkSubtext
-                    : AppColors.lightSubtext,
-              ),
-            ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: controller,
-              labelText: 'Мастер-токен',
-              hintText: 'токен доступа...',
-              obscureText: true,
-              prefixIcon: const Icon(PhosphorIconsRegular.key, size: 18),
-            ),
-            if (kDebugMode) ...[
-              const SizedBox(height: 8),
+    try {
+      await showDialog(
+        context: context,
+        builder: (ctx) => AppDialog(
+          title: 'Супер-администратор',
+          icon: PhosphorIconsRegular.shieldCheck,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                'Dev токен: super_secret_kreso_token_2026',
+                'Введите мастер-токен для доступа к платформе:',
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.brandPrimary,
-                  fontSize: 11,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkSubtext
+                      : AppColors.lightSubtext,
                 ),
               ),
+              const SizedBox(height: 12),
+              AppTextField(
+                controller: controller,
+                labelText: 'Мастер-токен',
+                hintText: 'токен доступа...',
+                obscureText: true,
+                prefixIcon: const Icon(PhosphorIconsRegular.key, size: 18),
+              ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Dev токен: super_secret_kreso_token_2026',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.brandPrimary,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ],
+          ),
+          actions: [
+            AppGhostButton(
+              label: 'Отмена',
+              onPressed: () => Navigator.pop(ctx),
+            ),
+            AppPrimaryButton(
+              label: 'Войти',
+              icon: PhosphorIconsRegular.signIn,
+              onPressed: () {
+                final token = controller.text.trim();
+                Navigator.pop(ctx);
+                if (token.isNotEmpty) {
+                  final apiClient = context.read<ApiClient>();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BlocProvider(
+                        create: (context) => SuperadminBloc(
+                          repository: SuperadminRepository(dio: apiClient.dio),
+                        ),
+                        child: SuperadminScreen(systemToken: token),
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
           ],
         ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(ctx),
-          ),
-          AppPrimaryButton(
-            label: 'Войти',
-            icon: PhosphorIconsRegular.signIn,
-            onPressed: () {
-              Navigator.pop(ctx);
-              final token = controller.text.trim();
-              if (token.isNotEmpty) {
-                final apiClient = context.read<ApiClient>();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BlocProvider(
-                      create: (context) => SuperadminBloc(
-                        repository: SuperadminRepository(dio: apiClient.dio),
-                      ),
-                      child: SuperadminScreen(systemToken: token),
-                    ),
-                  ),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   @override

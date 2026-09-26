@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +9,8 @@ import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/create_menu_item_dialog.dart';
 import 'menu_item/menu_item_basic_fields.dart';
 import 'menu_item/menu_item_variations_section.dart';
 import 'menu_item/menu_item_modifier_groups_section.dart';
@@ -95,6 +97,41 @@ class _MenuItemModalState extends State<MenuItemModal> {
     });
   }
 
+  void _showDuplicateBlockedDialog(BuildContext context, MenuItem existingItem) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AppDialog(
+        title: 'Блюдо уже существует',
+        icon: PhosphorIconsRegular.warningCircle,
+        width: 440,
+        content: Text(
+          'В этой категории уже есть активное блюдо «${existingItem.cleanName}».\n\nОткрыть существующую карточку для редактирования?',
+          style: const TextStyle(fontSize: 14, height: 1.4),
+        ),
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.pop(dialogCtx),
+          ),
+          const SizedBox(width: 8),
+          AppPrimaryButton(
+            label: 'Открыть карточку',
+            icon: PhosphorIconsRegular.arrowSquareOut,
+            onPressed: () {
+              Navigator.pop(dialogCtx);
+              Navigator.pop(context);
+              showAddMenuItemDialog(
+                context,
+                currentCategoryId: _selectedCategoryId,
+                itemToEdit: existingItem,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _submit() {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
@@ -131,6 +168,23 @@ class _MenuItemModalState extends State<MenuItemModal> {
               ),
             );
       } else {
+        // [ИНВАРИАНТ] Poka-Yoke: Блокировка создания 100% дубликата блюда в категории
+        final menuState = context.read<MenuBloc>().state;
+        if (menuState is MenuLoaded) {
+          final duplicateMatch = DuplicateDetector.findMenuItemDuplicate(
+            items: menuState.items,
+            queryName: name,
+            isRetail: false,
+            queryBarcode: barcode,
+            currentCategoryId: _selectedCategoryId,
+          );
+
+          if (duplicateMatch != null && duplicateMatch.isSameCategory) {
+            _showDuplicateBlockedDialog(context, duplicateMatch.item);
+            return;
+          }
+        }
+
         context.read<MenuBloc>().add(
           CreateMenuItem(
             name: name,

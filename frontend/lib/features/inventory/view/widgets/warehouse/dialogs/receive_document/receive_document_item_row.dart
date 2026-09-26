@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -90,6 +90,7 @@ class ReceiveDocumentItemRow extends StatelessWidget {
                       return const Iterable<Ingredient>.empty();
                     }
                     return availableIngredients.where((option) {
+                      if (option.isArchived) return false;
                       final matchesText = option.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
                       if (!matchesText) return false;
                       final isOptionRetail = option.attributes?['is_retail'] == true;

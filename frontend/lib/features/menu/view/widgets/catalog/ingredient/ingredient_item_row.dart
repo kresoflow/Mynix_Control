@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
@@ -192,6 +192,47 @@ class IngredientItemRow extends StatelessWidget {
                         ],
                       ),
                       if (!isManageMode) ...[
+                        if (item.isArchived) ...[
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: 'Восстановить из архива',
+                            child: InkWell(
+                              onTap: () {
+                                if (onRestore != null) {
+                                  onRestore!();
+                                } else {
+                                  context.read<IngredientBloc>().add(RestoreIngredient(item.id));
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: AppColors.brandPrimary.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 14, color: AppColors.brandPrimary),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Восстановить',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.brandPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(width: 8),
                         PopupMenuButton<String>(
                           icon: Icon(PhosphorIconsRegular.dotsThreeVertical, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),

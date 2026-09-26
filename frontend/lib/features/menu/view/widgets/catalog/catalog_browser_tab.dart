@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
@@ -153,6 +153,14 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                     ? selectedCount == (currentCategories.length + currentItems.length)
                     : false;
 
+                final int archivedCategoriesCount = catState is CategoryLoaded
+                    ? catState.categories.where((c) => c.isArchived).length
+                    : 0;
+                final int archivedItemsCount = menuState is MenuLoaded
+                    ? menuState.items.where((i) => !i.isAvailable && widget.itemFilter(i)).length
+                    : 0;
+                final int totalArchivedCount = archivedCategoriesCount + archivedItemsCount;
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -165,6 +173,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       currentCategoryId: _currentCategoryId,
                       rootTitle: widget.rootTitle,
                       showArchived: _showArchived,
+                      archivedCount: totalArchivedCount,
                       onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                       onShowArchivedToggle: () => setState(() => _showArchived = !_showArchived),
                       onManageModeChanged: (mode) => setState(() {

@@ -89,6 +89,14 @@ async def apply_tenant_patches(conn, schema: str) -> None:
 
 async def init_tenant_schema(schema_name: str) -> None:
     """Create a new tenant schema and initialize tenant-specific tables."""
+    # Ensure all domain models are loaded into SQLModel.metadata
+    import app.users.models  # noqa: F401
+    import app.inventory.models  # noqa: F401
+    import app.pos.models  # noqa: F401
+    import app.crm.models  # noqa: F401
+    import app.analytics.models  # noqa: F401
+    import app.gift_cards.models  # noqa: F401
+
     async with async_engine.begin() as conn:
         from sqlalchemy import text
         await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema_name}"'))
@@ -150,9 +158,19 @@ async def auto_migrate_tenant_schemas() -> None:
             res = await session.execute(text("SELECT schema_name FROM public.tenants"))
             schemas = [r[0] for r in res.fetchall()]
 
+        # Ensure all domain models are registered
+        import app.users.models  # noqa: F401
+        import app.inventory.models  # noqa: F401
+        import app.pos.models  # noqa: F401
+        import app.crm.models  # noqa: F401
+        import app.analytics.models  # noqa: F401
+        import app.gift_cards.models  # noqa: F401
+
         async with async_engine.begin() as conn:
             for schema in schemas:
                 await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
+                await conn.execute(text(f'SET search_path TO "{schema}"'))
+                await conn.run_sync(SQLModel.metadata.create_all)
                 await apply_tenant_patches(conn, schema)
     except Exception as e:
         print(f"Tenant auto-migration notice: {e}")

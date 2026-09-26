@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
@@ -56,7 +56,7 @@ class IngredientHeader extends StatelessWidget {
               onPressed: () {
                 final state = context.read<IngredientBloc>().state;
                 if (state is IngredientLoaded) {
-                  final rawIngredients = state.ingredients.where((i) => !i.isRetail).toList();
+                  final rawIngredients = state.ingredients.where((i) => !i.isRetail && !i.isArchived).toList();
                   final catState = context.read<CategoryBloc>().state;
                   List<int> allowedCategoryIds = [];
                   if (selectedCategoryId != null && catState is CategoryLoaded) {

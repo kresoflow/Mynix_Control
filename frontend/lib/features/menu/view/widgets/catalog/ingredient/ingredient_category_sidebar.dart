@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
@@ -41,7 +41,7 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
             onPressed: () {
-              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'all'));
+              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'auto'));
               Navigator.pop(ctx);
             },
             child: const Text('Удалить'),
@@ -63,7 +63,7 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
             onPressed: () {
               final ids = categories.map((c) => c.id).toList();
-              context.read<CategoryBloc>().add(DeleteCategoriesBulk(ids, mode: 'all'));
+              context.read<CategoryBloc>().add(DeleteCategoriesBulk(ids, mode: 'auto'));
               Navigator.pop(ctx);
             },
             child: const Text('Удалить все'),
@@ -78,7 +78,7 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final ingState = context.watch<IngredientBloc>().state;
     final ingredients = ingState is IngredientLoaded
-        ? ingState.ingredients.where((i) => !i.isRetail).toList()
+        ? ingState.ingredients.where((i) => !i.isRetail && !i.isArchived).toList()
         : [];
 
     return SizedBox(
@@ -90,7 +90,7 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
           }
           if (catState is CategoryLoaded) {
             final ingredientCategories = catState.categories
-                .where((c) => c.categoryType == 'ingredient' && c.isVisible)
+                .where((c) => c.categoryType == 'ingredient' && c.isVisible && !c.isArchived)
                 .toList();
 
             final filteredCategories = ingredientCategories.where((c) {

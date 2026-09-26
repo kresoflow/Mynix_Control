@@ -63,24 +63,30 @@ def get_start_end(period: str, start: Optional[date] = None, end: Optional[date]
         
     return start_date, end_date, group_by
 
-@router.get("/metrics", response_model=AnalyticsMetrics)
+@router.get(
+    "/metrics",
+    response_model=AnalyticsMetrics,
+    dependencies=[Depends(require_permission("analytics:view"))],
+)
 async def get_metrics(
     period: str = Query("today", description="today, week, month, year, custom"),
     start: Optional[date] = None,
     end: Optional[date] = None,
     session: AsyncSession = Depends(get_tenant_session),
-    _=Depends(require_permission("analytics:view"))
 ):
     start_date, end_date, group_by = get_start_end(period, start, end)
     return await get_analytics_metrics(session, start_date, end_date, group_by)
 
-@router.get("/xray", response_model=AnalyticsXRay)
+@router.get(
+    "/xray",
+    response_model=AnalyticsXRay,
+    dependencies=[Depends(require_permission("analytics:view"))],
+)
 async def get_xray(
     period: str = Query("today", description="today, week, month, year, custom"),
     start: Optional[date] = None,
     end: Optional[date] = None,
     session: AsyncSession = Depends(get_tenant_session),
-    _=Depends(require_permission("analytics:view"))
 ):
     start_date, end_date, _ = get_start_end(period, start, end)
     return await get_analytics_xray(session, start_date, end_date)

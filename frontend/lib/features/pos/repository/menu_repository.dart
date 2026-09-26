@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 
@@ -119,7 +119,8 @@ class MenuRepository {
         'barcode': barcode,
         'parent_id': parentId,
       },);
-      return response.data['id'] as int;
+      final dynamic rawId = response.data != null ? (response.data['id'] ?? response.data['menu_item_id']) : null;
+      return (rawId is int) ? rawId : (int.tryParse(rawId?.toString() ?? '') ?? 0);
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
         throw Exception(e.response?.data['detail'] ?? 'Failed to create retail product');
@@ -140,7 +141,7 @@ class MenuRepository {
     }
   }
 
-  Future<void> deleteMenuItem(int id, {String mode = 'soft'}) async {
+  Future<void> deleteMenuItem(int id, {String mode = 'auto'}) async {
     try {
       await _dio.delete('/menu/$id', queryParameters: {'mode': mode});
     } catch (e) {
@@ -148,6 +149,17 @@ class MenuRepository {
         throw Exception(e.response?.data['detail'] ?? 'Failed to delete menu item');
       }
       throw Exception('Failed to delete menu item: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteMenuItemsBulk(List<int> ids, {String mode = 'auto'}) async {
+    try {
+      await _dio.post('/menu/bulk-delete', data: {'ids': ids, 'mode': mode});
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Failed to delete menu items bulk');
+      }
+      throw Exception('Failed to delete menu items bulk: ${e.toString()}');
     }
   }
 

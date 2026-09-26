@@ -109,10 +109,18 @@ async def create_order(
     total = 0.0
 
 
+    # Batch load all MenuItems in a single query (N+1 query elimination)
+    all_item_ids = list({item_req.menu_item_id for item_req in data.items})
+    batch_stmt = (
+        select(MenuItem)
+        .where(MenuItem.id.in_(all_item_ids))
+        .options(selectinload(MenuItem.retail_product))
+    )
+    batch_res = await session.execute(batch_stmt)
+    menu_items_map = {m.id: m for m in batch_res.scalars().all()}
+
     for item_req in data.items:
-        stmt = select(MenuItem).where(MenuItem.id == item_req.menu_item_id).options(selectinload(MenuItem.retail_product))
-        result = await session.execute(stmt)
-        menu_item = result.scalar_one_or_none()
+        menu_item = menu_items_map.get(item_req.menu_item_id)
         if not menu_item:
             raise ValueError(f"Позиция #{item_req.menu_item_id} не найдена в меню")
         if not menu_item.is_available:

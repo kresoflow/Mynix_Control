@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -31,7 +31,7 @@ class _IngredientTabState extends State<IngredientTab> {
 
   void _selectAll(IngredientLoaded state) {
     final raw = state.ingredients
-        .where((i) => !i.isRetail && (_showArchived || !i.isArchived))
+        .where((i) => !i.isRetail && (_showArchived ? i.isArchived : !i.isArchived))
         .toList();
     final filtered = _selectedCategoryId == null
         ? raw
@@ -41,16 +41,29 @@ class _IngredientTabState extends State<IngredientTab> {
     });
   }
 
+  void _confirmRestoreSelected() {
+    for (var itemId in _selectedIngredients) {
+      context.read<IngredientBloc>().add(RestoreIngredient(itemId));
+    }
+    setState(() {
+      _selectedIngredients.clear();
+      _isManageMode = false;
+    });
+  }
+
   void _confirmDeleteSelected() {
+    final isHard = _showArchived;
     showDialog(
       context: context,
       builder: (ctx) => AppDialog(
-        title: 'Массовая архивация',
-        icon: PhosphorIconsRegular.archive,
+        title: isHard ? 'Удаление навсегда' : 'Массовая архивация',
+        icon: isHard ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
         isDestructive: true,
         width: 420,
         content: Text(
-          'Архивировать выбранные элементы (${_selectedIngredients.length} шт.)?\nОни исчезнут из активных списков, но сохранятся в истории склада.',
+          isHard
+              ? 'Удалить навсегда выбранные элементы (${_selectedIngredients.length} шт.)?\nЭто действие необратимо и возможно только если по сырью нет складских проводок.'
+              : 'Архивировать выбранные элементы (${_selectedIngredients.length} шт.)?\nОни исчезнут из активных списков, но сохранятся в истории склада.',
           style: AppTextStyles.bodyMedium.copyWith(
             color: Theme.of(context).brightness == Brightness.dark
                 ? AppColors.darkSubtext
@@ -63,11 +76,11 @@ class _IngredientTabState extends State<IngredientTab> {
             onPressed: () => Navigator.pop(ctx),
           ),
           AppDangerButton(
-            label: 'Архивировать',
-            icon: PhosphorIconsRegular.archive,
+            label: isHard ? 'Удалить навсегда' : 'Архивировать',
+            icon: isHard ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
             onPressed: () {
               for (var itemId in _selectedIngredients) {
-                context.read<IngredientBloc>().add(DeleteIngredient(itemId, mode: 'soft'));
+                context.read<IngredientBloc>().add(DeleteIngredient(itemId, mode: isHard ? 'hard' : 'soft'));
               }
               setState(() {
                 _selectedIngredients.clear();
@@ -85,6 +98,9 @@ class _IngredientTabState extends State<IngredientTab> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final ingState = context.watch<IngredientBloc>().state;
+    final archivedCount = ingState is IngredientLoaded
+        ? ingState.ingredients.where((i) => !i.isRetail && i.isArchived).length
+        : 0;
 
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -105,7 +121,7 @@ class _IngredientTabState extends State<IngredientTab> {
                     Builder(
                       builder: (context) {
                         final raw = ingState is IngredientLoaded
-                            ? ingState.ingredients.where((i) => !i.isRetail).toList()
+                            ? ingState.ingredients.where((i) => !i.isRetail && (_showArchived ? i.isArchived : !i.isArchived)).toList()
                             : [];
                         final filtered = _selectedCategoryId == null
                             ? raw
@@ -115,7 +131,7 @@ class _IngredientTabState extends State<IngredientTab> {
                             ? PhosphorIconsRegular.square
                             : (isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.minusSquare);
                         final Color badgeColor = _selectedIngredients.isNotEmpty
-                            ? AppColors.danger
+                            ? (_showArchived ? AppColors.brandPrimary : AppColors.danger)
                             : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
 
                         return Row(
@@ -126,12 +142,12 @@ class _IngredientTabState extends State<IngredientTab> {
                               padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
                                 color: _selectedIngredients.isNotEmpty
-                                    ? AppColors.danger.withValues(alpha: isDark ? 0.2 : 0.1)
+                                    ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: isDark ? 0.2 : 0.1)
                                     : (isDark ? AppColors.darkCard : AppColors.lightCard),
                                 borderRadius: BorderRadius.circular(AppRadii.md),
                                 border: Border.all(
                                   color: _selectedIngredients.isNotEmpty
-                                      ? AppColors.danger.withValues(alpha: 0.4)
+                                      ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: 0.4)
                                       : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                                 ),
                               ),
@@ -177,9 +193,19 @@ class _IngredientTabState extends State<IngredientTab> {
                       },
                     ),
                     const SizedBox(width: 8),
+                    if (_showArchived) ...[
+                      AppPrimaryButton(
+                        label: 'Восстановить (${_selectedIngredients.length})',
+                        icon: PhosphorIconsRegular.arrowCounterClockwise,
+                        height: 38,
+                        size: AppButtonSize.md,
+                        onPressed: _selectedIngredients.isEmpty ? null : _confirmRestoreSelected,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     AppDangerButton(
-                      label: 'Удалить (${_selectedIngredients.length})',
-                      icon: PhosphorIconsRegular.trash,
+                      label: _showArchived ? 'Удалить навсегда (${_selectedIngredients.length})' : 'Архивировать (${_selectedIngredients.length})',
+                      icon: _showArchived ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
                       height: 38,
                       size: AppButtonSize.md,
                       onPressed: _selectedIngredients.isEmpty ? null : _confirmDeleteSelected,
@@ -216,16 +242,25 @@ class _IngredientTabState extends State<IngredientTab> {
                     ),
                     const SizedBox(width: 8),
 
-                    // Group 1.5: Archive Toggle
-                    AppSecondaryButton(
-                      label: '',
-                      icon: _showArchived ? PhosphorIconsRegular.archive : PhosphorIconsRegular.tray,
-                      tooltip: _showArchived ? 'Скрыть архивные' : 'Показать архивные',
-                      isSelected: _showArchived,
-                      height: 38,
-                      width: 38,
-                      size: AppButtonSize.md,
-                      onPressed: () => setState(() => _showArchived = !_showArchived),
+                    // Group 1.5: Archive Toggle with badge
+                    Badge(
+                      isLabelVisible: archivedCount > 0,
+                      label: Text('$archivedCount', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                      backgroundColor: AppColors.brandPrimary,
+                      offset: const Offset(4, -4),
+                      child: AppSecondaryButton(
+                        label: '',
+                        icon: PhosphorIconsRegular.archive,
+                        tooltip: _showArchived ? 'Скрыть архив' : (archivedCount > 0 ? 'Архив ($archivedCount)' : 'Архив'),
+                        isSelected: _showArchived,
+                        height: 38,
+                        width: 38,
+                        size: AppButtonSize.md,
+                        onPressed: () => setState(() {
+                          _showArchived = !_showArchived;
+                          _selectedIngredients.clear();
+                        }),
+                      ),
                     ),
                     const SizedBox(width: 8),
 
@@ -290,7 +325,9 @@ class _IngredientTabState extends State<IngredientTab> {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is IngredientLoaded && categoryState is CategoryLoaded) {
                         final filteredList = state.ingredients.where((i) {
+                          if (i.isRetail) return false;
                           if (!_showArchived && i.isArchived) return false;
+                          if (_showArchived && !i.isArchived) return false;
                           if (_searchQuery.isEmpty) return true;
                           final q = _searchQuery.toLowerCase().trim();
                           return i.name.toLowerCase().contains(q) ||
@@ -319,6 +356,45 @@ class _IngredientTabState extends State<IngredientTab> {
                                   // 3 KPI Cards Row (matching Recipe Tab)
                                   IngredientKpiCards(ingredients: state.ingredients),
                                   const SizedBox(height: 14),
+
+                                  // Archive Mode Information Banner
+                                  if (_showArchived) ...[
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                                        borderRadius: BorderRadius.circular(AppRadii.md),
+                                        border: Border.all(
+                                          color: AppColors.brandPrimary.withValues(alpha: 0.3),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(PhosphorIconsRegular.archive, size: 18, color: AppColors.brandPrimary),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              'Режим архива ($archivedCount поз.). Архивные позиции скрыты из кассы, накладных и расчетов остатков.',
+                                              style: AppTextStyles.bodyMedium.copyWith(
+                                                fontSize: 13,
+                                                color: isDark ? AppColors.darkText : AppColors.lightText,
+                                              ),
+                                            ),
+                                          ),
+                                          AppGhostButton(
+                                            label: 'Закрыть архив',
+                                            icon: PhosphorIconsRegular.x,
+                                            size: AppButtonSize.sm,
+                                            onPressed: () => setState(() {
+                                              _showArchived = false;
+                                              _selectedIngredients.clear();
+                                            }),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
 
                                   // Table or Grid View
                                   Expanded(

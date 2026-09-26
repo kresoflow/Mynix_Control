@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -190,6 +190,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
                   hideAmounts: !isUnlocked,
                   expectedCash: expectedCash,
                   onUnlockPin: _handleUnlockPin,
+                  onRefresh: _loadReport,
                 )
               else if (_selectedTab == 1)
                 ShiftZCloseTab(

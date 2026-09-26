@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -28,6 +28,7 @@ class SuppliersTab extends StatefulWidget {
 
 class _SuppliersTabState extends State<SuppliersTab> {
   String _searchQuery = '';
+  bool _showArchived = false;
 
   @override
   void initState() {
@@ -145,7 +146,9 @@ class _SuppliersTabState extends State<SuppliersTab> {
           );
         }
 
+        final int archivedCount = state.suppliers.where((s) => !s.isActive).length;
         final suppliers = state.suppliers.where((s) {
+          if (_showArchived ? s.isActive : !s.isActive) return false;
           if (_searchQuery.isEmpty) return true;
           final q = _searchQuery.toLowerCase().trim();
           return s.name.toLowerCase().contains(q) ||
@@ -164,7 +167,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Поставщики и взаиморасчеты',
+                        _showArchived ? 'Архив поставщиков' : 'Поставщики и взаиморасчеты',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -192,7 +195,20 @@ class _SuppliersTabState extends State<SuppliersTab> {
                         width: 240,
                         onChanged: (val) => setState(() => _searchQuery = val),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
+                      Badge(
+                        isLabelVisible: archivedCount > 0,
+                        label: Text('$archivedCount', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                        child: AppSecondaryButton(
+                          label: '',
+                          icon: PhosphorIconsRegular.archive,
+                          size: AppButtonSize.md,
+                          isSelected: _showArchived,
+                          tooltip: _showArchived ? 'Показать активных' : 'Архив поставщиков',
+                          onPressed: () => setState(() => _showArchived = !_showArchived),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       AppPrimaryButton(
                         label: 'Добавить',
                         icon: PhosphorIconsRegular.plus,

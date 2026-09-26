@@ -1,21 +1,29 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Склад / Вкладка «Остатки» (Warehouse Stock Tab)
+// ДОМЕН: lib/features/inventory/view/widgets/warehouse/stock_tab.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_pill_filters.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_capital_chart_card.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
-import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart';
-import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_capital_chart_card.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_low_inventory_widget.dart';
-import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
-import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_pill_filters.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_subcategory_header.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
-import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+
+// ─── 1. Виджет вкладки остатков склада ───────────────────────────────────────
 
 class StockTab extends StatefulWidget {
   final String filter;
@@ -33,6 +41,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
   String _searchQuery = '';
   bool _isExpandedAll = false;
   final Map<String, bool> _expandedCategories = {};
+  final Map<String, bool> _expandedSubcategories = {};
 
   @override
   void initState() {
@@ -40,11 +49,16 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
     _filter = widget.filter;
   }
 
+  // ─── 2. Обработчики действий (Handlers) ────────────────────────────────────
+
   void _toggleExpandAll() {
     setState(() {
       _isExpandedAll = !_isExpandedAll;
       for (final key in _expandedCategories.keys) {
         _expandedCategories[key] = _isExpandedAll;
+      }
+      for (final key in _expandedSubcategories.keys) {
+        _expandedSubcategories[key] = _isExpandedAll;
       }
     });
   }
@@ -52,9 +66,13 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
   void _onCategoryExpansionChanged(String category, bool isExpanded) {
     setState(() {
       _expandedCategories[category] = isExpanded;
-      if (!isExpanded) {
-        _isExpandedAll = false;
-      }
+      if (!isExpanded) _isExpandedAll = false;
+    });
+  }
+
+  void _onSubcategoryExpansionChanged(String subKey, bool isExpanded) {
+    setState(() {
+      _expandedSubcategories[subKey] = isExpanded;
     });
   }
 
@@ -68,18 +86,37 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
     );
   }
 
-  String _getRootCategoryName(Ingredient item, List<MenuCategory> allCategories) {
-    if (item.categoryId == null) return item.categoryName ?? 'Без категории';
-    var currentCat = allCategories.where((c) => c.id == item.categoryId).firstOrNull;
-    if (currentCat == null) return item.categoryName ?? 'Без категории';
+  // ─── 3. Иерархическая группировка категорий ────────────────────────────────
 
-    while (currentCat?.parentId != null) {
-      final parent = allCategories.where((c) => c.id == currentCat!.parentId).firstOrNull;
-      if (parent == null) break;
-      currentCat = parent;
+  /// Определяет путь категории (Корневая папка и Подпапка) для позиции склада.
+  (String rootName, String subName) _getCategoryHierarchy(
+    Ingredient item,
+    List<MenuCategory> allCategories,
+  ) {
+    if (item.categoryId == null) {
+      return (item.categoryName ?? 'Без категории', '');
     }
-    return currentCat?.name ?? item.categoryName ?? 'Без категории';
+
+    final currentCat = allCategories.where((c) => c.id == item.categoryId).firstOrNull;
+    if (currentCat == null) {
+      return (item.categoryName ?? 'Без категории', '');
+    }
+
+    if (currentCat.parentId == null) {
+      return (currentCat.name, '');
+    }
+
+    var root = allCategories.where((c) => c.id == currentCat.parentId).firstOrNull;
+    while (root?.parentId != null) {
+      final parent = allCategories.where((c) => c.id == root!.parentId).firstOrNull;
+      if (parent == null) break;
+      root = parent;
+    }
+
+    return (root?.name ?? currentCat.name, currentCat.name);
   }
+
+  // ─── 4. Построение интерфейса ──────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +138,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                 Text(state.message.replaceAll('Exception: ', ''), style: const TextStyle(color: Colors.grey, fontSize: 13)),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: () => context.read<IngredientBloc>().add(LoadIngredients()),
+                  onPressed: () => context.read<IngredientBloc>().add(const LoadIngredients()),
                   icon: const Icon(PhosphorIconsRegular.arrowsClockwise, size: 16),
                   label: const Text('Повторить попытку'),
                 ),
@@ -112,7 +149,15 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
           return const SizedBox.shrink();
         }
 
+        final catState = context.watch<CategoryBloc>().state;
+        final List<MenuCategory> allCategories = catState is CategoryLoaded ? catState.categories : [];
+
         final filtered = state.ingredients.where((item) {
+          if (item.isArchived) return false;
+          if (item.categoryId != null) {
+            final cat = allCategories.where((c) => c.id == item.categoryId).firstOrNull;
+            if (cat != null && cat.isArchived) return false;
+          }
           final isRetail = item.attributes != null && item.attributes!['is_retail'] == true;
           if (_filter == 'retail' && !isRetail) return false;
           if (_filter == 'raw' && isRetail) return false;
@@ -157,52 +202,104 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
         }
         final double expectedProfit = potentialRevenue - totalCapital;
 
-        final catState = context.watch<CategoryBloc>().state;
-        final List<MenuCategory> allCategories = catState is CategoryLoaded ? catState.categories : [];
-
-        final Map<String, List<Ingredient>> grouped = {};
+        // Группировка 2 уровней: Корневая папка -> Подпапки -> Позиции
+        final Map<String, Map<String, List<Ingredient>>> hierarchy = {};
+        final Map<String, List<Ingredient>> allRootItems = {};
         final Map<String, double> categoryCapitals = {};
 
         for (var item in filtered) {
-          final cat = _getRootCategoryName(item, allCategories);
-          if (!grouped.containsKey(cat)) {
-            grouped[cat] = [];
-            categoryCapitals[cat] = 0;
-            if (!_expandedCategories.containsKey(cat)) {
-              _expandedCategories[cat] = _isExpandedAll;
-            }
+          final (rootName, subName) = _getCategoryHierarchy(item, allCategories);
+
+          hierarchy.putIfAbsent(rootName, () => {});
+          hierarchy[rootName]!.putIfAbsent(subName, () => []).add(item);
+
+          allRootItems.putIfAbsent(rootName, () => []).add(item);
+
+          if (!_expandedCategories.containsKey(rootName)) {
+            _expandedCategories[rootName] = _isExpandedAll;
           }
-          grouped[cat]!.add(item);
+
+          final subKey = '$rootName::$subName';
+          if (!_expandedSubcategories.containsKey(subKey)) {
+            _expandedSubcategories[subKey] = _isExpandedAll;
+          }
+
           if (item.currentStock > 0) {
-            categoryCapitals[cat] = (categoryCapitals[cat] ?? 0) + (item.currentStock * item.costPerUnit);
+            categoryCapitals[rootName] = (categoryCapitals[rootName] ?? 0) + (item.currentStock * item.costPerUnit);
           }
         }
 
-        final sortedCategories = grouped.keys.toList()..sort((a, b) {
+        final sortedRootCategories = hierarchy.keys.toList()..sort((a, b) {
           if (a == 'Без категории') return 1;
           if (b == 'Без категории') return -1;
           return a.compareTo(b);
         });
 
+        // Построение плоского списка элементов с иерархией для виртуализации
         final List<dynamic> flatList = [];
-        for (final category in sortedCategories) {
-          final items = grouped[category]!;
-          final isExpanded = _searchQuery.isNotEmpty || (_expandedCategories[category] ?? false);
+        for (final rootCategory in sortedRootCategories) {
+          final items = allRootItems[rootCategory]!;
+          final subMap = hierarchy[rootCategory]!;
+          final isRootExpanded = _searchQuery.isNotEmpty || (_expandedCategories[rootCategory] ?? false);
 
           flatList.add({
             'type': 'header',
-            'categoryName': category,
+            'categoryName': rootCategory,
             'items': items,
-            'isExpanded': isExpanded,
+            'isExpanded': isRootExpanded,
           });
 
-          if (isExpanded) {
-            for (int i = 0; i < items.length; i++) {
-              flatList.add({
-                'type': 'item',
-                'item': items[i],
-                'isLast': i == items.length - 1,
+          if (isRootExpanded) {
+            final hasRealSubcategories = subMap.keys.any((k) => k.isNotEmpty);
+
+            if (hasRealSubcategories) {
+              final sortedSubcategories = subMap.keys.toList()..sort((a, b) {
+                if (a.isEmpty) return -1;
+                if (b.isEmpty) return 1;
+                return a.compareTo(b);
               });
+
+              for (final subName in sortedSubcategories) {
+                final subItems = subMap[subName]!;
+                final subKey = '$rootCategory::$subName';
+                final isSubExpanded = _searchQuery.isNotEmpty || (_expandedSubcategories[subKey] ?? false);
+
+                if (subName.isNotEmpty) {
+                  flatList.add({
+                    'type': 'subcategory_header',
+                    'subcategoryName': subName,
+                    'subKey': subKey,
+                    'items': subItems,
+                    'isExpanded': isSubExpanded,
+                  });
+
+                  if (isSubExpanded) {
+                    for (int i = 0; i < subItems.length; i++) {
+                      flatList.add({
+                        'type': 'item',
+                        'item': subItems[i],
+                        'isLast': i == subItems.length - 1,
+                      });
+                    }
+                  }
+                } else {
+                  for (int i = 0; i < subItems.length; i++) {
+                    flatList.add({
+                      'type': 'item',
+                      'item': subItems[i],
+                      'isLast': i == subItems.length - 1,
+                    });
+                  }
+                }
+              }
+            } else {
+              for (int i = 0; i < items.length; i++) {
+                flatList.add({
+                  'type': 'item',
+                  'item': items[i],
+                  'isLast': i == items.length - 1,
+                });
+              }
             }
           }
         }
@@ -222,10 +319,20 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                   !data['isExpanded'],
                 ),
               );
+            } else if (data['type'] == 'subcategory_header') {
+              return StockSubcategoryHeader(
+                subcategoryName: data['subcategoryName'],
+                items: List<Ingredient>.from(data['items'] ?? []),
+                isExpanded: data['isExpanded'],
+                onTap: () => _onSubcategoryExpansionChanged(
+                  data['subKey'],
+                  !data['isExpanded'],
+                ),
+              );
             } else {
               return StockItemRow(
                 item: data['item'],
-                isLast: data['isLast'],
+                isLast: data['isLast'] ?? false,
               );
             }
           },

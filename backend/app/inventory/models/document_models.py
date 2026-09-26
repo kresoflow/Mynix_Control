@@ -168,7 +168,7 @@ class SupplierTransactionUpdate(SQLModel):
     date: Optional[datetime] = None
 
 class SupplierPaymentCreate(SQLModel):
-    amount: float
+    amount: float = Field(gt=0, le=100_000_000)
     payment_method: PaymentMethod = PaymentMethod.CASH
     comment: Optional[str] = None
 
@@ -187,9 +187,9 @@ class InventoryDocumentItemRead(SQLModel):
 class InventoryDocumentItemCreate(SQLModel):
     ingredient_id: Optional[int] = None
     retail_product_id: Optional[int] = None
-    quantity: float
+    quantity: float = Field(gt=0, le=1_000_000)
     expected_quantity: Optional[float] = None
-    price_per_unit: Optional[float] = 0.0
+    price_per_unit: Optional[float] = Field(default=0.0, ge=0, le=10_000_000)
     total_price: Optional[float] = None
     sell_price: Optional[float] = None
     min_stock_alert: Optional[float] = None

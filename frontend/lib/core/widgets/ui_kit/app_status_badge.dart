@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -62,9 +62,11 @@ class AppStatusBadge extends StatelessWidget {
         break;
     }
 
+    final isCompact = height <= 20;
+
     return Container(
       height: height,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 6 : 8),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(AppRadii.pill),
@@ -76,23 +78,23 @@ class AppStatusBadge extends StatelessWidget {
         children: [
           if (hasDot) ...[
             Container(
-              width: 6,
-              height: 6,
+              width: isCompact ? 5 : 6,
+              height: isCompact ? 5 : 6,
               decoration: BoxDecoration(
                 color: fg,
                 shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(width: 5),
+            SizedBox(width: isCompact ? 4 : 5),
           ] else if (icon != null) ...[
-            Icon(icon, size: 12, color: fg),
-            const SizedBox(width: 4),
+            Icon(icon, size: isCompact ? 10 : 12, color: fg),
+            SizedBox(width: isCompact ? 3 : 4),
           ],
           Text(
             label,
             style: AppTextStyles.caption.copyWith(
               color: fg,
-              fontSize: 11,
+              fontSize: isCompact ? 10 : 11,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.1,
             ),

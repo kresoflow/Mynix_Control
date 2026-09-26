@@ -88,6 +88,67 @@ class PosOrderItem {
     this.selectedOptions,
   });
 
+  /// Базовое очищенное имя товара без скобок, вкусов и системных тегов.
+  String get cleanName {
+    String name = menuItemName.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0].trim();
+    if (name.contains('(')) {
+      name = name.split('(')[0].trim();
+    }
+    return name;
+  }
+
+  /// Краткая сводка выбранной вариации и модификаторов (например, "Классик • 200 г").
+  String? get optionsSummary {
+    final List<String> parts = [];
+
+    if (selectedOptions != null && selectedOptions!.isNotEmpty) {
+      if (selectedOptions!['variation'] != null) {
+        String varName = selectedOptions!['variation'].toString();
+        varName = varName.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];
+        final baseName = cleanName;
+        if (varName.startsWith(baseName)) {
+          varName = varName.substring(baseName.length).trim();
+        }
+        if (varName.startsWith('(') && varName.endsWith(')')) {
+          varName = varName.substring(1, varName.length - 1).trim();
+        }
+        if (varName.startsWith('•')) {
+          varName = varName.substring(1).trim();
+        }
+        if (varName.isNotEmpty) {
+          parts.add(varName);
+        }
+      }
+
+      if (selectedOptions!['modifiers'] != null && selectedOptions!['modifiers'] is List) {
+        for (var m in selectedOptions!['modifiers']) {
+          if (m is Map && m['name'] != null) {
+            final String mName = m['name'].toString().split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0].trim();
+            if (mName.isNotEmpty) {
+              parts.add(mName);
+            }
+          }
+        }
+      }
+    }
+
+    if (parts.isEmpty) {
+      final rawClean = menuItemName.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0].trim();
+      if (rawClean.contains('(') && rawClean.endsWith(')')) {
+        final startIndex = rawClean.indexOf('(');
+        final extracted = rawClean.substring(startIndex + 1, rawClean.length - 1).trim();
+        if (extracted.isNotEmpty) {
+          parts.add(extracted);
+        }
+      }
+    }
+
+    if (parts.isNotEmpty) {
+      return parts.join(', ');
+    }
+    return null;
+  }
+
   factory PosOrderItem.fromJson(Map<String, dynamic> json) {
     return PosOrderItem(
       menuItemName: json['menu_item_name'] as String,

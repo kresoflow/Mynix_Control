@@ -1,9 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/pos/models/cash_operation.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/cash_operations/cash_operation_dialog.dart';
 
 class ShiftXReportTab extends StatelessWidget {
   final Map<String, dynamic>? report;
@@ -12,6 +14,7 @@ class ShiftXReportTab extends StatelessWidget {
   final bool hideAmounts;
   final double expectedCash;
   final VoidCallback onUnlockPin;
+  final VoidCallback? onRefresh;
 
   const ShiftXReportTab({
     super.key,
@@ -21,6 +24,7 @@ class ShiftXReportTab extends StatelessWidget {
     required this.hideAmounts,
     required this.expectedCash,
     required this.onUnlockPin,
+    this.onRefresh,
   });
 
   @override
@@ -133,7 +137,45 @@ class ShiftXReportTab extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        // ── Cash Operations Buttons ─────────────────────────────────
+        Row(
+          children: [
+            Expanded(
+              child: AppButton.secondary(
+                label: 'Внесение',
+                icon: PhosphorIconsRegular.arrowDownLeft,
+                height: 38,
+                onPressed: () async {
+                  final res = await showCashOperationDialog(
+                    context,
+                    initialType: CashOpType.deposit,
+                  );
+                  if (res == true && onRefresh != null) {
+                    onRefresh!();
+                  }
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: AppButton.secondary(
+                label: 'Инкассация / Расход',
+                icon: PhosphorIconsRegular.arrowUpRight,
+                height: 38,
+                onPressed: () async {
+                  final res = await showCashOperationDialog(
+                    context,
+                    initialType: CashOpType.withdrawal,
+                  );
+                  if (res == true && onRefresh != null) {
+                    onRefresh!();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
 
         AppButton.secondary(
           label: 'Закрыть окно',

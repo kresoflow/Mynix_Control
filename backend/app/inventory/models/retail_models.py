@@ -41,6 +41,7 @@ class RetailProductRead(SQLModel):
     min_stock_alert: float
     barcode: Optional[str] = None
     is_available: bool
+    is_archived: bool = False
     sort_order: int = 0
     attributes: Optional[dict] = None
     is_low_stock: bool = False

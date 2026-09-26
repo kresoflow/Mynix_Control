@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -31,6 +31,48 @@ void main() {
       await tester.tap(find.text('Сохранить'));
       await tester.pump();
       expect(pressCount, equals(1));
+    });
+
+    testWidgets('AppButton drops double-click within 400ms debounce window', (WidgetTester tester) async {
+      int pressCount = 0;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: AppButton(
+                label: 'Оформить заказ',
+                variant: AppButtonVariant.primary,
+                size: AppButtonSize.lg,
+                onPressed: () {
+                  pressCount++;
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Первый клик
+      await tester.tap(find.text('Оформить заказ'));
+      await tester.pump();
+
+      // Второй клик сразу (внутри окна 400мс)
+      await tester.tap(find.text('Оформить заказ'));
+      await tester.pump();
+
+      expect(pressCount, equals(1));
+
+      // Ждем истечения окна дебаунса в реальном времени (DateTime.now)
+      await tester.runAsync(() async {
+        await Future.delayed(const Duration(milliseconds: 450));
+      });
+
+      // Третий клик после окна дебаунса
+      await tester.tap(find.text('Оформить заказ'));
+      await tester.pump();
+
+      expect(pressCount, equals(2));
     });
 
     testWidgets('AppButton disabled state does not trigger callback', (WidgetTester tester) async {

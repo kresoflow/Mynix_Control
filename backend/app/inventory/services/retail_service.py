@@ -14,6 +14,111 @@ async def bulk_create_retail_products(session: AsyncSession, items_data: list[di
         raw_cat_id = data.get("category_id")
         category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
 
+        attributes = data.get("attributes")
+        has_variations = (
+            attributes
+            and isinstance(attributes, dict)
+            and "variations" in attributes
+            and attributes["variations"]
+        )
+
+        if has_variations:
+            menu_item = MenuItem(
+                name=data["name"],
+                short_name=data.get("short_name"),
+                tags=data.get("tags", []),
+                category_id=category_id,
+                retail_product_id=None,
+                price=data["selling_price"],
+                type="retail",
+                barcode=data.get("barcode"),
+                sort_order=data.get("sort_order", 0),
+                is_available=True,
+                attributes=attributes,
+                parent_id=data.get("parent_id"),
+            )
+            session.add(menu_item)
+            await session.flush()
+
+            updated_vars = await _sync_child_variations(session, menu_item, attributes.get("variations", []))
+            attributes["variations"] = updated_vars
+            menu_item.attributes = attributes
+            session.add(menu_item)
+            await session.flush()
+        else:
+            retail_product = RetailProduct(
+                name=data["name"],
+                category_id=category_id,
+                price=data["selling_price"],
+                cost=data["purchase_price"],
+                unit=data["unit"],
+                min_stock_alert=data.get("min_stock_alert", 0.0),
+                barcode=data.get("barcode"),
+                current_stock=0.0,
+                is_available=True,
+                attributes=data.get("attributes"),
+                sort_order=data.get("sort_order", 0),
+            )
+            session.add(retail_product)
+            await session.flush()
+
+            menu_item = MenuItem(
+                name=data["name"],
+                short_name=data.get("short_name"),
+                tags=data.get("tags", []),
+                category_id=category_id,
+                retail_product_id=retail_product.id,
+                price=data["selling_price"],
+                type="retail",
+                barcode=data.get("barcode"),
+                sort_order=data.get("sort_order", 0),
+                is_available=True,
+                attributes=data.get("attributes"),
+                parent_id=data.get("parent_id"),
+            )
+            session.add(menu_item)
+            await session.flush()
+            created_products.append(retail_product)
+
+    return created_products
+
+async def create_retail_product(session: AsyncSession, data: dict, user_id: int = 1) -> MenuItem:
+    raw_cat_id = data.get("category_id")
+    category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
+
+    attributes = data.get("attributes")
+    has_variations = (
+        attributes
+        and isinstance(attributes, dict)
+        and "variations" in attributes
+        and attributes["variations"]
+    )
+
+    if has_variations:
+        menu_item = MenuItem(
+            name=data["name"],
+            short_name=data.get("short_name"),
+            tags=data.get("tags", []),
+            category_id=category_id,
+            retail_product_id=None,
+            price=data["selling_price"],
+            type="retail",
+            barcode=data.get("barcode"),
+            sort_order=data.get("sort_order", 0),
+            is_available=True,
+            attributes=attributes,
+            parent_id=data.get("parent_id"),
+        )
+        session.add(menu_item)
+        await session.flush()
+
+        updated_vars = await _sync_child_variations(session, menu_item, attributes.get("variations", []))
+        attributes["variations"] = updated_vars
+        menu_item.attributes = attributes
+        session.add(menu_item)
+        await session.flush()
+        return menu_item
+    else:
         retail_product = RetailProduct(
             name=data["name"],
             category_id=category_id,
@@ -46,65 +151,7 @@ async def bulk_create_retail_products(session: AsyncSession, items_data: list[di
         )
         session.add(menu_item)
         await session.flush()
-
-        attributes = data.get("attributes")
-        if attributes and isinstance(attributes, dict) and "variations" in attributes and attributes["variations"]:
-            updated_vars = await _sync_child_variations(session, menu_item, attributes.get("variations", []))
-            attributes["variations"] = updated_vars
-            menu_item.attributes = attributes
-            session.add(menu_item)
-            await session.flush()
-
-        created_products.append(retail_product)
-
-    return created_products
-
-async def create_retail_product(session: AsyncSession, data: dict, user_id: int = 1) -> MenuItem:
-    raw_cat_id = data.get("category_id")
-    category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
-
-    retail_product = RetailProduct(
-        name=data["name"],
-        category_id=category_id,
-        price=data["selling_price"],
-        cost=data["purchase_price"],
-        unit=data["unit"],
-        min_stock_alert=data.get("min_stock_alert", 0.0),
-        barcode=data.get("barcode"),
-        current_stock=0.0,
-        is_available=True,
-        attributes=data.get("attributes"),
-        sort_order=data.get("sort_order", 0),
-    )
-    session.add(retail_product)
-    await session.flush()
-
-    menu_item = MenuItem(
-        name=data["name"],
-        short_name=data.get("short_name"),
-        tags=data.get("tags", []),
-        category_id=category_id,
-        retail_product_id=retail_product.id,
-        price=data["selling_price"],
-        type="retail",
-        barcode=data.get("barcode"),
-        sort_order=data.get("sort_order", 0),
-        is_available=True,
-        attributes=data.get("attributes"),
-        parent_id=data.get("parent_id"),
-    )
-    session.add(menu_item)
-    await session.flush()
-
-    attributes = data.get("attributes")
-    if attributes and isinstance(attributes, dict) and "variations" in attributes and attributes["variations"]:
-        updated_vars = await _sync_child_variations(session, menu_item, attributes.get("variations", []))
-        attributes["variations"] = updated_vars
-        menu_item.attributes = attributes
-        session.add(menu_item)
-        await session.flush()
-
-    return menu_item
+        return menu_item
 
 async def list_retail_products(session: AsyncSession) -> list[RetailProductRead]:
     stmt = (
@@ -129,6 +176,7 @@ async def list_retail_products(session: AsyncSession) -> list[RetailProductRead]
             current_stock=p.current_stock,
             min_stock_alert=p.min_stock_alert,
             is_available=p.is_available,
+            is_archived=not p.is_available,
             barcode=p.barcode,
             sort_order=p.sort_order,
             attributes=p.attributes,

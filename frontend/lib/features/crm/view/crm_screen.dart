@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -16,6 +16,7 @@ import 'package:kreso_frontend/features/crm/view/widgets/customer_row.dart';
 import 'package:kreso_frontend/features/crm/view/widgets/dialogs/customer_form_modal.dart';
 import 'package:kreso_frontend/features/crm/view/widgets/dialogs/customer_details_dialog.dart';
 import 'package:kreso_frontend/features/crm/view/widgets/dialogs/customer_payment_modal.dart';
+import 'package:kreso_frontend/features/gift_cards/view/widgets/issue_gift_card_dialog.dart';
 
 class CrmScreen extends StatefulWidget {
   const CrmScreen({super.key});
@@ -71,10 +72,10 @@ class _CrmScreenState extends State<CrmScreen> {
   void _openDetailsDialog(Customer customer) {
     showDialog(
       context: context,
-      builder: (_) => CustomerDetailsDialog(
+      builder: (dialogCtx) => CustomerDetailsDialog(
         customer: customer,
         onEdit: () {
-          Navigator.pop(context);
+          Navigator.of(dialogCtx).pop();
           _openEditModal(customer);
         },
       ),
@@ -170,11 +171,22 @@ class _CrmScreenState extends State<CrmScreen> {
                         ],
                       ),
                     ),
-                    AppPrimaryButton(
-                      label: isMobile ? 'Гость' : 'Новый гость',
-                      icon: PhosphorIconsRegular.plus,
-                      size: AppButtonSize.md,
-                      onPressed: _openCreateModal,
+                    Row(
+                      children: [
+                        AppSecondaryButton(
+                          label: isMobile ? 'Карты' : 'Подарочные карты',
+                          icon: PhosphorIconsRegular.gift,
+                          size: AppButtonSize.md,
+                          onPressed: () => IssueGiftCardDialog.show(context),
+                        ),
+                        const SizedBox(width: 8),
+                        AppPrimaryButton(
+                          label: isMobile ? 'Гость' : 'Новый гость',
+                          icon: PhosphorIconsRegular.plus,
+                          size: AppButtonSize.md,
+                          onPressed: _openCreateModal,
+                        ),
+                      ],
                     ),
                   ],
                 ),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -69,9 +69,34 @@ class RecipeIngredientItemTile extends StatelessWidget {
                 ),
               )
             : null,
-        title: Text(
-          ingName,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                ingName,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  decoration: (ing?.isArchived ?? false) ? TextDecoration.lineThrough : null,
+                  color: (ing?.isArchived ?? false) ? Colors.grey : null,
+                ),
+              ),
+            ),
+            if (ing?.isArchived ?? false) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.danger.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'В архиве',
+                  style: TextStyle(fontSize: 10, color: AppColors.danger, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ],
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4.0),

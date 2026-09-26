@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
@@ -52,9 +52,17 @@ class CreateRetailProductsBulk extends MenuEvent {
 class DeleteMenuItem extends MenuEvent {
   final int id;
   final String mode;
-  const DeleteMenuItem(this.id, {this.mode = 'soft'});
+  const DeleteMenuItem(this.id, {this.mode = 'auto'});
   @override
   List<Object?> get props => [id, mode];
+}
+
+class DeleteMenuItemsBulk extends MenuEvent {
+  final List<int> ids;
+  final String mode;
+  const DeleteMenuItemsBulk(this.ids, {this.mode = 'auto'});
+  @override
+  List<Object?> get props => [ids, mode];
 }
 
 class UpdateMenuItem extends MenuEvent {
@@ -166,6 +174,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     on<CreateMenuItem>(_onCreateMenuItem);
     on<CreateMenuItemsBulk>(_onCreateMenuItemsBulk);
     on<DeleteMenuItem>(_onDeleteMenuItem);
+    on<DeleteMenuItemsBulk>(_onDeleteMenuItemsBulk);
     on<CreateRetailProduct>(_onCreateRetailProduct);
     on<CreateRetailProductsBulk>(_onCreateRetailProductsBulk);
     on<CreateRetailProductGroup>(_onCreateRetailProductGroup);
@@ -278,6 +287,9 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
 
   Future<void> _onDeleteMenuItem(DeleteMenuItem event, Emitter<MenuState> emit) =>
       _handleMenuAction(() => menuRepository.deleteMenuItem(event.id, mode: event.mode), emit);
+
+  Future<void> _onDeleteMenuItemsBulk(DeleteMenuItemsBulk event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.deleteMenuItemsBulk(event.ids, mode: event.mode), emit);
 
   Future<void> _onUpdateMenuItem(UpdateMenuItem event, Emitter<MenuState> emit) =>
       _handleMenuAction(() => menuRepository.updateMenuItem(event.id, event.data), emit);

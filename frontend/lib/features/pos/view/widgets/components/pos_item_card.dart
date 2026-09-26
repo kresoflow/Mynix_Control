@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -7,6 +7,7 @@ import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_status_badge.dart';
 import 'package:kreso_frontend/core/widgets/color_picker/color_picker_utils.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 
@@ -152,25 +153,41 @@ class _PosItemCardState extends State<PosItemCard> {
                             height: 1.2,
                           ),
                           textAlign: TextAlign.center,
-                          maxLines: 3,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (widget.item.attributesString != null) ...[
+                      if (widget.item.flavorString != null || widget.item.variationsSummary != null) ...[
                         const SizedBox(height: 4),
                         Flexible(
-                          child: Text(
-                            widget.item.attributesString!,
-                            style: AppTextStyles.caption.copyWith(
-                              height: 1.2,
-                              fontSize: isMobile ? 10 : null,
-                              color: isDark 
-                                  ? AppColors.darkSubtext 
-                                  : AppColors.lightSubtext,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 4,
+                            runSpacing: 4,
+                            children: [
+                              if (widget.item.flavorString != null)
+                                AppStatusBadge(
+                                  label: widget.item.flavorString!,
+                                  variant: AppBadgeVariant.warning,
+                                  height: 20,
+                                ),
+                              if (widget.item.variationsSummary != null)
+                                AppStatusBadge(
+                                  label: widget.item.variationsSummary!,
+                                  variant: AppBadgeVariant.info,
+                                  height: 20,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ] else if (widget.item.attributesString != null) ...[
+                        const SizedBox(height: 4),
+                        Flexible(
+                          child: AppStatusBadge(
+                            label: widget.item.attributesString!,
+                            variant: AppBadgeVariant.neutral,
+                            height: 20,
                           ),
                         ),
                       ],
@@ -195,9 +212,10 @@ class _PosItemCardState extends State<PosItemCard> {
                             final List<num> prices = (widget.item.variationPrices as List).cast<num>();
                             if (prices.length > 3) {
                               final num minPrice = prices.reduce((num a, num b) => a < b ? a : b);
-                              return 'От ${CurrencyFormatter.format(context, minPrice)}';
+                              final num maxPrice = prices.reduce((num a, num b) => a > b ? a : b);
+                              return '${CurrencyFormatter.format(context, minPrice)} — ${CurrencyFormatter.format(context, maxPrice)}';
                             }
-                            return prices.map((dynamic p) => CurrencyFormatter.format(context, p as num)).join(' | ');
+                            return prices.map((dynamic p) => CurrencyFormatter.format(context, p as num)).join('  ');
                           }
                           return CurrencyFormatter.format(context, widget.item.price as num);
                         }(),
