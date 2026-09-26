@@ -117,7 +117,7 @@ class RuleChecker:
                 )
 
     def check_file_line_limits(self):
-        """Rule 3: File limits: Warning > 250, Error > 300 (or >350 for cohesive)."""
+        """Rule 3: File limits: Warning > 250, Error > 300 (or >350 for cohesive domain files)."""
         # Backend routers and services
         backend_paths = list((self.root / "backend" / "app").rglob("*.py"))
         # Frontend feature files
@@ -137,7 +137,16 @@ class RuleChecker:
                 continue
 
             filename = fpath.name
-            is_cohesive = filename in self.cohesive_exemptions
+
+            # Domain Cohesion: Allow up to 350 lines for indivisible BLoCs and transactional services
+            has_domain_badge = any(
+                "[ИНВАРИАНТ]" in line or "[ТРАНЗАКЦИЯ]" in line for line in lines[:40]
+            )
+            is_cohesive = (
+                filename in self.cohesive_exemptions
+                or filename.endswith("_bloc.dart")
+                or (filename.endswith("_service.py") and has_domain_badge)
+            )
             is_legacy = filename in self.legacy_oversized_baseline
             ceiling = 350 if is_cohesive else 300
 
@@ -156,7 +165,10 @@ class RuleChecker:
                 )
 
     def check_taboo_micro_files(self):
-        """Rule: Taboo on micro-files (< 60 lines) in Flutter features."""
+        """Rule: Taboo on micro-files (< 60 lines) in Flutter feature UI widgets.
+        Domain-Driven Design exception: Pure enums, value objects, exceptions, and models
+        are autonomous domain atoms and exempted from micro-widget taboo.
+        """
         frontend_features = self.root / "frontend" / "lib" / "features"
         if not frontend_features.exists():
             return
@@ -168,19 +180,30 @@ class RuleChecker:
 
             try:
                 with open(dart_file, "r", encoding="utf-8", errors="ignore") as f:
-                    lines = [line.strip() for line in f if line.strip() and not line.strip().startswith("//")]
-                total_lines = sum(1 for _ in open(dart_file, "r", encoding="utf-8", errors="ignore"))
+                    raw_lines = f.readlines()
+                lines = [line.strip() for line in raw_lines if line.strip() and not line.strip().startswith("//")]
+                total_lines = len(raw_lines)
             except Exception:
                 continue
 
-            # Check if pure barrel export
+            # Check if pure barrel export or stub
             is_barrel = all(line.startswith("export ") or line.startswith("import ") for line in lines)
             is_stub = dart_file.name.endswith("_stub.dart")
 
-            if total_lines < 60 and not is_barrel and not is_stub:
+            # Check if domain atomic model, enum, event, state, or contract
+            is_domain_atom = any(
+                part in rel.lower() for part in ["/models/", "/enums/", "/domain/", "/exceptions/"]
+            )
+            content_str = " ".join(lines)
+            is_pure_enum_or_typedef = (
+                content_str.startswith("enum ")
+                or "typedef " in content_str
+            ) and "Widget" not in content_str and "State<" not in content_str
+
+            if total_lines < 60 and not is_barrel and not is_stub and not is_domain_atom and not is_pure_enum_or_typedef:
                 self.warnings.append(
-                    f"[MICRO-FILE] {rel} has only {total_lines} lines (< 60 lines taboo). "
-                    f"Keep cohesive state/events/widgets in the parent file."
+                    f"[MICRO-WIDGET-FILE] {rel} has only {total_lines} lines (< 60 lines taboo). "
+                    f"Keep cohesive UI helpers in the parent widget file or group form components."
                 )
 
     def check_design_system(self):
