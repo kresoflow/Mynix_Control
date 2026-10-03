@@ -1,4 +1,9 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: POS / Индикатор сетевого статуса и очереди синхронизации
+// ДОМЕН: lib/features/pos/view/widgets/sync_status_badge.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -19,63 +24,72 @@ class SyncStatusBadge extends StatelessWidget {
         final hasPending = pendingCount > 0;
         final isLanActive = LocalPosServer.isRunning;
 
-        return InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (_) => const SyncOutboxDialog(),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: hasPending
-                  ? AppColors.warning.withValues(alpha: 0.15)
-                  : AppColors.success.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: hasPending
-                    ? AppColors.warning.withValues(alpha: 0.4)
-                    : AppColors.success.withValues(alpha: 0.3),
+        final statusColor = hasPending ? AppColors.danger : AppColors.success;
+        final bgColor = statusColor.withValues(alpha: hasPending ? 0.16 : 0.12);
+        final borderColor = statusColor.withValues(alpha: hasPending ? 0.5 : 0.25);
+        final tooltipMsg = hasPending
+            ? 'Офлайн-режим! В очереди $pendingCount чеков. Нажмите для синхронизации'
+            : 'Касса в сети. Все данные синхронизированы';
+
+        return Tooltip(
+          message: tooltipMsg,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (_) => const SyncOutboxDialog(),
+              );
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              height: 36,
+              padding: EdgeInsets.symmetric(horizontal: hasPending ? 10 : 8),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: borderColor, width: 1.2),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  hasPending
-                      ? PhosphorIconsRegular.cloudSlash
-                      : PhosphorIconsRegular.cloudCheck,
-                  size: 16,
-                  color: hasPending ? AppColors.warning : AppColors.success,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  hasPending ? 'В памяти: $pendingCount' : 'В сети',
-                  style: AppTextStyles.caption.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: hasPending ? AppColors.warning : AppColors.success,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    hasPending
+                        ? PhosphorIconsBold.cloudSlash
+                        : PhosphorIconsBold.cloudCheck,
+                    size: 18,
+                    color: statusColor,
                   ),
-                ),
-                if (isLanActive) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    width: 4,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
+                  if (hasPending) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      '$pendingCount',
+                      style: AppTextStyles.caption.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.danger,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  if (isLanActive) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 4,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.brandPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      PhosphorIconsRegular.wifiHigh,
+                      size: 14,
                       color: AppColors.brandPrimary,
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    PhosphorIconsRegular.wifiHigh,
-                    size: 14,
-                    color: AppColors.brandPrimary,
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );

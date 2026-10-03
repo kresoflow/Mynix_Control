@@ -309,40 +309,37 @@ class _PosScreenState extends State<PosScreen> {
     final borderColor = hasTables
         ? primary.withValues(alpha: isDark ? 0.5 : 0.6)
         : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
-    final fg = hasTables
-        ? (isDark ? AppColors.darkText : primary)
-        : (isDark ? AppColors.darkText : AppColors.lightText);
     final iconColor = hasTables ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
 
-    return InkWell(
-      onTap: () => PosActiveTablesDialog.show(context).then((_) => _refreshCounts()),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: borderColor, width: 1.2),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
+    return Tooltip(
+      message: 'Активные столики зала ($_activeTablesCount)',
+      child: InkWell(
+        onTap: () => PosActiveTablesDialog.show(context).then((_) => _refreshCounts()),
+        borderRadius: BorderRadius.circular(10),
+        child: Badge(
+          isLabelVisible: hasTables,
+          backgroundColor: primary,
+          textColor: Colors.white,
+          label: Text(
+            '$_activeTablesCount',
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+          offset: const Offset(3, -3),
+          child: Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: borderColor, width: 1.2),
+            ),
+            child: Icon(
               hasTables ? PhosphorIconsBold.chair : PhosphorIconsRegular.chair,
-              size: 16,
+              size: 18,
               color: iconColor,
             ),
-            const SizedBox(width: 6),
-            Text(
-              'Столики ($_activeTablesCount)',
-              style: TextStyle(
-                color: fg,
-                fontWeight: hasTables ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 13,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -353,7 +350,7 @@ class _PosScreenState extends State<PosScreen> {
     final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
     final hasPending = _incomingCount > 0;
     final badgeColor = isWaiter ? AppColors.brandPrimary : AppColors.warning;
-    final label = isWaiter ? 'Мои заказы ($_incomingCount)' : 'Входящие ($_incomingCount)';
+    final tooltipLabel = isWaiter ? 'Мои заказы с зала ($_incomingCount)' : 'Входящие заказы с зала ($_incomingCount)';
     final icon = isWaiter
         ? (hasPending ? PhosphorIconsBold.receipt : PhosphorIconsRegular.receipt)
         : (hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell);
@@ -364,40 +361,37 @@ class _PosScreenState extends State<PosScreen> {
     final borderColor = hasPending
         ? badgeColor.withValues(alpha: isDark ? 0.5 : 0.6)
         : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
-    final fg = hasPending
-        ? (isDark ? AppColors.darkText : badgeColor)
-        : (isDark ? AppColors.darkText : AppColors.lightText);
     final iconColor = hasPending ? badgeColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
 
-    return InkWell(
-      onTap: () => IncomingOrdersDialog.show(context).then((_) => _refreshCounts()),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: borderColor, width: 1.2),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
+    return Tooltip(
+      message: tooltipLabel,
+      child: InkWell(
+        onTap: () => IncomingOrdersDialog.show(context).then((_) => _refreshCounts()),
+        borderRadius: BorderRadius.circular(10),
+        child: Badge(
+          isLabelVisible: hasPending,
+          backgroundColor: badgeColor,
+          textColor: Colors.white,
+          label: Text(
+            '$_incomingCount',
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+          offset: const Offset(3, -3),
+          child: Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: borderColor, width: 1.2),
+            ),
+            child: Icon(
               icon,
-              size: 16,
+              size: 18,
               color: iconColor,
             ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: fg,
-                fontWeight: hasPending ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 13,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
