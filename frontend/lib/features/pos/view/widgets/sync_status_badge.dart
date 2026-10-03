@@ -1,5 +1,5 @@
 // ==============================================================================
-// МОДУЛЬ: POS / Индикатор сетевого статуса и очереди синхронизации
+// МОДУЛЬ: POS / Индикатор сетевого статуса и очереди синхронизации (Calm Tech)
 // ДОМЕН: lib/features/pos/view/widgets/sync_status_badge.dart
 // ==============================================================================
 
@@ -12,11 +12,15 @@ import '../../services/pos_outbox_service.dart';
 import '../../services/lan/local_pos_server.dart';
 import 'dialogs/sync_outbox_dialog.dart';
 
+// ── Индикатор статуса синхронизации ──────────────────────────────────────────
+
 class SyncStatusBadge extends StatelessWidget {
   const SyncStatusBadge({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ValueListenableBuilder<Box>(
       valueListenable: PosOutboxService.listenable(),
       builder: (context, box, _) {
@@ -25,8 +29,13 @@ class SyncStatusBadge extends StatelessWidget {
         final isLanActive = LocalPosServer.isRunning;
 
         final statusColor = hasPending ? AppColors.danger : AppColors.success;
-        final bgColor = statusColor.withValues(alpha: hasPending ? 0.16 : 0.12);
-        final borderColor = statusColor.withValues(alpha: hasPending ? 0.5 : 0.25);
+        final bgColor = hasPending
+            ? AppColors.danger.withValues(alpha: 0.16)
+            : (isDark ? AppColors.darkCard : AppColors.lightCard);
+        final borderColor = hasPending
+            ? AppColors.danger.withValues(alpha: 0.5)
+            : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
+
         final tooltipMsg = hasPending
             ? 'Офлайн-режим! В очереди $pendingCount чеков. Нажмите для синхронизации'
             : 'Касса в сети. Все данные синхронизированы';
@@ -43,8 +52,8 @@ class SyncStatusBadge extends StatelessWidget {
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
-              height: 36,
-              padding: EdgeInsets.symmetric(horizontal: hasPending ? 10 : 8),
+              height: 38,
+              padding: EdgeInsets.symmetric(horizontal: hasPending ? 10 : 9),
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(10),
@@ -56,7 +65,7 @@ class SyncStatusBadge extends StatelessWidget {
                   Icon(
                     hasPending
                         ? PhosphorIconsBold.cloudSlash
-                        : PhosphorIconsBold.cloudCheck,
+                        : PhosphorIconsRegular.cloudCheck,
                     size: 18,
                     color: statusColor,
                   ),

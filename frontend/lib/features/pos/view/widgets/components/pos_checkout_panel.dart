@@ -96,8 +96,10 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 24 + bottomInset),
       decoration: BoxDecoration(
         color: bg,
         border: Border(top: BorderSide(color: border, width: 1.5)),

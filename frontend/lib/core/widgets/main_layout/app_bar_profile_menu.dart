@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/theme_bloc.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
@@ -88,6 +89,8 @@ class AppBarProfileMenu extends StatelessWidget {
           }
         } else if (value == 'profile') {
           showUserProfileModal(context);
+        } else if (value == 'theme') {
+          context.read<ThemeBloc>().add(ToggleThemeMode());
         } else if (value == 'logout') {
           showLogoutConfirmDialog(context);
         }
@@ -166,6 +169,23 @@ class AppBarProfileMenu extends StatelessWidget {
               Icon(PhosphorIconsRegular.userCircle, color: AppColors.brandPrimary, size: 20),
               const SizedBox(width: 12),
               Text('Мой профиль и PIN', style: AppTextStyles.body),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'theme',
+          child: Row(
+            children: [
+              Icon(
+                isDark ? PhosphorIconsRegular.sun : PhosphorIconsRegular.moon,
+                color: AppColors.brandPrimary,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                isDark ? 'Светлая тема' : 'Тёмная тема',
+                style: AppTextStyles.body,
+              ),
             ],
           ),
         ),
