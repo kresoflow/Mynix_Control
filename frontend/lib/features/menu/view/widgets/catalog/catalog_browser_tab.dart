@@ -11,6 +11,7 @@ import 'catalog_content_view.dart';
 import 'catalog_enums.dart';
 import 'catalog_skeleton.dart';
 import 'catalog_deletion_dialogs.dart';
+import 'dialogs/merge_items_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_toast.dart';
 
 class CatalogBrowserTab extends StatefulWidget {
@@ -216,6 +217,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       addMenuBuilder: widget.addMenuBuilder,
                       onRestoreSelected: () => _restoreSelected(currentCategories, currentItems),
                       onToggleVisibilitySelected: () => _toggleVisibilitySelected(currentCategories, currentItems),
+                      onMergeSelected: _selectedItems.length >= 2 ? () => _mergeSelected(currentItems) : null,
                     ),
                     Expanded(
                       child: isLoading
@@ -338,6 +340,26 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
       context,
       'Восстановлено элементов',
       subtitle: '$count шт.',
+    );
+  }
+
+  void _mergeSelected(List<dynamic> currentItems) {
+    final itemsToMerge = currentItems
+        .whereType<MenuItem>()
+        .where((i) => _selectedItems.contains(i.id))
+        .toList();
+    if (itemsToMerge.length < 2) return;
+
+    showMergeItemsDialog(
+      context: context,
+      items: itemsToMerge,
+      onMerged: () {
+        setState(() {
+          _selectedItems.clear();
+          _selectedCategories.clear();
+          _manageMode = CategoryManageMode.none;
+        });
+      },
     );
   }
 }

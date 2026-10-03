@@ -127,40 +127,49 @@ class MenuGridItem extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          item.cleanName,
-                          style: AppTextStyles.h3.copyWith(
-                            fontSize: 14,
-                            color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkText : AppColors.lightText,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (item.flavorString != null || item.variationsSummary != null) ...[
-                          const SizedBox(height: 4),
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 4,
-                            runSpacing: 4,
-                            children: [
-                              if (item.flavorString != null)
-                                AppStatusBadge(
-                                  label: item.flavorString!,
-                                  variant: AppBadgeVariant.warning,
-                                  height: 20,
+                        () {
+                          final isDark = Theme.of(context).brightness == Brightness.dark;
+                          final hasFlavor = item.flavorString != null && item.flavorString!.trim().isNotEmpty;
+                          final clean = item.cleanName.trim();
+                          final showFlavorInTitle = hasFlavor && !clean.toLowerCase().contains(item.flavorString!.toLowerCase().trim());
+
+                          return Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: clean,
+                                  style: AppTextStyles.h3.copyWith(
+                                    fontSize: 14,
+                                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                                  ),
                                 ),
-                              if (item.variationsSummary != null)
-                                AppStatusBadge(
-                                  label: item.variationsSummary!,
-                                  variant: AppBadgeVariant.info,
-                                  height: 20,
-                                ),
-                            ],
+                                if (showFlavorInTitle) ...[
+                                  const TextSpan(text: ' '),
+                                  TextSpan(
+                                    text: item.flavorString!.trim(),
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.warning,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        }(),
+                        if (item.variationsSummary != null) ...[
+                          const SizedBox(height: 6),
+                          AppStatusBadge(
+                            label: item.variationsSummary!,
+                            variant: AppBadgeVariant.info,
+                            height: 20,
                           ),
                         ] else if (item.attributesString != null) ...[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           AppStatusBadge(
                             label: item.attributesString!,
                             variant: AppBadgeVariant.neutral,

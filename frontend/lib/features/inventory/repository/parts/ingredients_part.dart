@@ -67,7 +67,7 @@ extension IngredientsPart on InventoryRepository {
         return Ingredient(
           id: json['id'],
           name: json['name'],
-          unit: json['unit'],
+          unit: UnitFormatter.toDbKey(json['unit'] as String?, 'pcs'),
           currentStock: (json['current_stock'] as num?)?.toDouble() ?? 0.0,
           minStockAlert: (json['min_stock_alert'] as num?)?.toDouble() ?? 0.0,
           costPerUnit: (json['cost'] as num?)?.toDouble() ?? 0.0,

@@ -9,13 +9,16 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/icon_picker_field.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'create_retail_product_dialog.dart';
+import 'retail_variation_row.dart';
 
 // ─── 1. Виджет полей формы ритейл-товара ──────────────────────────────────────
 
@@ -33,6 +36,7 @@ class CreateRetailProductForm extends StatelessWidget {
   final List<Map<String, dynamic>> variations;
   final VoidCallback onAddVariation;
   final void Function(int) onRemoveVariation;
+  final void Function(int)? onExtractVariation;
   final ValueChanged<int?> onCategoryChanged;
   final ValueChanged<String> onUnitChanged;
   final ValueChanged<String?> onIconChanged;
@@ -53,13 +57,22 @@ class CreateRetailProductForm extends StatelessWidget {
     required this.variations,
     required this.onAddVariation,
     required this.onRemoveVariation,
+    this.onExtractVariation,
     required this.onCategoryChanged,
     required this.onUnitChanged,
     required this.onIconChanged,
     required this.onFieldsChanged,
   });
 
-  InputDecoration _deco(String label, bool isDark, {Widget? prefix, String? suffix, String? hint}) => InputDecoration(
+  InputDecoration _deco(
+    String label,
+    bool isDark, {
+    Widget? prefix,
+    String? suffix,
+    String? hint,
+    bool isDense = false,
+    EdgeInsetsGeometry? contentPadding,
+  }) => InputDecoration(
     labelText: label,
     hintText: hint,
     prefixIcon: prefix,
@@ -67,6 +80,8 @@ class CreateRetailProductForm extends StatelessWidget {
     suffixStyle: TextStyle(fontWeight: FontWeight.w600, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
     filled: true,
     fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+    isDense: isDense,
+    contentPadding: contentPadding,
     border: OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide.none),
   );
 
@@ -129,76 +144,54 @@ class CreateRetailProductForm extends StatelessWidget {
         if (variations.isNotEmpty) ...[
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Фасовки и объемы (Серия)',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
+              Expanded(
+                child: Text(
+                  'Фасовки и объемы (Серия)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                  ),
                 ),
               ),
-              TextButton.icon(
+              SizedBox(
+                width: 85,
+                child: DropdownButtonFormField<String>(
+                  initialValue: selectedUnit,
+                  isDense: true,
+                  isExpanded: true,
+                  dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  decoration: _deco(
+                    'Ед. изм.',
+                    isDark,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  ),
+                  items: UnitFormatter.dropdownItems,
+                  onChanged: (val) => val != null ? onUnitChanged(val) : null,
+                ),
+              ),
+              const SizedBox(width: 8),
+              AppGhostButton(
+                label: 'Добавить',
+                icon: PhosphorIconsRegular.plus,
+                size: AppButtonSize.sm,
                 onPressed: onAddVariation,
-                icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-                label: const Text('Добавить объем'),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          ...variations.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final v = entry.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      initialValue: v['name']?.toString() ?? '',
-                      decoration: _deco('Объем (0.5 л, 100г)', isDark, prefix: Icon(PhosphorIconsRegular.package, size: 16, color: AppColors.brandPrimary)),
-                      onChanged: (val) {
-                        v['name'] = val;
-                        onFieldsChanged();
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 1,
-                    child: TextFormField(
-                      initialValue: v['price'] != null ? (v['price'] % 1 == 0 ? v['price'].toInt().toString() : v['price'].toString()) : '',
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: _deco('Цена', isDark, suffix: currency),
-                      onChanged: (val) {
-                        v['price'] = double.tryParse(val) ?? 0.0;
-                        onFieldsChanged();
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      initialValue: v['barcode']?.toString() ?? '',
-                      decoration: _deco('Штрихкод', isDark, prefix: Icon(PhosphorIconsRegular.barcode, size: 16, color: AppColors.brandPrimary)),
-                      onChanged: (val) {
-                        v['barcode'] = val.trim().isEmpty ? null : val.trim();
-                        onFieldsChanged();
-                      },
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger, size: 18),
-                    tooltip: 'Удалить',
-                    onPressed: () => onRemoveVariation(idx),
-                  ),
-                ],
-              ),
-            );
-          }),
+          ...variations.asMap().entries.map((entry) => RetailVariationRow(
+            variation: entry.value,
+            currency: currency,
+            isDark: isDark,
+            onRemove: () => onRemoveVariation(entry.key),
+            onFieldsChanged: onFieldsChanged,
+            onExtract: entry.value['id'] != null && onExtractVariation != null
+                ? () => onExtractVariation!(entry.key)
+                : null,
+          ),),
         ] else ...[
           const SizedBox(height: 16),
           Row(
@@ -216,15 +209,10 @@ class CreateRetailProductForm extends StatelessWidget {
                 flex: 2,
                 child: DropdownButtonFormField<String>(
                   initialValue: selectedUnit,
+                  isExpanded: true,
                   dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                  decoration: _deco('Ед. изм.', isDark, prefix: Icon(PhosphorIconsRegular.scales, color: AppColors.brandPrimary)),
-                  items: const [
-                    DropdownMenuItem(value: 'pcs', child: Text('Шт (шт)')),
-                    DropdownMenuItem(value: 'kg', child: Text('Кг (кг)')),
-                    DropdownMenuItem(value: 'g', child: Text('Гр (г)')),
-                    DropdownMenuItem(value: 'l', child: Text('Литр (л)')),
-                    DropdownMenuItem(value: 'ml', child: Text('Мл (мл)')),
-                  ],
+                  decoration: _deco('Ед. изм.', isDark, prefix: Icon(PhosphorIconsRegular.scales, size: 18, color: AppColors.brandPrimary)),
+                  items: UnitFormatter.dropdownItems,
                   onChanged: (val) => val != null ? onUnitChanged(val) : null,
                 ),
               ),

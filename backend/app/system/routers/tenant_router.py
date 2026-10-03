@@ -9,48 +9,14 @@ from app.database import get_session, init_tenant_schema
 from app.users.models import Tenant, User, UserRole, Role
 from app.users.services import hash_password
 from app.system.security import require_system_admin
+from app.system.schemas import (
+    TenantCreateRequest,
+    TenantRead,
+    TenantStatusUpdate,
+    TenantUpdateRequest,
+)
 
 router = APIRouter(tags=["System — Tenants"])
-
-SCHEMA_NAME_REGEX = re.compile(r"^[a-z0-9_]{3,30}$")
-RESERVED_SCHEMAS = {"public", "information_schema", "pg_catalog", "pg_toast", "system"}
-
-
-class TenantCreateRequest(BaseModel):
-    name: str
-    schema_name: str = Field(..., description="PostgreSQL schema name (lowercase letters, digits, underscore, 3-30 chars)")
-    address: str = ""
-    owner_username: str
-    owner_password: str
-    owner_full_name: str
-    owner_pin_code: str = "1234"
-    owner_phone: Optional[str] = None
-    owner_email: Optional[str] = None
-    use_kds: bool = True
-    enable_inventory_deduction: bool = True
-
-    @field_validator("schema_name")
-    @classmethod
-    def validate_schema_name(cls, v: str) -> str:
-        clean = v.strip().lower()
-        if not SCHEMA_NAME_REGEX.match(clean):
-            raise ValueError(
-                "schema_name must be 3-30 characters long and contain only lowercase letters, digits, and underscores"
-            )
-        if clean in RESERVED_SCHEMAS:
-            raise ValueError(f"'{clean}' is a reserved PostgreSQL schema name")
-        return clean
-
-
-class TenantRead(BaseModel):
-    id: int
-    name: str
-    schema_name: str
-    address: str
-    is_active: bool
-    use_kds: bool
-    enable_inventory_deduction: bool
-    created_at: str
 
 
 @router.post("/tenants", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_system_admin)])
@@ -72,7 +38,9 @@ async def create_tenant(
         name=data.name,
         schema_name=data.schema_name,
         address=data.address,
+        currency=data.currency,
         use_kds=data.use_kds,
+        use_orders=data.use_orders,
         enable_inventory_deduction=data.enable_inventory_deduction,
     )
     session.add(new_tenant)
@@ -97,6 +65,8 @@ async def create_tenant(
         full_name=data.owner_full_name,
         hashed_password=hashed,
         pin_code=data.owner_pin_code,
+        phone=data.owner_phone,
+        email=data.owner_email,
     )
     session.add(new_owner)
     await session.flush()
@@ -114,33 +84,44 @@ async def create_tenant(
 async def list_tenants(
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
-    """List all registered tenants in the system."""
+    """List all registered tenants with their configurations and owner info."""
     result = await session.execute(select(Tenant).order_by(Tenant.id.asc()))
     tenants = result.scalars().all()
 
-    return [
-        TenantRead(
-            id=t.id,
-            name=t.name,
-            schema_name=t.schema_name,
-            address=t.address,
-            is_active=t.is_active,
-            use_kds=t.use_kds,
-            enable_inventory_deduction=t.enable_inventory_deduction,
-            created_at=t.created_at.isoformat(),
-        ) for t in tenants
-    ]
+    # Load owners in a single query
+    owners_stmt = (
+        select(User)
+        .join(UserRole, User.id == UserRole.user_id)
+        .join(Role, Role.id == UserRole.role_id)
+        .where(Role.name == "owner")
+    )
+    owners_res = await session.execute(owners_stmt)
+    owners_map = {u.tenant_id: u for u in owners_res.scalars().all()}
 
-
-class TenantStatusUpdate(BaseModel):
-    is_active: bool
-
-
-class TenantUpdateRequest(BaseModel):
-    name: Optional[str] = None
-    address: Optional[str] = None
-    use_kds: Optional[bool] = None
-    enable_inventory_deduction: Optional[bool] = None
+    items: List[TenantRead] = []
+    for t in tenants:
+        owner = owners_map.get(t.id)
+        items.append(
+            TenantRead(
+                id=t.id,
+                name=t.name,
+                schema_name=t.schema_name,
+                address=t.address or "",
+                currency=t.currency or "сом",
+                is_active=t.is_active,
+                use_kds=t.use_kds,
+                use_orders=t.use_orders,
+                enable_inventory_deduction=t.enable_inventory_deduction,
+                created_at=t.created_at.isoformat() if t.created_at else "",
+                owner_id=owner.id if owner else None,
+                owner_username=owner.username if owner else None,
+                owner_full_name=owner.full_name if owner else None,
+                owner_phone=owner.phone if owner else None,
+                owner_email=owner.email if owner else None,
+                owner_pin_code=owner.pin_code if owner else None,
+            )
+        )
+    return items
 
 
 @router.patch("/tenants/{tenant_id}/status", dependencies=[Depends(require_system_admin)])
@@ -166,12 +147,13 @@ async def toggle_tenant_status(
 
 
 @router.put("/tenants/{tenant_id}", dependencies=[Depends(require_system_admin)])
+@router.patch("/tenants/{tenant_id}", dependencies=[Depends(require_system_admin)])
 async def update_tenant(
     tenant_id: int,
     data: TenantUpdateRequest,
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
-    """Update tenant configuration and metadata."""
+    """Update tenant configuration, metadata, and owner account."""
     tenant = await session.get(Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
@@ -180,12 +162,55 @@ async def update_tenant(
         tenant.name = data.name.strip()
     if data.address is not None:
         tenant.address = data.address.strip()
+    if data.currency is not None:
+        tenant.currency = data.currency.strip()
+    if data.is_active is not None:
+        tenant.is_active = data.is_active
     if data.use_kds is not None:
         tenant.use_kds = data.use_kds
+    if data.use_orders is not None:
+        tenant.use_orders = data.use_orders
     if data.enable_inventory_deduction is not None:
         tenant.enable_inventory_deduction = data.enable_inventory_deduction
 
     session.add(tenant)
+
+    # Update owner user if any owner fields are provided
+    has_owner_fields = any(
+        x is not None for x in [
+            data.owner_full_name,
+            data.owner_phone,
+            data.owner_email,
+            data.owner_password,
+            data.owner_pin_code,
+        ]
+    )
+    if has_owner_fields:
+        owner_stmt = (
+            select(User)
+            .join(UserRole, User.id == UserRole.user_id)
+            .join(Role, Role.id == UserRole.role_id)
+            .where(User.tenant_id == tenant_id, Role.name == "owner")
+        )
+        owner = (await session.execute(owner_stmt)).scalars().first()
+        if not owner:
+            owner = (await session.execute(
+                select(User).where(User.tenant_id == tenant_id).order_by(User.id.asc())
+            )).scalars().first()
+
+        if owner:
+            if data.owner_full_name is not None:
+                owner.full_name = data.owner_full_name.strip()
+            if data.owner_phone is not None:
+                owner.phone = data.owner_phone.strip()
+            if data.owner_email is not None:
+                owner.email = data.owner_email.strip()
+            if data.owner_pin_code is not None:
+                owner.pin_code = data.owner_pin_code.strip()
+            if data.owner_password is not None and data.owner_password.strip():
+                owner.hashed_password = hash_password(data.owner_password.strip())
+            session.add(owner)
+
     await session.commit()
     await session.refresh(tenant)
     return {"message": "Tenant updated successfully", "id": tenant.id}

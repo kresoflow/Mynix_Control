@@ -26,6 +26,7 @@ class BulkAddDuplicateValidator {
     required List<RetailRowData> retailRows,
     required List<IngredientRowData> ingredientRows,
     required List<CategoryRowData> categoryRows,
+    String? categoryType,
   }) {
     if (tabIndex == 0 && index < dishRows.length) {
       return _checkDish(context, index, dishRows);
@@ -34,7 +35,7 @@ class BulkAddDuplicateValidator {
     } else if (tabIndex == 2 && index < ingredientRows.length) {
       return _checkIngredient(context, index, ingredientRows);
     } else if (tabIndex == 3 && index < categoryRows.length) {
-      return _checkCategory(context, index, categoryRows);
+      return _checkCategory(context, index, categoryRows, categoryType: categoryType);
     }
     return null;
   }
@@ -44,9 +45,16 @@ class BulkAddDuplicateValidator {
     if (name.length < 2) return null;
     final otherBatch = dishRows.asMap().entries.any((e) => e.key != index && e.value.nameController.text.trim().toLowerCase() == name);
     if (otherBatch) return 'Дубликат названия в строках массового ввода';
+
     final menuState = context.read<MenuBloc>().state;
-    if (menuState is MenuLoaded && menuState.items.where((i) => !i.isRetail && i.isAvailable).any((i) => i.cleanName.trim().toLowerCase() == name)) {
-      return 'Блюдо «$name» уже есть в меню';
+    if (menuState is MenuLoaded) {
+      final match = DuplicateDetector.findMenuItemDuplicate(
+        items: menuState.items,
+        queryName: dishRows[index].nameController.text.trim(),
+        isRetail: false,
+        currentCategoryId: dishRows[index].categoryId,
+      );
+      if (match != null) return match.matchReason;
     }
     return null;
   }
@@ -67,58 +75,73 @@ class BulkAddDuplicateValidator {
         return '${item.nameController.text.trim().toLowerCase()}|${item.flavorController.text.trim().toLowerCase()}|${item.volumeController.text.trim().toLowerCase()}' == composite;
       });
       if (otherBatch) return 'Дубликат товара и вкуса в строках ввода';
-
-      final menuState = context.read<MenuBloc>().state;
-      if (menuState is MenuLoaded) {
-        final normVol = DuplicateDetector.normalizeVolume(volume);
-        final exists = menuState.items.where((i) => i.isRetail && i.isAvailable).any((i) {
-          if (i.cleanName.trim().toLowerCase() != name || (i.flavorString ?? '').trim().toLowerCase() != flavor) return false;
-          if (normVol.isNotEmpty) {
-            if (i.variations != null && i.variations!.isNotEmpty) {
-              return i.variations!.any((v) => DuplicateDetector.normalizeVolume(v['name']?.toString() ?? '') == normVol);
-            }
-            return DuplicateDetector.normalizeVolume(i.variationsSummary ?? '') == normVol;
-          }
-          return (i.variations == null || i.variations!.isEmpty) && (i.variationsSummary == null || i.variationsSummary!.isEmpty);
-        });
-        if (exists) {
-          final desc = [r.nameController.text.trim(), if (flavor.isNotEmpty) r.flavorController.text.trim(), if (volume.isNotEmpty) r.volumeController.text.trim()].join(' ');
-          return 'Товар «$desc» уже есть на витрине';
-        }
-      }
     }
 
     if (barcode.isNotEmpty) {
       final otherBatchBc = retailRows.asMap().entries.any((e) => e.key != index && e.value.barcodeController.text.trim() == barcode);
       if (otherBatchBc) return 'Дубликат штрихкода в строках массового ввода';
-      final menuState = context.read<MenuBloc>().state;
-      if (menuState is MenuLoaded && menuState.items.where((i) => i.isAvailable).any((i) => i.barcode != null && i.barcode!.trim() == barcode)) {
-        return 'Штрихкод $barcode уже используется в каталоге';
-      }
+    }
+
+    final menuState = context.read<MenuBloc>().state;
+    if (menuState is MenuLoaded) {
+      final match = DuplicateDetector.findMenuItemDuplicate(
+        items: menuState.items,
+        queryName: r.nameController.text.trim(),
+        isRetail: true,
+        queryFlavor: r.flavorController.text.trim().isNotEmpty ? r.flavorController.text.trim() : null,
+        queryVolume: r.volumeController.text.trim().isNotEmpty ? r.volumeController.text.trim() : null,
+        queryBarcode: barcode.isNotEmpty ? barcode : null,
+        currentCategoryId: r.categoryId,
+      );
+      if (match != null) return match.matchReason;
     }
     return null;
   }
 
   static String? _checkIngredient(BuildContext context, int index, List<IngredientRowData> ingredientRows) {
-    final name = ingredientRows[index].nameController.text.trim().toLowerCase();
-    if (name.length < 2) return null;
-    final otherBatch = ingredientRows.asMap().entries.any((e) => e.key != index && e.value.nameController.text.trim().toLowerCase() == name);
-    if (otherBatch) return 'Дубликат сырья в строках массового ввода';
+    final r = ingredientRows[index];
+    final name = r.nameController.text.trim().toLowerCase();
+    final barcode = r.sku?.trim() ?? '';
+    if (name.length < 2 && barcode.isEmpty) return null;
+
+    if (name.length >= 2) {
+      final otherBatch = ingredientRows.asMap().entries.any((e) => e.key != index && e.value.nameController.text.trim().toLowerCase() == name);
+      if (otherBatch) return 'Дубликат сырья в строках массового ввода';
+    }
+
+    if (barcode.isNotEmpty) {
+      final otherBatchBc = ingredientRows.asMap().entries.any((e) => e.key != index && (e.value.sku?.trim() ?? '') == barcode);
+      if (otherBatchBc) return 'Дубликат SKU/штрихкода в строках ввода';
+    }
+
     final ingState = context.read<IngredientBloc>().state;
-    if (ingState is IngredientLoaded && ingState.ingredients.where((i) => !i.isRetail && !i.isArchived).any((i) => i.name.trim().toLowerCase() == name)) {
-      return 'Сырье «$name» уже есть на складе';
+    if (ingState is IngredientLoaded) {
+      final match = DuplicateDetector.findIngredientDuplicate(
+        ingredients: ingState.ingredients,
+        queryName: r.nameController.text.trim(),
+        queryBarcode: barcode.isNotEmpty ? barcode : null,
+        currentCategoryId: r.categoryId,
+      );
+      if (match != null) return match.matchReason;
     }
     return null;
   }
 
-  static String? _checkCategory(BuildContext context, int index, List<CategoryRowData> categoryRows) {
-    final name = categoryRows[index].nameController.text.trim().toLowerCase();
+  static String? _checkCategory(BuildContext context, int index, List<CategoryRowData> categoryRows, {String? categoryType}) {
+    final r = categoryRows[index];
+    final name = r.nameController.text.trim().toLowerCase();
     if (name.length < 2) return null;
     final otherBatch = categoryRows.asMap().entries.any((e) => e.key != index && e.value.nameController.text.trim().toLowerCase() == name);
     if (otherBatch) return 'Дубликат категории в строках массового ввода';
+
     final catState = context.read<CategoryBloc>().state;
-    if (catState is CategoryLoaded && catState.categories.where((c) => !c.isArchived).any((c) => c.name.trim().toLowerCase() == name)) {
-      return 'Категория «$name» уже существует';
+    if (catState is CategoryLoaded) {
+      final match = DuplicateDetector.findCategoryDuplicate(
+        categories: catState.categories,
+        queryName: r.nameController.text.trim(),
+        categoryType: categoryType,
+      );
+      if (match != null) return match.matchReason;
     }
     return null;
   }

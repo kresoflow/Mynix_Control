@@ -121,6 +121,8 @@ class User(TimestampMixin, table=True):
     full_name: str = Field(max_length=100)
     hashed_password: str = Field(max_length=255)
     pin_code: Optional[str] = Field(default=None, max_length=10)
+    phone: Optional[str] = Field(default=None, max_length=50)
+    email: Optional[str] = Field(default=None, max_length=255)
     is_active: bool = Field(default=True)
 
     # Relationships
@@ -149,6 +151,7 @@ class Tenant(SQLModel, table=True):
     name: str = Field(max_length=100)
     schema_name: str = Field(max_length=50, unique=True, index=True)
     address: Optional[str] = Field(default=None, max_length=255)
+    currency: str = Field(default="сом", max_length=20)
     is_active: bool = Field(default=True)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None),

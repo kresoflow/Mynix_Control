@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -46,7 +46,7 @@ class AppToast {
     BuildContext context,
     String itemName, {
     int count = 1,
-    Duration duration = const Duration(milliseconds: 2000),
+    Duration duration = const Duration(milliseconds: 1200),
   }) {
     _show(
       context,
@@ -78,79 +78,74 @@ class AppToast {
       backgroundColor: AppColors.transparent,
       behavior: SnackBarBehavior.floating,
       duration: duration,
-      margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+      width: 440,
       padding: EdgeInsets.zero,
-      content: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: borderColor, width: 1.2),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.black.withValues(alpha: isDark ? 0.4 : 0.12),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+      content: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-            child: Row(
-              children: [
-                Icon(PhosphorIconsRegular.cookingPot, color: AppColors.brandPrimary, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    message,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: textColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(PhosphorIconsRegular.cookingPot, color: AppColors.brandPrimary, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(width: 8),
-                InkWell(
-                  onTap: () {
-                    messenger.hideCurrentSnackBar();
-                    onUndo();
-                  },
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () {
+                messenger.hideCurrentSnackBar();
+                onUndo();
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.warning.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
-                    ),
-                    child: Text(
-                      'ВЕРНУТЬ',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                  border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  'ВЕРНУТЬ',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.warning,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(width: 6),
-                InkWell(
-                  onTap: () => messenger.hideCurrentSnackBar(),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      PhosphorIconsRegular.x,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                      size: 16,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(width: 6),
+            InkWell(
+              onTap: () => messenger.hideCurrentSnackBar(),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  PhosphorIconsRegular.x,
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -203,90 +198,85 @@ class AppToast {
 
     final snackBar = SnackBar(
       elevation: 0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       behavior: SnackBarBehavior.floating,
       duration: duration,
-      margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+      width: 440,
       padding: EdgeInsets.zero,
-      content: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: accentColor.withValues(alpha: 0.35), width: 1.2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+      content: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: accentColor.withValues(alpha: 0.35), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(iconData, color: accentColor, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (subtitle != null && subtitle.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          style: AppTextStyles.caption.copyWith(
-                            color: subtextColor,
-                            fontSize: 12,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => messenger.hideCurrentSnackBar(),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      PhosphorIconsRegular.x,
-                      color: subtextColor,
-                      size: 16,
+            BoxShadow(
+              color: accentColor.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(iconData, color: accentColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  if (subtitle != null && subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.caption.copyWith(
+                        color: subtextColor,
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => messenger.hideCurrentSnackBar(),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  PhosphorIconsRegular.x,
+                  color: subtextColor,
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

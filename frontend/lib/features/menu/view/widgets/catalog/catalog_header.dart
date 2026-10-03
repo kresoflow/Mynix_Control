@@ -30,6 +30,7 @@ class CatalogHeader extends StatelessWidget {
   final ValueChanged<String>? onSearchChanged;
   final VoidCallback? onRestoreSelected;
   final VoidCallback? onToggleVisibilitySelected;
+  final VoidCallback? onMergeSelected;
 
   const CatalogHeader({
     super.key,
@@ -56,6 +57,7 @@ class CatalogHeader extends StatelessWidget {
     this.onSearchChanged,
     this.onRestoreSelected,
     this.onToggleVisibilitySelected,
+    this.onMergeSelected,
   });
 
   @override
@@ -80,6 +82,7 @@ class CatalogHeader extends StatelessWidget {
               onDeleteSelected: onDeleteSelected,
               onRestoreSelected: onRestoreSelected,
               onToggleVisibilitySelected: onToggleVisibilitySelected,
+              onMergeSelected: onMergeSelected,
             )
           : (isMobile ? _buildMobileDefaultMode(context, colorScheme) : _buildDesktopDefaultMode(context, colorScheme)),
     );

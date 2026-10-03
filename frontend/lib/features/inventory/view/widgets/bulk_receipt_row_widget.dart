@@ -4,6 +4,7 @@ import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 class BulkReceiptRowWidget extends StatelessWidget {
   final ReceiptRowModel row;
@@ -136,7 +137,7 @@ class BulkReceiptRowWidget extends StatelessWidget {
                   row.costFocus.requestFocus();
                 },
                 decoration: cellDecoration(
-                  suffixText: row.ingredient?.unit ?? '',
+                  suffixText: UnitFormatter.format(row.ingredient?.unit),
                 ),
               ),
             ),

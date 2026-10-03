@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -15,6 +15,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
   final VoidCallback onDeleteSelected;
   final VoidCallback? onRestoreSelected;
   final VoidCallback? onToggleVisibilitySelected;
+  final VoidCallback? onMergeSelected;
 
   const CatalogHeaderManageMode({
     super.key,
@@ -27,6 +28,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
     required this.onDeleteSelected,
     this.onRestoreSelected,
     this.onToggleVisibilitySelected,
+    this.onMergeSelected,
   });
 
   @override
@@ -89,6 +91,18 @@ class CatalogHeaderManageMode extends StatelessWidget {
                     onPressed: selectedCount > 0 ? onRestoreSelected : null,
                   ),
                 ],
+                if (onMergeSelected != null && selectedCount >= 2) ...[
+                  const SizedBox(width: 6),
+                  AppSecondaryButton(
+                    label: '',
+                    icon: PhosphorIconsRegular.unite,
+                    tooltip: 'Объединить в карточку',
+                    height: 32,
+                    width: 32,
+                    size: AppButtonSize.sm,
+                    onPressed: onMergeSelected,
+                  ),
+                ],
                 const SizedBox(width: 6),
                 Expanded(
                   child: AppDangerButton(
@@ -118,6 +132,16 @@ class CatalogHeaderManageMode extends StatelessWidget {
             onPressed: onSelectAllToggle,
           ),
           const Spacer(),
+          if (onMergeSelected != null && selectedCount >= 2) ...[
+            AppSecondaryButton(
+              label: 'Объединить ($selectedCount)',
+              icon: PhosphorIconsRegular.unite,
+              height: 38,
+              size: AppButtonSize.md,
+              onPressed: onMergeSelected,
+            ),
+            const SizedBox(width: 8),
+          ],
           if (onToggleVisibilitySelected != null) ...[
             AppSecondaryButton(
               label: 'Скрыть / Показать',

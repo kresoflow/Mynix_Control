@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
@@ -12,6 +12,7 @@ import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class BlindInventoryDialog extends StatefulWidget {
@@ -158,7 +159,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
                               controller: _controllers[item.id],
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: InputDecoration(
-                                labelText: 'Факт (${item.unit})',
+                                labelText: 'Факт (${UnitFormatter.format(item.unit)})',
                                 border: const OutlineInputBorder(),
                                 isDense: true,
                               ),

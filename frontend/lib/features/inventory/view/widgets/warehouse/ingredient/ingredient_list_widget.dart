@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -8,6 +8,7 @@ import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/create_ingredient_dialog.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 
 
@@ -213,12 +214,12 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                               ),
                           ],
                         ),
-                        subtitle: Text('Остаток: ${item.currentStock.toInt()} ${item.unit} | Алерт: ${item.minStockAlert.toInt()} ${item.unit}'),
+                        subtitle: Text('Остаток: ${item.currentStock.toInt()} ${UnitFormatter.format(item.unit)} | Алерт: ${item.minStockAlert.toInt()} ${UnitFormatter.format(item.unit)}'),
                         trailing: widget.isManageMode ? null : Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '${item.costPerUnit.toInt()} ${widget.currency} / ${item.unit}',
+                              '${item.costPerUnit.toInt()} ${widget.currency} / ${UnitFormatter.format(item.unit)}',
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
                             ),
                             PopupMenuButton<String>(

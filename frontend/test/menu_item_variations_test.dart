@@ -68,6 +68,36 @@ void main() {
       expect(item.variationsSummary, '4 вариаций');
       expect(item.attributesString, 'Zero • 4 вариаций');
     });
+
+    test('Correctly extracts variationLabels and variationsSummary for Flat SKU from volume/unit in attributes', () {
+      const item = MenuItem(
+        id: 5,
+        name: 'Спрайт|TYPE|retail',
+        price: 45.0,
+        categoryId: '1',
+        attributesJson: '{"flavor": "Огурец", "volume": "0.5 л", "unit": "l"}',
+      );
+
+      expect(item.cleanName, 'Спрайт');
+      expect(item.flavorString, 'Огурец');
+      expect(item.variationLabels, ['0.5 л']);
+      expect(item.variationsSummary, '0.5 л');
+      expect(item.attributesString, 'Огурец • 0.5 л');
+    });
+
+    test('Correctly extracts unit when only unit is set for Flat SKU', () {
+      const item = MenuItem(
+        id: 6,
+        name: 'Молоко|TYPE|retail',
+        price: 80.0,
+        categoryId: '1',
+        attributesJson: '{"unit": "l"}',
+      );
+
+      expect(item.cleanName, 'Молоко');
+      expect(item.variationLabels, ['л']);
+      expect(item.variationsSummary, 'л');
+    });
   });
 
   group('PosOrderItem cleanName & optionsSummary Invariants', () {

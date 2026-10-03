@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 part 'menu_item.g.dart';
 
@@ -120,6 +121,11 @@ class MenuItem extends Equatable {
               }
             }
           }
+        } else if (attrs['volume'] != null && attrs['volume'].toString().trim().isNotEmpty) {
+          labels.add(attrs['volume'].toString().trim());
+        } else if (attrs['unit'] != null && attrs['unit'].toString().trim().isNotEmpty && attrs['unit'] != 'pcs') {
+          final u = attrs['unit'].toString().trim();
+          labels.add(UnitFormatter.format(u));
         }
       } catch (_) {}
     }

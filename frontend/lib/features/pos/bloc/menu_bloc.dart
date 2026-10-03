@@ -1,173 +1,24 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Меню — BLoC управления каталогом, блюдами и ритейл-товарами
+// ДОМЕН: lib/features/pos/bloc/menu_bloc.dart
+// ==============================================================================
+
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/core/network/websocket_service.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import '../repository/menu_repository.dart';
+import 'menu_event.dart';
+import 'menu_state.dart';
 
-// --- Events ---
-abstract class MenuEvent extends Equatable {
-  const MenuEvent();
-  @override
-  List<Object?> get props => [];
-}
+export 'menu_event.dart';
+export 'menu_state.dart';
 
-class LoadMenu extends MenuEvent {}
-
-class CreateMenuItem extends MenuEvent {
-  final String name;
-  final double price;
-  final String category;
-  final int sortOrder;
-  final Map<String, dynamic>? attributes;
-  final String? barcode;
-
-  const CreateMenuItem({
-    required this.name,
-    required this.price,
-    required this.category,
-    this.sortOrder = 0,
-    this.attributes,
-    this.barcode,
-  });
-
-  @override
-  List<Object?> get props => [name, price, category, sortOrder, barcode];
-}
-
-class CreateMenuItemsBulk extends MenuEvent {
-  final List<Map<String, dynamic>> items;
-  const CreateMenuItemsBulk({required this.items});
-  @override
-  List<Object?> get props => [items];
-}
-
-class CreateRetailProductsBulk extends MenuEvent {
-  final List<Map<String, dynamic>> items;
-  const CreateRetailProductsBulk({required this.items});
-  @override
-  List<Object?> get props => [items];
-}
-
-class DeleteMenuItem extends MenuEvent {
-  final int id;
-  final String mode;
-  const DeleteMenuItem(this.id, {this.mode = 'auto'});
-  @override
-  List<Object?> get props => [id, mode];
-}
-
-class DeleteMenuItemsBulk extends MenuEvent {
-  final List<int> ids;
-  final String mode;
-  const DeleteMenuItemsBulk(this.ids, {this.mode = 'auto'});
-  @override
-  List<Object?> get props => [ids, mode];
-}
-
-class UpdateMenuItem extends MenuEvent {
-  final int id;
-  final Map<String, dynamic> data;
-  const UpdateMenuItem(this.id, this.data);
-  @override
-  List<Object?> get props => [id, data];
-}
-
-class UpdateRetailProduct extends MenuEvent {
-  final int id;
-  final Map<String, dynamic> data;
-  const UpdateRetailProduct(this.id, this.data);
-  @override
-  List<Object?> get props => [id, data];
-}
-
-class CreateRetailProduct extends MenuEvent {
-  final String name;
-  final int? categoryId;
-  final String unit;
-  final double purchasePrice;
-  final double sellingPrice;
-  final Map<String, dynamic>? attributes;
-  final double initialStock;
-  final double minStockAlert;
-  final int sortOrder;
-  final String? barcode;
-  final int? parentId;
-
-  const CreateRetailProduct({
-    required this.name,
-    this.categoryId,
-    required this.unit,
-    required this.purchasePrice,
-    required this.sellingPrice,
-    this.attributes,
-    this.initialStock = 0.0,
-    this.minStockAlert = 0.0,
-    this.sortOrder = 0,
-    this.barcode,
-    this.parentId,
-  });
-
-  @override
-  List<Object?> get props => [
-        name,
-        categoryId,
-        unit,
-        purchasePrice,
-        sellingPrice,
-        attributes,
-        initialStock,
-        minStockAlert,
-        sortOrder,
-        barcode,
-        parentId,
-      ];
-}
-
-class CreateRetailProductGroup extends MenuEvent {
-  final String name;
-  final int? categoryId;
-  final String? flavor;
-  final List<Map<String, dynamic>> variations;
-
-  const CreateRetailProductGroup({
-    required this.name,
-    this.categoryId,
-    this.flavor,
-    required this.variations,
-  });
-
-  @override
-  List<Object?> get props => [name, categoryId, flavor, variations];
-}
-
-// --- States ---
-abstract class MenuState extends Equatable {
-  const MenuState();
-  @override
-  List<Object?> get props => [];
-}
-
-class MenuLoading extends MenuState {}
-
-class MenuLoaded extends MenuState {
-  final List<MenuItem> items;
-  const MenuLoaded({required this.items});
-  @override
-  List<Object?> get props => [items];
-}
-
-class MenuError extends MenuState {
-  final String message;
-  const MenuError({required this.message});
-  @override
-  List<Object?> get props => [message];
-}
-
-// --- Bloc ---
 class MenuBloc extends Bloc<MenuEvent, MenuState> {
   final MenuRepository menuRepository;
   StreamSubscription? _wsSubscription;
+  Timer? _wsDebounceTimer;
 
   MenuBloc(this.menuRepository) : super(MenuLoading()) {
     on<LoadMenu>(_onLoadMenu);
@@ -175,6 +26,10 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     on<CreateMenuItemsBulk>(_onCreateMenuItemsBulk);
     on<DeleteMenuItem>(_onDeleteMenuItem);
     on<DeleteMenuItemsBulk>(_onDeleteMenuItemsBulk);
+    on<DeleteMenuItemWithPolicy>(_onDeleteMenuItemWithPolicy);
+    on<MergeMenuItems>(_onMergeMenuItems);
+    on<ExtractVariation>(_onExtractVariation);
+    on<UnbundleMenuItem>(_onUnbundleMenuItem);
     on<CreateRetailProduct>(_onCreateRetailProduct);
     on<CreateRetailProductsBulk>(_onCreateRetailProductsBulk);
     on<CreateRetailProductGroup>(_onCreateRetailProductGroup);
@@ -183,13 +38,17 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
 
     _wsSubscription = webSocketService.messages.listen((data) {
       if (data['event'] == 'inventory_updated') {
-        add(LoadMenu());
+        _wsDebounceTimer?.cancel();
+        _wsDebounceTimer = Timer(const Duration(milliseconds: 350), () {
+          add(LoadMenu());
+        });
       }
     });
   }
 
   @override
   Future<void> close() {
+    _wsDebounceTimer?.cancel();
     _wsSubscription?.cancel();
     return super.close();
   }
@@ -275,7 +134,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
           await menuRepository.createRetailProduct(
             name: v['name'] as String,
             categoryId: event.categoryId,
-            unit: v['unit'] as String? ?? 'pcs',
+            unit: UnitFormatter.toDbKey(v['unit'] as String?, 'pcs'),
             purchasePrice: (v['purchasePrice'] as num?)?.toDouble() ?? 0.0,
             sellingPrice: (v['price'] as num?)?.toDouble() ?? 0.0,
             initialStock: 0.0,
@@ -290,6 +149,22 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
 
   Future<void> _onDeleteMenuItemsBulk(DeleteMenuItemsBulk event, Emitter<MenuState> emit) =>
       _handleMenuAction(() => menuRepository.deleteMenuItemsBulk(event.ids, mode: event.mode), emit);
+
+  Future<void> _onDeleteMenuItemWithPolicy(DeleteMenuItemWithPolicy event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.deleteMenuItemWithPolicy(itemId: event.id, policy: event.policy), emit);
+
+  Future<void> _onMergeMenuItems(MergeMenuItems event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.mergeMenuItems(
+        targetItemId: event.targetItemId,
+        sourceItemIds: event.sourceItemIds,
+        targetName: event.targetName,
+      ), emit,);
+
+  Future<void> _onExtractVariation(ExtractVariation event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.extractVariation(childId: event.childId), emit);
+
+  Future<void> _onUnbundleMenuItem(UnbundleMenuItem event, Emitter<MenuState> emit) =>
+      _handleMenuAction(() => menuRepository.unbundleMenuItem(itemId: event.itemId), emit);
 
   Future<void> _onUpdateMenuItem(UpdateMenuItem event, Emitter<MenuState> emit) =>
       _handleMenuAction(() => menuRepository.updateMenuItem(event.id, event.data), emit);

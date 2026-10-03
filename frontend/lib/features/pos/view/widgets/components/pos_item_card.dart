@@ -143,46 +143,56 @@ class _PosItemCardState extends State<PosItemCard> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Flexible(
-                        child: Text(
-                          widget.item.cleanName,
-                          style: AppTextStyles.h3.copyWith(
-                            color: isDark ? AppColors.darkText : AppColors.lightText,
-                            fontWeight: FontWeight.w700,
-                            fontSize: isMobile ? 12 : null,
-                            letterSpacing: 0.3,
-                            height: 1.2,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        child: () {
+                          final hasFlavor = widget.item.flavorString != null &&
+                              widget.item.flavorString!.trim().isNotEmpty;
+                          final clean = widget.item.cleanName.trim();
+                          final showFlavorInTitle = hasFlavor &&
+                              !clean.toLowerCase().contains(widget.item.flavorString!.toLowerCase().trim());
+
+                          return Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: clean,
+                                  style: AppTextStyles.h3.copyWith(
+                                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: isMobile ? 12 : 14,
+                                    letterSpacing: 0.3,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                if (showFlavorInTitle) ...[
+                                  const TextSpan(text: ' '),
+                                  TextSpan(
+                                    text: widget.item.flavorString!.trim(),
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: isMobile ? 11.5 : 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.warning,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        }(),
                       ),
-                      if (widget.item.flavorString != null || widget.item.variationsSummary != null) ...[
-                        const SizedBox(height: 4),
+                      if (widget.item.variationsSummary != null) ...[
+                        const SizedBox(height: 6),
                         Flexible(
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 4,
-                            runSpacing: 4,
-                            children: [
-                              if (widget.item.flavorString != null)
-                                AppStatusBadge(
-                                  label: widget.item.flavorString!,
-                                  variant: AppBadgeVariant.warning,
-                                  height: 20,
-                                ),
-                              if (widget.item.variationsSummary != null)
-                                AppStatusBadge(
-                                  label: widget.item.variationsSummary!,
-                                  variant: AppBadgeVariant.info,
-                                  height: 20,
-                                ),
-                            ],
+                          child: AppStatusBadge(
+                            label: widget.item.variationsSummary!,
+                            variant: AppBadgeVariant.info,
+                            height: 20,
                           ),
                         ),
                       ] else if (widget.item.attributesString != null) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Flexible(
                           child: AppStatusBadge(
                             label: widget.item.attributesString!,

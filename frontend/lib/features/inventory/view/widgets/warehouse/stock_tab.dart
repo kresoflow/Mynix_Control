@@ -15,6 +15,7 @@ import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_capital_chart_card.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_empty_state.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_low_inventory_widget.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart';
@@ -39,6 +40,7 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
 
   late String _filter;
   String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   bool _isExpandedAll = false;
   final Map<String, bool> _expandedCategories = {};
   final Map<String, bool> _expandedSubcategories = {};
@@ -47,6 +49,20 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
   void initState() {
     super.initState();
     _filter = widget.filter;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _resetSearchAndFilter() {
+    setState(() {
+      _searchQuery = '';
+      _filter = 'all';
+      _searchController.clear();
+    });
   }
 
   // ─── 2. Обработчики действий (Handlers) ────────────────────────────────────
@@ -170,20 +186,6 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
           return true;
         }).toList();
 
-        if (filtered.isEmpty) {
-          return Center(
-            child: Text(
-              _searchQuery.isNotEmpty
-                  ? 'Ничего не найдено по запросу "$_searchQuery"'
-                  : 'Нет товаров в этой категории.',
-              style: AppTextStyles.body.copyWith(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.darkSubtext
-                    : AppColors.lightSubtext,
-              ),
-            ),
-          );
-        }
 
         double totalCapital = 0;
         double potentialRevenue = 0;
@@ -338,6 +340,14 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
           },
         );
 
+        final Widget contentWidget = flatList.isEmpty
+            ? StockEmptyState(
+                searchQuery: _searchQuery,
+                filter: _filter,
+                onReset: _resetSearchAndFilter,
+              )
+            : itemsList;
+
         return Column(
           children: [
             StockMetricsHeader(
@@ -360,9 +370,10 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                           onFilterChanged: (val) => setState(() => _filter = val),
                           isExpandedAll: _isExpandedAll,
                           onToggleExpandAll: _toggleExpandAll,
+                          searchController: _searchController,
                           onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                         ),
-                        Expanded(child: itemsList),
+                        Expanded(child: contentWidget),
                       ],
                     );
                   }
@@ -379,9 +390,10 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                               onFilterChanged: (val) => setState(() => _filter = val),
                               isExpandedAll: _isExpandedAll,
                               onToggleExpandAll: _toggleExpandAll,
+                              searchController: _searchController,
                               onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                             ),
-                            Expanded(child: itemsList),
+                            Expanded(child: contentWidget),
                           ],
                         ),
                       ),

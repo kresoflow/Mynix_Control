@@ -184,4 +184,56 @@ class MenuRepository {
       throw Exception('Failed to update retail product: ${e.toString()}');
     }
   }
+
+  Future<void> mergeMenuItems({
+    required int targetItemId,
+    required List<int> sourceItemIds,
+    String? targetName,
+  }) async {
+    try {
+      await _dio.post('/menu/merge', data: {
+        'target_item_id': targetItemId,
+        'source_item_ids': sourceItemIds,
+        'target_name': targetName,
+      });
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Ошибка при объединении товаров');
+      }
+      throw Exception('Ошибка при объединении товаров: ${e.toString()}');
+    }
+  }
+
+  Future<void> extractVariation({required int childId}) async {
+    try {
+      await _dio.post('/menu/variations/$childId/extract');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Ошибка при отсоединении вариации');
+      }
+      throw Exception('Ошибка при отсоединении вариации: ${e.toString()}');
+    }
+  }
+
+  Future<void> unbundleMenuItem({required int itemId}) async {
+    try {
+      await _dio.post('/menu/$itemId/unbundle');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Ошибка при распаковке карточки');
+      }
+      throw Exception('Ошибка при распаковке карточки: ${e.toString()}');
+    }
+  }
+
+  Future<void> deleteMenuItemWithPolicy({required int itemId, required String policy}) async {
+    try {
+      await _dio.post('/menu/$itemId/delete-policy', data: {'policy': policy});
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        throw Exception(e.response?.data['detail'] ?? 'Ошибка при удалении позиции');
+      }
+      throw Exception('Ошибка при удалении позиции: ${e.toString()}');
+    }
+  }
 }

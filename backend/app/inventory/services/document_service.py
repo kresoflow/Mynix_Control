@@ -178,6 +178,7 @@ async def complete_document(
         .where(InventoryDocument.id == document_id)
         .options(selectinload(InventoryDocument.items))
         .with_for_update()
+        .execution_options(populate_existing=True)
     )
     result = await session.execute(stmt)
     doc = result.scalar_one_or_none()

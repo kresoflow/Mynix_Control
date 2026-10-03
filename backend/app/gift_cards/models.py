@@ -121,6 +121,7 @@ class GiftCardTransaction(TenantModel, table=True):
         foreign_key="orders.id",
         index=True,
     )
+    client_uuid: Optional[str] = Field(default=None, max_length=64, index=True)
     type: GiftCardTransactionType = Field(
         sa_column=Column(
             SAEnum(
@@ -159,12 +160,14 @@ class GiftCardRedeem(SQLModel):
     """Схема запроса на частичное или полное списание средств с карты."""
     amount: float = Field(gt=0.0, description="Сумма списания (>0)")
     order_id: Optional[int] = None
+    client_uuid: Optional[str] = Field(default=None, max_length=64, description="UUID операции для идемпотентности")
     notes: Optional[str] = Field(default=None, max_length=255)
 
 
 class GiftCardTopUp(SQLModel):
     """Схема запроса на пополнение баланса карты."""
     amount: float = Field(gt=0.0, description="Сумма пополнения (>0)")
+    client_uuid: Optional[str] = Field(default=None, max_length=64, description="UUID операции для идемпотентности")
     notes: Optional[str] = Field(default=None, max_length=255)
 
 
@@ -180,6 +183,7 @@ class GiftCardTransactionRead(SQLModel):
     id: int
     gift_card_id: int
     order_id: Optional[int] = None
+    client_uuid: Optional[str] = None
     type: GiftCardTransactionType
     amount: float
     balance_before: float

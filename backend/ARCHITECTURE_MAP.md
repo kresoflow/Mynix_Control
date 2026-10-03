@@ -85,12 +85,17 @@ backend/
 │   │   ├── services/                 # Бизнес-логика: checkout_service, shift_service, order_table_service
 │   │   ├── __init__.py               # Инициализация пакета pos
 │   │   └── models.py                 # Модели: Order, OrderItem, Shift, Cashbox, OrderTable
-│   ├── system/                       # Модуль: Системные настройки и Диагностика
+│   ├── system/                       # Модуль: Системные настройки, Управление кластером и Диагностика
 │   │   ├── __pycache__/              # Байт-код модуля system
+│   │   ├── routers/                  # HTTP-маршруты системного управления
+│   │   │   ├── database_router.py    # Инспектор таблиц и данных схемы тенанта
+│   │   │   └── tenant_router.py      # Управление тенантами, владельцами, статусом и валютами
 │   │   ├── __init__.py               # Инициализация пакета system
-│   │   ├── models.py                 # Модели: системные реквизиты, параметры филиала
-│   │   ├── router.py                 # HTTP-маршруты системных параметров и healthcheck (/health)
-│   │   └── services.py               # Чтение и запись настроек текущего тенанта
+│   │   ├── integrations.py           # Сервисы внешних интеграций
+│   │   ├── router.py                 # Главный роутер системного модуля и healthcheck (/health)
+│   │   ├── schemas.py                # Pydantic DTO запросов и ответов тенантов/владельцев
+│   │   ├── security.py               # Валидация x-system-token суперадминистратора
+│   │   └── telegram_service.py       # Интеграция с Telegram Bot API
 │   ├── users/                        # Модуль: Авторизация и Управление доступом (PBAC)
 │   │   ├── __pycache__/              # Байт-код модуля users
 │   │   ├── routers/                  # HTTP-маршруты: auth_router, users_router
@@ -110,7 +115,11 @@ backend/
 │
 ├── migrations/                       # SQL-миграции схем тенантов
 │   └── tenant_patches/               # Файловые патчи структуры таблиц тенантов
-│       └── 001_initial_schema.sql    # Базовый DDL-патч (оплаты, балансы, CRM, индексы)
+│       ├── 001_initial_schema.sql    # Базовый DDL-патч (оплаты, балансы, CRM, индексы)
+│       ├── 002_add_ingredient_is_archived.sql # Добавление флага архивации ингредиентов
+│       ├── 003_purge_dummy_parent_retail_products.sql # Очистка фиктивных RetailProduct для серий
+│       ├── 004_add_gift_card_client_uuid.sql # Идемпотентность транзакций сертификатов
+│       └── 005_normalize_retail_product_units.sql # Нормализация единиц учета в 'PCS' и названий плоских товаров
 │
 ├── scripts/                          # Скрипты ручного тестирования и утилиты
 │   ├── manual_tests/                 # Ручные сценарии проверки API (смены, печать, X-отчеты)
@@ -132,6 +141,7 @@ backend/
 │   ├── test_pos_offline_idempotency.py # Тесты идемпотентности кассы
 │   ├── test_pos_shifts.py            # Тесты открытия и закрытия смен
 │   ├── test_supplier_debt_and_documents.py # Тесты долгов поставщиков и накладных
+│   ├── test_system_security.py       # Тесты управления тенантами, сброса паролей и системного токена
 │   └── test_users.py                 # Тесты пользователей и авторизации
 │
 ├── .env                              # Локальные переменные окружения разработчика

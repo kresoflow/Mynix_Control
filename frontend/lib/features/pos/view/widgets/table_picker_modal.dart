@@ -37,7 +37,7 @@ class _TablePickerModalState extends State<TablePickerModal> {
   final List<String> _presetTables = [
     'Стол 1', 'Стол 2', 'Стол 3', 'Стол 4',
     'Стол 5', 'Стол 6', 'Стол 7', 'Стол 8',
-    'VIP 1', 'VIP 2', 'Навынос', 'Бар',
+    'VIP',  'Стойка',
   ];
 
   @override

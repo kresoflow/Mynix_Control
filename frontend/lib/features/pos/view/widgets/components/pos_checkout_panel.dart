@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -30,7 +30,12 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
         ? 'Перевод: ${_getProviderLabel(_transferProvider)}'
         : null;
     context.read<CartBloc>().add(
-          CheckoutCart(paymentMethod: _paymentMethod, note: note, orderSource: 'pos'),
+          CheckoutCart(
+            paymentMethod: _paymentMethod,
+            note: note,
+            orderSource: 'pos',
+            submittingAction: 'checkout',
+          ),
         );
   }
 
@@ -53,6 +58,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
                     paymentMethod: 'CASH',
                     tableNumber: table,
                     orderSource: targetSource,
+                    submittingAction: 'booth',
                   ),
                 );
           }
@@ -66,6 +72,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             paymentMethod: 'CASH',
             tableNumber: cartState.tableNumber,
             orderSource: targetSource,
+            submittingAction: 'booth',
           ),
         );
   }
@@ -205,6 +212,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
               PosCheckoutPanelActionButton(
                 isEmpty: state.items.isEmpty,
                 isSubmitting: state.isSubmitting,
+                submittingAction: state.submittingAction,
                 paymentMethod: _paymentMethod,
                 transferProvider: _transferProvider,
                 payableTotal: state.payableTotal,

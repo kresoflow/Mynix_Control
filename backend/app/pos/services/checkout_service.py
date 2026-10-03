@@ -96,13 +96,15 @@ async def create_order(
         if existing_table_order:
             from app.pos.services.order_table_service import append_items_to_table_order
             class _SimpleUser:
-                def __init__(self, uid, tid):
+                def __init__(self, uid, tid, name):
                     self.id = uid
                     self.tenant_id = tid
-                    self.full_name = "Кассир"
-            await append_items_to_table_order(
-                session, _SimpleUser(user_id, tenant_id), existing_table_order.id, data.items
+                    self.full_name = name
+            order_data = await append_items_to_table_order(
+                session, _SimpleUser(user_id, tenant_id, "Кассир"), existing_table_order.id, data.items
             )
+            setattr(existing_table_order, "_is_appended_dozakaz", True)
+            setattr(existing_table_order, "_dozakaz_order_data", order_data)
             return existing_table_order
 
     order_items_data = []
@@ -236,6 +238,9 @@ async def process_new_order(session: AsyncSession, current_user, data: CreateOrd
     from app.pos.ws import notify_kitchen_new_order, notify_inventory_updated, notify_pos_incoming_order
 
     order = await create_order(session, current_user.id, current_user.tenant_id, data)
+    if getattr(order, "_is_appended_dozakaz", False):
+        return getattr(order, "_dozakaz_order_data")
+
     full_order = await get_order_by_id(session, order.id)
     if not full_order:
         raise NotFoundError("Failed to fetch newly created order")
@@ -309,7 +314,7 @@ async def approve_order(
             )
             session.add(tx)
 
-    await session.commit()
+    await session.flush()
     order_data = format_order_dict(order, current_user.full_name)
     await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
 
@@ -338,7 +343,7 @@ async def reject_order(session: AsyncSession, current_user, order_id: int, reaso
     if reason:
         order.note = f"{order.note or ''} | Отклонен: {reason}".strip(" |")
     session.add(order)
-    await session.commit()
+    await session.flush()
 
     order_data = format_order_dict(order, current_user.full_name)
     await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
@@ -401,5 +406,5 @@ async def update_order_status(session: AsyncSession, order_id: int, new_status: 
         raise NotFoundError(f"Заказ #{order_id} не найден")
     order.status = new_status
     session.add(order)
-    await session.commit()
+    await session.flush()
     return order

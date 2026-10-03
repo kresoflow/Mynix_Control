@@ -122,9 +122,6 @@ class XRayEngine:
                 elif rel_path.startswith("frontend"):
                     layer_stats["Frontend (Flutter / Dart)"]["files"] += 1
                     layer_stats["Frontend (Flutter / Dart)"]["lines"] += lines
-                elif rel_path.startswith("tg_web_app"):
-                    layer_stats["Telegram App (React / TS)"]["files"] += 1
-                    layer_stats["Telegram App (React / TS)"]["lines"] += lines
                 elif rel_path.startswith(".agents"):
                     layer_stats["Agents & Constitution"]["files"] += 1
                     layer_stats["Agents & Constitution"]["lines"] += lines

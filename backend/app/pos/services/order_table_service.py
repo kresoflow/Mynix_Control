@@ -134,10 +134,10 @@ async def settle_table_order(
         order.note = f"{order.note or ''} | {note}".strip(" |")
     session.add(order)
 
-    if str(order.payment_method).lower() == "cash":
-        open_shift = await get_open_shift(session)
-        if open_shift:
-            order.shift_id = open_shift.id
+    open_shift = await get_open_shift(session)
+    if open_shift:
+        order.shift_id = open_shift.id
+        if str(order.payment_method).lower() == "cash":
             tx = CashTransaction(
                 shift_id=open_shift.id,
                 user_id=current_user.id,
@@ -147,7 +147,7 @@ async def settle_table_order(
             )
             session.add(tx)
 
-    await session.commit()
+    await session.flush()
     full_order = await get_order_by_id(session, order.id)
     order_data = format_order_dict(full_order or order, current_user.full_name)
 
@@ -231,6 +231,7 @@ async def append_items_to_table_order(
         session.add(oi)
         new_order_items.append(oi)
 
+    order.items = list(order.items or []) + new_order_items
     order.total = round(order.total + added_total, 2)
     session.add(order)
 
@@ -245,7 +246,7 @@ async def append_items_to_table_order(
         ]
         await inventory_svc.deduct_ingredients(session, inv_items, current_user.id)
 
-    await session.commit()
+    await session.flush()
     order_data = format_order_dict(order, current_user.full_name)
 
     new_dishes = [oi for oi in new_order_items if oi.item_type == "dish"]
@@ -360,7 +361,7 @@ async def split_table_order(
         order.status = OrderStatus.COMPLETED
 
     session.add(order)
-    await session.commit()
+    await session.flush()
 
     full_child = await get_order_by_id(session, child_order.id)
     order_data = format_order_dict(full_child or child_order, current_user.full_name)
@@ -396,7 +397,7 @@ async def serve_table_order(
             session.add(oi)
 
     session.add(order)
-    await session.commit()
+    await session.flush()
 
     full_order = await get_order_by_id(session, order.id)
     order_data = format_order_dict(full_order or order, current_user.full_name)

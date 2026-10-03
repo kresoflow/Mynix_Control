@@ -3,26 +3,19 @@
 // ДОМЕН: lib/features/menu/view/widgets/catalog/dialogs/create_retail_product_dialog.dart
 // ==============================================================================
 
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'create_retail_product_form.dart';
-
-const Map<String, String> _unitLabels = {
-  'l': 'л',
-  'ml': 'мл',
-  'kg': 'кг',
-  'g': 'г',
-  'pcs': 'шт',
-};
 
 // ─── 1. Точка входа в диалог ──────────────────────────────────────────────────
 
@@ -86,6 +79,8 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
           varName = varName.substring(prefix2.length).trim();
         }
         _variations.add({
+          'id': rawMap['id'],
+          'retail_product_id': rawMap['retail_product_id'],
           'name': varName.isNotEmpty ? varName : (rawMap['name']?.toString() ?? ''),
           'price': (rawMap['price'] is num) ? (rawMap['price'] as num).toDouble() : (double.tryParse(rawMap['price']?.toString() ?? '') ?? 0.0),
           'barcode': rawMap['barcode']?.toString(),
@@ -137,6 +132,43 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
     });
   }
 
+  void _extractVariation(int index) {
+    if (index >= _variations.length) return;
+    final v = _variations[index];
+    final childId = v['id'] as int?;
+    if (childId == null) return;
+
+    final varName = v['name'] ?? '';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AppDialog(
+        title: 'Отсоединить вариацию?',
+        icon: PhosphorIconsRegular.arrowsSplit,
+        width: 420,
+        content: Text(
+          'Вынести «$varName» в отдельный самостоятельный товар в каталоге?\n'
+          'Складской товар и остатки будут сохранены.',
+          style: AppTextStyles.bodyMedium,
+        ),
+        actions: [
+          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+          AppPrimaryButton(
+            label: 'Отсоединить',
+            icon: PhosphorIconsRegular.arrowSquareOut,
+            onPressed: () {
+              context.read<MenuBloc>().add(ExtractVariation(childId));
+              setState(() {
+                _variations.removeAt(index);
+              });
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   bool _isDirty() {
     final item = widget.itemToEdit;
     final parsedCat = (item?.categoryId != null && item!.categoryId != '0') ? int.tryParse(item.categoryId) : null;
@@ -159,7 +191,7 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
     if (clean.contains(RegExp(r'[а-яА-Яa-zA-Z]'))) {
       return clean;
     }
-    final uLabel = _unitLabels[unit] ?? '';
+    final uLabel = UnitFormatter.format(unit);
     if (uLabel.isNotEmpty) {
       return '$clean $uLabel'.trim();
     }
@@ -201,6 +233,72 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
     );
   }
 
+  DuplicateMatch<MenuItem>? _detectDuplicate({
+    required List<MenuItem> items,
+    required String name,
+    required String? flavor,
+    required String? barcode,
+    required String? rawVolume,
+    required List<Map<String, dynamic>> variations,
+    required int? categoryId,
+    int? excludeItemId,
+  }) {
+    if (variations.isNotEmpty) {
+      final seenVolumes = <String>{};
+      final seenBarcodes = <String>{};
+      for (final v in variations) {
+        final rawVName = v['name']?.toString().trim() ?? '';
+        final vBc = v['barcode']?.toString().trim();
+        final normV = DuplicateDetector.normalizeVolume(rawVName);
+
+        if (normV.isNotEmpty) {
+          if (seenVolumes.contains(normV)) {
+            return DuplicateMatch(
+              item: MenuItem(id: -1, name: name, price: 0, categoryId: categoryId?.toString() ?? ''),
+              matchReason: 'Дубликат объема «$rawVName» внутри серии',
+              isSameCategory: true,
+            );
+          }
+          seenVolumes.add(normV);
+        }
+        if (vBc != null && vBc.isNotEmpty) {
+          if (seenBarcodes.contains(vBc)) {
+            return DuplicateMatch(
+              item: MenuItem(id: -1, name: name, price: 0, categoryId: categoryId?.toString() ?? ''),
+              matchReason: 'Дубликат штрихкода «$vBc» внутри серии',
+              isSameCategory: true,
+            );
+          }
+          seenBarcodes.add(vBc);
+        }
+
+        final match = DuplicateDetector.findMenuItemDuplicate(
+          items: items,
+          queryName: name,
+          isRetail: true,
+          queryFlavor: flavor,
+          queryVolume: rawVName.isNotEmpty ? rawVName : null,
+          queryBarcode: vBc,
+          currentCategoryId: categoryId,
+          excludeItemId: excludeItemId,
+        );
+        if (match != null) return match;
+      }
+      return null;
+    }
+
+    return DuplicateDetector.findMenuItemDuplicate(
+      items: items,
+      queryName: name,
+      isRetail: true,
+      queryFlavor: flavor,
+      queryVolume: rawVolume,
+      queryBarcode: barcode,
+      currentCategoryId: categoryId,
+      excludeItemId: excludeItemId,
+    );
+  }
+
   void _submit() {
     final name = _nameController.text.trim();
     final sPrice = double.tryParse(_sellingPriceController.text.trim()) ?? 0.0;
@@ -217,81 +315,43 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
 
     // ─── 1. Poka-Yoke: Проверка на 100% дубликат ──────────────────────────────
     if (item == null && menuState is MenuLoaded) {
-      final duplicateMatch = DuplicateDetector.findMenuItemDuplicate(
+      final duplicateMatch = _detectDuplicate(
         items: menuState.items,
-        queryName: name,
-        isRetail: true,
-        queryFlavor: flavor,
-        queryVolume: rawVolume,
-        queryBarcode: barcode,
-        currentCategoryId: _selectedCategoryId,
+        name: name,
+        flavor: flavor,
+        barcode: barcode,
+        rawVolume: rawVolume,
+        variations: _variations,
+        categoryId: _selectedCategoryId,
       );
 
       if (duplicateMatch != null && duplicateMatch.isSameCategory) {
-        _showDuplicateBlockedDialog(context, duplicateMatch.item);
-        return;
-      }
-
-      // ─── 2. Слияние вариаций в существующую карточку (Smart Merge) ──────────
-      final existingParent = menuState.items.where((i) {
-        if (!i.isRetail || !i.isAvailable) return false;
-        final isSameCat = _selectedCategoryId == null || i.categoryId == _selectedCategoryId.toString();
-        if (!isSameCat) return false;
-        final isSameName = _normalize(i.cleanName) == _normalize(name);
-        final isSameFlavor = _normalize(i.flavorString ?? '') == _normalize(flavor ?? '');
-        return isSameName && isSameFlavor;
-      }).firstOrNull;
-
-      if (existingParent != null && formattedVol != null && _variations.isEmpty) {
-        final existingVars = existingParent.variations != null
-            ? List<Map<String, dynamic>>.from(existingParent.variations!)
-            : <Map<String, dynamic>>[];
-
-        final nameParts = [name, if (flavor != null) flavor, formattedVol];
-        final newVar = {
-          'name': nameParts.join(' '),
-          'unit': (_selectedUnit != 'pcs') ? 'pcs' : _selectedUnit,
-          'price': sPrice,
-          'selling_price': sPrice,
-          'purchase_price': 0.0,
-          'initial_stock': 0.0,
-          if (barcode != null) 'barcode': barcode,
-        };
-
-        existingVars.add(newVar);
-
-        final Map<String, dynamic> newAttrs = existingParent.attributesJson != null
-            ? Map<String, dynamic>.from(jsonDecode(existingParent.attributesJson!))
-            : {};
-
-        if (_selectedIcon != null) newAttrs['icon'] = 'icon:$_selectedIcon';
-        if (flavor != null) newAttrs['flavor'] = flavor;
-        newAttrs['variations'] = existingVars;
-
-        context.read<MenuBloc>().add(UpdateMenuItem(existingParent.id, {
-          'attributes': newAttrs,
-        },),);
-
-        Navigator.pop(context);
+        if (duplicateMatch.item.id > 0) {
+          _showDuplicateBlockedDialog(context, duplicateMatch.item);
+        }
         return;
       }
     }
 
-    // ─── 3. Формирование атрибутов и массива вариаций ─────────────────────────
+    // ─── 2. Формирование атрибутов и массива вариаций ─────────────────────────
     Map<String, dynamic>? attributes;
     double effectivePrice = sPrice;
+    String? effectiveBarcode = barcode;
 
+    final List<Map<String, dynamic>> validVars = [];
     if (_variations.isNotEmpty) {
-      final List<Map<String, dynamic>> formattedVars = [];
       for (final v in _variations) {
-        final vName = v['name']?.toString().trim() ?? '';
+        final rawVName = v['name']?.toString().trim() ?? '';
         final vPrice = (v['price'] is num) ? (v['price'] as num).toDouble() : (double.tryParse(v['price']?.toString() ?? '') ?? 0.0);
         final vBarcode = v['barcode']?.toString().trim();
-        if (vName.isNotEmpty) {
+        if (rawVName.isNotEmpty) {
+          final vName = _formatVolume(rawVName, _selectedUnit);
           final fullName = [name, if (flavor != null) flavor, vName].join(' ');
-          formattedVars.add({
+          validVars.add({
+            if (v['id'] != null) 'id': v['id'],
+            if (v['retail_product_id'] != null) 'retail_product_id': v['retail_product_id'],
             'name': fullName,
-            'unit': _selectedUnit != 'pcs' ? 'pcs' : _selectedUnit,
+            'unit': 'pcs',
             'price': vPrice,
             'selling_price': vPrice,
             'purchase_price': 0.0,
@@ -300,43 +360,34 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
           });
         }
       }
+    }
 
-      if (formattedVars.isNotEmpty) {
-        effectivePrice = formattedVars.first['price'] as double;
-        attributes = {
-          if (_selectedIcon != null) 'icon': 'icon:$_selectedIcon',
-          if (flavor != null) 'flavor': flavor,
-          'variations': formattedVars,
-        };
-      }
+    if (validVars.length >= 2) {
+      effectivePrice = validVars.first['price'] as double;
+      attributes = {
+        if (_selectedIcon != null) 'icon': 'icon:$_selectedIcon',
+        if (flavor != null) 'flavor': flavor,
+        'variations': validVars,
+      };
     } else {
-      final bool hasOptions = (flavor != null && flavor.isNotEmpty) || (formattedVol != null && formattedVol.isNotEmpty);
-      final String stockUnit = (hasOptions && _selectedUnit != 'pcs' && formattedVol != null)
-          ? 'pcs'
-          : _selectedUnit;
-
-      if (hasOptions) {
-        final nameParts = [name, if (flavor != null) flavor, if (formattedVol != null) formattedVol];
-        final List<Map<String, dynamic>> variationsList = [
-          {
-            'name': nameParts.join(' '),
-            'unit': stockUnit,
-            'price': sPrice,
-            'selling_price': sPrice,
-            'purchase_price': 0.0,
-            'initial_stock': 0.0,
-            if (barcode != null) 'barcode': barcode,
-          },
-        ];
-
-        attributes = {
-          if (_selectedIcon != null) 'icon': 'icon:$_selectedIcon',
-          if (flavor != null) 'flavor': flavor,
-          'variations': variationsList,
-        };
-      } else if (_selectedIcon != null) {
-        attributes = {'icon': 'icon:$_selectedIcon'};
+      // [ИНВАРИАНТ] Если вариаций <= 1 — сохраняем как плоский Flat SKU (без массива variations)
+      String? singleVol = formattedVol;
+      if (validVars.length == 1) {
+        final sVar = validVars.first;
+        effectivePrice = sVar['price'] as double;
+        final sBc = sVar['barcode'] as String?;
+        if (sBc != null && sBc.isNotEmpty) {
+          effectiveBarcode = sBc;
+        }
+        final matchingRow = _variations.firstWhere((v) => (v['name']?.toString().trim().isNotEmpty ?? false));
+        singleVol = _formatVolume(matchingRow['name'].toString(), _selectedUnit);
       }
+      attributes = {
+        if (_selectedIcon != null) 'icon': 'icon:$_selectedIcon',
+        if (flavor != null) 'flavor': flavor,
+        if (singleVol != null && singleVol.isNotEmpty) 'volume': singleVol,
+        'unit': _selectedUnit,
+      };
     }
 
     if (item != null) {
@@ -345,25 +396,23 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
         'price': effectivePrice,
         'category_id': _selectedCategoryId,
         'sort_order': sortOrder,
-        'barcode': barcode,
-        if (attributes != null) 'attributes': attributes,
+        'barcode': effectiveBarcode,
+        'attributes': attributes,
       },),);
     } else {
       context.read<MenuBloc>().add(CreateRetailProduct(
         name: name,
         categoryId: _selectedCategoryId,
-        unit: _selectedUnit,
+        unit: 'pcs',
         purchasePrice: 0.0,
         sellingPrice: effectivePrice,
         sortOrder: sortOrder,
-        barcode: barcode,
+        barcode: effectiveBarcode,
         attributes: attributes,
       ),);
     }
     Navigator.pop(context);
   }
-
-  static String _normalize(String input) => input.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
   @override
   Widget build(BuildContext context) {
@@ -372,14 +421,14 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
 
     DuplicateMatch<MenuItem>? duplicateMatch;
     if (menuState is MenuLoaded) {
-      duplicateMatch = DuplicateDetector.findMenuItemDuplicate(
+      duplicateMatch = _detectDuplicate(
         items: menuState.items,
-        queryName: _nameController.text,
-        isRetail: true,
-        queryFlavor: _flavorController.text,
-        queryVolume: _volumeController.text,
-        queryBarcode: _barcodeController.text,
-        currentCategoryId: _selectedCategoryId,
+        name: _nameController.text,
+        flavor: _flavorController.text.trim().isEmpty ? null : _flavorController.text.trim(),
+        barcode: _barcodeController.text.trim().isEmpty ? null : _barcodeController.text.trim(),
+        rawVolume: _volumeController.text.trim().isEmpty ? null : _volumeController.text.trim(),
+        variations: _variations,
+        categoryId: _selectedCategoryId,
         excludeItemId: widget.itemToEdit?.id,
       );
     }
@@ -408,6 +457,7 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
             variations: _variations,
             onAddVariation: _addVariation,
             onRemoveVariation: _removeVariation,
+            onExtractVariation: _extractVariation,
             onCategoryChanged: (val) => setState(() => _selectedCategoryId = val),
             onUnitChanged: (val) => setState(() => _selectedUnit = val),
             onIconChanged: (icon) => setState(() => _selectedIcon = icon),

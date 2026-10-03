@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -12,6 +12,7 @@ import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_dialog
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 class IngredientGridView extends StatelessWidget {
   final List<Ingredient> ingredients;
@@ -42,11 +43,7 @@ class IngredientGridView extends StatelessWidget {
   }
 
   String _formatStock(double val, String unit) {
-    if (val == val.roundToDouble()) {
-      return '${val.toInt()} $unit';
-    }
-    final formatted = val.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
-    return '$formatted $unit';
+    return UnitFormatter.formatAmount(val, unit);
   }
 
   @override
@@ -350,7 +347,7 @@ class IngredientGridView extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '${item.costPerUnit.toStringAsFixed(item.costPerUnit.truncateToDouble() == item.costPerUnit ? 0 : 2)} $currency/${item.unit}',
+                          '${item.costPerUnit.toStringAsFixed(item.costPerUnit.truncateToDouble() == item.costPerUnit ? 0 : 2)} $currency/${UnitFormatter.format(item.unit)}',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,

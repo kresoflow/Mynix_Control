@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class StockLowInventoryWidget extends StatelessWidget {
@@ -103,7 +104,7 @@ class StockLowInventoryWidget extends StatelessWidget {
             )
           else ...[
             ...topLow.map((item) {
-              final unit = item.unit.isNotEmpty ? item.unit : 'шт.';
+              final unit = UnitFormatter.format(item.unit);
               final stockStr = item.currentStock % 1 == 0
                   ? item.currentStock.toInt().toString()
                   : item.currentStock.toStringAsFixed(2);

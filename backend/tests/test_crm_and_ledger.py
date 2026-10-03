@@ -123,3 +123,4 @@ async def test_crm_customer_loyalty_debt_and_payment(async_client: AsyncClient, 
     resp_cust_final = await async_client.get(f"/api/v1/crm/customers/{cust_id}", headers=headers)
     assert resp_cust_final.status_code == 200
     assert resp_cust_final.json()["balance"] == 0.0
+

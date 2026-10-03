@@ -467,3 +467,60 @@ async def test_dish_variation_independent_recipe_deduction(async_client: AsyncCl
     assert parent_summary is not None
     assert parent_summary["has_recipe"] is True
 
+
+@pytest.mark.asyncio
+async def test_lock_stale_read_inventory_deduction(async_client: AsyncClient, db_session):
+    """
+    [LOCK-STALE-READ] Регрессионный тест: проверка выявления устаревшего чтения
+    из Identity Map при параллельном изменении остатка.
+    Ингредиент stock=10 + рецепт. В сессии A загружаем ингредиент и удерживаем ссылку.
+    В отдельной сессии B ставим stock=8 и коммитим.
+    В сессии A вызываем deduct_ingredients на 3 единицы.
+    Ожидание: итоговый stock == 5 (а не 7).
+    """
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from app.inventory.services import deduct_ingredients
+
+    # 1. Setup MenuCategory, Ingredient, MenuItem, Recipe
+    cat = MenuCategory(name="Кухня", category_type="dish")
+    db_session.add(cat)
+    await db_session.commit()
+    await db_session.refresh(cat)
+
+    beef = Ingredient(name="Говядина", unit="kg", current_stock=10.0, cost_per_unit=80.0)
+    db_session.add(beef)
+    await db_session.commit()
+    await db_session.refresh(beef)
+
+    dish = MenuItem(name="Стейк", price=50.0, type="dish", is_available=True, category_id=cat.id)
+    db_session.add(dish)
+    await db_session.commit()
+    await db_session.refresh(dish)
+
+    recipe = Recipe(menu_item_id=dish.id, ingredient_id=beef.id, quantity_required=1.0)
+    db_session.add(recipe)
+    await db_session.commit()
+
+    # 2. Сессия A: загружаем ингредиент и удерживаем ссылку (Identity Map)
+    session_a = db_session
+    ing_a = await session_a.get(Ingredient, beef.id)
+    assert ing_a is not None
+    assert ing_a.current_stock == 10.0
+    await session_a.commit()
+
+    # 3. Отдельная сессия B: ставим stock=8 и коммитим
+    async with AsyncSession(bind=session_a.bind, expire_on_commit=False) as session_b:
+        ing_b = await session_b.get(Ingredient, beef.id)
+        assert ing_b is not None
+        ing_b.current_stock = 8.0
+        session_b.add(ing_b)
+        await session_b.commit()
+
+    # 4. В сессии A вызываем deduct_ingredients на 3 единицы
+    order_items = [{"menu_item_id": dish.id, "quantity": 3}]
+    await deduct_ingredients(session_a, order_items)
+    await session_a.commit()
+
+    # 5. Ожидание: итоговый stock == 5 (а не 7)
+    await session_a.refresh(ing_a)
+    assert ing_a.current_stock == 5.0

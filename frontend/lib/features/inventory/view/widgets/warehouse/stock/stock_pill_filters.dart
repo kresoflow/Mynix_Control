@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
@@ -10,6 +10,7 @@ class StockPillFilters extends StatelessWidget {
   final bool isExpandedAll;
   final VoidCallback onToggleExpandAll;
   final ValueChanged<String>? onSearchChanged;
+  final TextEditingController? searchController;
 
   const StockPillFilters({
     super.key,
@@ -18,6 +19,7 @@ class StockPillFilters extends StatelessWidget {
     required this.isExpandedAll,
     required this.onToggleExpandAll,
     this.onSearchChanged,
+    this.searchController,
   });
 
   @override
@@ -51,6 +53,7 @@ class StockPillFilters extends StatelessWidget {
                 ),
                 if (onSearchChanged != null)
                   AppSearchField(
+                    controller: searchController,
                     mode: AppSearchMode.collapsible,
                     size: AppSearchFieldSize.sm,
                     hintText: 'Поиск остатков...',

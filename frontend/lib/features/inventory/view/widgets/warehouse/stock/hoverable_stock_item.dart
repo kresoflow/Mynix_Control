@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/quick_stock_action_dialog.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 
 
@@ -44,7 +45,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
               border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
             ),
             child: Text(
-              widget.item.unit,
+              UnitFormatter.format(widget.item.unit),
               style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
@@ -65,7 +66,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'Остаток: ${widget.item.currentStock.toInt()} ${widget.item.unit}',
+                      'Остаток: ${widget.item.currentStock.toInt()} ${UnitFormatter.format(widget.item.unit)}',
                       style: TextStyle(
                         color: widget.isLowStock ? AppColors.danger : AppColors.success,
                         fontWeight: FontWeight.w600,
@@ -75,7 +76,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Мин: ${widget.item.minStockAlert.toInt()} ${widget.item.unit}',
+                    'Мин: ${widget.item.minStockAlert.toInt()} ${UnitFormatter.format(widget.item.unit)}',
                     style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                   ),
                 ],
@@ -90,7 +91,7 @@ class _HoverableStockItemState extends State<HoverableStockItem> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${widget.item.costPerUnit.toStringAsFixed(2)} с / ${widget.item.unit}',
+                    '${widget.item.costPerUnit.toStringAsFixed(2)} с / ${UnitFormatter.format(widget.item.unit)}',
                     style: TextStyle(
                       fontSize: 13,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'bulk_input_decoration.dart';
 
 class RetailRowData {
@@ -130,13 +131,7 @@ class _RetailRowWidgetState extends State<RetailRowWidget> {
               isExpanded: true,
               icon: const Icon(Icons.arrow_drop_down, size: 20),
               padding: EdgeInsets.zero,
-              items: const [
-                DropdownMenuItem(value: 'pcs', child: Text('шт')),
-                DropdownMenuItem(value: 'l', child: Text('л')),
-                DropdownMenuItem(value: 'ml', child: Text('мл')),
-                DropdownMenuItem(value: 'kg', child: Text('кг')),
-                DropdownMenuItem(value: 'g', child: Text('г')),
-              ],
+              items: UnitFormatter.dropdownItems,
               onChanged: (val) => setState(() => widget.row.selectedUnit = val!),
             ),
           ),

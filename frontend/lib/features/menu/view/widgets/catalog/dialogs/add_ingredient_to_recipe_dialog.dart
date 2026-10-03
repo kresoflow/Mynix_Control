@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 
@@ -23,7 +24,7 @@ void showAddIngredientToRecipeDialog(BuildContext context, int menuItemId, List<
                   items: ingredients.map((ing) {
                     return DropdownMenuItem<int>(
                       value: ing.id,
-                      child: Text('${ing.name} (${ing.unit})'),
+                      child: Text('${ing.name} (${UnitFormatter.format(ing.unit)})'),
                     );
                   }).toList(),
                   onChanged: (val) {

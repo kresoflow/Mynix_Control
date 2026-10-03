@@ -232,3 +232,100 @@ async def test_gift_card_validation_errors(async_client: AsyncClient, db_session
     resp_dup = await async_client.post("/api/v1/gift-cards", json={"code": "GC-UNIQUE-01", "initial_balance": 1000.0}, headers=headers)
     assert resp_dup.status_code == 409
     assert "уже зарегистрирована" in resp_dup.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_gift_card_idempotency_redeem_and_top_up(async_client: AsyncClient, db_session):
+    """
+    [ИНВАРИАНТ] [ИДЕМПОТЕНТНОСТЬ] Повторная отправка redeem/top_up с тем же client_uuid
+    не меняет баланс второй раз и возвращает 200 с прежним результатом.
+    """
+    tenant = Tenant(name="Idempotent Tenant", schema_name="tenant_idem", is_active=True)
+    db_session.add(tenant)
+    await db_session.commit()
+    await db_session.refresh(tenant)
+
+    perm_m = Permission(code="giftcards:manage", description="Manage Gift Cards")
+    perm_v = Permission(code="giftcards:view", description="View Gift Cards")
+    db_session.add_all([perm_m, perm_v])
+    await db_session.commit()
+    await db_session.refresh(perm_m)
+    await db_session.refresh(perm_v)
+
+    role = Role(name="Cashier Manager", is_superuser=False, tenant_id=tenant.id)
+    db_session.add(role)
+    await db_session.commit()
+    await db_session.refresh(role)
+
+    db_session.add_all([
+        RolePermission(role_id=role.id, permission_id=perm_m.id),
+        RolePermission(role_id=role.id, permission_id=perm_v.id),
+    ])
+    await db_session.commit()
+
+    user = User(tenant_id=tenant.id, username="idem_cashier", full_name="Idem Cashier", hashed_password="h", is_active=True)
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    db_session.add(UserRole(user_id=user.id, role_id=role.id))
+    await db_session.commit()
+
+    token = user_svc.create_access_token(user_id=user.id, tenant_id=tenant.id, permissions=["giftcards:manage", "giftcards:view"], is_superuser=False)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Выпуск карты с балансом 2000
+    resp_create = await async_client.post(
+        "/api/v1/gift-cards",
+        json={"code": "GC-IDEM-001", "initial_balance": 2000.0},
+        headers=headers,
+    )
+    assert resp_create.status_code == 201
+    card_id = resp_create.json()["id"]
+
+    # 2. Первичное списание с client_uuid
+    client_uuid_redeem = "uuid-redeem-abc-123"
+    resp_redeem_1 = await async_client.post(
+        f"/api/v1/gift-cards/{card_id}/redeem",
+        json={"amount": 500.0, "client_uuid": client_uuid_redeem},
+        headers=headers,
+    )
+    assert resp_redeem_1.status_code == 200
+    assert resp_redeem_1.json()["current_balance"] == 1500.0
+
+    # 3. Повторное списание с тем же client_uuid (сетевой ретрай)
+    resp_redeem_2 = await async_client.post(
+        f"/api/v1/gift-cards/{card_id}/redeem",
+        json={"amount": 500.0, "client_uuid": client_uuid_redeem},
+        headers=headers,
+    )
+    assert resp_redeem_2.status_code == 200
+    assert resp_redeem_2.json()["current_balance"] == 1500.0
+
+    # 4. Первичное пополнение с client_uuid
+    client_uuid_topup = "uuid-topup-xyz-789"
+    resp_topup_1 = await async_client.post(
+        f"/api/v1/gift-cards/{card_id}/topup",
+        json={"amount": 300.0, "client_uuid": client_uuid_topup},
+        headers=headers,
+    )
+    assert resp_topup_1.status_code == 200
+    assert resp_topup_1.json()["current_balance"] == 1800.0
+
+    # 5. Повторное пополнение с тем же client_uuid (сетевой ретрай)
+    resp_topup_2 = await async_client.post(
+        f"/api/v1/gift-cards/{card_id}/topup",
+        json={"amount": 300.0, "client_uuid": client_uuid_topup},
+        headers=headers,
+    )
+    assert resp_topup_2.status_code == 200
+    assert resp_topup_2.json()["current_balance"] == 1800.0
+
+    # 6. Проверка журнала транзакций: ровно 3 записи (issue, 1 redeem, 1 topup)
+    resp_detail = await async_client.get(f"/api/v1/gift-cards/{card_id}", headers=headers)
+    assert resp_detail.status_code == 200
+    txns = resp_detail.json()["transactions"]
+    assert len(txns) == 3
+    assert txns[1]["client_uuid"] == client_uuid_redeem
+    assert txns[2]["client_uuid"] == client_uuid_topup
+

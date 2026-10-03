@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 
 class ReceiveDocumentAutocompleteOptionsView extends StatelessWidget {
@@ -48,7 +49,7 @@ class ReceiveDocumentAutocompleteOptionsView extends StatelessWidget {
                   ),
                 ),
                 subtitle: Text(
-                  '${option.unit} • ${option.costPerUnit} TJS',
+                  '${UnitFormatter.format(option.unit)} • ${option.costPerUnit} TJS',
                   style: AppTextStyles.caption.copyWith(
                     color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                     fontSize: 11,

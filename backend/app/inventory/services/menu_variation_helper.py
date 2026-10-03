@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -21,12 +22,23 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
                 child.is_available = False
                 session.add(child)
             else:
+                recipe_stmt = select(Recipe).where(Recipe.menu_item_id == child.id)
+                r_res = await session.execute(recipe_stmt)
+                for r in r_res.scalars().all():
+                    await session.delete(r)
+                if child.retail_product_id:
+                    child_ret = await session.get(RetailProduct, child.retail_product_id)
+                    if child_ret:
+                        await session.delete(child_ret)
                 await session.delete(child)
         return []
 
     stmt = select(MenuItem).where(MenuItem.parent_id == parent_item.id)
     res = await session.execute(stmt)
-    existing_children = {c.name: c for c in res.scalars().all()}
+    children_list = res.scalars().all()
+    existing_children_by_id = {c.id: c for c in children_list}
+    existing_children_by_name = {c.name: c for c in children_list}
+    existing_children = existing_children_by_name
     
     updated_variations = []
     seen_child_ids = set()
@@ -37,7 +49,12 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
         var_barcode = var.get("barcode")
         child_full_name = f"{parent_item.name} ({var_name})" if not var_name.startswith(parent_item.name) else var_name
 
-        child = existing_children.get(child_full_name) or existing_children.get(var_name)
+        child_id = var.get("id")
+        child = None
+        if child_id and child_id in existing_children_by_id:
+            child = existing_children_by_id[child_id]
+        else:
+            child = existing_children_by_name.get(child_full_name) or existing_children_by_name.get(var_name)
         item_type = parent_item.type or "dish"
 
         child_retail_id = None
@@ -47,6 +64,17 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
             
             if child and child.retail_product_id:
                 child_retail = await session.get(RetailProduct, child.retail_product_id)
+                if child_retail:
+                    child_retail.name = child_full_name
+                    child_retail.price = var_price
+                    child_retail.cost = cost_val
+                    child_retail.barcode = var_barcode
+                    child_retail.category_id = parent_item.category_id
+                    child_retail.is_available = parent_item.is_available
+                    session.add(child_retail)
+                    child_retail_id = child_retail.id
+            elif var.get("retail_product_id"):
+                child_retail = await session.get(RetailProduct, var.get("retail_product_id"))
                 if child_retail:
                     child_retail.name = child_full_name
                     child_retail.price = var_price
@@ -105,6 +133,7 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
         
         var_dict = dict(var)
         var_dict["id"] = child.id
+        var_dict["name"] = child_full_name
         var_dict["price"] = var_price
         if child_retail_id:
             var_dict["retail_product_id"] = child_retail_id
@@ -131,3 +160,48 @@ async def sync_child_variations(session: AsyncSession, parent_item: MenuItem, va
     return updated_variations
 
 _sync_child_variations = sync_child_variations
+
+
+async def cascade_menu_item_availability(
+    session: AsyncSession, item: MenuItem, is_available: bool
+) -> None:
+    """
+    [ИНВАРИАНТ] Каскадная синхронизация статуса доступности (архивации)
+    между MenuItem (родитель + дети) и RetailProduct.
+    """
+    item.is_available = is_available
+    session.add(item)
+    if item.retail_product_id:
+        rp = await session.get(RetailProduct, item.retail_product_id)
+        if rp:
+            rp.is_available = is_available
+            session.add(rp)
+
+    child_stmt = select(MenuItem).where(MenuItem.parent_id == item.id)
+    child_res = await session.execute(child_stmt)
+    for c in child_res.scalars().all():
+        c.is_available = is_available
+        session.add(c)
+        if c.retail_product_id:
+            crp = await session.get(RetailProduct, c.retail_product_id)
+            if crp:
+                crp.is_available = is_available
+                session.add(crp)
+
+
+async def get_next_menu_sort_order(session: AsyncSession, category_id: int | None) -> int:
+    """
+    [ИНВАРИАНТ] Вычисляет следующий порядковый номер для нового товара в категории,
+    гарантируя монотонное добавление в конец списка (FIFO).
+    """
+    stmt = select(func.coalesce(func.max(MenuItem.sort_order), 0)).where(
+        MenuItem.parent_id.is_(None)
+    )
+    if category_id is not None:
+        stmt = stmt.where(MenuItem.category_id == category_id)
+    else:
+        stmt = stmt.where(MenuItem.category_id.is_(None))
+    result = await session.execute(stmt)
+    max_val = result.scalar() or 0
+    return max_val + 1
+

@@ -10,6 +10,8 @@ import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'dialogs/catalog_variation_deletion_modal.dart';
 
 class CatalogDeletionDialogs {
   static void confirmDeleteCategory(BuildContext context, dynamic category) {
@@ -82,6 +84,15 @@ class CatalogDeletionDialogs {
     if (!item.isAvailable) {
       confirmHardDeleteItem(context, item);
       return;
+    }
+
+    if (item is MenuItem) {
+      final hasVariations = (item.variationPrices != null && item.variationPrices!.isNotEmpty) ||
+          (item.variationsSummary != null && item.variationsSummary!.isNotEmpty);
+      if (hasVariations) {
+        showVariationDeletionModal(context, item);
+        return;
+      }
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;

@@ -22,11 +22,20 @@ class WebSocketService {
   Timer? _reconnectTimer;
   String? _currentTenantId;
   
-  final _messageController = StreamController<Map<String, dynamic>>.broadcast();
+  StreamController<Map<String, dynamic>> _messageController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
-  Stream<Map<String, dynamic>> get messages => _messageController.stream;
+  Stream<Map<String, dynamic>> get messages {
+    if (_messageController.isClosed) {
+      _messageController = StreamController<Map<String, dynamic>>.broadcast();
+    }
+    return _messageController.stream;
+  }
 
   void connect(String tenantId) {
+    if (_messageController.isClosed) {
+      _messageController = StreamController<Map<String, dynamic>>.broadcast();
+    }
     if (_currentTenantId == tenantId && _channel != null) return;
     
     disconnect();
@@ -61,7 +70,9 @@ class WebSocketService {
             final raw = jsonDecode(message);
             if (raw is Map) {
               final data = Map<String, dynamic>.from(raw);
-              _messageController.add(data);
+              if (!_messageController.isClosed) {
+                _messageController.add(data);
+              }
             }
           } catch (e) {
             if (kDebugMode) print('<!> [WebSocket] JSON Decode error: $e');

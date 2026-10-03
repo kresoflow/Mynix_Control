@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'recipe_row_state.dart';
 import 'recipe_ingredient_picker.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 
 class RecipeBulkEditRowWidget extends StatefulWidget {
@@ -32,7 +33,7 @@ class _RecipeBulkEditRowWidgetState extends State<RecipeBulkEditRowWidget> {
   Widget build(BuildContext context) {
     final row = widget.row;
     final selectedIngredient = widget.availableIngredients.where((i) => i.id == row.ingredientId).firstOrNull;
-    final unit = selectedIngredient?.unit ?? '';
+    final unit = selectedIngredient != null ? UnitFormatter.format(selectedIngredient.unit) : '';
     
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,

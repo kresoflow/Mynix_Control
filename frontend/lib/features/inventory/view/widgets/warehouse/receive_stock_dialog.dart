@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -42,7 +43,7 @@ class _ReceiveStockDialogState extends State<ReceiveStockDialog> {
             controller: qtyController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              labelText: 'Количество (${widget.item.unit})',
+              labelText: 'Количество (${UnitFormatter.format(widget.item.unit)})',
             ),
             autofocus: true,
           ),

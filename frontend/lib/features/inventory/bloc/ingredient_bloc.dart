@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -33,6 +33,7 @@ class IngredientError extends IngredientState {
 class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
   final InventoryRepository repository;
   StreamSubscription? _wsSubscription;
+  Timer? _wsDebounceTimer;
 
   IngredientBloc(this.repository) : super(IngredientLoading()) {
     on<LoadIngredients>(_onLoadIngredients);
@@ -45,7 +46,10 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
 
     _wsSubscription = webSocketService.messages.listen((data) {
       if (data['event'] == 'inventory_updated' && state is IngredientLoaded) {
-        add(LoadIngredients());
+        _wsDebounceTimer?.cancel();
+        _wsDebounceTimer = Timer(const Duration(milliseconds: 350), () {
+          add(const LoadIngredients());
+        });
       }
     });
   }
@@ -56,15 +60,16 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
   ) async {
     try {
       await repository.createIngredientsBulk(event.ingredients);
-      add(LoadIngredients());
+      add(const LoadIngredients());
     } catch (e) {
       emit(IngredientError(message: e.toString()));
-      add(LoadIngredients());
+      add(const LoadIngredients());
     }
   }
 
   @override
   Future<void> close() {
+    _wsDebounceTimer?.cancel();
     _wsSubscription?.cancel();
     return super.close();
   }
@@ -102,10 +107,10 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
         initialStock: event.initialStock,
         sortOrder: event.sortOrder,
       );
-      add(LoadIngredients());
+      add(const LoadIngredients());
     } catch (e) {
       emit(IngredientError(message: e.toString()));
-      add(LoadIngredients());
+      add(const LoadIngredients());
     }
   }
 
@@ -120,10 +125,10 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
         event.reason,
         isRetail: event.isRetail,
       );
-      add(LoadIngredients());
+      add(const LoadIngredients());
     } catch (e) {
       emit(IngredientError(message: e.toString()));
-      add(LoadIngredients());
+      add(const LoadIngredients());
     }
   }
 
@@ -133,10 +138,10 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
   ) async {
     try {
       await repository.updateIngredient(event.id, event.data);
-      add(LoadIngredients());
+      add(const LoadIngredients());
     } catch (e) {
       emit(IngredientError(message: e.toString()));
-      add(LoadIngredients());
+      add(const LoadIngredients());
     }
   }
 
@@ -146,10 +151,10 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
   ) async {
     try {
       await repository.deleteIngredient(event.id, mode: event.mode);
-      add(LoadIngredients());
+      add(const LoadIngredients());
     } catch (e) {
       emit(IngredientError(message: e.toString()));
-      add(LoadIngredients());
+      add(const LoadIngredients());
     }
   }
 
@@ -159,10 +164,10 @@ class IngredientBloc extends Bloc<IngredientEvent, IngredientState> {
   ) async {
     try {
       await repository.restoreIngredient(event.id);
-      add(LoadIngredients());
+      add(const LoadIngredients());
     } catch (e) {
       emit(IngredientError(message: e.toString()));
-      add(LoadIngredients());
+      add(const LoadIngredients());
     }
   }
 }

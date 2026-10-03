@@ -144,6 +144,7 @@ class _KresoAppState extends State<KresoApp> {
     _recipeBloc = RecipeBloc(_inventoryRepository);
     _categoryBloc = CategoryBloc(_inventoryRepository);
     _documentBloc = DocumentBloc(_inventoryRepository);
+    DocumentBloc.globalIngredientBloc = _ingredientBloc;
     _ordersHistoryRepository = OrdersRepository(dio: apiClient.dio);
     _ordersBloc = OrdersBloc(repository: _ordersHistoryRepository);
     _crmBloc = CrmBloc(_crmRepository);
@@ -179,6 +180,7 @@ class _KresoAppState extends State<KresoApp> {
     _recipeBloc.close();
     _categoryBloc.close();
     _documentBloc.close();
+    DocumentBloc.globalIngredientBloc = null;
     _ordersBloc.close();
     _crmBloc.close();
     _posSettingsCubit.close();
@@ -226,7 +228,7 @@ class _KresoAppState extends State<KresoApp> {
               context.read<ShiftBloc>().add(CheckCurrentShift());
               context.read<CategoryBloc>().add(LoadCategories());
               if (state.hasPermission('inventory:view')) {
-                context.read<IngredientBloc>().add(LoadIngredients());
+                context.read<IngredientBloc>().add(const LoadIngredients());
                 context.read<DocumentBloc>().add(const LoadDocuments());
               }
             } else if (state is AuthUnauthenticated) {

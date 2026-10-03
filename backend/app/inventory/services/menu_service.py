@@ -11,13 +11,20 @@ from app.inventory.models import (
 from app.pos.models import OrderItem
 
 from sqlalchemy.orm.attributes import flag_modified
-from app.inventory.services.menu_variation_helper import _sync_child_variations, sync_child_variations
+from app.inventory.services.menu_variation_helper import (
+    _sync_child_variations, sync_child_variations,
+    cascade_menu_item_availability, get_next_menu_sort_order
+)
 
 async def bulk_create_menu_items(session: AsyncSession, items_data: list[dict]) -> list[MenuItem]:
     created_items: list[MenuItem] = []
     for data in items_data:
         raw_cat_id = data.get("category_id")
         category_id = None if (raw_cat_id == 0 or raw_cat_id == "0" or raw_cat_id == "null" or not raw_cat_id) else int(raw_cat_id)
+
+        sort_order = data.get("sort_order", 0)
+        if not sort_order:
+            sort_order = await get_next_menu_sort_order(session, category_id)
 
         menu_item = MenuItem(
             name=data["name"],
@@ -30,7 +37,7 @@ async def bulk_create_menu_items(session: AsyncSession, items_data: list[dict]) 
             is_available=data.get("is_available", True),
             attributes=data.get("attributes"),
             retail_product_id=data.get("retail_product_id"),
-            sort_order=data.get("sort_order", 0),
+            sort_order=sort_order,
             barcode=data.get("barcode"),
             parent_id=data.get("parent_id"),
             type=data.get("type", "dish"),
@@ -125,14 +132,7 @@ async def delete_menu_item(session: AsyncSession, item_id: int, mode: str = "sof
         return {"status": "deleted", "message": "Товар успешно удален навсегда."}
 
     # Soft delete (Архивация - режим по умолчанию с любого рабочего экрана)
-    item.is_available = False
-    session.add(item)
-    child_stmt = select(MenuItem).where(MenuItem.parent_id == item_id)
-    child_res = await session.execute(child_stmt)
-    for c in child_res.scalars().all():
-        c.is_available = False
-        session.add(c)
-
+    await cascade_menu_item_availability(session, item, False)
     await session.flush()
     return {"status": "archived", "message": "Товар заархивирован."}
 
@@ -170,14 +170,7 @@ async def restore_menu_item(session: AsyncSession, item_id: int) -> MenuItem:
                     detail=f"В этой категории уже есть активная позиция «{existing_clean}». Переименуйте или удалите активный дубликат перед восстановлением из архива."
                 )
 
-    item.is_available = True
-    session.add(item)
-    child_stmt = select(MenuItem).where(MenuItem.parent_id == item_id)
-    child_res = await session.execute(child_stmt)
-    for c in child_res.scalars().all():
-        c.is_available = True
-        session.add(c)
-
+    await cascade_menu_item_availability(session, item, True)
     await session.flush()
     return item
 
@@ -248,6 +241,10 @@ async def update_menu_item(session: AsyncSession, menu_item_id: int, data: dict)
         if hasattr(item, key) and value is not None:
             setattr(item, key, value)
     
+    if "attributes" in data and data["attributes"] is not None:
+        item.attributes = data["attributes"]
+        flag_modified(item, "attributes")
+
     session.add(item)
 
     if item.retail_product_id:
@@ -265,15 +262,29 @@ async def update_menu_item(session: AsyncSession, menu_item_id: int, data: dict)
                 rp.sort_order = data["sort_order"]
             if "barcode" in data:
                 rp.barcode = data["barcode"]
+            if "attributes" in data and data["attributes"] is not None:
+                rp.attributes = data["attributes"]
+                flag_modified(rp, "attributes")
             session.add(rp)
 
     await session.flush()
 
     attributes = item.attributes
-    if attributes and isinstance(attributes, dict) and "variations" in attributes:
-        updated_vars = await _sync_child_variations(session, item, attributes.get("variations", []))
-        new_attrs = dict(attributes)
-        new_attrs["variations"] = updated_vars
+    variations_list = attributes.get("variations", []) if (attributes and isinstance(attributes, dict)) else []
+    child_exists = (await session.execute(select(MenuItem.id).where(MenuItem.parent_id == item.id).limit(1))).first() is not None
+    if variations_list or child_exists:
+        updated_vars = await _sync_child_variations(session, item, variations_list)
+        new_attrs = dict(attributes) if attributes else {}
+        if updated_vars:
+            new_attrs["variations"] = updated_vars
+            item.retail_product_id = None
+        else:
+            new_attrs.pop("variations", None)
+            if item.type == "retail" and not item.retail_product_id:
+                rp = RetailProduct(name=item.name, category_id=item.category_id, price=item.price, cost=0.0, unit="pcs", current_stock=0.0, is_available=item.is_available, attributes=new_attrs)
+                session.add(rp)
+                await session.flush()
+                item.retail_product_id = rp.id
         item.attributes = new_attrs
         flag_modified(item, "attributes")
         session.add(item)

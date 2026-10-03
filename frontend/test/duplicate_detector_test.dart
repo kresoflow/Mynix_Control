@@ -243,5 +243,79 @@ void main() {
       expect(match, isNotNull);
       expect(match!.matchReason, contains('Штрихкод совпадает'));
     });
+
+    test('findMenuItemDuplicate matches composite retail item with full variant name (Фанта Слайм 1 л)', () {
+      final items = [
+        const MenuItem(
+          id: 30,
+          name: 'Фанта|TYPE|retail',
+          price: 30,
+          categoryId: '5',
+          attributesJson: '{"flavor": "Слайм", "variations": [{"name": "Фанта Слайм 1 л", "price": 30}]}',
+        ),
+      ];
+
+      // Поиск с чистым числом объема "1" должен найти существующий вариант "Фанта Слайм 1 л"
+      final match = DuplicateDetector.findMenuItemDuplicate(
+        items: items,
+        queryName: 'Фанта',
+        isRetail: true,
+        queryFlavor: 'Слайм',
+        queryVolume: '1',
+      );
+
+      expect(match, isNotNull);
+      expect(match!.item.id, equals(30));
+    });
+
+    test('findMenuItemDuplicate matches Flat SKU retail product with volume in attributes', () {
+      final items = [
+        const MenuItem(
+          id: 31,
+          name: 'Кола|TYPE|retail',
+          price: 25,
+          categoryId: '5',
+          attributesJson: '{"flavor": "Зеро", "volume": "0.5 л"}',
+        ),
+      ];
+
+      final match = DuplicateDetector.findMenuItemDuplicate(
+        items: items,
+        queryName: 'Кола',
+        isRetail: true,
+        queryFlavor: 'Зеро',
+        queryVolume: '0.5',
+      );
+
+      expect(match, isNotNull);
+      expect(match!.item.id, equals(31));
+    });
+
+    test('findCategoryDuplicate respects categoryType isolation (dish vs retail vs ingredient)', () {
+      final categories = [
+        MenuCategory(
+          id: 1,
+          name: 'Напитки',
+          categoryType: 'dish',
+          sortOrder: 1,
+        ),
+      ];
+
+      // Одноименная категория для витрины не должна блокироваться категорией кухни
+      final retailMatch = DuplicateDetector.findCategoryDuplicate(
+        categories: categories,
+        queryName: 'Напитки',
+        categoryType: 'retail',
+      );
+      expect(retailMatch, isNull);
+
+      // Одноименная категория для кухни ДОЛЖНА блокироваться
+      final dishMatch = DuplicateDetector.findCategoryDuplicate(
+        categories: categories,
+        queryName: 'Напитки',
+        categoryType: 'dish',
+      );
+      expect(dishMatch, isNotNull);
+    });
   });
 }

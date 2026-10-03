@@ -63,8 +63,6 @@
   <title>Kreso Flow</title>
 
   <link rel="manifest" href="manifest.json">
-
-  <script src='https://telegram.org/js/telegram-web-app.js'></script>
   
   <style>
     body {
@@ -230,13 +228,6 @@
       }
     });
 
-    window.addEventListener('load', function() {
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.expand();
-        window.Telegram.WebApp.setHeaderColor('bg_color');
-        window.Telegram.WebApp.setBackgroundColor('bg_color');
-      }
-    });
   </script>
 </body>
 

@@ -128,7 +128,7 @@ async def get_tenant_session(
                 raise HTTPException(status_code=400, detail="Tenant not found")
             
             schema_name = tenant.schema_name
-            await session.execute(text(f'SET search_path TO "{schema_name}"'))
+            await session.execute(text(f'SET search_path TO "{schema_name}", public'))
             
             yield session
             await session.commit()

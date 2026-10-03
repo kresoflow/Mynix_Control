@@ -1,13 +1,13 @@
-<!-- =========================================================================== -->
-<!-- ДОКУМЕНТ: Design System & UI Kit Specification (DESIGN.md)                  -->
-<!-- СТАТУС:   АКТУАЛЬНО (Phase 0: Rebranding, CI/CD & Documentation Hardening)   -->
-<!-- ДАТА:     2026-09-19 | Контрольный коммит: e5ae1c6                         -->
-<!-- =========================================================================== -->
+# ==============================================================================
+# ДОКУМЕНТ: Design System & UI Kit Specification (DESIGN.md)
+# ОБЛАСТЬ: DESIGN.md
+# ==============================================================================
+# v2 — Design System & UI Kit Specification (Phase 0: Rebranding & UI Hardening)
 
 > [!IMPORTANT] РЕГЛАМЕНТ АКТУАЛИЗАЦИИ ДОКУМЕНТАЦИИ (PHASE-DRIVEN SYNC)
 > Данный документ обновляется **централизованно по завершении фаз разработки (Milestones)**. AI-агенты обязаны проверять актуальное состояние кодовой базы инструментами поиска перед внесением изменений.
 
-﻿# Kreso Flow — Official Design System & UI Specification (DESIGN.md)
+# Kreso Flow — Official Design System & UI Specification (DESIGN.md)
 
 ## 1. Visual Theme & Atmosphere
 Kreso Flow is an enterprise-grade ERP, POS, and Warehouse operating system for modern restaurants and retail chains.
@@ -148,7 +148,7 @@ All buttons MUST strictly conform to the 5-tier size matrix:
 - **Pill / Badges:** `24 px` (`AppRadii.pill`)
 - **Dialogs & Modals:** `20 px` (`AppRadii.dialog`)
 - **Cards & Data Tables:** `14-16 px` (`AppRadii.card`)
-- **Buttons & TextFields:** `8-10 px` (`AppRadii.button`, `AppRadii.inputRadius`)
+- **Buttons:** `12 px` (`AppRadii.button`), **TextFields:** `8 px` (`AppRadii.inputRadius`)
 - **Small Controls / Checkboxes:** `6 px` (`AppRadii.sm`)
 
 ---
@@ -168,7 +168,7 @@ All buttons MUST strictly conform to the 5-tier size matrix:
 - **DO NOT** write raw `Colors.white`, `Colors.black`, `Colors.blue`, or raw HEX `Color(0xFF...)` in widget trees.
 - **DO NOT** create arbitrary button heights (e.g., `height: 38`, `height: 42`, `height: 50`).
 - **DO NOT** hardcode fonts or `TextStyle(fontSize: 22, fontWeight: FontWeight.bold)`. Use `AppTextStyles.*`.
-- **DO NOT** let files grow over 250 lines.
+- **DO NOT** exceed file limits without architectural justification (target 200–250 lines, hard ceiling 300 lines; up to 350 lines only for cohesive transactional logic with [ТРАНЗАКЦИЯ] badge).
 
 ### ✅ DO:
 - **ALWAYS** use `AppPrimaryButton`, `AppSecondaryButton`, `AppGhostButton`, `AppMenuButton`.

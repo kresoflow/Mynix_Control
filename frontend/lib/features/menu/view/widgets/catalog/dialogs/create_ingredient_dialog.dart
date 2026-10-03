@@ -13,6 +13,7 @@ import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int? initialCategoryId}) {
   final isEditing = itemToEdit != null;
@@ -21,7 +22,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
   final initialCost = isEditing ? itemToEdit.costPerUnit.toInt().toString() : '0';
   final initialAlert = isEditing ? itemToEdit.minStockAlert.toInt().toString() : '0';
   final initialBarcode = isEditing ? itemToEdit.barcode ?? '' : '';
-  final initialUnit = itemToEdit?.unit ?? 'g';
+  final initialUnit = UnitFormatter.toDbKey(itemToEdit?.unit, 'g');
   final initialCat = (itemToEdit?.categoryId == 0) ? null : (itemToEdit?.categoryId ?? initialCategoryId);
 
   final nameController = TextEditingController(text: initialName);
@@ -91,12 +92,13 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
             return false;
           }
 
-          InputDecoration inputDeco(String label, {Widget? prefixIcon, Widget? suffixIcon, String? hintText}) {
+          InputDecoration inputDeco(String label, {Widget? prefixIcon, Widget? suffixIcon, String? hintText, EdgeInsetsGeometry? contentPadding}) {
             return InputDecoration(
               labelText: label,
               hintText: hintText,
               prefixIcon: prefixIcon,
               suffixIcon: suffixIcon,
+              contentPadding: contentPadding,
               filled: true,
               fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
               border: OutlineInputBorder(
@@ -203,15 +205,14 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                           flex: 1,
                           child: DropdownButtonFormField<String>(
                             initialValue: selectedUnit,
-                            decoration: inputDeco('Ед. изм.', prefixIcon: Icon(PhosphorIconsRegular.scales, color: AppColors.brandPrimary)),
+                            isExpanded: true,
+                            decoration: inputDeco(
+                              'Ед. изм.',
+                              prefixIcon: Icon(PhosphorIconsRegular.scales, size: 18, color: AppColors.brandPrimary),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                            ),
                             dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                            items: const [
-                              DropdownMenuItem(value: 'pcs', child: Text('Штуки (шт)')),
-                              DropdownMenuItem(value: 'g', child: Text('Граммы (г)')),
-                              DropdownMenuItem(value: 'kg', child: Text('Килограммы (кг)')),
-                              DropdownMenuItem(value: 'ml', child: Text('Миллилитры (мл)')),
-                              DropdownMenuItem(value: 'l', child: Text('Литры (л)')),
-                            ],
+                            items: UnitFormatter.dropdownItems,
                             onChanged: (val) {
                               if (val != null) {
                                 setState(() {

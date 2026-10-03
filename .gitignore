@@ -12,6 +12,7 @@
 
 # Database dumps & local storage
 *.sql
+!backend/migrations/**/*.sql
 *.dump
 *.db
 *.sqlite3

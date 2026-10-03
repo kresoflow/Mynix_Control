@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -151,7 +152,7 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
                                     ),
                                     title: Text(ing.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                                     subtitle: Text(
-                                      'Остаток: ${ing.currentStock} ${ing.unit}',
+                                      'Остаток: ${UnitFormatter.formatAmount(ing.currentStock, ing.unit)}',
                                       style: TextStyle(
                                         color: isZero ? AppColors.danger : AppColors.success,
                                         fontSize: 12,

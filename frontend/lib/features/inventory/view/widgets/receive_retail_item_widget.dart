@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 
 class ReceiveRetailItemWidget extends StatefulWidget {
@@ -117,7 +118,7 @@ class _ReceiveRetailItemWidgetState extends State<ReceiveRetailItemWidget> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'На складе: ${widget.product.currentStock} ${widget.product.unit}',
+                  'На складе: ${UnitFormatter.formatAmount(widget.product.currentStock, widget.product.unit)}',
                   style: AppTextStyles.caption.copyWith(
                     color: isDark
                         ? AppColors.darkSubtext

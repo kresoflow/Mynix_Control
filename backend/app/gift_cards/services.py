@@ -100,9 +100,20 @@ async def redeem_gift_card(
     user_id: Optional[int] = None,
 ) -> GiftCard:
     """Списывает средства с баланса подарочной карты при оплате чека."""
-    card = await session.get(GiftCard, card_id, with_for_update=True)
+    card = await session.get(GiftCard, card_id, with_for_update=True, populate_existing=True)
     if not card:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Подарочная карта не найдена")
+
+    # [ИНВАРИАНТ] Идемпотентность: повторная отправка с тем же client_uuid возвращает результат без изменения баланса
+    if redeem_in.client_uuid:
+        existing_stmt = select(GiftCardTransaction).where(
+            GiftCardTransaction.gift_card_id == card.id,
+            GiftCardTransaction.client_uuid == redeem_in.client_uuid,
+        )
+        existing_txn = (await session.execute(existing_stmt)).scalars().first()
+        if existing_txn:
+            return card
+
     if not card.is_active or card.status == GiftCardStatus.BLOCKED:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Карта заблокирована или неактивна")
 
@@ -130,6 +141,7 @@ async def redeem_gift_card(
     session.add(GiftCardTransaction(
         gift_card_id=card.id,
         order_id=redeem_in.order_id,
+        client_uuid=redeem_in.client_uuid,
         type=GiftCardTransactionType.REDEEM,
         amount=amount,
         balance_before=b_before,
@@ -150,9 +162,20 @@ async def top_up_gift_card(
     user_id: Optional[int] = None,
 ) -> GiftCard:
     """Пополняет баланс существующей подарочной карты."""
-    card = await session.get(GiftCard, card_id, with_for_update=True)
+    card = await session.get(GiftCard, card_id, with_for_update=True, populate_existing=True)
     if not card:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Подарочная карта не найдена")
+
+    # [ИНВАРИАНТ] Идемпотентность: повторная отправка с тем же client_uuid возвращает результат без изменения баланса
+    if topup_in.client_uuid:
+        existing_stmt = select(GiftCardTransaction).where(
+            GiftCardTransaction.gift_card_id == card.id,
+            GiftCardTransaction.client_uuid == topup_in.client_uuid,
+        )
+        existing_txn = (await session.execute(existing_stmt)).scalars().first()
+        if existing_txn:
+            return card
+
     if not card.is_active or card.status == GiftCardStatus.BLOCKED:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Нельзя пополнить заблокированную карту")
 
@@ -167,6 +190,7 @@ async def top_up_gift_card(
     session.add(card)
     session.add(GiftCardTransaction(
         gift_card_id=card.id,
+        client_uuid=topup_in.client_uuid,
         type=GiftCardTransactionType.TOPUP,
         amount=amount,
         balance_before=b_before,

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -6,6 +6,7 @@ import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'receipt_row_data.dart';
 
 Future<void> saveReceiveDocument({
@@ -45,12 +46,7 @@ Future<void> saveReceiveDocument({
   setSavingState(true);
 
   double getConversionFactor(String fromUnit, String toUnit) {
-    if (fromUnit == toUnit) return 1.0;
-    if (fromUnit == 'кг' && toUnit == 'г') return 1000.0;
-    if (fromUnit == 'г' && toUnit == 'кг') return 0.001;
-    if (fromUnit == 'л' && toUnit == 'мл') return 1000.0;
-    if (fromUnit == 'мл' && toUnit == 'л') return 0.001;
-    return 1.0;
+    return UnitFormatter.getConversionFactor(fromUnit, toUnit);
   }
 
   try {

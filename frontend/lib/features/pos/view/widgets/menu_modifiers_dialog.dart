@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
@@ -51,7 +51,7 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
           'price': child.price,
           'barcode': child.barcode,
           'retail_product_id': child.attributesJson != null ? jsonDecode(child.attributesJson!)['retail_product_id'] : null,
-        }).toList();
+        },).toList();
       }
 
       if (widget.item.attributesJson != null && widget.item.attributesJson!.isNotEmpty) {
@@ -118,24 +118,18 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
           modifierNames: mNames,
           jsonStr: jsonStr,
           price: price,
-        ));
+        ),);
       });
     }
   }
 
   void _submitCart() {
     if (widget.onAdd != null) {
-      final totalAdded = _miniCart.fold(0, (sum, i) => sum + i.quantity);
       for (var item in _miniCart) {
         for (int i = 0; i < item.quantity; i++) {
           widget.onAdd!({'json': item.jsonStr, 'price': item.price});
         }
       }
-      AppToast.showCart(
-        context,
-        widget.item.cleanName,
-        count: totalAdded,
-      );
       Navigator.of(context).pop();
     }
   }

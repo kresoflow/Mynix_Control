@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -42,8 +42,8 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
     _loadActiveTables();
   }
 
-  Future<void> _loadActiveTables() async {
-    setState(() => _isLoading = true);
+  Future<void> _loadActiveTables({bool silent = false}) async {
+    if (!silent) setState(() => _isLoading = true);
     try {
       final tables = await _orderRepo.fetchActiveTables();
       if (mounted) {
@@ -88,7 +88,7 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
             final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
             context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
             context.read<ShiftBloc>().add(CheckCurrentShift());
-            _loadActiveTables();
+            _loadActiveTables(silent: true);
           }
         } catch (e) {
           if (mounted) AppToast.showError(context, 'Ошибка расчета', subtitle: e.toString());
@@ -104,7 +104,7 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
       await _orderRepo.markOrderServed(orderId);
       if (mounted) {
         AppToast.showSuccess(context, 'Заказ подан на $tableNum');
-        _loadActiveTables();
+        _loadActiveTables(silent: true);
       }
     } catch (e) {
       if (mounted) AppToast.showError(context, 'Ошибка', subtitle: e.toString());
@@ -240,7 +240,7 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
                               onSplit: () => SplitBillDialog.show(
                                 context,
                                 tableData: table,
-                                onUpdated: _loadActiveTables,
+                                onUpdated: () => _loadActiveTables(silent: true),
                               ),
                               onSettle: () => _handleSettle(table),
                               onMarkServed: () => _handleMarkServed(table),

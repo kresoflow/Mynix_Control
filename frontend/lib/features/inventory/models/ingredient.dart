@@ -1,3 +1,5 @@
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
+
 class Ingredient {
   final int id;
   final String name;
@@ -48,7 +50,7 @@ class Ingredient {
     return Ingredient(
       id: json['id'],
       name: json['name'],
-      unit: json['unit'],
+      unit: UnitFormatter.toDbKey(json['unit'] as String?, 'g'),
       currentStock: (json['current_stock'] as num?)?.toDouble() ?? 0.0,
       minStockAlert: (json['min_stock_alert'] as num?)?.toDouble() ?? 0.0,
       costPerUnit: (json['cost_per_unit'] as num?)?.toDouble() ?? 0.0,

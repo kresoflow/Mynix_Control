@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'bulk_input_decoration.dart';
 
 class IngredientRowData {
@@ -105,13 +106,7 @@ class _IngredientRowWidgetState extends State<IngredientRowWidget> {
             child: DropdownButtonFormField<String>(
               initialValue: widget.row.selectedUnit,
               decoration: buildBulkInputDecoration(context, 'Ед. изм.'),
-              items: const [
-                DropdownMenuItem(value: 'pcs', child: Text('Штуки')),
-                DropdownMenuItem(value: 'g', child: Text('Граммы')),
-                DropdownMenuItem(value: 'kg', child: Text('Килограммы')),
-                DropdownMenuItem(value: 'ml', child: Text('Миллилитры')),
-                DropdownMenuItem(value: 'l', child: Text('Литры')),
-              ],
+              items: UnitFormatter.dropdownItems,
               onChanged: (val) => setState(() => widget.row.selectedUnit = val!),
             ),
           ),

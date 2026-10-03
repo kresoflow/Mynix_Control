@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> availableIngredients) {
   final Map<String, List<dynamic>> grouped = {};
@@ -32,7 +33,7 @@ Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> avai
                 IconButton(
                   icon: const Icon(PhosphorIconsRegular.x),
                   onPressed: () => Navigator.of(ctx).pop(),
-                )
+                ),
               ],
             ),
             const Divider(),
@@ -48,12 +49,12 @@ Future<int?> showRecipeIngredientPicker(BuildContext context, List<dynamic> avai
                     shape: const Border(),
                     children: items.map((ing) => ListTile(
                       title: Text(ing.name),
-                      subtitle: Text('Алерт: ${ing.minStockAlert.toInt()} ${ing.unit} | Остаток: ${ing.currentStock.toInt()} ${ing.unit}'),
-                      trailing: Text(ing.unit, style: const TextStyle(color: Colors.grey)),
+                      subtitle: Text('Алерт: ${ing.minStockAlert.toInt()} ${UnitFormatter.format(ing.unit)} | Остаток: ${ing.currentStock.toInt()} ${UnitFormatter.format(ing.unit)}'),
+                      trailing: Text(UnitFormatter.format(ing.unit), style: const TextStyle(color: Colors.grey)),
                       onTap: () {
                         Navigator.of(ctx).pop(ing.id);
                       },
-                    )).toList(),
+                    ),).toList(),
                   );
                 },
               ),

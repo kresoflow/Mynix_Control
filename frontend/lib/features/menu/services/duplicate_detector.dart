@@ -3,6 +3,7 @@
 // ДОМЕН: lib/features/menu/services/duplicate_detector.dart
 // ==============================================================================
 
+import 'dart:convert';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -218,8 +219,8 @@ class DuplicateDetector {
     String clean = input.trim().toLowerCase().replaceAll(RegExp(r'\s+'), '');
     if (clean.isEmpty) return '';
 
-    // Заменяем запятую на точку для унификации десятичных дробей
-    clean = clean.replaceAll(',', '.');
+    // Заменяем запятую на точку и убираем скобки
+    clean = clean.replaceAll(',', '.').replaceAll('(', '').replaceAll(')', '');
 
     // Удаляем единицы измерения в конце строки
     clean = clean.replaceAll(
@@ -227,13 +228,18 @@ class DuplicateDetector {
       '',
     );
 
-    // Если это число, форматируем его без хвостовых нулей
+    // Извлекаем числовое значение (даже если спереди осталось имя, например "фантаслайм1")
+    final matchNum = RegExp(r'(\d+(?:\.\d+)?)$').firstMatch(clean);
+    if (matchNum != null) {
+      final numVal = double.tryParse(matchNum.group(1)!);
+      if (numVal != null) {
+        return numVal == numVal.toInt() ? numVal.toInt().toString() : numVal.toString();
+      }
+    }
+
     final numVal = double.tryParse(clean);
     if (numVal != null) {
-      if (numVal == numVal.toInt()) {
-        return numVal.toInt().toString();
-      }
-      return numVal.toString();
+      return numVal == numVal.toInt() ? numVal.toInt().toString() : numVal.toString();
     }
 
     return clean;
@@ -247,8 +253,7 @@ class DuplicateDetector {
     if (item.variations != null && item.variations!.isNotEmpty) {
       for (final v in item.variations!) {
         if (v['name'] != null) {
-          final raw = v['name'].toString();
-          final norm = normalizeVolume(raw);
+          final norm = normalizeVolume(v['name'].toString());
           if (norm.isNotEmpty) volumes.add(norm);
         }
       }
@@ -264,6 +269,17 @@ class DuplicateDetector {
     if (item.variationsSummary != null && item.variationsSummary!.isNotEmpty) {
       final norm = normalizeVolume(item.variationsSummary!);
       if (norm.isNotEmpty) volumes.add(norm);
+    }
+
+    // 4. Проверяем объем из JSON attributes для плоских товаров (Flat SKU)
+    if (item.attributesJson != null && item.attributesJson!.isNotEmpty) {
+      try {
+        final Map<String, dynamic> attrs = jsonDecode(item.attributesJson!);
+        if (attrs['volume'] != null && attrs['volume'].toString().trim().isNotEmpty) {
+          final norm = normalizeVolume(attrs['volume'].toString());
+          if (norm.isNotEmpty) volumes.add(norm);
+        }
+      } catch (_) {}
     }
 
     return volumes.toList();

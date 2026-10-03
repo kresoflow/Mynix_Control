@@ -51,6 +51,7 @@ Future<void> performBulkSave({
       retailRows: retailRows,
       ingredientRows: ingredientRows,
       categoryRows: categoryRows,
+      categoryType: globalCategoryType,
     );
     if (dup != null) {
       duplicateErrors.add('Строка ${i + 1}: $dup');

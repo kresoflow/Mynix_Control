@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -32,11 +32,11 @@ class _RetailProductModalState extends State<RetailProductModal> {
   final List<Map<String, dynamic>> _variations = [];
 
   final Map<String, String> _units = {
-    'pcs': 'шт',
-    'kg': 'кг',
-    'g': 'г',
     'l': 'л',
     'ml': 'мл',
+    'kg': 'кг',
+    'g': 'г',
+    'pcs': 'шт',
   };
 
   @override

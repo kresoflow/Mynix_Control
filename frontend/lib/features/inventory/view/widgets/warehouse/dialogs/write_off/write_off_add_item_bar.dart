@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 
 class WriteOffAddItemBar extends StatelessWidget {
@@ -18,7 +19,7 @@ class WriteOffAddItemBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Autocomplete<Ingredient>(
-      displayStringForOption: (item) => '${item.name} (${item.currentStock} ${item.unit})',
+      displayStringForOption: (item) => '${item.name} (${UnitFormatter.formatAmount(item.currentStock, item.unit)})',
       optionsBuilder: (textEditingValue) {
         if (textEditingValue.text.isEmpty) {
           return const Iterable<Ingredient>.empty();

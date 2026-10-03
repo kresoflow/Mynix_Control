@@ -75,12 +75,25 @@ def _load_tenant_patches() -> list[tuple[str, str]]:
 
 async def apply_tenant_patches(conn, schema: str) -> None:
     """Execute SQL migration patches for a specific tenant schema."""
+    import re
     from sqlalchemy import text
     patches = _load_tenant_patches()
+    is_sqlite = conn.dialect.name == "sqlite"
     for patch_name, sql_template in patches:
-        formatted_sql = sql_template.replace('"{schema}"', f'"{schema}"').replace('{schema}', schema)
+        if is_sqlite:
+            formatted_sql = (
+                sql_template
+                .replace('"{schema}".', '')
+                .replace('{schema}.', '')
+                .replace('"{schema}"', '')
+                .replace('{schema}', '')
+            )
+        else:
+            formatted_sql = sql_template.replace('"{schema}"', f'"{schema}"').replace('{schema}', schema)
         statements = [s.strip() for s in formatted_sql.split(";") if s.strip()]
         for stmt in statements:
+            if is_sqlite and "ADD COLUMN IF NOT EXISTS" in stmt.upper():
+                stmt = re.sub(r'ADD\s+COLUMN\s+IF\s+NOT\s+EXISTS', 'ADD COLUMN', stmt, flags=re.IGNORECASE)
             try:
                 await conn.execute(text(stmt))
             except Exception:
@@ -114,6 +127,7 @@ async def auto_migrate_tenant_schemas() -> None:
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_kds BOOLEAN DEFAULT TRUE'))
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_orders BOOLEAN DEFAULT TRUE'))
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS enable_inventory_deduction BOOLEAN DEFAULT TRUE'))
+            await conn.execute(text("ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS currency VARCHAR(20) DEFAULT 'сом'"))
             await conn.execute(text("ALTER TABLE public.users ADD COLUMN IF NOT EXISTS pin_code VARCHAR(10) DEFAULT '1234'"))
             await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS phone VARCHAR(50)'))
             await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS email VARCHAR(255)'))

@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 
 class WriteOffItemEntry {
@@ -86,7 +87,7 @@ class WriteOffItemsTable extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                       ),
                       Text(
-                        'Остаток: ${entry.item.currentStock} ${entry.item.unit} • ${entry.cost.toStringAsFixed(2)} $currency/${entry.item.unit}',
+                        'Остаток: ${entry.item.currentStock} ${UnitFormatter.format(entry.item.unit)} • ${entry.cost.toStringAsFixed(2)} $currency/${UnitFormatter.format(entry.item.unit)}',
                         style: TextStyle(
                           fontSize: 11,
                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
@@ -102,7 +103,7 @@ class WriteOffItemsTable extends StatelessWidget {
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       hintText: 'Кол-во',
-                      suffixText: entry.item.unit,
+                      suffixText: UnitFormatter.format(entry.item.unit),
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),

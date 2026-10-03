@@ -5,6 +5,7 @@ import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class IngredientItemRow extends StatelessWidget {
@@ -165,13 +166,13 @@ class IngredientItemRow extends StatelessWidget {
                         children: [
                           Container(width: 8, height: 8, decoration: BoxDecoration(color: stockColor, shape: BoxShape.circle)),
                           const SizedBox(width: 8),
-                          Text('${item.currentStock.toStringAsFixed(1)} ${item.unit}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: stockColor)),
+                          Text(UnitFormatter.formatAmount(item.currentStock, item.unit), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: stockColor)),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
-                        child: Text('Алерт: ${item.minStockAlert.toStringAsFixed(1)}', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+                        child: Text('Алерт: ${UnitFormatter.formatAmount(item.minStockAlert, item.unit)}', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
                       ),
                     ],
                   ),
@@ -188,7 +189,7 @@ class IngredientItemRow extends StatelessWidget {
                         children: [
                           Text('${item.costPerUnit.toStringAsFixed(2)} $currency', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText)),
                           const SizedBox(height: 2),
-                          Text('за 1 ${item.unit}', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+                          Text('за 1 ${UnitFormatter.format(item.unit)}', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
                         ],
                       ),
                       if (!isManageMode) ...[

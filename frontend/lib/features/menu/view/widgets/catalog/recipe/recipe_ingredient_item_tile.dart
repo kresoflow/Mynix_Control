@@ -10,6 +10,7 @@ import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 class RecipeIngredientItemTile extends StatelessWidget {
   final Map<String, dynamic> recipe;
@@ -27,7 +28,7 @@ class RecipeIngredientItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ingredientId = recipe['ingredient_id'];
     final qty = (recipe['quantity_required'] as num?)?.toDouble() ?? 0.0;
-    final unit = recipe['unit'] ?? 'ед.';
+    final unit = UnitFormatter.format(recipe['unit']);
     final costPerUnit = (recipe['cost_per_unit'] as num?)?.toDouble() ?? 0.0;
     final rowCost = qty * costPerUnit;
 
@@ -141,7 +142,7 @@ class RecipeIngredientItemTile extends StatelessWidget {
                             );
                           },
                   ),
-                  Text('$qty $unit', style: AppTextStyles.h3),
+                  Text(UnitFormatter.formatAmount(qty, recipe['unit']), style: AppTextStyles.h3),
                   IconButton(
                     icon: const Icon(PhosphorIconsRegular.plus, size: 16),
                     constraints: const BoxConstraints(),

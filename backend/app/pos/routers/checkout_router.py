@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from app.dependencies import require_permission, require_any_permission, CurrentUser, TenantSession
+from app.users.permissions import Perm
 from app.pos.models import CreateOrderRequest, OrderStatus, OrderItemCreate
 from app.pos.services.checkout_service import (
     create_order, list_orders, get_order_by_id, update_order_status,
@@ -54,7 +55,7 @@ class SplitOrderRequest(BaseModel):
 @router.post(
     "/orders/",
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_permission("orders:create"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_CREATE))],
 )
 async def api_create_order(
     data: CreateOrderRequest,
@@ -71,7 +72,7 @@ async def api_create_order(
 
 @router.get(
     "/orders/",
-    dependencies=[Depends(require_permission("orders:view"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_VIEW))],
 )
 async def api_list_orders(
     current_user: CurrentUser,
@@ -112,7 +113,7 @@ async def api_list_orders(
 
 @router.get(
     "/orders/{order_id}",
-    dependencies=[Depends(require_permission("orders:view"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_VIEW))],
 )
 async def api_get_order(
     order_id: int,
@@ -149,7 +150,7 @@ async def api_get_order(
 
 @router.post(
     "/orders/{order_id}/approve",
-    dependencies=[Depends(require_permission("orders:create"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_CREATE))],
 )
 async def api_approve_order(
     order_id: int,
@@ -168,7 +169,7 @@ async def api_approve_order(
 
 @router.post(
     "/orders/{order_id}/reject",
-    dependencies=[Depends(require_permission("orders:cancel"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_CANCEL))],
 )
 async def api_reject_order(
     order_id: int,
@@ -183,7 +184,7 @@ async def api_reject_order(
 
 @router.patch(
     "/orders/{order_id}/status",
-    dependencies=[Depends(require_any_permission("orders:update_status", "orders:create", "orders:view"))],
+    dependencies=[Depends(require_any_permission(Perm.ORDERS_UPDATE_STATUS, Perm.ORDERS_CREATE, Perm.ORDERS_VIEW))],
 )
 async def api_update_status(
     order_id: int,
@@ -204,7 +205,7 @@ async def api_update_status(
 
 @router.get(
     "/tables/active",
-    dependencies=[Depends(require_permission("orders:view"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_VIEW))],
 )
 async def api_get_active_tables(
     current_user: CurrentUser,
@@ -216,7 +217,7 @@ async def api_get_active_tables(
 
 @router.post(
     "/orders/{order_id}/settle",
-    dependencies=[Depends(require_permission("orders:create"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_CREATE))],
 )
 async def api_settle_table_order(
     order_id: int,
@@ -234,7 +235,7 @@ async def api_settle_table_order(
 
 @router.post(
     "/orders/{order_id}/append",
-    dependencies=[Depends(require_permission("orders:create"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_CREATE))],
 )
 async def api_append_table_order(
     order_id: int,
@@ -250,7 +251,7 @@ async def api_append_table_order(
 
 @router.post(
     "/orders/{order_id}/split",
-    dependencies=[Depends(require_permission("orders:create"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_CREATE))],
 )
 async def api_split_table_order(
     order_id: int,
@@ -269,7 +270,7 @@ async def api_split_table_order(
 
 @router.post(
     "/orders/{order_id}/serve",
-    dependencies=[Depends(require_permission("orders:create"))],
+    dependencies=[Depends(require_permission(Perm.ORDERS_CREATE))],
 )
 async def api_serve_table_order(
     order_id: int,

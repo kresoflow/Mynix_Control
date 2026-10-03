@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 class StockItemRow extends StatelessWidget {
   final Ingredient item;
@@ -23,17 +24,7 @@ class StockItemRow extends StatelessWidget {
       stockColor = AppColors.warning;
     }
 
-    String getTranslatedUnit(String u) {
-      switch (u) {
-        case 'pcs': return 'шт';
-        case 'l': return 'л';
-        case 'ml': return 'мл';
-        case 'kg': return 'кг';
-        case 'g': return 'г';
-        default: return u;
-      }
-    }
-    final translatedUnit = getTranslatedUnit(item.unit);
+    final translatedUnit = UnitFormatter.format(item.unit);
 
     final borderSide = BorderSide(
       color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -101,6 +92,32 @@ class StockItemRow extends StatelessWidget {
                           color: isDark ? AppColors.darkText : AppColors.lightText,
                         ),
                       ),
+                      if (item.attributes != null &&
+                          (item.attributes!['flavor'] != null || item.attributes!['volume'] != null)) ...[
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: [
+                            if (item.attributes!['flavor'] != null &&
+                                item.attributes!['flavor'].toString().isNotEmpty &&
+                                !item.name.toLowerCase().contains(item.attributes!['flavor'].toString().toLowerCase()))
+                              _buildAttributeChip(
+                                item.attributes!['flavor'].toString(),
+                                AppColors.warning,
+                                isDark,
+                              ),
+                            if (item.attributes!['volume'] != null &&
+                                item.attributes!['volume'].toString().isNotEmpty &&
+                                !item.name.toLowerCase().contains(item.attributes!['volume'].toString().toLowerCase()))
+                              _buildAttributeChip(
+                                item.attributes!['volume'].toString(),
+                                AppColors.info,
+                                isDark,
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -157,9 +174,9 @@ class StockItemRow extends StatelessWidget {
                     children: [
                       if (item.price != null && item.price! > 0) ...[
                         Text(
-                          'Розница: ${(item.currentStock * item.price!).toCurrency(context)}',
+                          'Розница: ${item.price!.toCurrency(context)}',
                           style: const TextStyle(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: AppColors.success,
                           ),
@@ -167,27 +184,50 @@ class StockItemRow extends StatelessWidget {
                         const SizedBox(height: 2),
                       ],
                       Text(
-                        'Закуп: ${(item.currentStock * item.costPerUnit).toCurrency(context)}',
-                        style: TextStyle(
-                          fontSize: item.price != null && item.price! > 0 ? 13 : 15,
-                          fontWeight: item.price != null && item.price! > 0 ? FontWeight.normal : FontWeight.bold,
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightText,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${item.costPerUnit.toStringAsFixed(2)} с / $translatedUnit',
+                        'Закуп: ${item.costPerUnit.toStringAsFixed(2)} с / $translatedUnit',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                         ),
                       ),
+                      if (item.currentStock > 0) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          'Σ: ${(item.currentStock * (item.price ?? item.costPerUnit)).toCurrency(context)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttributeChip(String label, Color textColor, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: textColor.withValues(alpha: isDark ? 0.18 : 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: textColor.withValues(alpha: isDark ? 0.35 : 0.25),
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: textColor,
         ),
       ),
     );

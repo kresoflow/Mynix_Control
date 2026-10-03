@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kreso_frontend/core/utils/uuid_helper.dart';
 import 'package:kreso_frontend/features/pos/models/cart_item.dart';
@@ -70,15 +70,17 @@ class CheckoutCart extends CartEvent {
   final String? note;
   final String? tableNumber;
   final String? orderSource;
+  final String? submittingAction;
   const CheckoutCart({
     this.paymentMethod = 'CASH',
     this.note,
     this.tableNumber,
     this.orderSource,
+    this.submittingAction,
   });
   
   @override
-  List<Object?> get props => [paymentMethod, note, tableNumber, orderSource];
+  List<Object?> get props => [paymentMethod, note, tableNumber, orderSource, submittingAction];
 }
 
 class HoldCurrentCart extends CartEvent {
@@ -104,6 +106,7 @@ class CartState extends Equatable {
   final String? tableNumber;
   final String? lastSubmittedSource;
   final bool isSubmitting;
+  final String? submittingAction;
   final String? submitError;
   final bool submitSuccess;
   
@@ -116,6 +119,7 @@ class CartState extends Equatable {
     this.tableNumber,
     this.lastSubmittedSource,
     this.isSubmitting = false,
+    this.submittingAction,
     this.submitError,
     this.submitSuccess = false,
   });
@@ -134,6 +138,8 @@ class CartState extends Equatable {
     bool clearTableNumber = false,
     String? lastSubmittedSource,
     bool? isSubmitting,
+    String? submittingAction,
+    bool clearSubmittingAction = false,
     String? submitError,
     bool? submitSuccess,
   }) {
@@ -146,6 +152,7 @@ class CartState extends Equatable {
       tableNumber: clearTableNumber ? null : (tableNumber ?? this.tableNumber),
       lastSubmittedSource: lastSubmittedSource ?? this.lastSubmittedSource,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      submittingAction: clearSubmittingAction ? null : (submittingAction ?? this.submittingAction),
       submitError: submitError,
       submitSuccess: submitSuccess ?? false,
     );
@@ -160,6 +167,7 @@ class CartState extends Equatable {
         bonusToSpend,
         tableNumber,
         isSubmitting,
+        submittingAction,
         submitError,
         submitSuccess,
       ];
@@ -253,7 +261,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   Future<void> _onCheckoutCart(CheckoutCart event, Emitter<CartState> emit) async {
     if (state.items.isEmpty) return;
     
-    emit(state.copyWith(isSubmitting: true));
+    emit(state.copyWith(
+      isSubmitting: true,
+      submittingAction: event.submittingAction,
+    ));
     try {
       final customerId = state.selectedCustomer != null ? state.selectedCustomer.id as int : null;
       await orderRepository.submitOrder(
@@ -271,10 +282,15 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         clearTableNumber: true,
         lastSubmittedSource: event.orderSource,
         isSubmitting: false,
+        clearSubmittingAction: true,
         submitSuccess: true,
       ));
     } catch (e) {
-      emit(state.copyWith(isSubmitting: false, submitError: e.toString()));
+      emit(state.copyWith(
+        isSubmitting: false,
+        clearSubmittingAction: true,
+        submitError: e.toString(),
+      ));
     }
   }
 

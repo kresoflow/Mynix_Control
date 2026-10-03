@@ -114,9 +114,10 @@ frontend/
 │   │   │   ├── services/             # lan_settings_service.dart (сетевые принтеры и сканеры)
 │   │   │   └── view/                 # settings_screen.dart, ui_kit_showcase_screen.dart, tabs/ (принтеры, сотрудники)
 │   │   └── superadmin/               # Модуль: SaaS-управление тенантами
-│   │       ├── data/                 # Источники данных и DTO
-│   │       ├── domain/               # superadmin_repository.dart
-│   │       └── presentation/         # tenant_explorer_screen.dart, superadmin_screen.dart, bloc/, widgets/
+│   │       ├── bloc/                 # superadmin_bloc.dart, tenant_explorer_bloc.dart
+│   │       ├── models/               # tenant.dart (сущность организации и владельца)
+│   │       ├── repository/           # superadmin_repository.dart (CRUD тенантов и инспектор БД)
+│   │       └── view/                 # superadmin_screen.dart, tenant_explorer_screen.dart, widgets/
 │   │
 │   └── main.dart                     # Точка входа Flutter: runApp, регистрация провайдеров и тем
 │

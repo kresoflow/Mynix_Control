@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 class ReceiveDocumentUnitCell extends StatelessWidget {
   final String selectedUnit;
@@ -28,7 +29,7 @@ class ReceiveDocumentUnitCell extends StatelessWidget {
       alignment: Alignment.center,
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: const ['шт', 'л', 'мл', 'кг', 'г', 'порц'].contains(selectedUnit)
+          value: (UnitFormatter.orderedUiSymbols.contains(selectedUnit) || selectedUnit == 'порц')
               ? selectedUnit
               : 'шт',
           isExpanded: true,
@@ -38,9 +39,11 @@ class ReceiveDocumentUnitCell extends StatelessWidget {
             color: isDark ? AppColors.darkText : AppColors.lightText,
             fontSize: 13,
           ),
-          items: const ['шт', 'л', 'мл', 'кг', 'г', 'порц'].map((u) {
-            return DropdownMenuItem(value: u, child: Text(u));
-          }).toList(),
+          items: [
+            ...UnitFormatter.uiDropdownItems,
+            if (selectedUnit == 'порц')
+              const DropdownMenuItem(value: 'порц', child: Text('порц')),
+          ],
           onChanged: onUnitChanged,
         ),
       ),

@@ -57,7 +57,12 @@ async def create_customer_transaction(
 ) -> CustomerTransactionRead:
     """Post a debt payment or deposit to a customer balance with row-level lock."""
     # Row-level lock on Customer to avoid balance race conditions
-    stmt = select(Customer).where(Customer.id == customer_id).with_for_update()
+    stmt = (
+        select(Customer)
+        .where(Customer.id == customer_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
     res = await session.execute(stmt)
     customer = res.scalar_one_or_none()
     if not customer or not customer.is_active:

@@ -39,7 +39,7 @@ async def deduct_ingredients(
                 if parent_menu:
                     ret_id = parent_menu.retail_product_id
             if ret_id:
-                retail_product = await session.get(RetailProduct, ret_id, with_for_update=True)
+                retail_product = await session.get(RetailProduct, ret_id, with_for_update=True, populate_existing=True)
                 if retail_product:
                     retail_product.current_stock -= order_qty
                     session.add(retail_product)
@@ -73,7 +73,7 @@ async def deduct_ingredients(
 
             for recipe in recipes:
                 deduction = recipe.quantity_required * order_qty
-                ingredient = await session.get(Ingredient, recipe.ingredient_id, with_for_update=True)
+                ingredient = await session.get(Ingredient, recipe.ingredient_id, with_for_update=True, populate_existing=True)
                 if ingredient:
                     ingredient.current_stock -= deduction
                     session.add(ingredient)

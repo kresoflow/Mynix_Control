@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/write_off_dialog.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 class WriteOffTab extends StatefulWidget {
   const WriteOffTab({super.key});
@@ -112,7 +113,7 @@ class _WriteOffTabState extends State<WriteOffTab>
                                 style: const TextStyle(fontSize: 16),
                               ),
                               subtitle: Text(
-                                'Остаток: ${item.currentStock} ${item.unit}',
+                                'Остаток: ${item.currentStock} ${UnitFormatter.format(item.unit)}',
                               ),
                               trailing: ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(

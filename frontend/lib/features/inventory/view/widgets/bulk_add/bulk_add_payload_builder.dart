@@ -4,8 +4,7 @@ import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
 import 'category_row.dart';
-
-const _unitLabels = {'l': 'л', 'ml': 'мл', 'kg': 'кг', 'g': 'г', 'pcs': 'шт'};
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 List<Map<String, dynamic>> buildCategoryPayload({
   required List<CategoryRowData> categoryRows,
@@ -81,7 +80,7 @@ List<Map<String, dynamic>> buildDishPayload({
       'name': name,
       'price': basePrice,
       'category_id': (catId == null || catId == 0) ? null : catId,
-      'sort_order': sortIndex++,
+      'sort_order': 0,
       if (attributes != null) 'attributes': attributes,
       'is_available': true,
       'type': 'dish',
@@ -97,7 +96,7 @@ List<Map<String, dynamic>> buildIngredientPayload({
   required List<Ingredient> existingIngredients,
 }) {
   final Map<int, int> categorySeqCounters = {};
-  int sortIndex = 0;
+  int sortIndex = 1;
   final items = <Map<String, dynamic>>[];
 
   for (final row in ingredientRows) {
@@ -138,7 +137,7 @@ List<Map<String, dynamic>> buildRetailPayload({
   required List<RetailRowData> retailRows,
   required int? targetCategoryId,
 }) {
-  int sortIndex = 0;
+  int sortIndex = 1;
   final items = <Map<String, dynamic>>[];
 
   for (final row in retailRows) {
@@ -151,29 +150,38 @@ List<Map<String, dynamic>> buildRetailPayload({
     final barcodes = row.barcodeController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
 
     if (flavors.isEmpty) flavors.add('');
-    if (volumes.isEmpty) volumes.add('');
-    final uLabel = _unitLabels[row.selectedUnit] ?? '';
-    final bool hasOptions = !(flavors.length == 1 && flavors[0] == '' && volumes.length == 1 && volumes[0] == '');
-    final String stockUnit = (hasOptions && row.selectedUnit != 'pcs' && volumes.any((v) => v.isNotEmpty))
-        ? 'pcs'
-        : row.selectedUnit;
-
-    if (!hasOptions) {
-      items.add({
-        'name': baseName,
-        'category_id': row.categoryId ?? targetCategoryId,
-        'unit': stockUnit,
-        'purchase_price': 0.0,
-        'selling_price': sells.isNotEmpty ? (double.tryParse(sells.first) ?? 0.0) : 0.0,
-        'initial_stock': 0.0,
-        'min_stock_alert': 0.0,
-        'barcode': barcodes.isNotEmpty ? barcodes.first : null,
-        'sort_order': sortIndex++,
-      });
-      continue;
-    }
+    final uLabel = UnitFormatter.format(row.selectedUnit);
+    final bool isMultiVolume = volumes.length >= 2;
 
     for (final flavor in flavors) {
+      if (!isMultiVolume) {
+        // [ИНВАРИАНТ] Одиночный объем или без объема — сохраняем как плоский товар (Flat SKU)
+        final sell = sells.isNotEmpty ? (double.tryParse(sells.first) ?? 0.0) : 0.0;
+        final barcode = barcodes.isNotEmpty ? barcodes.first : null;
+        final vol = volumes.isNotEmpty && volumes.first.isNotEmpty ? '${volumes.first} $uLabel'.trim() : null;
+
+        final attrs = <String, dynamic>{
+          'icon': 'package',
+          if (flavor.isNotEmpty) 'flavor': flavor,
+          if (vol != null && vol.isNotEmpty) 'volume': vol,
+        };
+
+        items.add({
+          'name': baseName,
+          'category_id': row.categoryId ?? targetCategoryId,
+          'unit': 'pcs',
+          'purchase_price': 0.0,
+          'selling_price': sell,
+          'initial_stock': 0.0,
+          'min_stock_alert': 0.0,
+          'barcode': barcode,
+          'sort_order': 0,
+          if (attrs.isNotEmpty) 'attributes': attrs,
+        });
+        continue;
+      }
+
+      // [ИНВАРИАНТ] Серия объемов (>= 2) — сохраняем как составной товар с вариациями
       final List<Map<String, dynamic>> variations = [];
       for (int v = 0; v < volumes.length; v++) {
         final volume = volumes[v];
@@ -183,7 +191,7 @@ List<Map<String, dynamic>> buildRetailPayload({
 
         variations.add({
           'name': nameParts.join(' '),
-          'unit': stockUnit,
+          'unit': 'pcs',
           'purchase_price': 0.0,
           'purchasePrice': 0.0,
           'price': sell,
@@ -198,12 +206,12 @@ List<Map<String, dynamic>> buildRetailPayload({
       items.add({
         'name': baseName,
         'category_id': row.categoryId ?? targetCategoryId,
-        'unit': stockUnit,
+        'unit': 'pcs',
         'purchase_price': 0.0,
         'selling_price': firstSell,
         'initial_stock': 0.0,
         'min_stock_alert': 0.0,
-        'sort_order': sortIndex++,
+        'sort_order': 0,
         'attributes': {
           'icon': 'package',
           if (flavor.isNotEmpty) 'flavor': flavor,

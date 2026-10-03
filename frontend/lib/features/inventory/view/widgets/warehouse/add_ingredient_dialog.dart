@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 class AddIngredientDialog extends StatefulWidget {
   const AddIngredientDialog({super.key});
@@ -44,14 +45,9 @@ class _AddIngredientDialogState extends State<AddIngredientDialog> {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: selectedUnit,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Единица измерения'),
-              items: const [
-                DropdownMenuItem(value: 'pcs', child: Text('Штуки (шт)')),
-                DropdownMenuItem(value: 'g', child: Text('Граммы (г)')),
-                DropdownMenuItem(value: 'kg', child: Text('Килограммы (кг)')),
-                DropdownMenuItem(value: 'ml', child: Text('Миллилитры (мл)')),
-                DropdownMenuItem(value: 'l', child: Text('Литры (л)')),
-              ],
+              items: UnitFormatter.dropdownItems,
               onChanged: (val) {
                 if (val != null) {
                   setState(() {

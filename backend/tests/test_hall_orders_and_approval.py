@@ -122,3 +122,92 @@ async def test_hall_orders_approval_and_deferred_deduction(async_client: AsyncCl
     # Verify stock remains 9.40 (no deduction)
     await db_session.refresh(meat)
     assert round(meat.current_stock, 2) == 9.40
+
+
+@pytest.mark.asyncio
+async def test_table_dozakaz_auto_merge(async_client: AsyncClient, db_session):
+    """
+    Verifies that submitting a new order to an existing active table
+    correctly auto-merges items as a dozakaz without 500 / relation 'orders' does not exist error.
+    """
+    tenant = Tenant(name="Café Dozakaz", schema_name="public", is_active=True, use_kds=False, enable_inventory_deduction=True)
+    db_session.add(tenant)
+    await db_session.commit()
+    await db_session.refresh(tenant)
+
+    role = Role(name="Super Admin", is_superuser=True, tenant_id=tenant.id)
+    db_session.add(role)
+    await db_session.commit()
+    await db_session.refresh(role)
+
+    user = User(tenant_id=tenant.id, username="cashier_bob", full_name="Bob Cashier", hashed_password="hash", is_active=True)
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    db_session.add(UserRole(user_id=user.id, role_id=role.id))
+    await db_session.commit()
+
+    token = user_svc.create_access_token(
+        user_id=user.id,
+        tenant_id=tenant.id,
+        permissions=["shifts:open", "orders:create", "orders:view", "orders:edit", "orders:cancel", "inventory:view"],
+        is_superuser=True,
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+
+    shift = Shift(opened_by=user.id, opening_cash=1000.0, is_open=True)
+    db_session.add(shift)
+    await db_session.commit()
+    await db_session.refresh(shift)
+
+    cat = MenuCategory(name="Бар", icon="local_bar")
+    db_session.add(cat)
+    await db_session.commit()
+    await db_session.refresh(cat)
+
+    tea = MenuItem(category_id=cat.id, name="Чай черный", price=100.0, type="dish", is_available=True)
+    lemonade = MenuItem(category_id=cat.id, name="Лимонад", price=150.0, type="dish", is_available=True)
+    db_session.add_all([tea, lemonade])
+    await db_session.commit()
+    await db_session.refresh(tea)
+    await db_session.refresh(lemonade)
+
+    # 1. Initial dine-in order for VIP
+    first_order_payload = {
+        "items": [{"menu_item_id": tea.id, "quantity": 1}],
+        "payment_method": "cash",
+        "table_number": "VIP",
+        "order_source": "dine_in",
+    }
+    resp1 = await async_client.post("/api/v1/orders/", json=first_order_payload, headers=headers)
+    assert resp1.status_code == 201, resp1.text
+    first_data = resp1.json()
+    order_id = first_data["id"]
+    assert first_data["total"] == 100.0
+    assert len(first_data["items"]) == 1
+
+    # 2. Dozakaz for the SAME table (VIP) via POST /orders/
+    dozakaz_payload = {
+        "items": [{"menu_item_id": lemonade.id, "quantity": 2}],
+        "payment_method": "cash",
+        "table_number": "VIP",
+        "order_source": "dine_in",
+    }
+    resp2 = await async_client.post("/api/v1/orders/", json=dozakaz_payload, headers=headers)
+    assert resp2.status_code in (200, 201), resp2.text
+    second_data = resp2.json()
+    assert second_data["id"] == order_id
+    assert second_data["total"] == 400.0  # 100 + 2*150
+    assert len(second_data["items"]) == 2
+
+    # 3. Settle table order
+    settle_resp = await async_client.post(
+        f"/api/v1/orders/{order_id}/settle",
+        json={"payment_method": "cash"},
+        headers=headers,
+    )
+    assert settle_resp.status_code == 200, settle_resp.text
+    settle_data = settle_resp.json()
+    assert settle_data["status"] == OrderStatus.COMPLETED.value
+    assert settle_data["total"] == 400.0

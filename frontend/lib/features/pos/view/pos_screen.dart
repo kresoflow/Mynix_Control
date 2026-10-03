@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,6 +49,8 @@ class _PosScreenState extends State<PosScreen> {
   int _incomingCount = 0;
   int _activeTablesCount = 0;
   StreamSubscription? _wsSubscription;
+  Timer? _refreshTimer;
+  Timer? _ordersShiftTimer;
 
   @override
   void initState() {
@@ -63,8 +65,22 @@ class _PosScreenState extends State<PosScreen> {
     });
   }
 
+  void _debouncedRefreshCounts() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) _refreshCounts();
+    });
+  }
+
+  void _debouncedUpdateOrdersAndShift() {
+    _ordersShiftTimer?.cancel();
+    _ordersShiftTimer = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) _updateOrdersAndShift();
+    });
+  }
+
   void _initIncomingOrders() {
-    _refreshCounts();
+    _debouncedRefreshCounts();
     _wsSubscription = webSocketService.messages.listen((msg) {
       if (!mounted) return;
       final event = msg['event'];
@@ -72,7 +88,7 @@ class _PosScreenState extends State<PosScreen> {
       final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
 
       if (event == 'incoming_order') {
-        _refreshCounts();
+        _debouncedRefreshCounts();
         if (!isWaiter) {
           AudioHelper.playNewOrderSound();
           final order = msg['order'] ?? {};
@@ -82,7 +98,7 @@ class _PosScreenState extends State<PosScreen> {
           }
         }
       } else if (event == 'incoming_order_resolved') {
-        _refreshCounts();
+        _debouncedRefreshCounts();
         final order = msg['order'] ?? {};
         final orderNum = order['order_number'] ?? order['id'] ?? '';
         final status = order['status']?.toString().toUpperCase();
@@ -94,22 +110,22 @@ class _PosScreenState extends State<PosScreen> {
               AppToast.showSuccess(context, 'Заказ #$orderNum принят', subtitle: 'Кассир подтвердил заказ');
             }
           }
-          _updateOrdersAndShift();
+          _debouncedUpdateOrdersAndShift();
         }
       } else if (event == 'status_update') {
-        _refreshCounts();
+        _debouncedRefreshCounts();
         final orderId = msg['order_id'];
         final status = msg['status']?.toString().toUpperCase();
         if (mounted) {
           if (status == 'READY') {
             AppToast.showSuccess(context, 'Заказ готов к выдаче!', subtitle: 'Заказ #$orderId');
           }
-          _updateOrdersAndShift();
+          _debouncedUpdateOrdersAndShift();
         }
       } else if (event == 'new_order') {
-        _refreshCounts();
+        _debouncedRefreshCounts();
         if (mounted) {
-          _updateOrdersAndShift();
+          _debouncedUpdateOrdersAndShift();
         }
       }
     });
@@ -136,9 +152,10 @@ class _PosScreenState extends State<PosScreen> {
     } catch (_) {}
   }
 
-
   @override
   void dispose() {
+    _refreshTimer?.cancel();
+    _ordersShiftTimer?.cancel();
     _wsSubscription?.cancel();
     super.dispose();
   }

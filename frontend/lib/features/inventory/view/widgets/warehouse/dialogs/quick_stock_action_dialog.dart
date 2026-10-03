@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 
 class QuickStockActionDialog extends StatefulWidget {
@@ -69,15 +70,15 @@ class _QuickStockActionDialogState extends State<QuickStockActionDialog> {
             if (isRetail) 'retail_product_id': widget.item.id else 'ingredient_id': widget.item.id,
             'quantity': qty,
             'price_per_unit': widget.item.costPerUnit,
-          }
-        ]
+          },
+        ],
       };
 
       final doc = await repo.createDocument(docData);
       await repo.completeDocument(doc.id);
 
       if (mounted) {
-        context.read<IngredientBloc>().add(LoadIngredients());
+        context.read<IngredientBloc>().add(const LoadIngredients());
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -132,7 +133,7 @@ class _QuickStockActionDialogState extends State<QuickStockActionDialog> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Текущий остаток: ${widget.item.currentStock.toStringAsFixed(2)} ${widget.item.unit}',
+              'Текущий остаток: ${widget.item.currentStock.toStringAsFixed(2)} ${UnitFormatter.format(widget.item.unit)}',
               style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
@@ -141,7 +142,7 @@ class _QuickStockActionDialogState extends State<QuickStockActionDialog> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               autofocus: true,
               decoration: InputDecoration(
-                labelText: 'Количество (${widget.item.unit})',
+                labelText: 'Количество (${UnitFormatter.format(widget.item.unit)})',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.calculate),
               ),
