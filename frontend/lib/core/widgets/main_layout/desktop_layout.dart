@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -29,6 +29,7 @@ class _DesktopLayoutState extends State<DesktopLayout> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
       appBar: AppNavBar(
+        location: widget.location,
         onCashTap: () {
           final state = context.read<ShiftBloc>().state;
           if (state is ShiftOpen) {

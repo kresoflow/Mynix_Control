@@ -34,6 +34,7 @@ import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:kreso_frontend/features/orders/repository/orders_repository.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'package:kreso_frontend/features/crm/repository/crm_repository.dart';
 import 'package:kreso_frontend/features/crm/bloc/crm_bloc.dart';
 import 'package:kreso_frontend/features/settings/repository/settings_repository.dart';
@@ -118,6 +119,7 @@ class _KresoAppState extends State<KresoApp> {
   late final OrdersBloc _ordersBloc;
   late final CrmBloc _crmBloc;
   late final PosSettingsCubit _posSettingsCubit;
+  late final PosTabCubit _posTabCubit;
   late final PosSyncService _posSyncService;
   late final AppRouter _appRouter;
 
@@ -149,6 +151,7 @@ class _KresoAppState extends State<KresoApp> {
     _ordersBloc = OrdersBloc(repository: _ordersHistoryRepository);
     _crmBloc = CrmBloc(_crmRepository);
     _posSettingsCubit = PosSettingsCubit();
+    _posTabCubit = PosTabCubit(_orderRepository);
     _appRouter = AppRouter(_authBloc);
 
     // Automatically sync tenant feature flags and load shift status on login/startup
@@ -161,6 +164,7 @@ class _KresoAppState extends State<KresoApp> {
           ),
         );
         _shiftBloc.add(CheckCurrentShift());
+        _posTabCubit.refreshCounts();
       }
     });
   }
@@ -184,6 +188,7 @@ class _KresoAppState extends State<KresoApp> {
     _ordersBloc.close();
     _crmBloc.close();
     _posSettingsCubit.close();
+    _posTabCubit.close();
     webSocketService.dispose();
     super.dispose();
   }
@@ -219,6 +224,7 @@ class _KresoAppState extends State<KresoApp> {
           BlocProvider.value(value: _ordersBloc),
           BlocProvider.value(value: _crmBloc),
           BlocProvider.value(value: _posSettingsCubit),
+          BlocProvider.value(value: _posTabCubit),
         ],
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {

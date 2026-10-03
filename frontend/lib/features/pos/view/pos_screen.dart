@@ -1,24 +1,26 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Главный экран рабочего места кассира (PosScreen)
+// ДОМЕН: lib/features/pos/view/pos_screen.dart
+// ==============================================================================
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/utils/audio_helper.dart';
-import 'package:kreso_frontend/core/network/api_client.dart';
 import 'package:kreso_frontend/core/network/websocket_service.dart';
-
 
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_nav_cubit.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
-import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
@@ -33,8 +35,8 @@ import 'widgets/pos_mobile_layout.dart';
 import 'widgets/pos_desktop_layout.dart';
 import 'widgets/open_shift_modal.dart';
 import 'widgets/barcode_scanner_listener.dart';
-import 'widgets/dialogs/incoming_orders_dialog.dart';
-import 'widgets/tables/pos_active_tables_dialog.dart';
+
+// ── Главный экран кассы ───────────────────────────────────────────────────────
 
 class PosScreen extends StatefulWidget {
   const PosScreen({super.key});
@@ -44,10 +46,6 @@ class PosScreen extends StatefulWidget {
 }
 
 class _PosScreenState extends State<PosScreen> {
-  final OrderRepository _orderRepo = OrderRepository(apiClient.dio);
-  int _currentTab = 0; // 0: POS, 1: Orders, 2: KDS Kitchen
-  int _incomingCount = 0;
-  int _activeTablesCount = 0;
   StreamSubscription? _wsSubscription;
   Timer? _refreshTimer;
   Timer? _ordersShiftTimer;
@@ -61,6 +59,7 @@ class _PosScreenState extends State<PosScreen> {
       if (context.read<ShiftBloc>().state is ShiftInitial) {
         context.read<ShiftBloc>().add(CheckCurrentShift());
       }
+      context.read<PosTabCubit>().refreshCounts();
       _initIncomingOrders();
     });
   }
@@ -137,19 +136,13 @@ class _PosScreenState extends State<PosScreen> {
     final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
     context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
     context.read<ShiftBloc>().add(CheckCurrentShift());
+    _refreshCounts();
   }
 
-  Future<void> _refreshCounts() async {
-    try {
-      final pending = await _orderRepo.fetchPendingOrders();
-      final tables = await _orderRepo.fetchActiveTables();
-      if (mounted) {
-        setState(() {
-          _incomingCount = pending.length;
-          _activeTablesCount = tables.length;
-        });
-      }
-    } catch (_) {}
+  void _refreshCounts() {
+    if (mounted) {
+      context.read<PosTabCubit>().refreshCounts();
+    }
   }
 
   @override
@@ -162,13 +155,17 @@ class _PosScreenState extends State<PosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final settingsState = context.watch<SettingsBloc>().state;
     final useOrders = settingsState.useOrders;
     final useKds = settingsState.useKds;
+    final currentTab = context.watch<PosTabCubit>().state.currentTab;
 
-    if (_currentTab == 1 && !useOrders) _currentTab = 0;
-    if (_currentTab == 2 && !useKds) _currentTab = 0;
+    if (currentTab == 1 && !useOrders) {
+      context.read<PosTabCubit>().setTab(0);
+    }
+    if (currentTab == 2 && !useKds) {
+      context.read<PosTabCubit>().setTab(0);
+    }
 
     final isMobile = MediaQuery.of(context).size.width < 768;
 
@@ -218,185 +215,49 @@ class _PosScreenState extends State<PosScreen> {
       },
       child: BlocListener<ShiftBloc, ShiftState>(
         listener: (context, state) {
-        if (state is ShiftClosedSuccessfully) {
-          final diff = state.report['discrepancy'] ?? 0;
-          if (diff == 0) {
-            AppToast.showSuccess(context, 'Смена закрыта успешно', subtitle: 'Расхождений в кассе нет');
-          } else {
-            AppToast.showWarning(context, 'Смена закрыта', subtitle: 'Недостача/излишек: ${(diff as num).toCurrency(context)}');
+          if (state is ShiftClosedSuccessfully) {
+            final diff = state.report['discrepancy'] ?? 0;
+            if (diff == 0) {
+              AppToast.showSuccess(context, 'Смена закрыта успешно', subtitle: 'Расхождений в кассе нет');
+            } else {
+              AppToast.showWarning(context, 'Смена закрыта', subtitle: 'Недостача/излишек: ${(diff as num).toCurrency(context)}');
+            }
+          } else if (state is ShiftError) {
+            AppToast.showError(context, 'Ошибка смены', subtitle: state.message);
           }
-        } else if (state is ShiftError) {
-          AppToast.showError(context, 'Ошибка смены', subtitle: state.message);
-        }
-      },
-      child: BlocBuilder<ShiftBloc, ShiftState>(
-        builder: (context, state) {
-          if (state is ShiftLoading || state is ShiftInitial) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is ShiftClosed) {
-            return const OpenShiftModal();
-          }
-
-          final posBody = isMobile
-              ? const PosMobileLayout()
-              : Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                        border: Border(
-                          bottom: BorderSide(
-                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          AppSegmentedControl<int>(
-                            selectedValue: _currentTab,
-                            onValueChanged: (val) => setState(() => _currentTab = val),
-                            size: AppSegmentedSize.md,
-                            items: [
-                              const AppSegmentedItem(value: 0, label: 'Касса', icon: PhosphorIconsRegular.receipt),
-                              if (useOrders)
-                                const AppSegmentedItem(value: 1, label: 'Заказы', icon: PhosphorIconsRegular.listNumbers),
-                              if (useKds)
-                                const AppSegmentedItem(value: 2, label: 'Кухня (KDS)', icon: PhosphorIconsRegular.cookingPot),
-                            ],
-                          ),
-                          const Spacer(),
-                          _buildActiveTablesBadge(isDark),
-                          const SizedBox(width: 8),
-                          _buildIncomingOrdersBadge(isDark),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: IndexedStack(
-                        index: _currentTab,
-                        children: [
-                          const PosDesktopLayout(),
-                          if (useOrders) const OrdersScreen() else const SizedBox.shrink(),
-                          if (useKds) const KitchenScreen() else const SizedBox.shrink(),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-
-          return BlocProvider(
-            create: (context) => PosNavCubit(),
-            child: BarcodeScannerListener(
-              onBarcodeScanned: (barcode) => _handleBarcode(context, barcode),
-              child: posBody,
-            ),
-          );
         },
-      ),
-    ),
-  );
-  }
+        child: BlocBuilder<ShiftBloc, ShiftState>(
+          builder: (context, state) {
+            if (state is ShiftLoading || state is ShiftInitial) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is ShiftClosed) {
+              return const OpenShiftModal();
+            }
 
-  Widget _buildActiveTablesBadge(bool isDark) {
-    final hasTables = _activeTablesCount > 0;
-    final primary = AppColors.brandPrimary;
-    final bg = hasTables
-        ? primary.withValues(alpha: isDark ? 0.16 : 0.12)
-        : (isDark ? AppColors.darkCard : AppColors.lightCard);
-    final borderColor = hasTables
-        ? primary.withValues(alpha: isDark ? 0.5 : 0.6)
-        : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
-    final iconColor = hasTables ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+            final posBody = isMobile
+                ? const PosMobileLayout()
+                : IndexedStack(
+                    index: currentTab,
+                    children: [
+                      const PosDesktopLayout(),
+                      if (useOrders) const OrdersScreen() else const SizedBox.shrink(),
+                      if (useKds) const KitchenScreen() else const SizedBox.shrink(),
+                    ],
+                  );
 
-    return Tooltip(
-      message: 'Активные столики зала ($_activeTablesCount)',
-      child: InkWell(
-        onTap: () => PosActiveTablesDialog.show(context).then((_) => _refreshCounts()),
-        borderRadius: BorderRadius.circular(10),
-        child: Badge(
-          isLabelVisible: hasTables,
-          backgroundColor: primary,
-          textColor: Colors.white,
-          label: Text(
-            '$_activeTablesCount',
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-          ),
-          offset: const Offset(3, -3),
-          child: Container(
-            width: 38,
-            height: 38,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: borderColor, width: 1.2),
-            ),
-            child: Icon(
-              hasTables ? PhosphorIconsBold.chair : PhosphorIconsRegular.chair,
-              size: 18,
-              color: iconColor,
-            ),
-          ),
+            return BlocProvider(
+              create: (context) => PosNavCubit(),
+              child: BarcodeScannerListener(
+                onBarcodeScanned: (barcode) => _handleBarcode(context, barcode),
+                child: posBody,
+              ),
+            );
+          },
         ),
       ),
     );
   }
-
-  Widget _buildIncomingOrdersBadge(bool isDark) {
-    final authState = context.watch<AuthBloc>().state;
-    final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
-    final hasPending = _incomingCount > 0;
-    final badgeColor = isWaiter ? AppColors.brandPrimary : AppColors.warning;
-    final tooltipLabel = isWaiter ? 'Мои заказы с зала ($_incomingCount)' : 'Входящие заказы с зала ($_incomingCount)';
-    final icon = isWaiter
-        ? (hasPending ? PhosphorIconsBold.receipt : PhosphorIconsRegular.receipt)
-        : (hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell);
-
-    final bg = hasPending
-        ? badgeColor.withValues(alpha: isDark ? 0.16 : 0.12)
-        : (isDark ? AppColors.darkCard : AppColors.lightCard);
-    final borderColor = hasPending
-        ? badgeColor.withValues(alpha: isDark ? 0.5 : 0.6)
-        : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
-    final iconColor = hasPending ? badgeColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
-
-    return Tooltip(
-      message: tooltipLabel,
-      child: InkWell(
-        onTap: () => IncomingOrdersDialog.show(context).then((_) => _refreshCounts()),
-        borderRadius: BorderRadius.circular(10),
-        child: Badge(
-          isLabelVisible: hasPending,
-          backgroundColor: badgeColor,
-          textColor: Colors.white,
-          label: Text(
-            '$_incomingCount',
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-          ),
-          offset: const Offset(3, -3),
-          child: Container(
-            width: 38,
-            height: 38,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: borderColor, width: 1.2),
-            ),
-            child: Icon(
-              icon,
-              size: 18,
-              color: iconColor,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
 
   void _handleBarcode(BuildContext context, String barcode) {
     final menuState = context.read<MenuBloc>().state;
