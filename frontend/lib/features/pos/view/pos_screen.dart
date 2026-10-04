@@ -54,8 +54,12 @@ class _PosScreenState extends State<PosScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MenuBloc>().add(LoadMenu());
-      context.read<CategoryBloc>().add(LoadCategories());
+      if (context.read<MenuBloc>().state is! MenuLoaded) {
+        context.read<MenuBloc>().add(LoadMenu());
+      }
+      if (context.read<CategoryBloc>().state is! CategoryLoaded) {
+        context.read<CategoryBloc>().add(LoadCategories());
+      }
       if (context.read<ShiftBloc>().state is ShiftInitial) {
         context.read<ShiftBloc>().add(CheckCurrentShift());
       }
@@ -79,7 +83,6 @@ class _PosScreenState extends State<PosScreen> {
   }
 
   void _initIncomingOrders() {
-    _debouncedRefreshCounts();
     _wsSubscription = webSocketService.messages.listen((msg) {
       if (!mounted) return;
       final event = msg['event'];

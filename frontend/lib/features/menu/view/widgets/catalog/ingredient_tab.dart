@@ -108,200 +108,222 @@ class _IngredientTabState extends State<IngredientTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Clean Header Row matching RecipeTab ─────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Сырье и заготовки',
-                style: AppTextStyles.h2,
-              ),
-              Row(
-                children: [
-                  if (_isManageMode) ...[
-                    Builder(
-                      builder: (context) {
-                        final raw = ingState is IngredientLoaded
-                            ? ingState.ingredients.where((i) => !i.isRetail && (_showArchived ? i.isArchived : !i.isArchived)).toList()
-                            : [];
-                        final filtered = _selectedCategoryId == null
-                            ? raw
-                            : raw.where((i) => i.categoryId == _selectedCategoryId).toList();
-                        final isAllSelected = filtered.isNotEmpty && _selectedIngredients.length == filtered.length;
-                        final IconData badgeIcon = _selectedIngredients.isEmpty
-                            ? PhosphorIconsRegular.square
-                            : (isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.minusSquare);
-                        final Color badgeColor = _selectedIngredients.isNotEmpty
-                            ? (_showArchived ? AppColors.brandPrimary : AppColors.danger)
-                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+          LayoutBuilder(
+            builder: (context, headerConstraints) {
+              final isNarrow = headerConstraints.maxWidth < 750;
+              final actionButtons = SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_isManageMode) ...[
+                      Builder(
+                        builder: (context) {
+                          final raw = ingState is IngredientLoaded
+                              ? ingState.ingredients.where((i) => !i.isRetail && (_showArchived ? i.isArchived : !i.isArchived)).toList()
+                              : [];
+                          final filtered = _selectedCategoryId == null
+                              ? raw
+                              : raw.where((i) => i.categoryId == _selectedCategoryId).toList();
+                          final isAllSelected = filtered.isNotEmpty && _selectedIngredients.length == filtered.length;
+                          final IconData badgeIcon = _selectedIngredients.isEmpty
+                              ? PhosphorIconsRegular.square
+                              : (isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.minusSquare);
+                          final Color badgeColor = _selectedIngredients.isNotEmpty
+                              ? (_showArchived ? AppColors.brandPrimary : AppColors.danger)
+                              : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
 
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              height: 38,
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: _selectedIngredients.isNotEmpty
-                                    ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: isDark ? 0.2 : 0.1)
-                                    : (isDark ? AppColors.darkCard : AppColors.lightCard),
-                                borderRadius: BorderRadius.circular(AppRadii.md),
-                                border: Border.all(
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                height: 38,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
                                   color: _selectedIngredients.isNotEmpty
-                                      ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: 0.4)
-                                      : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                                      ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: isDark ? 0.2 : 0.1)
+                                      : (isDark ? AppColors.darkCard : AppColors.lightCard),
+                                  borderRadius: BorderRadius.circular(AppRadii.md),
+                                  border: Border.all(
+                                    color: _selectedIngredients.isNotEmpty
+                                        ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: 0.4)
+                                        : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                                  ),
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      badgeIcon,
+                                      size: 16,
+                                      color: badgeColor,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Выбрано: ${_selectedIngredients.length}',
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: _selectedIngredients.isNotEmpty
+                                            ? badgeColor
+                                            : (isDark ? AppColors.darkText : AppColors.lightText),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              alignment: Alignment.center,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    badgeIcon,
-                                    size: 16,
-                                    color: badgeColor,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Выбрано: ${_selectedIngredients.length}',
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: _selectedIngredients.isNotEmpty
-                                          ? badgeColor
-                                          : (isDark ? AppColors.darkText : AppColors.lightText),
-                                    ),
-                                  ),
-                                ],
+                              const SizedBox(width: 8),
+                              AppSecondaryButton(
+                                label: isAllSelected ? 'Снять выделение' : 'Выбрать все',
+                                icon: isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.square,
+                                isSelected: isAllSelected,
+                                height: 38,
+                                size: AppButtonSize.md,
+                                onPressed: () {
+                                  if (isAllSelected) {
+                                    setState(() => _selectedIngredients.clear());
+                                  } else if (ingState is IngredientLoaded) {
+                                    _selectAll(ingState);
+                                  }
+                                },
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            AppSecondaryButton(
-                              label: isAllSelected ? 'Снять выделение' : 'Выбрать все',
-                              icon: isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.square,
-                              isSelected: isAllSelected,
-                              height: 38,
-                              size: AppButtonSize.md,
-                              onPressed: () {
-                                if (isAllSelected) {
-                                  setState(() => _selectedIngredients.clear());
-                                } else if (ingState is IngredientLoaded) {
-                                  _selectAll(ingState);
-                                }
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    if (_showArchived) ...[
-                      AppPrimaryButton(
-                        label: 'Восстановить (${_selectedIngredients.length})',
-                        icon: PhosphorIconsRegular.arrowCounterClockwise,
-                        height: 38,
-                        size: AppButtonSize.md,
-                        onPressed: _selectedIngredients.isEmpty ? null : _confirmRestoreSelected,
+                            ],
+                          );
+                        },
                       ),
                       const SizedBox(width: 8),
-                    ],
-                    AppDangerButton(
-                      label: _showArchived ? 'Удалить навсегда (${_selectedIngredients.length})' : 'Архивировать (${_selectedIngredients.length})',
-                      icon: _showArchived ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
-                      height: 38,
-                      size: AppButtonSize.md,
-                      onPressed: _selectedIngredients.isEmpty ? null : _confirmDeleteSelected,
-                    ),
-                    const SizedBox(width: 8),
-                    AppGhostButton(
-                      label: 'Отмена',
-                      icon: PhosphorIconsRegular.x,
-                      height: 38,
-                      size: AppButtonSize.md,
-                      onPressed: () => setState(() {
-                        _isManageMode = false;
-                        _selectedIngredients.clear();
-                      }),
-                    ),
-                  ] else ...[
-                    // Group 1: View Switcher (Grid / List)
-                    AppSegmentedControl<bool>(
-                      size: AppSegmentedSize.md,
-                      selectedValue: _isGridView,
-                      onValueChanged: (val) => setState(() => _isGridView = val),
-                      items: const [
-                        AppSegmentedItem(
-                          value: true,
-                          icon: PhosphorIconsRegular.squaresFour,
-                          tooltip: 'Сетка',
+                      if (_showArchived) ...[
+                        AppPrimaryButton(
+                          label: 'Восстановить (${_selectedIngredients.length})',
+                          icon: PhosphorIconsRegular.arrowCounterClockwise,
+                          height: 38,
+                          size: AppButtonSize.md,
+                          onPressed: _selectedIngredients.isEmpty ? null : _confirmRestoreSelected,
                         ),
-                        AppSegmentedItem(
-                          value: false,
-                          icon: PhosphorIconsRegular.listDashes,
-                          tooltip: 'Список',
-                        ),
+                        const SizedBox(width: 8),
                       ],
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Group 1.5: Archive Toggle with badge
-                    Badge(
-                      isLabelVisible: archivedCount > 0,
-                      label: Text('$archivedCount', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                      backgroundColor: AppColors.brandPrimary,
-                      offset: const Offset(4, -4),
-                      child: AppSecondaryButton(
-                        label: '',
-                        icon: PhosphorIconsRegular.archive,
-                        tooltip: _showArchived ? 'Скрыть архив' : (archivedCount > 0 ? 'Архив ($archivedCount)' : 'Архив'),
-                        isSelected: _showArchived,
+                      AppDangerButton(
+                        label: _showArchived ? 'Удалить навсегда (${_selectedIngredients.length})' : 'Архивировать (${_selectedIngredients.length})',
+                        icon: _showArchived ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
                         height: 38,
-                        width: 38,
+                        size: AppButtonSize.md,
+                        onPressed: _selectedIngredients.isEmpty ? null : _confirmDeleteSelected,
+                      ),
+                      const SizedBox(width: 8),
+                      AppGhostButton(
+                        label: 'Отмена',
+                        icon: PhosphorIconsRegular.x,
+                        height: 38,
                         size: AppButtonSize.md,
                         onPressed: () => setState(() {
-                          _showArchived = !_showArchived;
+                          _isManageMode = false;
                           _selectedIngredients.clear();
                         }),
                       ),
-                    ),
-                    const SizedBox(width: 8),
+                    ] else ...[
+                      // Group 1: View Switcher (Grid / List)
+                      AppSegmentedControl<bool>(
+                        size: AppSegmentedSize.md,
+                        selectedValue: _isGridView,
+                        onValueChanged: (val) => setState(() => _isGridView = val),
+                        items: const [
+                          AppSegmentedItem(
+                            value: true,
+                            icon: PhosphorIconsRegular.squaresFour,
+                            tooltip: 'Сетка',
+                          ),
+                          AppSegmentedItem(
+                            value: false,
+                            icon: PhosphorIconsRegular.listDashes,
+                            tooltip: 'Список',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
 
-                    // Group 2: Operations
-                    AppSecondaryButton(
-                      label: 'Выбрать',
-                      icon: PhosphorIconsRegular.checkSquareOffset,
-                      height: 38,
-                      size: AppButtonSize.md,
-                      onPressed: () => setState(() => _isManageMode = true),
-                    ),
-                    const SizedBox(width: 10),
+                      // Group 1.5: Archive Toggle with badge
+                      Badge(
+                        isLabelVisible: archivedCount > 0,
+                        label: Text('$archivedCount', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                        backgroundColor: AppColors.brandPrimary,
+                        offset: const Offset(4, -4),
+                        child: AppSecondaryButton(
+                          label: '',
+                          icon: PhosphorIconsRegular.archive,
+                          tooltip: _showArchived ? 'Скрыть архив' : (archivedCount > 0 ? 'Архив ($archivedCount)' : 'Архив'),
+                          isSelected: _showArchived,
+                          height: 38,
+                          width: 38,
+                          size: AppButtonSize.md,
+                          onPressed: () => setState(() {
+                            _showArchived = !_showArchived;
+                            _selectedIngredients.clear();
+                          }),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
 
-                    // Group 3: Main CTA Button
-                    AppMenuButton(
-                      label: 'Добавить',
-                      icon: PhosphorIconsRegular.plus,
-                      size: AppButtonSize.md,
-                      items: const [
-                        AppMenuItem(id: 'ingredient', label: 'Сырье / Ингредиент', icon: PhosphorIconsRegular.leaf),
-                        AppMenuItem(id: 'category', label: 'Категория сырья', icon: PhosphorIconsRegular.folderPlus),
-                        AppMenuDivider(),
-                        AppMenuItem(id: 'bulk_add', label: 'Массовый ввод', icon: PhosphorIconsRegular.table),
-                      ],
-                      onSelected: (val) {
-                        if (val == 'ingredient') {
-                          showAddIngredientDialog(context, initialCategoryId: _selectedCategoryId);
-                        } else if (val == 'category') {
-                          showAddCategoryDialog(context, currentCategoryId: _selectedCategoryId, type: 'ingredient');
-                        } else if (val == 'bulk_add') {
-                          showDialog(
-                            context: context,
-                            builder: (_) => BulkAddModal(initialTabIndex: 2, initialParentId: _selectedCategoryId),
-                          );
-                        }
-                      },
-                    ),
+                      // Group 2: Operations
+                      AppSecondaryButton(
+                        label: 'Выбрать',
+                        icon: PhosphorIconsRegular.checkSquareOffset,
+                        height: 38,
+                        size: AppButtonSize.md,
+                        onPressed: () => setState(() => _isManageMode = true),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // Group 3: Main CTA Button
+                      AppMenuButton(
+                        label: 'Добавить',
+                        icon: PhosphorIconsRegular.plus,
+                        size: AppButtonSize.md,
+                        items: const [
+                          AppMenuItem(id: 'ingredient', label: 'Сырье / Ингредиент', icon: PhosphorIconsRegular.leaf),
+                          AppMenuItem(id: 'category', label: 'Категория сырья', icon: PhosphorIconsRegular.folderPlus),
+                          AppMenuDivider(),
+                          AppMenuItem(id: 'bulk_add', label: 'Массовый ввод', icon: PhosphorIconsRegular.table),
+                        ],
+                        onSelected: (val) {
+                          if (val == 'ingredient') {
+                            showAddIngredientDialog(context, initialCategoryId: _selectedCategoryId);
+                          } else if (val == 'category') {
+                            showAddCategoryDialog(context, currentCategoryId: _selectedCategoryId, type: 'ingredient');
+                          } else if (val == 'bulk_add') {
+                            showDialog(
+                              context: context,
+                              builder: (_) => BulkAddModal(initialTabIndex: 2, initialParentId: _selectedCategoryId),
+                            );
+                          }
+                        },
+                      ),
+                    ],
                   ],
+                ),
+              );
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Сырье и заготовки', style: AppTextStyles.h2),
+                    const SizedBox(height: 10),
+                    actionButtons,
+                  ],
+                );
+              }
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Сырье и заготовки',
+                    style: AppTextStyles.h2,
+                  ),
+                  actionButtons,
                 ],
-              ),
-            ],
+              );
+            },
           ),
           const SizedBox(height: 16),
 
@@ -336,23 +358,27 @@ class _IngredientTabState extends State<IngredientTab> {
                                  (i.barcode != null && i.barcode!.toLowerCase().contains(q));
                         }).toList();
 
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ── Left Sidebar (270px) ──────────────────
-                            IngredientCategorySidebar(
-                              selectedCategoryId: _selectedCategoryId,
-                              isManageMode: _isManageMode,
-                              onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
-                              onSearchChanged: (q) => setState(() => _searchQuery = q),
-                            ),
-                            const SizedBox(width: 16),
+                        return LayoutBuilder(
+                          builder: (context, bodyConstraints) {
+                            final showSidebar = bodyConstraints.maxWidth >= 768;
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (showSidebar) ...[
+                                  IngredientCategorySidebar(
+                                    selectedCategoryId: _selectedCategoryId,
+                                    isManageMode: _isManageMode,
+                                    onCategorySelected: (id) => setState(() => _selectedCategoryId = id),
+                                    onSearchChanged: (q) => setState(() => _searchQuery = q),
+                                  ),
+                                  const SizedBox(width: 16),
+                                ],
 
-                            // ── Right Workspace (Expanded) ────────────
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+                                // ── Right Workspace (Expanded) ────────────
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
                                   // 3 KPI Cards Row (matching Recipe Tab)
                                   IngredientKpiCards(ingredients: state.ingredients),
                                   const SizedBox(height: 14),
@@ -435,6 +461,8 @@ class _IngredientTabState extends State<IngredientTab> {
                             ),
                           ],
                         );
+                      },
+                    );
                       } else if (state is IngredientError) {
                         return Center(
                           child: Column(

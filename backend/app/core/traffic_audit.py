@@ -1,5 +1,5 @@
 # ==============================================================================
-# МОДУЛЬ: Аудит трафика, детекция бесконечных циклов и медленных запросов
+# МОДУЛЬ: Аудит трафика, детекция дублей, бесконечных циклов и задержек
 # ДОМЕН: app/core/traffic_audit.py
 # ==============================================================================
 
@@ -15,50 +15,58 @@ audit_logger = logging.getLogger("traffic_audit")
 # ── 1. Пороги детекции аномалий ───────────────────────────────────────────────
 
 SLIDING_WINDOW_SECONDS = 1.0
-BURST_THRESHOLD_RPS = 10       # Более 10 запросов в секунду на 1 эндпоинт от одного клиента
-SLOW_REQUEST_THRESHOLD_MS = 350 # Запросы дольше 350мс фиксируются как медленные
+DUPLICATE_WINDOW_SECONDS = 0.5   # Скользящее окно для выявления дублирующих вызовов
+BURST_THRESHOLD_RPS = 8          # Более 8 запросов в секунду на 1 эндпоинт
+SLOW_REQUEST_THRESHOLD_MS = 350  # Запросы дольше 350мс фиксируются как медленные
 
 # ── 2. Middleware аудита и мониторинга запросов ────────────────────────────────
 
 class TrafficAuditMiddleware(BaseHTTPMiddleware):
     """
     Анализирует входящий поток HTTP-запросов в реальном времени:
-    1. Детектирует зацикливания фронтенда (DDoS, забытые Timer.periodic, частый поллинг).
-    2. Фиксирует медленные ответы БД и блокировки транзакций (>350ms).
-    3. Записывает аномалии в logs/traffic_audit.log и logs/backend.log.
+    1. Детектирует дублирующие вызовы UI (Double/Triple Fetch в пределах 500мс).
+    2. Детектирует зацикливания фронтенда (DDoS, забытые Timer.periodic, частый поллинг).
+    3. Фиксирует медленные ответы БД и блокировки транзакций (>350ms).
+    4. Записывает полный аудит в logs/backend.log и аномалии в logs/traffic_audit.log.
     """
 
     def __init__(self, app):
         super().__init__(app)
-        # Хранилище временных меток запросов: key -> deque([t1, t2, ...])
         self._request_history: dict[str, deque[float]] = defaultdict(deque)
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Пропускаем WebSocket рукопожатия и статику
         if request.scope.get("type") == "websocket" or request.url.path.startswith("/docs"):
             return await call_next(request)
 
         client_ip = request.client.host if request.client else "unknown"
         path = request.url.path
         method = request.method
+        query_str = str(request.url.query) if request.url.query else ""
         now = time.time()
 
-        # ── Проверка на шторм запросов (Hot Loop / Burst) ─────────────────────
-        endpoint_key = f"{client_ip}:{method}:{path}"
+        # ── Проверка на дубли и штормы запросов ───────────────────────────────
+        endpoint_key = f"{client_ip}:{method}:{path}?{query_str}"
         history = self._request_history[endpoint_key]
 
-        # Очищаем устаревшие метки за пределами скользящего окна
         while history and (now - history[0] > SLIDING_WINDOW_SECONDS):
             history.popleft()
 
         history.append(now)
         request_count = len(history)
 
+        # Подсчет вызовов за последние 500мс (типичный UI duplicate-fetch)
+        recent_duplicates = sum(1 for t in history if (now - t) <= DUPLICATE_WINDOW_SECONDS)
+        if recent_duplicates >= 2:
+            audit_logger.warning(
+                f"[DUPLICATE-FETCH-DETECTED] Repeated call {recent_duplicates}x in 500ms: "
+                f"{method} {path}{'?' + query_str if query_str else ''} from {client_ip}. "
+                "Suspected uncoordinated BLoC initialization or missing debounce."
+            )
+
         if request_count >= BURST_THRESHOLD_RPS:
-            # Логируем только при превышении порога, чтобы не спамить
             audit_logger.warning(
                 f"[HOT-LOOP-DETECTED] High frequency: {request_count} req/sec on {method} {path} "
-                f"from {client_ip}! Suspected frontend loop, unbounced watcher or DDoS."
+                f"from {client_ip}! Suspected frontend loop or DDoS."
             )
 
         # ── Замер времени выполнения запроса ──────────────────────────────────
@@ -74,7 +82,12 @@ class TrafficAuditMiddleware(BaseHTTPMiddleware):
 
         duration_ms = (time.perf_counter() - start_time) * 1000.0
 
-        # ── Анализ задержки и кодов ответа ────────────────────────────────────
+        # ── Логирование каждого запроса и аномалий ────────────────────────────
+        audit_logger.info(
+            f"[HTTP] {method} {path}{'?' + query_str if query_str else ''} "
+            f"-> {response.status_code} ({duration_ms:.1f}ms)"
+        )
+
         if duration_ms >= SLOW_REQUEST_THRESHOLD_MS:
             audit_logger.warning(
                 f"[SLOW-REQUEST] {duration_ms:.1f}ms on {method} {path} "

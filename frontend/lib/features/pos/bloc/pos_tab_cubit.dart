@@ -49,7 +49,11 @@ class PosTabCubit extends Cubit<PosTabState> {
     }
   }
 
+  bool _isRefreshing = false;
+
   Future<void> refreshCounts() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
     try {
       final pending = await _orderRepo.fetchPendingOrders();
       final tables = await _orderRepo.fetchActiveTables();
@@ -59,7 +63,10 @@ class PosTabCubit extends Cubit<PosTabState> {
           activeTablesCount: tables.length,
         ),
       );
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      _isRefreshing = false;
+    }
   }
 
   void updateCounts({int? incomingCount, int? activeTablesCount}) {

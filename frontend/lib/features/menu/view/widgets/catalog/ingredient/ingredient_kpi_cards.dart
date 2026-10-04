@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
@@ -27,38 +27,84 @@ class IngredientKpiCards extends StatelessWidget {
       }
     }
 
-    return Row(
-      children: [
-        Expanded(
-          child: _buildMetricCard(
-            title: 'Всего сырья',
-            value: '$totalCount поз.',
-            icon: PhosphorIconsRegular.package,
-            color: AppColors.brandPrimary,
-            isDark: isDark,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildMetricCard(
-            title: alertCount > 0 ? 'Требуют закупки' : 'Контроль запасов',
-            value: alertCount > 0 ? '$alertCount на исходе' : 'В норме',
-            icon: alertCount > 0 ? PhosphorIconsRegular.warningCircle : PhosphorIconsRegular.checkCircle,
-            color: alertCount > 0 ? AppColors.danger : AppColors.success,
-            isDark: isDark,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildMetricCard(
-            title: 'Себестоимость запасов',
-            value: totalCost.toCurrency(context),
-            icon: PhosphorIconsRegular.coins,
-            color: AppColors.success,
-            isDark: isDark,
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 220,
+                  child: _buildMetricCard(
+                    title: 'Всего сырья',
+                    value: '$totalCount поз.',
+                    icon: PhosphorIconsRegular.package,
+                    color: AppColors.brandPrimary,
+                    isDark: isDark,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 220,
+                  child: _buildMetricCard(
+                    title: alertCount > 0 ? 'Требуют закупки' : 'Контроль запасов',
+                    value: alertCount > 0 ? '$alertCount на исходе' : 'В норме',
+                    icon: alertCount > 0 ? PhosphorIconsRegular.warningCircle : PhosphorIconsRegular.checkCircle,
+                    color: alertCount > 0 ? AppColors.danger : AppColors.success,
+                    isDark: isDark,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 220,
+                  child: _buildMetricCard(
+                    title: 'Себестоимость запасов',
+                    value: totalCost.toCurrency(context),
+                    icon: PhosphorIconsRegular.coins,
+                    color: AppColors.success,
+                    isDark: isDark,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(
+              child: _buildMetricCard(
+                title: 'Всего сырья',
+                value: '$totalCount поз.',
+                icon: PhosphorIconsRegular.package,
+                color: AppColors.brandPrimary,
+                isDark: isDark,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildMetricCard(
+                title: alertCount > 0 ? 'Требуют закупки' : 'Контроль запасов',
+                value: alertCount > 0 ? '$alertCount на исходе' : 'В норме',
+                icon: alertCount > 0 ? PhosphorIconsRegular.warningCircle : PhosphorIconsRegular.checkCircle,
+                color: alertCount > 0 ? AppColors.danger : AppColors.success,
+                isDark: isDark,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildMetricCard(
+                title: 'Себестоимость запасов',
+                value: totalCost.toCurrency(context),
+                icon: PhosphorIconsRegular.coins,
+                color: AppColors.success,
+                isDark: isDark,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
