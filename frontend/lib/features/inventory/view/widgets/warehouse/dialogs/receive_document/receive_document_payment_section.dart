@@ -212,49 +212,51 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
   }
 
   Widget _buildPartialAmountField() {
-    return SizedBox(
+    return Container(
       width: 120,
       height: 32,
-      child: TextField(
-        controller: paidAmountController,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        style: AppTextStyles.bodyMedium.copyWith(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: isDark ? AppColors.darkText : AppColors.lightText,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
-        decoration: InputDecoration(
-          hintText: 'Сумма',
-          suffixText: 'с',
-          suffixStyle: AppTextStyles.caption.copyWith(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-          filled: true,
-          fillColor: isDark ? AppColors.darkSurface : AppColors.lightBg,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+      ),
+      alignment: Alignment.center,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: paidAmountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Сумма',
+                hintStyle: AppTextStyles.caption.copyWith(
+                  fontSize: 12,
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          Text(
+            'с',
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
             ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: AppColors.brandPrimary,
-              width: 1.5,
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }

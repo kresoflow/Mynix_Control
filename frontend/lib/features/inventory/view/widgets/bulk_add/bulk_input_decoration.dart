@@ -30,11 +30,21 @@ InputDecoration buildBulkInputDecoration(
     fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide.none,
+      borderSide: isHintOnly
+          ? BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.35),
+              width: 1,
+            )
+          : BorderSide.none,
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide.none,
+      borderSide: isHintOnly
+          ? BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.35),
+              width: 1,
+            )
+          : BorderSide.none,
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),

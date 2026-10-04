@@ -36,6 +36,9 @@ class ReceiveDocumentUnitCell extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.35),
+        ),
       ),
       alignment: Alignment.center,
       child: DropdownButtonHideUnderline(

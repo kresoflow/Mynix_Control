@@ -90,20 +90,18 @@ class ReceiveDocumentFooter extends StatelessWidget {
           const SizedBox(width: 14),
 
           // 2. Блок условий оплаты
-          Flexible(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ReceiveDocumentPaymentSection(
-                isDark: isDark,
-                paymentStatus: paymentStatus,
-                paymentMethod: paymentMethod,
-                paidAmountController: paidAmountController,
-                onPaymentStatusChanged: onPaymentStatusChanged,
-                onPaymentMethodChanged: onPaymentMethodChanged,
-              ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: ReceiveDocumentPaymentSection(
+              isDark: isDark,
+              paymentStatus: paymentStatus,
+              paymentMethod: paymentMethod,
+              paidAmountController: paidAmountController,
+              onPaymentStatusChanged: onPaymentStatusChanged,
+              onPaymentMethodChanged: onPaymentMethodChanged,
             ),
           ),
-          const SizedBox(width: 12),
+          const Spacer(),
 
           // 3. Кнопки действий
           AppButton.ghost(
