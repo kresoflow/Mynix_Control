@@ -19,7 +19,7 @@ class ReceiveDocumentProcessor {
     required String invoiceNumber,
     required String reason,
     required int tabIndex,
-    required int? categoryId,
+    int? categoryId,
     required bool complete,
     DateTime? documentDate,
     String paymentStatus = 'unpaid',

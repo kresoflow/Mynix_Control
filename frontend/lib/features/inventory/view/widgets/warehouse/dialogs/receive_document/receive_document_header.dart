@@ -1,35 +1,55 @@
-﻿import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
+// ==============================================================================
+// ВИДЖЕТ: Шапка модального окна оприходования товара (Receive Document Header)
+// ДОМЕН: features/inventory/view/widgets/warehouse/dialogs/receive_document/
+// ==============================================================================
 
+import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
 
 class ReceiveDocumentHeader extends StatelessWidget {
   final VoidCallback onClose;
-  
+
   const ReceiveDocumentHeader({super.key, required this.onClose});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: const EdgeInsets.all(24),
-      color: Theme.of(context).colorScheme.surface,
+      padding: const EdgeInsets.fromLTRB(28, 20, 20, 0),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+              gradient: AppColors.brandGradient,
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(PhosphorIconsRegular.truck, color: AppColors.info, size: 28),
+            child: Icon(
+              PhosphorIconsRegular.truck,
+              color: AppColors.lightSurface,
+              size: 20,
+            ),
           ),
-          const SizedBox(width: 16),
-          Text('Новая Приходная Накладная', style: AppTextStyles.h2),
+          const SizedBox(width: 12),
+          Text(
+            'Новая Приходная Накладная',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: isDark ? AppColors.darkText : AppColors.lightText,
+            ),
+          ),
           const Spacer(),
           IconButton(
-            icon: const Icon(PhosphorIconsRegular.x),
+            icon: Icon(
+              PhosphorIconsRegular.x,
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            ),
             onPressed: onClose,
+            tooltip: 'Закрыть',
           ),
         ],
       ),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -103,19 +103,6 @@ class ReceiveDocumentTableSection extends StatelessWidget {
                 if (n != null) items[i].sellPrice = n;
               },
               onRemove: onRemoveItem,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-            child: Row(
-              children: [
-                AppButton.ghost(
-                  label: 'Добавить строку (Enter)',
-                  icon: PhosphorIconsRegular.plus,
-                  height: 36,
-                  onPressed: onAddItem,
-                ),
-              ],
             ),
           ),
         ],

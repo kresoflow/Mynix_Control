@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -122,7 +122,7 @@ class ReceiveDocumentFooter extends StatelessWidget {
           const SizedBox(width: 8),
           AppButton.primary(
             label: 'Провести (Ctrl+S)',
-            customColor: AppColors.success,
+            icon: PhosphorIconsRegular.checkCircle,
             height: 38,
             isLoading: isSaving,
             onPressed: isSaving ? null : onSaveComplete,

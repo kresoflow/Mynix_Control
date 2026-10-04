@@ -12,6 +12,7 @@ import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'receive_document/receipt_row_data.dart';
 import 'receive_document/receive_document_footer.dart';
 import 'receive_document/receive_document_header.dart';
+import 'receive_document/receive_document_tabs_bar.dart';
 import 'receive_document/receive_document_meta_section.dart';
 import 'receive_document/receive_document_processor.dart';
 import 'receive_document/receive_document_row_callbacks.dart';
@@ -35,8 +36,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   String _paymentStatus = 'unpaid';
   String _paymentMethod = 'cash';
   int _tabIndex = 1; // 1 = Товары витрины, 2 = Сырье
-  int? _selectedParentId;
-  int? _selectedChildId;
 
   final List<ReceiptRowData> _items = [];
   List<Ingredient> _availableIngredients = [];
@@ -154,7 +153,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
         reason: _reasonController.text,
         documentDate: _documentDate,
         tabIndex: _tabIndex,
-        categoryId: _selectedChildId ?? _selectedParentId,
         paymentStatus: _paymentStatus,
         paidAmount: paidAmt,
         paymentMethod: _paymentMethod,
@@ -214,6 +212,13 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                   Column(
                     children: [
                       ReceiveDocumentHeader(onClose: () => Navigator.of(context).maybePop()),
+                      const SizedBox(height: 14),
+                      ReceiveDocumentTabsBar(
+                        tabIndex: _tabIndex,
+                        onTabSelected: (val) => setState(() => _tabIndex = val),
+                        onAddRow: _addItem,
+                      ),
+                      const SizedBox(height: 6),
                       ReceiveDocumentMetaSection(
                         selectedSupplierId: _selectedSupplierId,
                         onSupplierChanged: (val) => setState(() => _selectedSupplierId = val),
@@ -221,15 +226,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                         reasonController: _reasonController,
                         documentDate: _documentDate,
                         onDateChanged: (val) => setState(() => _documentDate = val),
-                        tabIndex: _tabIndex,
-                        onTabChanged: (val) => setState(() => _tabIndex = val),
-                        selectedParentId: _selectedParentId,
-                        selectedChildId: _selectedChildId,
-                        onParentChanged: (val) => setState(() {
-                          _selectedParentId = val;
-                          _selectedChildId = null;
-                        }),
-                        onChildChanged: (val) => setState(() => _selectedChildId = val),
                         isAdHocPurchase: _isAdHocPurchase,
                         onAdHocChanged: (val) => setState(() => _isAdHocPurchase = val),
                       ),

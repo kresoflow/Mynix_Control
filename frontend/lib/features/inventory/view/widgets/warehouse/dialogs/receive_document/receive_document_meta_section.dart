@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
@@ -13,12 +13,6 @@ class ReceiveDocumentMetaSection extends StatelessWidget {
   final TextEditingController reasonController;
   final DateTime documentDate;
   final ValueChanged<DateTime> onDateChanged;
-  final int tabIndex;
-  final ValueChanged<int> onTabChanged;
-  final int? selectedParentId;
-  final int? selectedChildId;
-  final ValueChanged<int?> onParentChanged;
-  final ValueChanged<int?> onChildChanged;
   final bool isAdHocPurchase;
   final ValueChanged<bool> onAdHocChanged;
 
@@ -30,12 +24,6 @@ class ReceiveDocumentMetaSection extends StatelessWidget {
     required this.reasonController,
     required this.documentDate,
     required this.onDateChanged,
-    required this.tabIndex,
-    required this.onTabChanged,
-    required this.selectedParentId,
-    required this.selectedChildId,
-    required this.onParentChanged,
-    required this.onChildChanged,
     required this.isAdHocPurchase,
     required this.onAdHocChanged,
   });
@@ -63,12 +51,6 @@ class ReceiveDocumentMetaSection extends StatelessWidget {
           reasonController: reasonController,
           documentDate: documentDate,
           onDateChanged: onDateChanged,
-          tabIndex: tabIndex,
-          onTabChanged: onTabChanged,
-          selectedParentId: selectedParentId,
-          selectedChildId: selectedChildId,
-          onParentChanged: onParentChanged,
-          onChildChanged: onChildChanged,
           isAdHocPurchase: isAdHocPurchase,
           onAdHocChanged: onAdHocChanged,
         );

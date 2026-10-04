@@ -4,7 +4,6 @@ import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_date_time_picker.dart';
-import 'receive_document_smart_header.dart';
 import 'receive_document_supplier_select.dart';
 
 class ReceiveDocumentMetaRow extends StatelessWidget {
@@ -16,12 +15,6 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
   final TextEditingController reasonController;
   final DateTime documentDate;
   final ValueChanged<DateTime> onDateChanged;
-  final int tabIndex;
-  final ValueChanged<int> onTabChanged;
-  final int? selectedParentId;
-  final int? selectedChildId;
-  final ValueChanged<int?> onParentChanged;
-  final ValueChanged<int?> onChildChanged;
   final bool isAdHocPurchase;
   final ValueChanged<bool>? onAdHocChanged;
 
@@ -35,12 +28,6 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
     required this.reasonController,
     required this.documentDate,
     required this.onDateChanged,
-    required this.tabIndex,
-    required this.onTabChanged,
-    required this.selectedParentId,
-    required this.selectedChildId,
-    required this.onParentChanged,
-    required this.onChildChanged,
     this.isAdHocPurchase = false,
     this.onAdHocChanged,
   });
@@ -76,110 +63,111 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
     final dateStr = '${documentDate.day.toString().padLeft(2, '0')}.${documentDate.month.toString().padLeft(2, '0')}.${documentDate.year}, $timeStr';
 
     return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // 1. Поставщик
-              Expanded(
-                flex: 3,
-                child: ReceiveDocumentSupplierSelect(
-                  suppliers: suppliers,
-                  selectedSupplierId: selectedSupplierId,
-                  onSupplierChanged: onSupplierChanged,
-                  onAdHocChanged: onAdHocChanged,
-                  onAddSupplier: onAddSupplier,
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // 2. Номер накладной
-              Expanded(
-                flex: 2,
-                child: SizedBox(
-                  height: 46,
-                  child: TextField(
-                    controller: invoiceController,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
-                    decoration: _buildInputDecoration(context, 'Номер накладной', PhosphorIconsRegular.hash, isDark),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : AppColors.lightBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // 1. Поставщик
+                Expanded(
+                  flex: 3,
+                  child: ReceiveDocumentSupplierSelect(
+                    suppliers: suppliers,
+                    selectedSupplierId: selectedSupplierId,
+                    onSupplierChanged: onSupplierChanged,
+                    onAdHocChanged: onAdHocChanged,
+                    onAddSupplier: onAddSupplier,
+                    isDark: isDark,
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
 
-              // 3. Дата и время документа (AppDateTimePicker)
-              Expanded(
-                flex: 3,
-                child: SizedBox(
-                  height: 46,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(10),
-                    onTap: () async {
-                      final picked = await showAppDateTimePicker(
-                        context,
-                        initialDateTime: documentDate,
-                      );
-                      if (picked != null) {
-                        onDateChanged(picked);
-                      }
-                    },
-                    child: InputDecorator(
-                      decoration: _buildInputDecoration(context, 'Дата и время', PhosphorIconsRegular.calendarBlank, isDark),
-                      child: Text(
-                        dateStr,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: isDark ? AppColors.darkText : AppColors.lightText,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                // 2. Номер накладной
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: 46,
+                    child: TextField(
+                      controller: invoiceController,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                      decoration: _buildInputDecoration(context, 'Номер накладной', PhosphorIconsRegular.hash, isDark),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // 3. Дата и время документа
+                Expanded(
+                  flex: 3,
+                  child: SizedBox(
+                    height: 46,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () async {
+                        final picked = await showAppDateTimePicker(
+                          context,
+                          initialDateTime: documentDate,
+                        );
+                        if (picked != null) {
+                          onDateChanged(picked);
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: _buildInputDecoration(context, 'Дата и время', PhosphorIconsRegular.calendarBlank, isDark),
+                        child: Text(
+                          dateStr,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: isDark ? AppColors.darkText : AppColors.lightText,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
 
-              // 4. Комментарий
-              Expanded(
-                flex: 3,
-                child: SizedBox(
-                  height: 46,
-                  child: TextField(
-                    controller: reasonController,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
+                // 4. Комментарий
+                Expanded(
+                  flex: 3,
+                  child: SizedBox(
+                    height: 46,
+                    child: TextField(
+                      controller: reasonController,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                      decoration: _buildInputDecoration(context, 'Комментарий', PhosphorIconsRegular.textAa, isDark),
                     ),
-                    decoration: _buildInputDecoration(context, 'Комментарий', PhosphorIconsRegular.textAa, isDark),
                   ),
+                ),
+              ],
+            ),
+            if (isAdHocPurchase) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonController,
+                decoration: _buildInputDecoration(context, 'Откуда закупка? (базар, продавец, место)', PhosphorIconsRegular.mapPin, isDark),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
                 ),
               ),
             ],
-          ),
-          if (isAdHocPurchase) ...[
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              decoration: _buildInputDecoration(context, 'Откуда закупка? (базар, продавец, место)', PhosphorIconsRegular.mapPin, isDark),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: isDark ? AppColors.darkText : AppColors.lightText,
-              ),
-            ),
           ],
-          const SizedBox(height: 16),
-          ReceiveDocumentSmartHeader(
-            tabIndex: tabIndex,
-            onTabChanged: onTabChanged,
-            selectedParentId: selectedParentId,
-            selectedChildId: selectedChildId,
-            onParentChanged: onParentChanged,
-            onChildChanged: onChildChanged,
-          ),
-        ],
+        ),
       ),
     );
   }
