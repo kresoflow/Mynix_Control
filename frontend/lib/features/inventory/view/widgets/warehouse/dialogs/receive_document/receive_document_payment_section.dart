@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'receive_document_amount_field.dart';
 
 /// Секция выбора статуса оплаты (Постоплата / Оплачено / Частично)
 /// и способа оплаты (Наличные, Перевод, Расчетный счет).
@@ -107,7 +108,10 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
           // ── 5. Поле ввода суммы при частичной оплате ─────────────────
           if (paymentStatus == 'partial') ...[
             const SizedBox(width: 8),
-            _buildPartialAmountField(),
+            ReceiveDocumentAmountField(
+              controller: paidAmountController,
+              isDark: isDark,
+            ),
           ],
         ],
       ),
@@ -207,56 +211,6 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
             if (val != null) onPaymentMethodChanged(val);
           },
         ),
-      ),
-    );
-  }
-
-  Widget _buildPartialAmountField() {
-    return Container(
-      width: 120,
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightBg,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: TextField(
-              controller: paidAmountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.darkText : AppColors.lightText,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Сумма',
-                hintStyle: AppTextStyles.caption.copyWith(
-                  fontSize: 12,
-                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-          Text(
-            'с',
-            style: AppTextStyles.caption.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-            ),
-          ),
-        ],
       ),
     );
   }
