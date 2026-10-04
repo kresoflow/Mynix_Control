@@ -13,6 +13,7 @@ from pathlib import Path
 LOGS_DIR = Path(__file__).resolve().parent.parent.parent / "logs"
 BACKEND_LOG_FILE = LOGS_DIR / "backend.log"
 AUDIT_LOG_FILE = LOGS_DIR / "traffic_audit.log"
+FRONTEND_LOG_FILE = LOGS_DIR / "frontend_errors.log"
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -53,6 +54,16 @@ def setup_logging() -> None:
     audit_handler.setFormatter(formatter)
     audit_handler.setLevel(logging.WARNING)
 
+    # Файловый поток для клиентских ошибок фронтенда (RenderFlex overflow, UI crashes)
+    frontend_handler = RotatingFileHandler(
+        filename=FRONTEND_LOG_FILE,
+        maxBytes=10 * 1024 * 1024,  # 10 MB
+        backupCount=3,
+        encoding="utf-8",
+    )
+    frontend_handler.setFormatter(formatter)
+    frontend_handler.setLevel(logging.INFO)
+
     # Настройка корневого логгера
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
@@ -76,4 +87,13 @@ def setup_logging() -> None:
         audit_logger.addHandler(audit_handler)
         audit_logger.addHandler(file_handler)
 
-    logging.info(f"[LOGGING] Файловые потоки активны: {BACKEND_LOG_FILE}")
+    # Отдельный логгер для клиентских ошибок фронтенда
+    frontend_logger = logging.getLogger("frontend_client")
+    frontend_logger.setLevel(logging.INFO)
+    if not any(h == frontend_handler for h in frontend_logger.handlers):
+        frontend_logger.addHandler(frontend_handler)
+        frontend_logger.addHandler(console_handler)
+
+    logging.info(
+        f"[LOGGING] Файловые потоки активны: {BACKEND_LOG_FILE}, {AUDIT_LOG_FILE}, {FRONTEND_LOG_FILE}"
+    )

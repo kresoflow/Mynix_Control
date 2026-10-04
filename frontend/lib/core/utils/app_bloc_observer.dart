@@ -1,15 +1,21 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/core/network/client_error_reporter.dart';
 
 /// Global BLoC observer for exception capture, telemetry, and debugging.
 class AppBlocObserver extends BlocObserver {
   @override
   void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
-    // 🛠️ Local Debug: readable console formatting
+    // 🛠️ Local Debug: readable console formatting & unified log stream
     if (kDebugMode) {
       debugPrint('🚨 [BLoC Error] ${bloc.runtimeType}: $error');
+      ClientErrorReporter.reportBlocError(
+        blocName: bloc.runtimeType.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
 
     // 🛡️ Production Release: forward to Sentry & server Telegram bridge

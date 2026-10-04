@@ -1,33 +1,92 @@
-from pydantic import BaseModel
+# ==============================================================================
+# МОДУЛЬ: Интеграции и шлюз клиентских логов (Telegram, Sentry, Frontend Bridge)
+# ДОМЕН: app/system/integrations.py
+# ==============================================================================
+
+import logging
+from pydantic import BaseModel, Field
 from fastapi import APIRouter, Request, BackgroundTasks
+from app.config import settings
 from app.system.telegram_service import send_telegram_message, send_error_alert
 
 router = APIRouter(tags=["Integrations"])
 
+# ── 1. Модели данных клиентских ошибок ────────────────────────────────────────
 
 class ClientErrorPayload(BaseModel):
-    bloc: str
+    """
+    Модель сообщения об ошибке из Flutter UI (оверфлоу вёрстки, сбои BLoC, асинхронные ошибки).
+    """
     error: str
+    bloc: str | None = None
+    category: str = Field(default="CLIENT_ERROR", description="LAYOUT_OVERFLOW | ASYNC_ERROR | BLOC_ERROR")
+    component: str | None = None
     stack_trace: str | None = None
     tenant: str | None = None
+    url: str | None = None
 
+
+# ── 2. Эндпоинты приёма и чтения логов фронтенда ──────────────────────────────
 
 @router.post("/system/client-error")
 @router.post("/client-error")
+@router.post("/system/client-logs")
+@router.post("/client-logs")
 async def report_client_error(payload: ClientErrorPayload, background_tasks: BackgroundTasks):
     """
-    Secure proxy for frontend crashes (Flutter Web / Mobile).
-    Safely alerts Telegram without exposing bot tokens on the client.
+    [ИНВАРИАНТ] Принимает ошибки фронтенда и сохраняет их в `backend/logs/frontend_errors.log`.
+    Позволяет агенту и разработчику видеть оверфлоу вёрстки без ручного копирования из терминала.
     """
-    background_tasks.add_task(
-        send_error_alert,
-        title="Frontend App Crash",
-        error=f"[{payload.bloc}] {payload.error}",
-        method="UI",
-        path="Flutter Client",
-        tenant=payload.tenant,
-    )
-    return {"status": "received"}
+    frontend_logger = logging.getLogger("frontend_client")
+    tag = payload.category or "CLIENT_ERROR"
+    source = payload.component or payload.bloc or "FlutterClient"
+    log_msg = f"[{tag}] [{source}] {payload.error}"
+    if payload.url:
+        log_msg += f" (Route: {payload.url})"
+
+    frontend_logger.error(log_msg)
+    if payload.stack_trace:
+        frontend_logger.info(f"Stack trace for {source}:\n{payload.stack_trace}")
+
+    # В продакшене критичные сбои дублируются в Telegram
+    if not settings.debug and payload.category != "LAYOUT_OVERFLOW":
+        background_tasks.add_task(
+            send_error_alert,
+            title=f"Frontend Crash [{tag}]",
+            error=f"[{source}] {payload.error}",
+            method="UI",
+            path=payload.url or "Flutter Client",
+            tenant=payload.tenant,
+        )
+
+    return {"status": "recorded"}
+
+
+@router.get("/system/frontend-logs")
+@router.get("/frontend-logs")
+async def get_frontend_logs(lines: int = 100):
+    """
+    Возвращает последние строки клиентского лога для автономной диагностики агентом.
+    """
+    from app.core.logging_config import FRONTEND_LOG_FILE
+    if not FRONTEND_LOG_FILE.exists():
+        return {"lines": [], "file": str(FRONTEND_LOG_FILE)}
+    try:
+        with open(FRONTEND_LOG_FILE, "r", encoding="utf-8", errors="replace") as f:
+            all_lines = f.readlines()
+            return {"lines": all_lines[-lines:], "total_lines": len(all_lines)}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@router.delete("/system/frontend-logs")
+@router.delete("/frontend-logs")
+async def clear_frontend_logs():
+    """Очищает файл клиентских логов фронтенда перед новым прогоном тестов."""
+    from app.core.logging_config import FRONTEND_LOG_FILE
+    if FRONTEND_LOG_FILE.exists():
+        FRONTEND_LOG_FILE.write_text("", encoding="utf-8")
+    return {"status": "cleared"}
 
 
 @router.post("/webhook/sentry")

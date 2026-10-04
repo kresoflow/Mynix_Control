@@ -49,12 +49,14 @@ import 'package:device_preview/device_preview.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:kreso_frontend/core/utils/app_bloc_observer.dart';
+import 'package:kreso_frontend/core/network/client_error_reporter.dart';
 
 /// 📱 ФЛАГ ЭМУЛЯТОРА: Переключите в `true` для тестирования мобильных экранов (iPhone/iPad/Android)
 const bool kEnableDevicePreview = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ClientErrorReporter.init();
   ServicesBinding.instance.channelBuffers.allowOverflow('flutter/lifecycle', true);
   usePathUrlStrategy();
   Bloc.observer = AppBlocObserver();
