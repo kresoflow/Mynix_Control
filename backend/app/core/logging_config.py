@@ -10,7 +10,9 @@ from pathlib import Path
 
 # ── 1. Пути и параметры ротации ───────────────────────────────────────────────
 
-LOGS_DIR = Path(__file__).resolve().parent.parent.parent / "logs"
+# Располагаем логи в корне проекта (вне backend/), чтобы вотчер uvicorn --reload не входил в цикл
+_project_root = Path(__file__).resolve().parents[3]
+LOGS_DIR = _project_root / "logs" if (_project_root / "backend").exists() else Path(__file__).resolve().parents[2] / "logs"
 BACKEND_LOG_FILE = LOGS_DIR / "backend.log"
 AUDIT_LOG_FILE = LOGS_DIR / "traffic_audit.log"
 FRONTEND_LOG_FILE = LOGS_DIR / "frontend_errors.log"
@@ -43,6 +45,17 @@ def setup_logging() -> None:
     )
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.INFO)
+
+    # Защита от бесконечного цикла вотчера: исключаем логи watchfiles из записи в файл
+    class _ExcludeWatchfilesFilter(logging.Filter):
+        def filter(self, record: logging.LogRecord) -> bool:
+            return not record.name.startswith("watchfiles")
+
+    file_handler.addFilter(_ExcludeWatchfilesFilter())
+
+    # Глушим шумные логи вотчера в целом
+    for watch_name in ("watchfiles", "watchfiles.main"):
+        logging.getLogger(watch_name).setLevel(logging.WARNING)
 
     # Файловый поток для алертов подозрительного трафика и медленных запросов
     audit_handler = RotatingFileHandler(
