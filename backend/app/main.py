@@ -12,6 +12,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import init_db, auto_migrate_tenant_schemas, async_session_factory
+from app.core.logging_config import setup_logging
+from app.core.traffic_audit import TrafficAuditMiddleware
+
+# ── Multi-Stream Logging (Console + logs/backend.log) ─────────────
+setup_logging()
 
 
 @asynccontextmanager
@@ -159,6 +164,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(TrafficAuditMiddleware)
 
 # ── Register Module Routers ─────────────────────────────────────
 
@@ -201,6 +207,21 @@ async def trigger_test_error():
     raise RuntimeError("🧪 Тестовая ошибка мониторинга Kreso Flow")
 
 
+@app.get("/api/v1/system/logs", tags=["System"])
+@app.get("/system/logs", tags=["System"])
+async def get_recent_logs(lines: int = 100):
+    """Возвращает последние строки серверного лога для автономной диагностики агентом."""
+    from app.core.logging_config import BACKEND_LOG_FILE
+    if not BACKEND_LOG_FILE.exists():
+        return {"lines": [], "file": str(BACKEND_LOG_FILE)}
+    try:
+        with open(BACKEND_LOG_FILE, "r", encoding="utf-8", errors="replace") as f:
+            all_lines = f.readlines()
+            return {"lines": all_lines[-lines:], "total_lines": len(all_lines)}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/", tags=["System"])
 async def root():
     return {
@@ -208,5 +229,6 @@ async def root():
         "version": "0.1.0",
         "docs": "/docs",
         "health": "/health",
+        "logs": "/system/logs",
     }
 

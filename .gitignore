@@ -55,6 +55,8 @@ Thumbs.db
 
 # Logs & temp
 *.log
+logs/
+backend/logs/
 *.tmp
 *.zip
 temp/
