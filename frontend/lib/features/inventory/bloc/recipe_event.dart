@@ -11,11 +11,12 @@ class LoadRecipesSummary extends RecipeEvent {}
 
 class LoadRecipe extends RecipeEvent {
   final int menuItemId;
+  final bool forceRefresh;
 
-  const LoadRecipe(this.menuItemId);
+  const LoadRecipe(this.menuItemId, {this.forceRefresh = false});
 
   @override
-  List<Object?> get props => [menuItemId];
+  List<Object?> get props => [menuItemId, forceRefresh];
 }
 
 class AddIngredientToRecipe extends RecipeEvent {

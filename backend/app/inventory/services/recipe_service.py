@@ -12,6 +12,20 @@ async def get_recipe(session: AsyncSession, menu_item_id: int) -> list[RecipeRea
     )
     result = await session.execute(stmt)
     recipes = result.scalars().all()
+
+    # Если у вариации нет своей техкарты, наследуем рецепт от родительского блюда
+    if not recipes:
+        from app.inventory.models import MenuItem
+        item = await session.get(MenuItem, menu_item_id)
+        if item and item.parent_id:
+            stmt_parent = (
+                select(Recipe)
+                .where(Recipe.menu_item_id == item.parent_id)
+                .options(selectinload(Recipe.ingredient))
+            )
+            res_parent = await session.execute(stmt_parent)
+            recipes = res_parent.scalars().all()
+
     return [
         RecipeRead(
             ingredient_id=r.ingredient.id,
@@ -21,6 +35,7 @@ async def get_recipe(session: AsyncSession, menu_item_id: int) -> list[RecipeRea
             cost_per_unit=r.ingredient.cost_per_unit,
         )
         for r in recipes
+        if r.ingredient
     ]
 
 async def get_all_recipes_summary(session: AsyncSession) -> list[dict]:

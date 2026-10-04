@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'recipe_event.dart';
@@ -55,10 +55,14 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     on<SaveBulkRecipe>(_onSaveBulkRecipe);
   }
 
+  bool _isLoadingSummary = false;
+
   Future<void> _onLoadRecipesSummary(
     LoadRecipesSummary event,
     Emitter<RecipeState> emit,
   ) async {
+    if (_isLoadingSummary) return;
+    _isLoadingSummary = true;
     try {
       final summaryList = await repository.getRecipesSummary();
       final Map<int, Map<String, dynamic>> summaryMap = {
@@ -66,20 +70,26 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
       };
       if (state is RecipeLoaded) {
         final current = state as RecipeLoaded;
-        emit(RecipeLoaded(
-          menuItemId: current.menuItemId,
-          recipes: current.recipes,
-          recipesSummary: summaryMap,
-        ));
+        emit(
+          RecipeLoaded(
+            menuItemId: current.menuItemId,
+            recipes: current.recipes,
+            recipesSummary: summaryMap,
+          ),
+        );
       } else {
-        emit(RecipeLoaded(
-          menuItemId: null,
-          recipes: const [],
-          recipesSummary: summaryMap,
-        ));
+        emit(
+          RecipeLoaded(
+            menuItemId: null,
+            recipes: const [],
+            recipesSummary: summaryMap,
+          ),
+        );
       }
     } catch (e) {
       // Keep existing state on error
+    } finally {
+      _isLoadingSummary = false;
     }
   }
 
@@ -87,14 +97,22 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     LoadRecipe event,
     Emitter<RecipeState> emit,
   ) async {
+    if (!event.forceRefresh && state is RecipeLoaded) {
+      final loaded = state as RecipeLoaded;
+      if (loaded.menuItemId == event.menuItemId) {
+        return; // Already loaded! Avoid redundant network trip
+      }
+    }
     emit(RecipeLoading(recipesSummary: state.recipesSummary));
     try {
       final data = await repository.getRecipe(event.menuItemId);
-      emit(RecipeLoaded(
-        menuItemId: event.menuItemId,
-        recipes: data,
-        recipesSummary: state.recipesSummary,
-      ));
+      emit(
+        RecipeLoaded(
+          menuItemId: event.menuItemId,
+          recipes: data,
+          recipesSummary: state.recipesSummary,
+        ),
+      );
     } catch (e) {
       emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
     }
@@ -110,7 +128,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         event.ingredientId,
         event.quantity,
       );
-      add(LoadRecipe(event.menuItemId));
+      add(LoadRecipe(event.menuItemId, forceRefresh: true));
       add(LoadRecipesSummary());
     } catch (e) {
       emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
@@ -126,7 +144,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         event.menuItemId,
         event.ingredientId,
       );
-      add(LoadRecipe(event.menuItemId));
+      add(LoadRecipe(event.menuItemId, forceRefresh: true));
       add(LoadRecipesSummary());
     } catch (e) {
       emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
@@ -143,7 +161,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         event.ingredientId,
         event.quantity,
       );
-      add(LoadRecipe(event.menuItemId));
+      add(LoadRecipe(event.menuItemId, forceRefresh: true));
       add(LoadRecipesSummary());
     } catch (e) {
       emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
@@ -156,7 +174,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   ) async {
     try {
       await repository.bulkUpdateRecipe(event.menuItemId, event.recipes);
-      add(LoadRecipe(event.menuItemId));
+      add(LoadRecipe(event.menuItemId, forceRefresh: true));
       add(LoadRecipesSummary());
     } catch (e) {
       emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));

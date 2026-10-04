@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
@@ -117,34 +118,11 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
             Row(
               children: [
                 if (widget.onBackToSummary != null) ...[
-                  InkWell(
-                    onTap: widget.onBackToSummary,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(PhosphorIconsRegular.arrowLeft, size: 14, color: isDark ? AppColors.darkText : AppColors.lightText),
-                          const SizedBox(width: 6),
-                          Text(
-                            'К сводке фудкоста',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? AppColors.darkText : AppColors.lightText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  AppGhostButton(
+                    label: 'К сводке фудкоста',
+                    icon: PhosphorIconsRegular.arrowLeft,
+                    size: AppButtonSize.sm,
+                    onPressed: widget.onBackToSummary,
                   ),
                   const SizedBox(width: 12),
                 ],
@@ -225,10 +203,11 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
                               const SizedBox(height: 8),
                               Text('Ошибка загрузки техкарты', style: AppTextStyles.h3),
                               const SizedBox(height: 12),
-                              ElevatedButton.icon(
-                                onPressed: () => context.read<RecipeBloc>().add(LoadRecipe(activeTargetId)),
-                                icon: const Icon(PhosphorIconsRegular.arrowsClockwise, size: 16),
-                                label: const Text('Повторить'),
+                              AppSecondaryButton(
+                                label: 'Повторить',
+                                icon: PhosphorIconsRegular.arrowsClockwise,
+                                size: AppButtonSize.md,
+                                onPressed: () => context.read<RecipeBloc>().add(LoadRecipe(activeTargetId, forceRefresh: true)),
                               ),
                             ],
                           ),
