@@ -1,7 +1,14 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Склад / Заголовок таблицы приходной накладной
+// ДОМЕН: lib/features/inventory/view/widgets/warehouse/dialogs/receive_document/
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
+/// Заголовок колонок таблицы приходной накладной.
+/// Пропорции и размеры колонок синхронизированы со строками ReceiveDocumentItemRow.
 class ReceiveDocumentTableHeader extends StatelessWidget {
   final String currency;
   final int tabIndex; // 1 = Витрина, 2 = Сырье
@@ -17,8 +24,14 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isRetail = tabIndex == 1;
 
+    final headerStyle = AppTextStyles.caption.copyWith(
+      fontWeight: FontWeight.w700,
+      fontSize: 12,
+      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+    );
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightBg,
         border: Border.symmetric(
@@ -29,123 +42,107 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // 1. Название
+          // 1. Порядковый номер
+          SizedBox(
+            width: 32,
+            child: Text(
+              '№',
+              textAlign: TextAlign.center,
+              style: headerStyle,
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // 2. Название номенклатуры
           Expanded(
+            flex: isRetail ? 3 : 5,
             child: Text(
               isRetail ? 'Товар витрины' : 'Сырьё / Ингредиент',
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
+              style: headerStyle,
             ),
           ),
-          const SizedBox(width: 8),
 
-          // 2. Вкус и объем (только для витрины)
+          // 3. Вкус и объем (только для витрины)
           if (isRetail) ...[
-            SizedBox(
-              width: 85,
-              child: Text(
-                'Вкус',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                ),
-              ),
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 2,
+              child: Text('Вкус', style: headerStyle),
             ),
             const SizedBox(width: 8),
-            SizedBox(
-              width: 55,
-              child: Text(
-                'Объем',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                ),
-              ),
+            Expanded(
+              flex: 1,
+              child: Text('Объем', style: headerStyle),
             ),
-            const SizedBox(width: 8),
           ],
+          const SizedBox(width: 8),
 
-          // 3. Ед. изм.
+          // 4. Единица измерения
           SizedBox(
-            width: 70,
-            child: Text(
-              'Ед. изм.',
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
-            ),
+            width: 85,
+            child: Text('Ед. изм.', style: headerStyle),
           ),
           const SizedBox(width: 8),
 
-          // 4. Кол-во
+          // 5. Количество
           SizedBox(
-            width: isRetail ? 70 : 80,
+            width: 85,
             child: Text(
               'Кол-во',
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
+              textAlign: TextAlign.center,
+              style: headerStyle,
             ),
           ),
           const SizedBox(width: 8),
 
-          // 5. Алерт
+          // 6. Минимальный остаток (алерт)
           SizedBox(
-            width: isRetail ? 60 : 80,
+            width: 80,
             child: Text(
               'Алерт',
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
+              textAlign: TextAlign.center,
+              style: headerStyle,
             ),
           ),
           const SizedBox(width: 8),
 
-          // 6. Закупка
+          // 7. Цена закупки
           SizedBox(
-            width: isRetail ? 80 : 100,
+            width: 105,
             child: Text(
               'Закупка ($currency)',
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              textAlign: TextAlign.right,
+              style: headerStyle,
+            ),
+          ),
+
+          // 8. Цена продажи (только для витрины)
+          if (isRetail) ...[
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 105,
+              child: Text(
+                'Продажа ($currency)',
+                textAlign: TextAlign.right,
+                style: headerStyle,
               ),
+            ),
+          ],
+          const SizedBox(width: 8),
+
+          // 9. Сумма позиции
+          SizedBox(
+            width: 95,
+            child: Text(
+              'Сумма ($currency)',
+              textAlign: TextAlign.right,
+              style: headerStyle,
             ),
           ),
           const SizedBox(width: 8),
 
-          // 7. Продажа (только для витрины)
-          if (isRetail) ...[
-            SizedBox(
-              width: 80,
-              child: Text(
-                'Продажа ($currency)',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-
-          // 8. Сумма
-          SizedBox(
-            width: isRetail ? 80 : 100,
-            child: Text(
-              'Сумма ($currency)',
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
-            ),
-          ),
-          const SizedBox(width: 44), // Место под кнопку удаления
+          // 10. Место под кнопку действия (удаление)
+          const SizedBox(width: 36),
         ],
       ),
     );

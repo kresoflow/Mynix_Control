@@ -32,6 +32,7 @@ class PaymentStatus(str, Enum):
 class PaymentMethod(str, Enum):
     CASH = "cash"
     CARD = "card"
+    TRANSFER = "transfer"
     BANK_TRANSFER = "bank_transfer"
     ONLINE = "online"
     DEBT = "debt"

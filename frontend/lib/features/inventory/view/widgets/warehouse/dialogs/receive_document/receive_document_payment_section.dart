@@ -1,8 +1,15 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Склад / Секция оплаты приходной накладной
+// ДОМЕН: lib/features/inventory/view/widgets/warehouse/dialogs/receive_document/
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
+/// Секция выбора статуса оплаты (Постоплата / Оплачено / Частично)
+/// и способа оплаты (Наличные, Перевод, Расчетный счет).
 class ReceiveDocumentPaymentSection extends StatelessWidget {
   final bool isDark;
   final String paymentStatus;
@@ -21,135 +28,106 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
     required this.onPaymentMethodChanged,
   });
 
+  // Допустимые способы оплаты для поставщиков: Наличные, Перевод, Расчетный счет
+  static const List<Map<String, dynamic>> _paymentMethods = [
+    {
+      'id': 'cash',
+      'label': 'Наличные',
+      'icon': PhosphorIconsRegular.money,
+    },
+    {
+      'id': 'transfer',
+      'label': 'Перевод',
+      'icon': PhosphorIconsRegular.arrowsLeftRight,
+    },
+    {
+      'id': 'bank_transfer',
+      'label': 'Расчетный счет',
+      'icon': PhosphorIconsRegular.bank,
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final validMethod = _paymentMethods.any((m) => m['id'] == paymentMethod)
+        ? paymentMethod
+        : 'cash';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildOptionChip(
+          // ── 1. Статус: Постоплата ──────────────────────────────────
+          _buildStatusChip(
             label: 'Постоплата',
             icon: PhosphorIconsRegular.clockCounterClockwise,
             isSelected: paymentStatus == 'unpaid',
-            selectedColor: AppColors.warning,
             onTap: () => onPaymentStatusChanged('unpaid'),
           ),
           const SizedBox(width: 4),
-          _buildOptionChip(
+
+          // ── 2. Статус: Оплачено ────────────────────────────────────
+          _buildStatusChip(
             label: 'Оплачено',
             icon: PhosphorIconsRegular.checkCircle,
             isSelected: paymentStatus == 'paid',
-            selectedColor: AppColors.success,
             onTap: () => onPaymentStatusChanged('paid'),
           ),
           const SizedBox(width: 4),
-          _buildOptionChip(
+
+          // ── 3. Статус: Частично ────────────────────────────────────
+          _buildStatusChip(
             label: 'Частично',
             icon: PhosphorIconsRegular.percent,
             isSelected: paymentStatus == 'partial',
-            selectedColor: AppColors.info,
             onTap: () => onPaymentStatusChanged('partial'),
           ),
+
+          // ── 4. Способ оплаты (если не постоплата) ───────────────────
           if (paymentStatus != 'unpaid') ...[
             const SizedBox(width: 8),
             Container(
-              height: 20,
+              height: 24,
               width: 1,
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
             const SizedBox(width: 8),
-            DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: paymentMethod,
-                isDense: true,
-                dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: 'cash',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(PhosphorIconsRegular.money, size: 14, color: AppColors.brandPrimary),
-                        const SizedBox(width: 6),
-                        const Text('Наличные'),
-                      ],
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'card',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(PhosphorIconsRegular.creditCard, size: 14, color: AppColors.brandPrimary),
-                        const SizedBox(width: 6),
-                        const Text('Карта'),
-                      ],
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'bank_transfer',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(PhosphorIconsRegular.bank, size: 14, color: AppColors.brandPrimary),
-                        const SizedBox(width: 6),
-                        const Text('Расчетный счет'),
-                      ],
-                    ),
-                  ),
-                ],
-                onChanged: (val) {
-                  if (val != null) onPaymentMethodChanged(val);
-                },
-              ),
-            ),
+            _buildMethodDropdown(validMethod),
           ],
+
+          // ── 5. Поле ввода суммы при частичной оплате ─────────────────
           if (paymentStatus == 'partial') ...[
             const SizedBox(width: 8),
-            SizedBox(
-              width: 75,
-              height: 28,
-              child: TextField(
-                controller: paidAmountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                style: AppTextStyles.bodyMedium.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
-                decoration: InputDecoration(
-                  hintText: 'Сумма',
-                  filled: true,
-                  fillColor: isDark ? AppColors.darkSurface : AppColors.lightBg,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                  ),
-                ),
-              ),
-            ),
+            _buildPartialAmountField(),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildOptionChip({
+  Widget _buildStatusChip({
     required String label,
     required IconData icon,
     required bool isSelected,
-    required Color selectedColor,
     required VoidCallback onTap,
   }) {
+    final activeBg = AppColors.brandPrimary.withValues(alpha: isDark ? 0.16 : 0.10);
+    final activeBorder = AppColors.brandPrimary.withValues(alpha: 0.8);
+    final activeColor = AppColors.brandPrimary;
+
+    final inactiveBg = isDark ? AppColors.darkCard : AppColors.lightCard;
+    final inactiveBorder = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final inactiveColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
+
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: onTap,
@@ -157,12 +135,10 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected
-              ? selectedColor.withValues(alpha: 0.15)
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
+          color: isSelected ? activeBg : inactiveBg,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? selectedColor : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            color: isSelected ? activeBorder : inactiveBorder,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -172,7 +148,7 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
             Icon(
               icon,
               size: 14,
-              color: isSelected ? selectedColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              color: isSelected ? activeColor : inactiveColor,
             ),
             const SizedBox(width: 6),
             Text(
@@ -180,10 +156,104 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
               style: AppTextStyles.caption.copyWith(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? selectedColor : (isDark ? AppColors.darkText : AppColors.lightText),
+                color: isSelected ? activeColor : (isDark ? AppColors.darkText : AppColors.lightText),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMethodDropdown(String currentMethod) {
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: currentMethod,
+          isDense: true,
+          dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+          style: AppTextStyles.bodyMedium.copyWith(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDark ? AppColors.darkText : AppColors.lightText,
+          ),
+          items: _paymentMethods.map((m) {
+            return DropdownMenuItem<String>(
+              value: m['id'] as String,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    m['icon'] as IconData,
+                    size: 14,
+                    color: AppColors.brandPrimary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(m['label'] as String),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val != null) onPaymentMethodChanged(val);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPartialAmountField() {
+    return SizedBox(
+      width: 120,
+      height: 32,
+      child: TextField(
+        controller: paidAmountController,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        style: AppTextStyles.bodyMedium.copyWith(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: isDark ? AppColors.darkText : AppColors.lightText,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Сумма',
+          suffixText: 'с',
+          suffixStyle: AppTextStyles.caption.copyWith(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
+          filled: true,
+          fillColor: isDark ? AppColors.darkSurface : AppColors.lightBg,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: AppColors.brandPrimary,
+              width: 1.5,
+            ),
+          ),
         ),
       ),
     );

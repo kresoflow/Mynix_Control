@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_data.dart';
 import 'receive_document_items_list.dart';
@@ -35,12 +33,23 @@ class ReceiveDocumentTableSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final minWidth = tabIndex == 1 ? 1040.0 : 880.0;
+
     return Expanded(
-      child: Column(
-        children: [
-          ReceiveDocumentTableHeader(currency: currency, tabIndex: tabIndex),
-          Expanded(
-            child: ReceiveDocumentItemsList(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final targetWidth = constraints.maxWidth > minWidth ? constraints.maxWidth : minWidth;
+
+          return Scrollbar(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: targetWidth,
+                child: Column(
+                  children: [
+                    ReceiveDocumentTableHeader(currency: currency, tabIndex: tabIndex),
+                    Expanded(
+                      child: ReceiveDocumentItemsList(
               isLoading: isLoading,
               items: items,
               availableIngredients: availableIngredients,
@@ -106,6 +115,11 @@ class ReceiveDocumentTableSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    ),
+  ),
+);
+        },
       ),
     );
   }

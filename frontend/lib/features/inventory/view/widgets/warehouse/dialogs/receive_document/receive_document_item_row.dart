@@ -1,3 +1,8 @@
+// ==============================================================================
+// МОДУЛЬ: Склад / Строка товара приходной накладной
+// ДОМЕН: lib/features/inventory/view/widgets/warehouse/dialogs/receive_document/
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -7,11 +12,13 @@ import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_inp
 import 'receipt_row_data.dart';
 import 'receive_document_autocomplete_view.dart';
 import 'receive_document_number_cell.dart';
-import 'receive_document_retail_fields.dart';
 import 'receive_document_row_callbacks.dart';
 import 'receive_document_unit_cell.dart';
 
-class ReceiveDocumentItemRow extends StatelessWidget {
+/// Строка номенклатурной позиции в приходной накладной.
+/// Оформлена в стиле массового добавления (Bulk Add) с выровненными колонками,
+/// эффектом наведения мыши и числовыми полями без плавающих дублирующихся меток.
+class ReceiveDocumentItemRow extends StatefulWidget {
   final List<ReceiptRowData> items;
   final ReceiptRowData item;
   final int index;
@@ -61,169 +68,219 @@ class ReceiveDocumentItemRow extends StatelessWidget {
   });
 
   @override
+  State<ReceiveDocumentItemRow> createState() => _ReceiveDocumentItemRowState();
+}
+
+class _ReceiveDocumentItemRowState extends State<ReceiveDocumentItemRow> {
+  final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    _isHovered.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isRetail = tabIndex == 1;
+    final isRetail = widget.tabIndex == 1;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          // 1. Name & Autocomplete
-          Expanded(
-            flex: isRetail ? 3 : 5,
-            child: SizedBox(
-              height: 40,
-              child: Focus(
-                onKeyEvent: (_, event) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
-                  event: event,
-                  items: items,
-                  index: index,
-                  targetNode: (r) => r.nameFocusNode,
+    return MouseRegion(
+      onEnter: (_) => _isHovered.value = true,
+      onExit: (_) => _isHovered.value = false,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _isHovered,
+        builder: (context, hovered, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+            decoration: BoxDecoration(
+              color: hovered
+                  ? (isDark ? AppColors.darkSurface : AppColors.lightSurface)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: hovered
+                    ? (isDark ? AppColors.darkBorder : AppColors.lightBorder)
+                    : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                // 1. Порядковый номер
+                SizedBox(
+                  width: 32,
+                  child: Text(
+                    '${widget.index + 1}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    ),
+                  ),
                 ),
-                child: RawAutocomplete<Ingredient>(
-                  textEditingController: item.nameController,
-                  focusNode: item.nameFocusNode,
-                  displayStringForOption: (option) => option.name,
-                  optionsBuilder: (textEditingValue) {
-                    if (textEditingValue.text.isEmpty) {
-                      return const Iterable<Ingredient>.empty();
-                    }
-                    return availableIngredients.where((option) {
-                      if (option.isArchived) return false;
-                      final matchesText = option.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
-                      if (!matchesText) return false;
-                      final isOptionRetail = option.attributes?['is_retail'] == true;
-                      return isRetail ? isOptionRetail : !isOptionRetail;
-                    });
-                  },
-                  onSelected: onIngredientSelected,
-                  fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                    return TextFormField(
-                      controller: controller,
-                      focusNode: focusNode,
+                const SizedBox(width: 8),
+
+                // 2. Поиск и автокомплит номенклатуры
+                ReceiveDocumentAutocompleteField(
+                  item: widget.item,
+                  index: widget.index,
+                  items: widget.items,
+                  availableIngredients: widget.availableIngredients,
+                  isRetail: isRetail,
+                  isDark: isDark,
+                  onIngredientSelected: widget.onIngredientSelected,
+                  onNameChanged: widget.onNameChanged,
+                  onNameSubmitted: widget.onNameSubmitted,
+                ),
+
+                // 3. Вкус и объем (только для витрины)
+                if (isRetail) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 2,
+                    child: SizedBox(
+                      height: 40,
+                      child: TextFormField(
+                        controller: widget.item.flavorController,
+                        focusNode: widget.item.flavorFocusNode,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                          fontSize: 13,
+                        ),
+                        decoration: buildBulkInputDecoration(context, 'Вкус (или пусто)', isHintOnly: true),
+                        onFieldSubmitted: (_) => widget.onFlavorSubmitted(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      height: 40,
+                      child: TextFormField(
+                        controller: widget.item.volumeController,
+                        focusNode: widget.item.volumeFocusNode,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                          fontSize: 13,
+                        ),
+                        decoration: buildBulkInputDecoration(context, 'Объем', isHintOnly: true),
+                        onFieldSubmitted: (_) => widget.onVolumeSubmitted(),
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 8),
+
+                // 4. Единица измерения
+                ReceiveDocumentUnitCell(
+                  selectedUnit: widget.item.selectedUnit,
+                  onUnitChanged: widget.onUnitChanged,
+                  isDark: isDark,
+                ),
+                const SizedBox(width: 8),
+
+                // 5. Количество
+                ReceiveDocumentNumberCell(
+                  width: 85,
+                  controller: widget.item.qtyController,
+                  focusNode: widget.item.qtyFocusNode,
+                  hint: '0',
+                  textAlign: TextAlign.center,
+                  isDark: isDark,
+                  onChanged: widget.onQtyChanged,
+                  onSubmitted: widget.onQtySubmitted,
+                  onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
+                    event: ev, items: widget.items, index: widget.index, targetNode: (r) => r.qtyFocusNode,
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 6. Минимальный остаток (алерт)
+                ReceiveDocumentNumberCell(
+                  width: 80,
+                  controller: widget.item.minStockAlertController,
+                  focusNode: widget.item.minStockAlertFocusNode,
+                  hint: '0',
+                  textAlign: TextAlign.center,
+                  isDark: isDark,
+                  onChanged: widget.onMinStockAlertChanged,
+                  onSubmitted: widget.onMinStockAlertSubmitted,
+                  onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
+                    event: ev, items: widget.items, index: widget.index, targetNode: (r) => r.minStockAlertFocusNode,
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 7. Закупочная цена
+                ReceiveDocumentNumberCell(
+                  width: 105,
+                  controller: widget.item.priceController,
+                  focusNode: widget.item.priceFocusNode,
+                  hint: '0.00',
+                  textAlign: TextAlign.right,
+                  isDark: isDark,
+                  onChanged: widget.onPriceChanged,
+                  onSubmitted: widget.onPriceSubmitted,
+                  onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
+                    event: ev, items: widget.items, index: widget.index, targetNode: (r) => r.priceFocusNode,
+                  ),
+                ),
+
+                // 8. Цена продажи (только для витрины)
+                if (isRetail) ...[
+                  const SizedBox(width: 8),
+                  ReceiveDocumentNumberCell(
+                    width: 105,
+                    controller: widget.item.sellPriceController,
+                    focusNode: widget.item.sellPriceFocusNode,
+                    hint: '0.00',
+                    textAlign: TextAlign.right,
+                    isDark: isDark,
+                    onChanged: widget.onSellPriceChanged,
+                    onSubmitted: widget.onSellPriceSubmitted,
+                    onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
+                      event: ev, items: widget.items, index: widget.index, targetNode: (r) => r.sellPriceFocusNode,
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 8),
+
+                // 9. Сумма по строке
+                SizedBox(
+                  width: 95,
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: widget.item.rowTotalNotifier,
+                    builder: (_, rowSum, __) => Text(
+                      rowSum.toStringAsFixed(2),
+                      textAlign: TextAlign.right,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                        fontWeight: FontWeight.bold,
                         fontSize: 13,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
                       ),
-                      decoration: buildBulkInputDecoration(context, 'Поиск номенклатуры...').copyWith(
-                        suffixIcon: item.ingredient != null
-                            ? const Icon(PhosphorIconsRegular.checkCircle, color: AppColors.success, size: 16)
-                            : Icon(PhosphorIconsRegular.magnifyingGlass, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, size: 16),
-                      ),
-                      onChanged: onNameChanged,
-                      onFieldSubmitted: (_) => onNameSubmitted(),
-                    );
-                  },
-                  optionsViewBuilder: (context, onSelected, options) {
-                    return ReceiveDocumentAutocompleteOptionsView(
-                      options: options,
-                      onSelected: onSelected,
-                    );
-                  },
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
+                const SizedBox(width: 8),
 
-          if (isRetail)
-            ReceiveDocumentRetailFields(
-              item: item,
-              onFlavorSubmitted: onFlavorSubmitted,
-              onVolumeSubmitted: onVolumeSubmitted,
-            ),
-          const SizedBox(width: 8),
-
-          ReceiveDocumentUnitCell(
-            selectedUnit: item.selectedUnit,
-            onUnitChanged: onUnitChanged,
-            isDark: isDark,
-          ),
-          const SizedBox(width: 8),
-
-          ReceiveDocumentNumberCell(
-            width: isRetail ? 70 : 80,
-            controller: item.qtyController,
-            focusNode: item.qtyFocusNode,
-            hint: '0',
-            isDark: isDark,
-            onChanged: onQtyChanged,
-            onSubmitted: onQtySubmitted,
-            onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
-              event: ev, items: items, index: index, targetNode: (r) => r.qtyFocusNode,
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          ReceiveDocumentNumberCell(
-            width: isRetail ? 60 : 80,
-            controller: item.minStockAlertController,
-            focusNode: item.minStockAlertFocusNode,
-            hint: '0',
-            isDark: isDark,
-            onChanged: onMinStockAlertChanged,
-            onSubmitted: onMinStockAlertSubmitted,
-            onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
-              event: ev, items: items, index: index, targetNode: (r) => r.minStockAlertFocusNode,
-            ),
-          ),
-          const SizedBox(width: 8),
-
-          ReceiveDocumentNumberCell(
-            width: isRetail ? 80 : 100,
-            controller: item.priceController,
-            focusNode: item.priceFocusNode,
-            hint: '0.00',
-            isDark: isDark,
-            onChanged: onPriceChanged,
-            onSubmitted: onPriceSubmitted,
-            onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
-              event: ev, items: items, index: index, targetNode: (r) => r.priceFocusNode,
-            ),
-          ),
-
-          if (isRetail) ...[
-            const SizedBox(width: 8),
-            ReceiveDocumentNumberCell(
-              width: 80,
-              controller: item.sellPriceController,
-              focusNode: item.sellPriceFocusNode,
-              hint: '0.00',
-              isDark: isDark,
-              onChanged: onSellPriceChanged,
-              onSubmitted: onSellPriceSubmitted,
-              onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
-                event: ev, items: items, index: index, targetNode: (r) => r.sellPriceFocusNode,
-              ),
-            ),
-          ],
-          const SizedBox(width: 8),
-
-          SizedBox(
-            width: isRetail ? 80 : 100,
-            child: ValueListenableBuilder<double>(
-              valueListenable: item.rowTotalNotifier,
-              builder: (_, rowSum, __) => Text(
-                rowSum.toStringAsFixed(2),
-                textAlign: TextAlign.right,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                // 10. Кнопка удаления
+                SizedBox(
+                  width: 36,
+                  child: IconButton(
+                    icon: const Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
+                    onPressed: widget.onRemove,
+                    tooltip: 'Удалить строку',
+                    visualDensity: VisualDensity.compact,
+                    splashRadius: 16,
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-          const SizedBox(width: 8),
-
-          SizedBox(
-            width: 36,
-            child: IconButton(
-              icon: const Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
-              onPressed: onRemove,
-              tooltip: 'Удалить строку',
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
