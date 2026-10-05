@@ -11,7 +11,6 @@ class DocumentDetailFooter extends StatelessWidget {
   final ValueChanged<String> onSnack;
   final VoidCallback? onCompleteDraft;
   final VoidCallback? onEditDraft;
-  final VoidCallback? onDeleteDraft;
 
   const DocumentDetailFooter({
     super.key,
@@ -20,7 +19,6 @@ class DocumentDetailFooter extends StatelessWidget {
     required this.onSnack,
     this.onCompleteDraft,
     this.onEditDraft,
-    this.onDeleteDraft,
   });
 
   @override
@@ -32,6 +30,11 @@ class DocumentDetailFooter extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+        border: Border(
+          top: BorderSide(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -41,15 +44,6 @@ class DocumentDetailFooter extends StatelessWidget {
             height: 38,
             onPressed: () => Navigator.of(context).pop(),
           ),
-          if (doc.status == 'draft' && onDeleteDraft != null) ...[
-            const SizedBox(width: 8),
-            AppButton.danger(
-              label: 'Удалить черновик',
-              icon: PhosphorIconsRegular.trash,
-              height: 38,
-              onPressed: onDeleteDraft,
-            ),
-          ],
           const Spacer(),
 
           // Меню других форматов экспорта

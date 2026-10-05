@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -7,8 +7,13 @@ import 'package:kreso_frontend/features/inventory/models/document.dart';
 
 class DocumentDetailHeader extends StatelessWidget {
   final InventoryDocument doc;
+  final VoidCallback? onDeleteDraft;
 
-  const DocumentDetailHeader({super.key, required this.doc});
+  const DocumentDetailHeader({
+    super.key,
+    required this.doc,
+    this.onDeleteDraft,
+  });
 
   Color _getStatusColor(String status) {
     if (status == 'completed') return AppColors.success;
@@ -48,6 +53,11 @@ class DocumentDetailHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -79,20 +89,38 @@ class DocumentDetailHeader extends StatelessWidget {
                         color: isDark ? AppColors.darkText : AppColors.lightText,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.15),
+                        color: statusColor.withValues(alpha: isDark ? 0.16 : 0.10),
                         borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        _getStatusLabel(doc.status),
-                        style: TextStyle(
-                          color: statusColor,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.35),
+                          width: 1,
                         ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            _getStatusLabel(doc.status),
+                            style: TextStyle(
+                              color: statusColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -107,10 +135,20 @@ class DocumentDetailHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (doc.status == 'draft' && onDeleteDraft != null) ...[
+            IconButton(
+              icon: const Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
+              onPressed: onDeleteDraft,
+              tooltip: 'Удалить черновик',
+              splashRadius: 18,
+            ),
+            const SizedBox(width: 4),
+          ],
           IconButton(
             icon: const Icon(PhosphorIconsRegular.x, size: 18),
             onPressed: () => Navigator.of(context).pop(),
             tooltip: 'Закрыть',
+            splashRadius: 18,
           ),
         ],
       ),

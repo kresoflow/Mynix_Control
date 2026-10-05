@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -18,9 +18,13 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
         icon = PhosphorIconsRegular.money;
         label = 'Наличные';
         break;
+      case 'transfer':
+        icon = PhosphorIconsRegular.arrowsLeftRight;
+        label = 'Перевод';
+        break;
       case 'card':
         icon = PhosphorIconsRegular.creditCard;
-        label = 'Банковская карта';
+        label = 'Карта';
         break;
       case 'bank_transfer':
         icon = PhosphorIconsRegular.bank;
@@ -31,19 +35,30 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
         label = method;
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: AppColors.brandPrimary),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            fontWeight: FontWeight.w600,
-            color: isDark ? AppColors.darkText : AppColors.lightText,
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
-      ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.brandPrimary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTextStyles.caption.copyWith(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              color: isDark ? AppColors.darkText : AppColors.lightText,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -58,6 +73,9 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,7 +85,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
             children: [
               Icon(
                 isReceipt ? PhosphorIconsRegular.buildings : PhosphorIconsRegular.info,
-                size: 15,
+                size: 16,
                 color: AppColors.brandPrimary,
               ),
               const SizedBox(width: 8),
@@ -85,14 +103,21 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
               ),
               if (doc.invoiceNumber != null && doc.invoiceNumber!.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white10 : Colors.black12,
-                    borderRadius: BorderRadius.circular(4),
+                    color: isDark ? AppColors.darkSurface : AppColors.lightBg,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    ),
                   ),
                   child: Text(
                     'Накладная: ${doc.invoiceNumber}',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    ),
                   ),
                 ),
             ],
@@ -106,6 +131,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Условия расчёта: ',
@@ -113,6 +139,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
                         color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       ),
                     ),
+                    const SizedBox(width: 4),
                     _buildPaymentBadge(context),
                   ],
                 ),
@@ -127,57 +154,51 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
   }
 
   Widget _buildPaymentBadge(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    Color color;
+    IconData icon;
+    String text;
+
     if (doc.paymentStatus == 'unpaid') {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-        decoration: BoxDecoration(
-          color: AppColors.warning.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(PhosphorIconsRegular.clockCounterClockwise, size: 11, color: AppColors.warning),
-            SizedBox(width: 4),
-            Text(
-              'В долг (Постоплата)',
-              style: TextStyle(color: AppColors.warning, fontSize: 11, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      );
+      color = AppColors.warning;
+      icon = PhosphorIconsRegular.clockCounterClockwise;
+      text = 'В долг (Постоплата)';
     } else if (doc.paymentStatus == 'paid') {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-        decoration: BoxDecoration(
-          color: AppColors.success.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(PhosphorIconsRegular.checkCircle, size: 11, color: AppColors.success),
-            SizedBox(width: 4),
-            Text(
-              'Оплачено сразу',
-              style: TextStyle(color: AppColors.success, fontSize: 11, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      );
+      color = AppColors.success;
+      icon = PhosphorIconsRegular.checkCircle;
+      text = 'Оплачено полностью';
     } else {
       final unpaid = doc.totalAmount - doc.paidAmount;
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-        decoration: BoxDecoration(
-          color: AppColors.info.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          'Частично (Оплачено: ${doc.paidAmount.toCurrency(context)}, Долг: ${unpaid.toCurrency(context)})',
-          style: const TextStyle(color: AppColors.info, fontSize: 11, fontWeight: FontWeight.bold),
-        ),
-      );
+      color = AppColors.info;
+      icon = PhosphorIconsRegular.percent;
+      text = 'Частично: оплачено ${doc.paidAmount.toCurrency(context)} · долг ${unpaid.toCurrency(context)}';
     }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isDark ? 0.16 : 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: color.withValues(alpha: 0.35),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

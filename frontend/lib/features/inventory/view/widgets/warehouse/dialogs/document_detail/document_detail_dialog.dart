@@ -116,7 +116,7 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
       child: Center(
         child: Container(
           width: 700,
-          constraints: const BoxConstraints(maxHeight: 800),
+          constraints: const BoxConstraints(maxWidth: 720, maxHeight: 820),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
             borderRadius: BorderRadius.circular(20),
@@ -171,7 +171,10 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  DocumentDetailHeader(doc: doc),
+                  DocumentDetailHeader(
+                    doc: doc,
+                    onDeleteDraft: () => _deleteDraft(doc),
+                  ),
                   Flexible(
                     child: SingleChildScrollView(
                       child: Column(
@@ -189,7 +192,6 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
                     onSnack: _showSnack,
                     onCompleteDraft: () => _completeDraft(doc),
                     onEditDraft: () => _editDraft(doc),
-                    onDeleteDraft: () => _deleteDraft(doc),
                   ),
                 ],
               );
