@@ -125,80 +125,78 @@ class ReceiveDocumentFooter extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // 1. Блок условий оплаты (слева)
-          Flexible(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ReceiveDocumentPaymentSection(
-                isDark: isDark,
-                paymentStatus: paymentStatus,
-                paymentMethod: paymentMethod,
-                paidAmountController: paidAmountController,
-                onPaymentStatusChanged: onPaymentStatusChanged,
-                onPaymentMethodChanged: onPaymentMethodChanged,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Spacer(),
-
-          // 2. Блок проведения: ИТОГО + Корзина НАД кнопками действий
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
+          // ── 1. Верхний уровень: Корзина и Сумма (справа над кнопками действий) ──
+          Row(
             children: [
-              // Верхний ярус: Корзина + ИТОГО
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (onToggleCart != null) ...[
-                    if (cartCountListenable != null)
-                      ValueListenableBuilder<int>(
-                        valueListenable: cartCountListenable!,
-                        builder: (_, count, __) => cartButtonWidget(count),
-                      )
-                    else
-                      cartButtonWidget(cartItemCount),
-                    const SizedBox(width: 12),
-                  ],
-                  Text(
-                    'ИТОГО:',
-                    style: AppTextStyles.caption.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                      letterSpacing: 0.5,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  if (totalSumListenable != null)
-                    ValueListenableBuilder<double>(
-                      valueListenable: totalSumListenable!,
-                      builder: (_, sum, __) => totalTextWidget(sum),
-                    )
-                  else
-                    totalTextWidget(totalSum),
-                ],
+              const Spacer(),
+              if (onToggleCart != null) ...[
+                if (cartCountListenable != null)
+                  ValueListenableBuilder<int>(
+                    valueListenable: cartCountListenable!,
+                    builder: (_, count, __) => cartButtonWidget(count),
+                  )
+                else
+                  cartButtonWidget(cartItemCount),
+                const SizedBox(width: 12),
+              ],
+              Text(
+                'ИТОГО:',
+                style: AppTextStyles.caption.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  letterSpacing: 0.5,
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(width: 8),
+              if (totalSumListenable != null)
+                ValueListenableBuilder<double>(
+                  valueListenable: totalSumListenable!,
+                  builder: (_, sum, __) => totalTextWidget(sum),
+                )
+              else
+                totalTextWidget(totalSum),
+            ],
+          ),
+          const SizedBox(height: 10),
 
-              // Нижний ярус: Кнопки действий
+          // ── 2. Нижний уровень: Способы оплаты и Кнопки оприходования на ОДНОЙ линии ──
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Слева: Блок условий оплаты
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ReceiveDocumentPaymentSection(
+                    isDark: isDark,
+                    paymentStatus: paymentStatus,
+                    paymentMethod: paymentMethod,
+                    paidAmountController: paidAmountController,
+                    onPaymentStatusChanged: onPaymentStatusChanged,
+                    onPaymentMethodChanged: onPaymentMethodChanged,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              // Справа: Кнопки оприходования (вровень со способами оплаты)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppButton.ghost(
                     label: 'Отмена',
-                    height: 36,
+                    height: 38,
                     onPressed: onCancel,
                   ),
                   const SizedBox(width: 8),
                   AppButton.secondary(
                     label: 'Черновик',
                     icon: PhosphorIconsRegular.floppyDisk,
-                    height: 36,
+                    height: 38,
                     isLoading: isSaving,
                     onPressed: isSaving ? null : onSaveDraft,
                   ),
@@ -206,7 +204,7 @@ class ReceiveDocumentFooter extends StatelessWidget {
                   AppButton.primary(
                     label: 'Провести (Ctrl+S)',
                     icon: PhosphorIconsRegular.checkCircle,
-                    height: 36,
+                    height: 38,
                     isLoading: isSaving,
                     onPressed: isSaving ? null : onSaveComplete,
                   ),
