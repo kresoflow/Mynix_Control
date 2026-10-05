@@ -60,36 +60,25 @@ class _ReceiveDocumentAmountFieldState extends State<ReceiveDocumentAmountField>
     final textColor = widget.isDark ? AppColors.darkText : AppColors.lightText;
     final iconColor = _isFocused ? AppColors.brandPrimary : subtextColor;
 
-    final borderColor = _isFocused
-        ? AppColors.brandPrimary
-        : (_isHovered
-            ? AppColors.brandPrimary.withValues(alpha: 0.5)
-            : (widget.isDark ? AppColors.darkBorder : AppColors.lightBorder));
-
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
-        width: 140,
+        width: 135,
         height: 32,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          color: widget.isDark ? AppColors.darkCard : AppColors.lightCard,
+          // [ИНВАРИАНТ] Бесшовный стиль без ободка (border: null):
+          // встраивается в панель способов оплаты без визуального шума
+          color: widget.isDark
+              ? (_isHovered || _isFocused
+                  ? AppColors.darkSurface
+                  : AppColors.darkSurface.withValues(alpha: 0.5))
+              : (_isHovered || _isFocused
+                  ? AppColors.lightBg
+                  : AppColors.lightBg.withValues(alpha: 0.7)),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: borderColor,
-            width: _isFocused ? 1.4 : 1.0,
-          ),
-          boxShadow: _isFocused
-              ? [
-                  BoxShadow(
-                    color: AppColors.brandPrimary.withValues(alpha: widget.isDark ? 0.25 : 0.15),
-                    blurRadius: 6,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
         ),
         alignment: Alignment.center,
         child: Row(

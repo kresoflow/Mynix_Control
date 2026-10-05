@@ -31,7 +31,9 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      // [ИНВАРИАНТ] 28px = 16px (padding списка) + 12px (padding строки товара)
+      // для попиксельного совпадения сетки колонок
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightBg,
         border: Border.symmetric(
@@ -53,36 +55,49 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // 2. Название номенклатуры
+          // 2. Название номенклатуры (внутренний отступ 10px под поле ввода)
           Expanded(
             flex: isRetail ? 3 : 5,
-            child: Text(
-              tabIndex == 0
-                  ? 'Номенклатура'
-                  : (isRetail ? 'Товар витрины' : 'Сырьё / Ингредиент'),
-              style: headerStyle,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Text(
+                tabIndex == 0
+                    ? 'Номенклатура'
+                    : (isRetail ? 'Товар витрины' : 'Сырьё / Ингредиент'),
+                style: headerStyle,
+              ),
             ),
           ),
 
-          // 3. Вкус и объем (только для витрины)
+          // 3. Вкус и объем (только для витрины, отступ 10px под поле ввода)
           if (isRetail) ...[
             const SizedBox(width: 8),
             Expanded(
               flex: 2,
-              child: Text('Вкус', style: headerStyle),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Text('Вкус', style: headerStyle),
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
               flex: 1,
-              child: Text('Объем', style: headerStyle),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Text('Объем', style: headerStyle),
+              ),
             ),
           ],
           const SizedBox(width: 8),
 
-          // 4. Единица измерения
+          // 4. Единица измерения (центрирована над бейджем ед. изм.)
           SizedBox(
             width: 85,
-            child: Text('Ед. изм.', style: headerStyle),
+            child: Text(
+              'Ед. изм.',
+              textAlign: TextAlign.center,
+              style: headerStyle,
+            ),
           ),
           const SizedBox(width: 8),
 
@@ -108,25 +123,31 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 8),
 
-          // 7. Цена закупки
+          // 7. Цена закупки (правый отступ 10px под инпут)
           SizedBox(
             width: 105,
-            child: Text(
-              'Закупка ($currency)',
-              textAlign: TextAlign.right,
-              style: headerStyle,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Text(
+                'Закупка ($currency)',
+                textAlign: TextAlign.right,
+                style: headerStyle,
+              ),
             ),
           ),
 
-          // 8. Цена продажи (только для витрины)
+          // 8. Цена продажи (только для витрины, правый отступ 10px под инпут)
           if (isRetail) ...[
             const SizedBox(width: 8),
             SizedBox(
               width: 105,
-              child: Text(
-                'Продажа ($currency)',
-                textAlign: TextAlign.right,
-                style: headerStyle,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Text(
+                  'Продажа ($currency)',
+                  textAlign: TextAlign.right,
+                  style: headerStyle,
+                ),
               ),
             ),
           ],
