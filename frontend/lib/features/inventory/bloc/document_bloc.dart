@@ -1,4 +1,4 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
@@ -16,6 +16,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<LoadDocuments>(_onLoadDocuments);
     on<LoadSuppliers>(_onLoadSuppliers);
     on<CreateDocument>(_onCreateDocument);
+    on<UpdateDocument>(_onUpdateDocument);
+    on<DeleteDocument>(_onDeleteDocument);
     on<CompleteDocument>(_onCompleteDocument);
     on<CreateSupplier>(_onCreateSupplier);
     on<UpdateSupplier>(_onUpdateSupplier);
@@ -28,19 +30,13 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   }
 
   static String _formatError(Object e) {
-    if (e is DioException) {
-      return e.message ?? e.toString();
-    }
+    if (e is DioException) return e.message ?? e.toString();
     final str = e.toString();
     if (str.contains(': ')) {
       final lastPart = str.split(': ').last.trim();
-      if (lastPart.isNotEmpty && !lastPart.startsWith('Exception')) {
-        return lastPart;
-      }
+      if (lastPart.isNotEmpty && !lastPart.startsWith('Exception')) return lastPart;
     }
-    if (str.startsWith('Exception: ')) {
-      return str.substring(11).trim();
-    }
+    if (str.startsWith('Exception: ')) return str.substring(11).trim();
     return str;
   }
 
@@ -57,11 +53,13 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(status: DocumentStatus.loading));
     try {
       final documents = await _repository.getDocuments(type: event.type);
-      emit(state.copyWith(
-        status: DocumentStatus.success, 
-        documents: documents,
-        clearError: true,
-      ));
+      emit(
+        state.copyWith(
+          status: DocumentStatus.success, 
+          documents: documents,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(status: DocumentStatus.failure, errorMessage: _formatError(e)));
     }
@@ -75,11 +73,28 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       final suppliers = await _repository.getSuppliers();
       emit(state.copyWith(suppliers: suppliers, clearError: true));
     } catch (e) {
-      emit(state.copyWith(
-        status: DocumentStatus.failure,
-        errorMessage: _formatError(e),
-      ));
+      emit(
+        state.copyWith(
+          status: DocumentStatus.failure,
+          errorMessage: _formatError(e),
+        ),
+      );
     }
+  }
+
+  Future<void> _refreshData(
+    Emitter<DocumentState> emit,
+  ) async {
+    final documents = await _repository.getDocuments();
+    final suppliers = await _repository.getSuppliers();
+    emit(
+      state.copyWith(
+        isSubmitting: false, 
+        documents: documents, 
+        suppliers: suppliers,
+        clearError: true,
+      ),
+    );
   }
 
   Future<void> _onCreateDocument(
@@ -93,14 +108,37 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         await _repository.completeDocument(createdDoc.id);
         _notifyDocumentCompleted();
       }
-      final documents = await _repository.getDocuments();
-      final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(
-        isSubmitting: false, 
-        documents: documents, 
-        suppliers: suppliers,
-        clearError: true,
-      ));
+      await _refreshData(emit);
+    } catch (e) {
+      emit(state.copyWith(isSubmitting: false, errorMessage: _formatError(e)));
+    }
+  }
+
+  Future<void> _onUpdateDocument(
+    UpdateDocument event,
+    Emitter<DocumentState> emit,
+  ) async {
+    emit(state.copyWith(isSubmitting: true));
+    try {
+      final updatedDoc = await _repository.updateDocument(event.id, event.data);
+      if (event.data['status'] == 'completed') {
+        await _repository.completeDocument(updatedDoc.id);
+        _notifyDocumentCompleted();
+      }
+      await _refreshData(emit);
+    } catch (e) {
+      emit(state.copyWith(isSubmitting: false, errorMessage: _formatError(e)));
+    }
+  }
+
+  Future<void> _onDeleteDocument(
+    DeleteDocument event,
+    Emitter<DocumentState> emit,
+  ) async {
+    emit(state.copyWith(isSubmitting: true));
+    try {
+      await _repository.deleteDocument(event.documentId);
+      await _refreshData(emit);
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, errorMessage: _formatError(e)));
     }
@@ -114,14 +152,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     try {
       await _repository.completeDocument(event.documentId);
       _notifyDocumentCompleted();
-      final documents = await _repository.getDocuments();
-      final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(
-        isSubmitting: false, 
-        documents: documents, 
-        suppliers: suppliers,
-        clearError: true,
-      ));
+      await _refreshData(emit);
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, errorMessage: _formatError(e)));
     }
@@ -200,14 +231,31 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(transactionsStatus: DocumentStatus.loading));
     try {
       final txns = await _repository.getSupplierTransactions(event.supplierId);
-      emit(state.copyWith(
-        transactionsStatus: DocumentStatus.success, 
-        supplierTransactions: txns,
-        clearError: true,
-      ));
+      emit(
+        state.copyWith(
+          transactionsStatus: DocumentStatus.success, 
+          supplierTransactions: txns,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(transactionsStatus: DocumentStatus.failure, errorMessage: _formatError(e)));
     }
+  }
+
+  Future<void> _refreshSupplierTxns(
+    int supplierId,
+    Emitter<DocumentState> emit,
+  ) async {
+    final txns = await _repository.getSupplierTransactions(supplierId);
+    final suppliers = await _repository.getSuppliers();
+    emit(
+      state.copyWith(
+        supplierTransactions: txns, 
+        suppliers: suppliers,
+        clearError: true,
+      ),
+    );
   }
 
   Future<void> _onAddSupplierTransaction(
@@ -223,13 +271,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         comment: event.comment,
         date: event.date,
       );
-      final txns = await _repository.getSupplierTransactions(event.supplierId);
-      final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(
-        supplierTransactions: txns, 
-        suppliers: suppliers,
-        clearError: true,
-      ));
+      await _refreshSupplierTxns(event.supplierId, emit);
     } catch (e) {
       emit(state.copyWith(errorMessage: _formatError(e)));
     }
@@ -248,13 +290,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         comment: event.comment,
         date: event.date,
       );
-      final txns = await _repository.getSupplierTransactions(event.supplierId);
-      final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(
-        supplierTransactions: txns, 
-        suppliers: suppliers,
-        clearError: true,
-      ));
+      await _refreshSupplierTxns(event.supplierId, emit);
     } catch (e) {
       emit(state.copyWith(errorMessage: _formatError(e)));
     }
@@ -266,13 +302,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   ) async {
     try {
       await _repository.deleteSupplierTransaction(event.supplierId, event.transactionId);
-      final txns = await _repository.getSupplierTransactions(event.supplierId);
-      final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(
-        supplierTransactions: txns, 
-        suppliers: suppliers,
-        clearError: true,
-      ));
+      await _refreshSupplierTxns(event.supplierId, emit);
     } catch (e) {
       emit(state.copyWith(errorMessage: _formatError(e)));
     }

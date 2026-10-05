@@ -76,6 +76,34 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
     );
   }
 
+  Future<void> _deleteDraft(InventoryDocument doc) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Удалить черновик?'),
+        content: Text('Черновик накладной #${doc.id} будет безвозвратно удален.'),
+        actions: [
+          AppButton.secondary(
+            label: 'Отмена',
+            height: 36,
+            onPressed: () => Navigator.pop(ctx, false),
+          ),
+          AppButton.danger(
+            label: 'Удалить',
+            height: 36,
+            onPressed: () => Navigator.pop(ctx, true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      context.read<DocumentBloc>().add(DeleteDocument(doc.id));
+      _showSnack('Черновик #${doc.id} удален');
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -87,7 +115,7 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Center(
         child: Container(
-          width: 640,
+          width: 700,
           constraints: const BoxConstraints(maxHeight: 800),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -161,6 +189,7 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
                     onSnack: _showSnack,
                     onCompleteDraft: () => _completeDraft(doc),
                     onEditDraft: () => _editDraft(doc),
+                    onDeleteDraft: () => _deleteDraft(doc),
                   ),
                 ],
               );

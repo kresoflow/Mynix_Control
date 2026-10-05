@@ -49,12 +49,12 @@ class ReceiveDocumentProcessor {
     required String invoiceNumber,
     required String reason,
     required int tabIndex,
-    int? categoryId,
     required bool complete,
     DateTime? documentDate,
     String paymentStatus = 'unpaid',
     double paidAmount = 0.0,
     String paymentMethod = 'cash',
+    int? documentId,
   }) async {
     final List<Map<String, dynamic>> docItems = [];
 
@@ -116,7 +116,11 @@ class ReceiveDocumentProcessor {
     };
 
     if (context.mounted) {
-      context.read<DocumentBloc>().add(CreateDocument(data));
+      if (documentId != null) {
+        context.read<DocumentBloc>().add(UpdateDocument(documentId, data));
+      } else {
+        context.read<DocumentBloc>().add(CreateDocument(data));
+      }
       if (complete) {
         try {
           context.read<IngredientBloc>().add(const LoadIngredients());

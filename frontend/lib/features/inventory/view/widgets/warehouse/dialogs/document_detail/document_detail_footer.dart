@@ -11,6 +11,7 @@ class DocumentDetailFooter extends StatelessWidget {
   final ValueChanged<String> onSnack;
   final VoidCallback? onCompleteDraft;
   final VoidCallback? onEditDraft;
+  final VoidCallback? onDeleteDraft;
 
   const DocumentDetailFooter({
     super.key,
@@ -19,6 +20,7 @@ class DocumentDetailFooter extends StatelessWidget {
     required this.onSnack,
     this.onCompleteDraft,
     this.onEditDraft,
+    this.onDeleteDraft,
   });
 
   @override
@@ -39,6 +41,15 @@ class DocumentDetailFooter extends StatelessWidget {
             height: 38,
             onPressed: () => Navigator.of(context).pop(),
           ),
+          if (doc.status == 'draft' && onDeleteDraft != null) ...[
+            const SizedBox(width: 8),
+            AppButton.danger(
+              label: 'Удалить черновик',
+              icon: PhosphorIconsRegular.trash,
+              height: 38,
+              onPressed: onDeleteDraft,
+            ),
+          ],
           const Spacer(),
 
           // Меню других форматов экспорта
@@ -129,8 +140,11 @@ class DocumentDetailFooter extends StatelessWidget {
               height: 38,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : Colors.black12,
-                borderRadius: BorderRadius.circular(8),
+                color: isDark ? AppColors.darkSurface : AppColors.lightCard,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                ),
               ),
               child: const Row(
                 children: [
@@ -143,6 +157,7 @@ class DocumentDetailFooter extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 8),
           if (doc.status == 'draft') ...[
             if (onEditDraft != null) ...[
               AppButton.secondary(
@@ -155,7 +170,7 @@ class DocumentDetailFooter extends StatelessWidget {
             ],
             if (onCompleteDraft != null)
               AppButton.primary(
-                label: 'Провести накладную',
+                label: 'Провести',
                 icon: PhosphorIconsRegular.checkCircle,
                 height: 38,
                 onPressed: onCompleteDraft,

@@ -172,6 +172,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
         invoiceNumber: _invoiceNumberController.text, reason: _reasonController.text,
         documentDate: _documentDate, tabIndex: _tabIndex, paymentStatus: _paymentStatus,
         paidAmount: paidAmt, paymentMethod: _paymentMethod, complete: complete,
+        documentId: widget.initialDocument?.id,
       );
     } catch (e) {
       if (mounted) {

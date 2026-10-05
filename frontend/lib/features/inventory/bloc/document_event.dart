@@ -1,4 +1,4 @@
-﻿import 'package:equatable/equatable.dart';
+import 'package:equatable/equatable.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier_transaction.dart';
 
 abstract class DocumentEvent extends Equatable {
@@ -26,6 +26,25 @@ class CreateDocument extends DocumentEvent {
 
   @override
   List<Object?> get props => [data];
+}
+
+class UpdateDocument extends DocumentEvent {
+  final int id;
+  final Map<String, dynamic> data;
+
+  const UpdateDocument(this.id, this.data);
+
+  @override
+  List<Object?> get props => [id, data];
+}
+
+class DeleteDocument extends DocumentEvent {
+  final int documentId;
+
+  const DeleteDocument(this.documentId);
+
+  @override
+  List<Object?> get props => [documentId];
 }
 
 class CompleteDocument extends DocumentEvent {

@@ -14,30 +14,14 @@ from app.inventory.models import (
     InventoryDocumentRead, InventoryDocumentDetailRead, InventoryDocumentItemRead
 )
 
-async def create_document(
+async def _populate_document_items(
     session: AsyncSession,
-    doc_in: InventoryDocumentCreate,
-    user_id: Optional[int] = None
-) -> InventoryDocument:
-    doc = InventoryDocument(
-        type=doc_in.type,
-        date=doc_in.date or datetime.now(timezone.utc).replace(tzinfo=None),
-        supplier_id=doc_in.supplier_id,
-        invoice_number=doc_in.invoice_number,
-        reason=doc_in.reason,
-        payment_status=doc_in.payment_status or "unpaid",
-        paid_amount=doc_in.paid_amount or 0.0,
-        payment_method=doc_in.payment_method or "cash",
-        created_by=user_id,
-        status=DocumentStatus.DRAFT,
-        total_amount=0.0
-    )
-    
-    session.add(doc)
-    await session.flush()
-    
+    doc: InventoryDocument,
+    items_in: List[InventoryDocumentItemCreate],
+    doc_type: DocumentType
+) -> float:
     total = 0.0
-    for item_in in doc_in.items:
+    for item_in in items_in:
         if item_in.ingredient_id is None and item_in.retail_product_id is None:
             raise HTTPException(400, "Item must have ingredient_id or retail_product_id")
             
@@ -46,7 +30,7 @@ async def create_document(
         total += item_total
         
         expected_qty = item_in.expected_quantity
-        if expected_qty is None and doc_in.type == DocumentType.INVENTORY:
+        if expected_qty is None and doc_type == DocumentType.INVENTORY:
             if item_in.ingredient_id:
                 ing_lookup = await session.get(Ingredient, item_in.ingredient_id)
                 expected_qty = ing_lookup.current_stock if ing_lookup else 0.0
@@ -80,11 +64,95 @@ async def create_document(
                 if item_in.min_stock_alert is not None:
                     ret.min_stock_alert = item_in.min_stock_alert
                 session.add(ret)
+    return total
+
+async def create_document(
+    session: AsyncSession,
+    doc_in: InventoryDocumentCreate,
+    user_id: Optional[int] = None
+) -> InventoryDocument:
+    doc = InventoryDocument(
+        type=doc_in.type,
+        date=doc_in.date or datetime.now(timezone.utc).replace(tzinfo=None),
+        supplier_id=doc_in.supplier_id,
+        invoice_number=doc_in.invoice_number,
+        reason=doc_in.reason,
+        payment_status=doc_in.payment_status or "unpaid",
+        paid_amount=doc_in.paid_amount or 0.0,
+        payment_method=doc_in.payment_method or "cash",
+        created_by=user_id,
+        status=DocumentStatus.DRAFT,
+        total_amount=0.0
+    )
+    
+    session.add(doc)
+    await session.flush()
+    doc.total_amount = await _populate_document_items(session, doc, doc_in.items, doc.type)
+    await session.flush()
+    return doc
+
+async def update_document(
+    session: AsyncSession,
+    document_id: int,
+    doc_in: InventoryDocumentCreate,
+    user_id: Optional[int] = None
+) -> InventoryDocument:
+    """Обновляет существующий черновик складского документа."""
+    stmt = (
+        select(InventoryDocument)
+        .where(InventoryDocument.id == document_id)
+        .options(selectinload(InventoryDocument.items))
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    result = await session.execute(stmt)
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Документ не найден")
+    if doc.status == DocumentStatus.COMPLETED:
+        raise HTTPException(status_code=400, detail="Нельзя редактировать уже проведенный документ")
         
-    doc.total_amount = total
+    doc.supplier_id = doc_in.supplier_id
+    doc.invoice_number = doc_in.invoice_number
+    doc.reason = doc_in.reason
+    doc.payment_status = doc_in.payment_status or "unpaid"
+    doc.paid_amount = doc_in.paid_amount or 0.0
+    doc.payment_method = doc_in.payment_method or "cash"
+    if doc_in.date:
+        doc.date = doc_in.date
+        
+    for old_item in doc.items:
+        await session.delete(old_item)
     await session.flush()
     
+    doc.total_amount = await _populate_document_items(session, doc, doc_in.items, doc.type)
+    await session.flush()
     return doc
+
+async def delete_document(session: AsyncSession, document_id: int) -> dict:
+    """Удаляет черновик складского документа. Проведенные документы удалять запрещено."""
+    stmt = (
+        select(InventoryDocument)
+        .where(InventoryDocument.id == document_id)
+        .options(selectinload(InventoryDocument.items))
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    result = await session.execute(stmt)
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Документ не найден")
+    if doc.status == DocumentStatus.COMPLETED:
+        raise HTTPException(
+            status_code=400,
+            detail="Нельзя удалить проведенный документ. Проведенный документ влияет на складские остатки."
+        )
+        
+    for item in doc.items:
+        await session.delete(item)
+    await session.delete(doc)
+    await session.flush()
+    return {"status": "ok", "message": f"Черновик #{document_id} успешно удален"}
 
 async def get_documents(
     session: AsyncSession,
