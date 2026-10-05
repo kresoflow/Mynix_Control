@@ -58,6 +58,12 @@ abstract class AppTextStyles {
     letterSpacing: 0.2,
   );
 
+  // ── Mono (табличные финансовые расчеты) ──────────────────────────────────
+  static TextStyle get mono => GoogleFonts.jetBrainsMono(
+    textStyle: const TextStyle(inherit: true),
+    fontSize: 13,
+  );
+
   // ── Price (цены в сетке товаров) ──────────────────────────────────────────
   static TextStyle get price => GoogleFonts.jetBrainsMono(
     textStyle: const TextStyle(inherit: true),

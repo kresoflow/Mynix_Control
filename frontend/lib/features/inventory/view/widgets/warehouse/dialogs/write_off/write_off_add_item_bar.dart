@@ -1,3 +1,6 @@
+// ==============================================================================
+// 1. ИМПОРТЫ
+// ==============================================================================
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -5,7 +8,11 @@ import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 
-class WriteOffAddItemBar extends StatelessWidget {
+// ==============================================================================
+// 2. СТРОКА БЫСТРОГО ПОИСКА И ДОБАВЛЕНИЯ ПОЗИЦИЙ
+// ==============================================================================
+/// [ИНВАРИАНТ] Поиск товаров/сырья с автоочисткой поля после выбора позиции.
+class WriteOffAddItemBar extends StatefulWidget {
   final List<Ingredient> availableIngredients;
   final ValueChanged<Ingredient> onIngredientSelected;
 
@@ -14,6 +21,21 @@ class WriteOffAddItemBar extends StatelessWidget {
     required this.availableIngredients,
     required this.onIngredientSelected,
   });
+
+  @override
+  State<WriteOffAddItemBar> createState() => _WriteOffAddItemBarState();
+}
+
+class _WriteOffAddItemBarState extends State<WriteOffAddItemBar> {
+  TextEditingController? _activeController;
+
+  void _handleSelect(Ingredient item) {
+    widget.onIngredientSelected(item);
+    // [UX] Мгновенно очищаем поле в следующем кадре после обновления Autocomplete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _activeController?.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +48,11 @@ class WriteOffAddItemBar extends StatelessWidget {
           return const Iterable<Ingredient>.empty();
         }
         final q = textEditingValue.text.toLowerCase().trim();
-        return availableIngredients.where(
+        return widget.availableIngredients.where(
           (item) => !item.isArchived && item.name.toLowerCase().contains(q),
         );
       },
-      onSelected: onIngredientSelected,
+      onSelected: _handleSelect,
       optionsViewBuilder: (context, onSelected, options) {
         return Align(
           alignment: Alignment.topLeft,
@@ -120,53 +142,69 @@ class WriteOffAddItemBar extends StatelessWidget {
       },
       fieldViewBuilder:
           (context, textEditingController, focusNode, onFieldSubmitted) {
-        return TextField(
-          controller: textEditingController,
-          focusNode: focusNode,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkText : AppColors.lightText,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Поиск номенклатуры для списания (сырье, товары)...',
-            hintStyle: AppTextStyles.bodyMedium.copyWith(
-              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-            ),
-            prefixIcon:
-                const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
-            suffixIcon: textEditingController.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(PhosphorIconsRegular.x, size: 16),
-                    onPressed: () {
-                      textEditingController.clear();
-                      focusNode.requestFocus();
-                    },
-                  )
-                : null,
-            isDense: true,
-            filled: true,
-            fillColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        _activeController = textEditingController;
+
+        return ValueListenableBuilder<TextEditingValue>(
+          valueListenable: textEditingController,
+          builder: (context, value, _) {
+            final hasText = value.text.isNotEmpty;
+            return TextField(
+              controller: textEditingController,
+              focusNode: focusNode,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: isDark ? AppColors.darkText : AppColors.lightText,
               ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              decoration: InputDecoration(
+                hintText: 'Поиск номенклатуры для списания (сырье, товары)...',
+                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                  color:
+                      isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
+                prefixIcon: const Icon(
+                  PhosphorIconsRegular.magnifyingGlass,
+                  size: 18,
+                ),
+                suffixIcon: hasText
+                    ? IconButton(
+                        icon: const Icon(PhosphorIconsRegular.x, size: 16),
+                        onPressed: () {
+                          textEditingController.clear();
+                          focusNode.requestFocus();
+                        },
+                      )
+                    : null,
+                isDense: true,
+                filled: true,
+                fillColor:
+                    isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color:
+                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color:
+                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: AppColors.brandPrimary,
+                    width: 1.5,
+                  ),
+                ),
               ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: AppColors.brandPrimary,
-                width: 1.5,
-              ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

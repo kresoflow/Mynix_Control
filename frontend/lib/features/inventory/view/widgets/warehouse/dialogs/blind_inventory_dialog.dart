@@ -1,8 +1,9 @@
+// ==============================================================================
+// 1. ИМПОРТЫ
+// ==============================================================================
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_toast.dart';
@@ -13,9 +14,14 @@ import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
-import 'blind_inventory/blind_inventory_items_list.dart';
+import 'blind_inventory/blind_inventory_toolbar.dart';
+import 'blind_inventory/blind_inventory_grouped_view.dart';
 import 'blind_inventory/blind_inventory_progress_card.dart';
 
+// ==============================================================================
+// 2. ДИАЛОГ СЛЕПОЙ ИНВЕНТАРИЗАЦИИ
+// ==============================================================================
+/// [ИНВАРИАНТ] Диалог ревизии склада с группировкой номенклатуры по цехам.
 class BlindInventoryDialog extends StatefulWidget {
   const BlindInventoryDialog({super.key});
 
@@ -32,7 +38,10 @@ class BlindInventoryDialog extends StatefulWidget {
 
 class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
   final Map<int, TextEditingController> _controllers = {};
+  final Map<String, bool> _expansionMap = {};
   String _searchQuery = '';
+  bool _onlyUnfilled = false;
+  bool _isAllExpanded = false;
   bool _isLoading = false;
 
   @override
@@ -119,14 +128,6 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final inputBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: BorderSide(
-        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-      ),
-    );
-
     return DirtyPopScope(
       isDirtyCheck: () => _isDirty,
       title: 'Отменить инвентаризацию?',
@@ -136,76 +137,51 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
       child: AppDialog(
         title: 'Слепая Инвентаризация',
         icon: PhosphorIconsRegular.clipboardText,
-        width: 680,
+        width: 700,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              onChanged: (val) =>
+            BlindInventoryToolbar(
+              searchQuery: _searchQuery,
+              onSearchChanged: (val) =>
                   setState(() => _searchQuery = val.toLowerCase().trim()),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: isDark ? AppColors.darkText : AppColors.lightText,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Поиск номенклатуры для пересчета...',
-                prefixIcon:
-                    const Icon(PhosphorIconsRegular.magnifyingGlass, size: 18),
-                isDense: true,
-                filled: true,
-                fillColor:
-                    isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                border: inputBorder,
-                enabledBorder: inputBorder,
-                focusedBorder: inputBorder.copyWith(
-                  borderSide:
-                      BorderSide(color: AppColors.brandPrimary, width: 1.5),
-                ),
-              ),
+              onlyUnfilled: _onlyUnfilled,
+              onOnlyUnfilledChanged: (val) =>
+                  setState(() => _onlyUnfilled = val),
+              isAllExpanded: _isAllExpanded,
+              onToggleExpandAll: () =>
+                  setState(() => _isAllExpanded = !_isAllExpanded),
             ),
             const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
-              ),
-              child: BlocBuilder<IngredientBloc, IngredientState>(
-                builder: (context, state) {
-                  if (state is IngredientLoading) {
-                    return const SizedBox(
-                      height: 240,
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (state is! IngredientLoaded) {
-                    return const SizedBox(
-                      height: 160,
-                      child: Center(child: Text('Ошибка загрузки позиций')),
-                    );
-                  }
-
-                  final allItems =
-                      state.ingredients.where((i) => !i.isArchived).toList();
-                  final filtered = _searchQuery.isEmpty
-                      ? allItems
-                      : allItems
-                          .where(
-                            (i) => i.name.toLowerCase().contains(_searchQuery),
-                          )
-                          .toList();
-
-                  return BlindInventoryItemsList(
-                    items: filtered,
-                    controllers: _controllers,
-                    onChanged: () => setState(() {}),
+            BlocBuilder<IngredientBloc, IngredientState>(
+              builder: (context, state) {
+                if (state is IngredientLoading) {
+                  return const SizedBox(
+                    height: 240,
+                    child: Center(child: CircularProgressIndicator()),
                   );
-                },
-              ),
+                }
+                if (state is! IngredientLoaded) {
+                  return const SizedBox(
+                    height: 160,
+                    child: Center(child: Text('Ошибка загрузки позиций')),
+                  );
+                }
+
+                return BlindInventoryGroupedView(
+                  items: state.ingredients,
+                  controllers: _controllers,
+                  searchQuery: _searchQuery,
+                  onlyUnfilled: _onlyUnfilled,
+                  isAllExpanded: _isAllExpanded,
+                  expansionMap: _expansionMap,
+                  onExpansionChanged: (cat, exp) {
+                    setState(() => _expansionMap[cat] = exp);
+                  },
+                  onChanged: () => setState(() {}),
+                );
+              },
             ),
             const SizedBox(height: 12),
             BlocBuilder<IngredientBloc, IngredientState>(
@@ -230,14 +206,13 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
           const SizedBox(width: 10),
           BlocBuilder<IngredientBloc, IngredientState>(
             builder: (context, state) {
+              final isReady = !_isLoading && state is IngredientLoaded;
               return AppButton.primary(
                 label: 'Завершить инвентаризацию',
                 icon: PhosphorIconsRegular.checkCircle,
                 height: 40,
                 isLoading: _isLoading,
-                onPressed: _isLoading || state is! IngredientLoaded
-                    ? null
-                    : () => _submit(state.ingredients),
+                onPressed: isReady ? () => _submit(state.ingredients) : null,
               );
             },
           ),
