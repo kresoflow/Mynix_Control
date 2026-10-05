@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -12,8 +12,10 @@ import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'write_off/write_off_meta_row.dart';
 import 'write_off/write_off_add_item_bar.dart';
 import 'write_off/write_off_items_table.dart';
+import 'write_off/write_off_summary_card.dart';
 
 class WriteOffDocumentDialog extends StatefulWidget {
   const WriteOffDocumentDialog({super.key});
@@ -72,14 +74,18 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
   }
 
   double get _totalAmount => _entries.fold(0.0, (sum, e) => sum + e.total);
+  double get _totalUnits => _entries.fold(0.0, (sum, e) => sum + e.quantity);
 
-  bool get _isDirty => _entries.isNotEmpty || _commentController.text.trim().isNotEmpty;
+  bool get _isDirty =>
+      _entries.isNotEmpty || _commentController.text.trim().isNotEmpty;
 
   Future<void> _submit() async {
     final validEntries = _entries.where((e) => e.quantity > 0).toList();
     if (validEntries.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Укажите количество для списания хотя бы одной позиции')),
+        const SnackBar(
+            content:
+                Text('Укажите количество для списания хотя бы одной позиции'),),
       );
       return;
     }
@@ -94,7 +100,10 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
       final items = validEntries.map((e) {
         final isRetail = e.item.attributes?['is_retail'] == true;
         return {
-          if (isRetail) 'retail_product_id': e.item.id else 'ingredient_id': e.item.id,
+          if (isRetail)
+            'retail_product_id': e.item.id
+          else
+            'ingredient_id': e.item.id,
           'quantity': e.quantity,
           'price_per_unit': e.cost,
           'total_price': e.total,
@@ -127,7 +136,9 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка списания: ${e.toString()}'), backgroundColor: AppColors.danger),
+          SnackBar(
+              content: Text('Ошибка списания: ${e.toString()}'),
+              backgroundColor: AppColors.danger,),
         );
       }
     } finally {
@@ -141,106 +152,62 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
   Widget build(BuildContext context) {
     final currency = context.watch<SettingsBloc>().state.currency;
     final ingState = context.watch<IngredientBloc>().state;
-    final availableIngredients = ingState is IngredientLoaded ? ingState.ingredients : <Ingredient>[];
+    final availableIngredients =
+        ingState is IngredientLoaded ? ingState.ingredients : <Ingredient>[];
 
     return DirtyPopScope(
       isDirtyCheck: () => _isDirty,
       title: 'Отменить списание?',
-      message: 'Все выбранные позиции и данные акта будут сброшены. Вы уверены, что хотите выйти?',
+      message:
+          'Все выбранные позиции и данные акта будут сброшены. Вы уверены, что хотите выйти?',
       confirmLabel: 'Сбросить акт',
       child: AppDialog(
-        title: 'Акт списания сырья со склада',
-        icon: PhosphorIconsRegular.trashSimple,
-        isDestructive: true,
-        width: 650,
+        title: 'Акт списания со склада',
+        icon: PhosphorIconsRegular.archive,
+        isDestructive: false,
+        width: 680,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Reason selector
-            Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _selectedReason,
-                    decoration: const InputDecoration(
-                      labelText: 'Причина списания',
-                      isDense: true,
-                    ),
-                    items: _reasons.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedReason = val);
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _commentController,
-                    decoration: const InputDecoration(
-                      labelText: 'Примечание / Комментарий (опционально)',
-                      isDense: true,
-                    ),
-                  ),
-                ),
-              ],
+            WriteOffMetaRow(
+              selectedReason: _selectedReason,
+              reasons: _reasons,
+              onReasonChanged: (r) => setState(() => _selectedReason = r),
+              commentController: _commentController,
             ),
-            const SizedBox(height: 16),
-
-            // Add item autocomplete bar
+            const SizedBox(height: 12),
             WriteOffAddItemBar(
               availableIngredients: availableIngredients,
               onIngredientSelected: _addItem,
             ),
             const SizedBox(height: 12),
-
-            // Items table
             WriteOffItemsTable(
               items: _entries,
               currency: currency,
               onRemove: _removeItem,
               onChanged: () => setState(() {}),
             ),
-            const SizedBox(height: 16),
-
-            // Total losses banner
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.danger.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Общая сумма списания (по себестоимости):',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                  ),
-                  Text(
-                    '${_totalAmount.toStringAsFixed(2)} $currency',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: AppColors.danger,
-                    ),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 14),
+            WriteOffSummaryCard(
+              itemsCount: _entries.length,
+              totalUnits: _totalUnits,
+              totalAmount: _totalAmount,
+              currency: currency,
             ),
           ],
         ),
         actions: [
-          AppGhostButton(
+          AppButton.secondary(
             label: 'Отмена',
+            height: 40,
             onPressed: _isLoading ? null : () => Navigator.maybePop(context),
           ),
-          const SizedBox(width: 12),
-          AppDangerButton(
+          const SizedBox(width: 10),
+          AppButton.primary(
             label: 'Провести списание',
+            icon: PhosphorIconsRegular.checkCircle,
+            height: 40,
             isLoading: _isLoading,
             onPressed: _isLoading || _entries.isEmpty ? null : _submit,
           ),

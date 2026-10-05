@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -9,6 +9,13 @@ import 'export_helper_stub.dart'
     if (dart.library.html) 'export_helper_web.dart' as export_helper;
 
 class DocumentExportService {
+  static String buildFileName(InventoryDocument doc, String ext) {
+    final prefix = doc.type == 'write_off'
+        ? 'akt_spisaniya'
+        : (doc.type == 'inventory' ? 'akt_inventarizacii' : 'nakladnaya');
+    return '${prefix}_${doc.id}.$ext';
+  }
+
   /// 📄 Генерация красивого бинарного PDF документа с логотипом Kreso Flow и поддержкой кириллицы
   static Future<Uint8List> generatePdfBytes(InventoryDocument doc, String currency) {
     return DocumentPdfBuilder.buildPdfBytes(doc, currency);
@@ -18,7 +25,7 @@ class DocumentExportService {
   static Future<void> downloadPdf(InventoryDocument doc, String currency) async {
     final pdfBytes = await generatePdfBytes(doc, currency);
     export_helper.downloadBinaryFile(
-      'nakladnaya_${doc.id}.pdf',
+      buildFileName(doc, 'pdf'),
       pdfBytes,
       'application/pdf',
     );
@@ -29,7 +36,7 @@ class DocumentExportService {
     final pdfBytes = await generatePdfBytes(doc, currency);
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdfBytes,
-      name: 'nakladnaya_${doc.id}.pdf',
+      name: buildFileName(doc, 'pdf'),
     );
   }
 
@@ -37,7 +44,7 @@ class DocumentExportService {
   static void exportExcel(InventoryDocument doc, String currency) {
     final csvContent = DocumentTextBuilder.buildCsv(doc, currency);
     export_helper.downloadFile(
-      'nakladnaya_${doc.id}.csv',
+      buildFileName(doc, 'csv'),
       csvContent,
       'text/csv;charset=utf-8',
     );
@@ -58,7 +65,7 @@ class DocumentExportService {
   static void exportTxt(InventoryDocument doc, String currency) {
     final text = buildPlainText(doc, currency);
     export_helper.downloadFile(
-      'nakladnaya_${doc.id}.txt',
+      buildFileName(doc, 'txt'),
       text,
       'text/plain;charset=utf-8',
     );
@@ -77,7 +84,7 @@ class DocumentExportService {
   static void exportJson(InventoryDocument doc) {
     final jsonStr = const JsonEncoder.withIndent('  ').convert(buildJson(doc));
     export_helper.downloadFile(
-      'nakladnaya_${doc.id}.json',
+      buildFileName(doc, 'json'),
       jsonStr,
       'application/json;charset=utf-8',
     );
