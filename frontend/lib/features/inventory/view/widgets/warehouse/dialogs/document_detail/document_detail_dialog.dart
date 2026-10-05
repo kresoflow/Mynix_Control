@@ -1,11 +1,14 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
+import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
 import 'package:kreso_frontend/features/inventory/models/document.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
 import 'document_detail_header.dart';
 import 'document_detail_payment_info.dart';
 import 'document_detail_items_table.dart';
@@ -17,11 +20,17 @@ class DocumentDetailDialog extends StatefulWidget {
   const DocumentDetailDialog({super.key, required this.documentId});
 
   static Future<void> show(BuildContext context, int documentId) {
+    final docBloc = context.read<DocumentBloc>();
     return showDialog(
       context: context,
-      builder: (_) => RepositoryProvider.value(
-        value: context.read<InventoryRepository>(),
-        child: DocumentDetailDialog(documentId: documentId),
+      builder: (_) => MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider.value(value: context.read<InventoryRepository>()),
+        ],
+        child: BlocProvider.value(
+          value: docBloc,
+          child: DocumentDetailDialog(documentId: documentId),
+        ),
       ),
     );
   }
@@ -45,6 +54,24 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
         content: Text(msg),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _completeDraft(InventoryDocument doc) {
+    context.read<DocumentBloc>().add(CompleteDocument(doc.id));
+    _showSnack('Накладная #${doc.id} проводится...');
+    Navigator.of(context).pop();
+  }
+
+  void _editDraft(InventoryDocument doc) {
+    final docBloc = context.read<DocumentBloc>();
+    Navigator.of(context).pop();
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider.value(
+        value: docBloc,
+        child: ReceiveDocumentDialog(initialDocument: doc),
       ),
     );
   }
@@ -132,6 +159,8 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
                     doc: doc,
                     currency: currency,
                     onSnack: _showSnack,
+                    onCompleteDraft: () => _completeDraft(doc),
+                    onEditDraft: () => _editDraft(doc),
                   ),
                 ],
               );

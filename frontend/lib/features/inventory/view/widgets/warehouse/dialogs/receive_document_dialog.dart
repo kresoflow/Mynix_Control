@@ -5,11 +5,15 @@ import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
+import 'package:kreso_frontend/features/inventory/models/document.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'receive_document/category_mode/receive_category_section.dart';
+import 'receive_document/category_mode/receive_category_sync_adapter.dart';
 import 'receive_document/receipt_row_data.dart';
+import 'receive_document/receive_document_cart_sheet.dart';
 import 'receive_document/receive_document_footer.dart';
 import 'receive_document/receive_document_header.dart';
 import 'receive_document/receive_document_tabs_bar.dart';
@@ -19,7 +23,9 @@ import 'receive_document/receive_document_row_callbacks.dart';
 import 'receive_document/receive_document_table_section.dart';
 
 class ReceiveDocumentDialog extends StatefulWidget {
-  const ReceiveDocumentDialog({super.key});
+  final InventoryDocument? initialDocument;
+
+  const ReceiveDocumentDialog({super.key, this.initialDocument});
 
   @override
   State<ReceiveDocumentDialog> createState() => _ReceiveDocumentDialogState();
@@ -30,12 +36,16 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   final _reasonController = TextEditingController();
   final _paidAmountController = TextEditingController();
   late final ValueNotifier<double> _totalSumNotifier;
+  late final ValueNotifier<int> _cartCountNotifier;
+  late final ReceiveCategorySyncAdapter _categoryAdapter;
   DateTime _documentDate = DateTime.now();
   int? _selectedSupplierId;
   bool _isAdHocPurchase = false;
   String _paymentStatus = 'unpaid';
   String _paymentMethod = 'cash';
-  int _tabIndex = 1; // 1 = Товары витрины, 2 = Сырье
+  int _tabIndex = 0; // 0 = Все, 1 = Товары витрины, 2 = Сырье
+  ReceiveViewMode _viewMode = ReceiveViewMode.lines;
+  bool _isCartOpen = false;
 
   final List<ReceiptRowData> _items = [];
   List<Ingredient> _availableIngredients = [];
@@ -46,47 +56,51 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   void initState() {
     super.initState();
     _totalSumNotifier = ValueNotifier<double>(0.0);
+    _cartCountNotifier = ValueNotifier<int>(0);
+    _categoryAdapter = ReceiveCategorySyncAdapter(items: _items, onTotalChanged: _updateTotal);
     context.read<DocumentBloc>().add(LoadSuppliers());
     _loadIngredients();
-    _addItem();
+    if (widget.initialDocument != null) {
+      _initFromDraft(widget.initialDocument!);
+    } else {
+      _addItem();
+    }
+  }
+
+  void _initFromDraft(InventoryDocument doc) {
+    _invoiceNumberController.text = doc.invoiceNumber ?? '';
+    _reasonController.text = doc.reason ?? '';
+    _selectedSupplierId = doc.supplierId;
+    _documentDate = doc.date;
+    _paymentStatus = doc.paymentStatus;
+    _paymentMethod = doc.paymentMethod;
+    if (doc.paidAmount > 0) _paidAmountController.text = doc.paidAmount.toStringAsFixed(2);
+    _items.addAll(ReceiveDocumentProcessor.createDraftRows(doc.items));
+    _updateTotal();
   }
 
   @override
   void dispose() {
-    for (var item in _items) {
-      item.dispose();
-    }
+    for (var item in _items) { item.dispose(); }
     _totalSumNotifier.dispose();
+    _cartCountNotifier.dispose();
     _invoiceNumberController.dispose();
     _reasonController.dispose();
     _paidAmountController.dispose();
     super.dispose();
   }
 
-  double _calculateTotal() {
-    double sum = 0.0;
-    for (var item in _items) {
-      sum += item.quantity * item.price;
-    }
-    return sum;
-  }
-
+  double _calculateTotal() => _items.fold(0.0, (sum, it) => sum + (it.quantity * it.price));
+  int _calculateCartCount() => _items.where((r) => r.ingredient != null && r.quantity > 0 && r.price > 0).length;
   void _updateTotal() {
     _totalSumNotifier.value = _calculateTotal();
+    _cartCountNotifier.value = _calculateCartCount();
   }
 
   bool get _isDirty {
-    if (_invoiceNumberController.text.trim().isNotEmpty) return true;
-    if (_reasonController.text.trim().isNotEmpty) return true;
-    if (_selectedSupplierId != null) return true;
-    if (_items.length > 1) return true;
-    for (final item in _items) {
-      if (item.ingredient != null) return true;
-      if (item.nameController.text.trim().isNotEmpty) return true;
-      if (item.price > 0 || (double.tryParse(item.priceController.text) ?? 0) > 0) return true;
-      if (item.flavorController.text.trim().isNotEmpty) return true;
-    }
-    return false;
+    if (_invoiceNumberController.text.trim().isNotEmpty || _reasonController.text.trim().isNotEmpty) return true;
+    if (_selectedSupplierId != null || _items.length > 1) return true;
+    return _items.any((i) => i.ingredient != null || i.nameController.text.trim().isNotEmpty || i.price > 0);
   }
 
   Future<void> _loadIngredients() async {
@@ -98,6 +112,8 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
         setState(() {
           _availableIngredients = [...ingredients, ...retail].where((i) => !i.isArchived).toList();
           _isLoadingIngredients = false;
+          ReceiveDocumentProcessor.bindDraftIngredients(_items, _availableIngredients, widget.initialDocument?.items);
+          _updateTotal();
         });
       }
     } catch (_) {
@@ -120,19 +136,14 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   }
 
   Future<void> _save({required bool complete}) async {
-    if (_items.isEmpty || _items.every((item) => item.ingredient == null)) {
+    _categoryAdapter.pruneEmptyRows();
+    if (_items.isEmpty || _items.every((item) => item.ingredient == null || item.quantity <= 0)) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Внимание'),
-          content: const Text('Добавьте хотя бы одну позицию из каталога.'),
-          actions: [
-            AppButton.primary(
-              label: 'ОК',
-              height: 36,
-              onPressed: () => Navigator.pop(ctx),
-            ),
-          ],
+          content: const Text('Добавьте хотя бы одну позицию с ненулевым количеством.'),
+          actions: [AppButton.primary(label: 'ОК', height: 36, onPressed: () => Navigator.pop(ctx))],
         ),
       );
       return;
@@ -141,9 +152,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     setState(() => _isSaving = true);
     try {
       final supplierId = _selectedSupplierId == -1 ? null : _selectedSupplierId;
-      final paidAmt = _paymentStatus == 'paid'
-          ? 0.0
-          : (_paymentStatus == 'partial' ? (double.tryParse(_paidAmountController.text) ?? 0.0) : 0.0);
+      final paidAmt = _paymentStatus == 'paid' ? 0.0 : (_paymentStatus == 'partial' ? (double.tryParse(_paidAmountController.text) ?? 0.0) : 0.0);
 
       await ReceiveDocumentProcessor.saveDocument(
         context: context,
@@ -160,9 +169,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger));
         setState(() => _isSaving = false);
       }
     }
@@ -196,16 +203,8 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.darkBg.withValues(alpha: 0.35),
-                    blurRadius: 40,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
+                border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
+                boxShadow: [BoxShadow(color: AppColors.darkBg.withValues(alpha: 0.35), blurRadius: 40, offset: const Offset(0, 12))],
               ),
               child: Stack(
                 children: [
@@ -216,6 +215,8 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                       ReceiveDocumentTabsBar(
                         tabIndex: _tabIndex,
                         onTabSelected: (val) => setState(() => _tabIndex = val),
+                        viewMode: _viewMode,
+                        onViewModeChanged: (mode) => setState(() => _viewMode = mode),
                         onAddRow: _addItem,
                       ),
                       const SizedBox(height: 6),
@@ -229,21 +230,34 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                         isAdHocPurchase: _isAdHocPurchase,
                         onAdHocChanged: (val) => setState(() => _isAdHocPurchase = val),
                       ),
-                      ReceiveDocumentTableSection(
-                        isLoading: _isLoadingIngredients,
-                        items: _items,
-                        availableIngredients: _availableIngredients,
-                        tabIndex: _tabIndex,
-                        currency: currency,
-                        totalSumNotifier: _totalSumNotifier,
-                        onAddItem: _addItem,
-                        onRemoveItem: _removeItem,
-                        onTotalChanged: _updateTotal,
-                        onStateUpdate: (fn) => setState(fn),
-                      ),
+                      _viewMode == ReceiveViewMode.lines
+                          ? ReceiveDocumentTableSection(
+                              isLoading: _isLoadingIngredients,
+                              items: _items,
+                              availableIngredients: _availableIngredients,
+                              tabIndex: _tabIndex,
+                              currency: currency,
+                              totalSumNotifier: _totalSumNotifier,
+                              onAddItem: _addItem,
+                              onRemoveItem: _removeItem,
+                              onTotalChanged: _updateTotal,
+                              onStateUpdate: (fn) => setState(fn),
+                            )
+                          : ReceiveCategorySection(
+                              availableIngredients: _availableIngredients.where((i) {
+                                if (_tabIndex == 1) return i.isRetail;
+                                if (_tabIndex == 2) return !i.isRetail;
+                                return true;
+                              }).toList(),
+                              isRetail: _tabIndex == 1,
+                              currency: currency,
+                              adapter: _categoryAdapter,
+                            ),
                       ReceiveDocumentFooter(
                         totalSum: _totalSumNotifier.value,
                         totalSumListenable: _totalSumNotifier,
+                        cartCountListenable: _cartCountNotifier,
+                        cartItemCount: _calculateCartCount(),
                         currency: currency,
                         isSaving: _isSaving,
                         paymentStatus: _paymentStatus,
@@ -251,17 +265,24 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                         paidAmountController: _paidAmountController,
                         onPaymentStatusChanged: (val) => setState(() => _paymentStatus = val),
                         onPaymentMethodChanged: (val) => setState(() => _paymentMethod = val),
+                        isCartOpen: _isCartOpen,
+                        onToggleCart: () => setState(() => _isCartOpen = !_isCartOpen),
                         onCancel: () => Navigator.of(context).maybePop(),
                         onSaveDraft: () => _save(complete: false),
                         onSaveComplete: () => _save(complete: true),
                       ),
                     ],
                   ),
-                  if (_isSaving)
-                    Container(
-                      color: AppColors.darkBg.withValues(alpha: 0.54),
-                      child: const Center(child: CircularProgressIndicator()),
+                  if (_isCartOpen)
+                    ReceiveDocumentCartSheet(
+                      items: _items,
+                      adapter: _categoryAdapter,
+                      currency: currency,
+                      onClose: () => setState(() => _isCartOpen = false),
+                      onStateUpdate: () => setState(() => _updateTotal()),
                     ),
+                  if (_isSaving)
+                    Container(color: AppColors.darkBg.withValues(alpha: 0.54), child: const Center(child: CircularProgressIndicator())),
                 ],
               ),
             ),

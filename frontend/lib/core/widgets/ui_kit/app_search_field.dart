@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -34,6 +35,8 @@ class AppSearchField extends StatefulWidget {
   final bool autoFocus;
   final bool isInitiallyExpanded;
   final bool enableHotkeys;
+  final bool enableDebounce;
+  final Duration debounceDuration;
 
   const AppSearchField({
     super.key,
@@ -51,6 +54,8 @@ class AppSearchField extends StatefulWidget {
     this.autoFocus = false,
     this.isInitiallyExpanded = false,
     this.enableHotkeys = true,
+    this.enableDebounce = true,
+    this.debounceDuration = const Duration(milliseconds: 250),
   });
 
   @override
@@ -60,6 +65,7 @@ class AppSearchField extends StatefulWidget {
 class _AppSearchFieldState extends State<AppSearchField> {
   late TextEditingController _controller;
   late FocusNode _focusNode;
+  Timer? _debounceTimer;
   bool _isInternalController = false;
   bool _isInternalFocusNode = false;
   bool _isExpanded = false;
@@ -95,6 +101,19 @@ class _AppSearchFieldState extends State<AppSearchField> {
     if (mounted) setState(() => _isFocused = _focusNode.hasFocus);
   }
 
+  void _onTextChanged(String val) {
+    if (!widget.enableDebounce || widget.debounceDuration == Duration.zero) {
+      widget.onChanged?.call(val);
+      return;
+    }
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(widget.debounceDuration, () {
+      if (mounted) {
+        widget.onChanged?.call(val);
+      }
+    });
+  }
+
   bool _handleGlobalKeyEvent(KeyEvent event) {
     if (!widget.enableHotkeys || !mounted) return false;
     if (event is! KeyDownEvent) return false;
@@ -120,6 +139,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
     // Escape: очистить, расфокусировать и свернуть
     if (event.logicalKey == LogicalKeyboardKey.escape) {
       if (_isFocused || (widget.mode == AppSearchMode.collapsible && _isExpanded)) {
+        _debounceTimer?.cancel();
         _controller.clear();
         widget.onChanged?.call('');
         widget.onClear?.call();
@@ -140,6 +160,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     if (widget.enableHotkeys) {
       HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     }
@@ -156,6 +177,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
       if (_isExpanded) {
         _focusNode.requestFocus();
       } else {
+        _debounceTimer?.cancel();
         _controller.clear();
         widget.onChanged?.call('');
         widget.onClear?.call();
@@ -325,7 +347,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                         controller: _controller,
                         focusNode: _focusNode,
                         autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
-                        onChanged: widget.onChanged,
+                        onChanged: _onTextChanged,
                         textAlignVertical: TextAlignVertical.center,
                         cursorHeight: fontSize * 1.15,
                         cursorWidth: 1.6,
@@ -381,6 +403,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                       color: subtextColor,
                       isDark: isDark,
                       onTap: () {
+                        _debounceTimer?.cancel();
                         _controller.clear();
                         widget.onChanged?.call('');
                         widget.onClear?.call();

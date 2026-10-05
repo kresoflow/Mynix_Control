@@ -22,7 +22,7 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isRetail = tabIndex == 1;
+    final isRetail = tabIndex == 0 || tabIndex == 1;
 
     final headerStyle = AppTextStyles.caption.copyWith(
       fontWeight: FontWeight.w700,
@@ -57,7 +57,9 @@ class ReceiveDocumentTableHeader extends StatelessWidget {
           Expanded(
             flex: isRetail ? 3 : 5,
             child: Text(
-              isRetail ? 'Товар витрины' : 'Сырьё / Ингредиент',
+              tabIndex == 0
+                  ? 'Номенклатура'
+                  : (isRetail ? 'Товар витрины' : 'Сырьё / Ингредиент'),
               style: headerStyle,
             ),
           ),

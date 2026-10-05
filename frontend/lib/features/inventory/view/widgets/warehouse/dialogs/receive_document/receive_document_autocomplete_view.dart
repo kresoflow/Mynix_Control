@@ -19,7 +19,7 @@ class ReceiveDocumentAutocompleteField extends StatelessWidget {
   final int index;
   final List<ReceiptRowData> items;
   final List<Ingredient> availableIngredients;
-  final bool isRetail;
+  final int tabIndex;
   final bool isDark;
   final ValueChanged<Ingredient> onIngredientSelected;
   final ValueChanged<String> onNameChanged;
@@ -31,7 +31,7 @@ class ReceiveDocumentAutocompleteField extends StatelessWidget {
     required this.index,
     required this.items,
     required this.availableIngredients,
-    required this.isRetail,
+    required this.tabIndex,
     required this.isDark,
     required this.onIngredientSelected,
     required this.onNameChanged,
@@ -41,7 +41,7 @@ class ReceiveDocumentAutocompleteField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      flex: isRetail ? 3 : 5,
+      flex: tabIndex == 2 ? 5 : 3,
       child: SizedBox(
         height: 40,
         child: Focus(
@@ -66,7 +66,9 @@ class ReceiveDocumentAutocompleteField extends StatelessWidget {
                     .contains(textEditingValue.text.toLowerCase());
                 if (!matchesText) return false;
                 final isOptionRetail = option.attributes?['is_retail'] == true;
-                return isRetail ? isOptionRetail : !isOptionRetail;
+                if (tabIndex == 1) return isOptionRetail;
+                if (tabIndex == 2) return !isOptionRetail;
+                return true;
               });
             },
             onSelected: onIngredientSelected,

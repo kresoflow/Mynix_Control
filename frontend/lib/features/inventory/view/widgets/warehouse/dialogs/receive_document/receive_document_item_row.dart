@@ -80,10 +80,41 @@ class _ReceiveDocumentItemRowState extends State<ReceiveDocumentItemRow> {
     super.dispose();
   }
 
+  Widget _buildDashCell(bool isDark, {int? flex, double? width}) {
+    final text = Center(
+      child: Text(
+        '—',
+        style: TextStyle(
+          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+    return flex != null ? Expanded(flex: flex, child: SizedBox(height: 40, child: text)) : SizedBox(width: width, height: 40, child: text);
+  }
+
+  Widget _buildTextField(TextEditingController ctrl, FocusNode node, String hint, VoidCallback onSubmitted, int flex, bool isDark) {
+    return Expanded(
+      flex: flex,
+      child: SizedBox(
+        height: 40,
+        child: TextFormField(
+          controller: ctrl,
+          focusNode: node,
+          style: AppTextStyles.bodyMedium.copyWith(color: isDark ? AppColors.darkText : AppColors.lightText, fontSize: 13),
+          decoration: buildBulkInputDecoration(context, hint, isHintOnly: true),
+          onFieldSubmitted: (_) => onSubmitted(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isRetail = widget.tabIndex == 1;
+    final showRetailColumns = widget.tabIndex == 0 || widget.tabIndex == 1;
+    final isRawItem = widget.item.ingredient != null && !widget.item.ingredient!.isRetail;
 
     return MouseRegion(
       onEnter: (_) => _isHovered.value = true,
@@ -128,49 +159,25 @@ class _ReceiveDocumentItemRowState extends State<ReceiveDocumentItemRow> {
                   index: widget.index,
                   items: widget.items,
                   availableIngredients: widget.availableIngredients,
-                  isRetail: isRetail,
+                  tabIndex: widget.tabIndex,
                   isDark: isDark,
                   onIngredientSelected: widget.onIngredientSelected,
                   onNameChanged: widget.onNameChanged,
                   onNameSubmitted: widget.onNameSubmitted,
                 ),
 
-                // 3. Вкус и объем (только для витрины)
-                if (isRetail) ...[
+                // 3. Вкус и объем (витрина или прочерк для сырья во вкладке Все)
+                if (showRetailColumns) ...[
                   const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: SizedBox(
-                      height: 40,
-                      child: TextFormField(
-                        controller: widget.item.flavorController,
-                        focusNode: widget.item.flavorFocusNode,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: isDark ? AppColors.darkText : AppColors.lightText,
-                          fontSize: 13,
-                        ),
-                        decoration: buildBulkInputDecoration(context, 'Вкус (или пусто)', isHintOnly: true),
-                        onFieldSubmitted: (_) => widget.onFlavorSubmitted(),
-                      ),
-                    ),
-                  ),
+                  if (isRawItem)
+                    _buildDashCell(isDark, flex: 2)
+                  else
+                    _buildTextField(widget.item.flavorController, widget.item.flavorFocusNode, 'Вкус (или пусто)', widget.onFlavorSubmitted, 2, isDark),
                   const SizedBox(width: 8),
-                  Expanded(
-                    flex: 1,
-                    child: SizedBox(
-                      height: 40,
-                      child: TextFormField(
-                        controller: widget.item.volumeController,
-                        focusNode: widget.item.volumeFocusNode,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: isDark ? AppColors.darkText : AppColors.lightText,
-                          fontSize: 13,
-                        ),
-                        decoration: buildBulkInputDecoration(context, 'Объем', isHintOnly: true),
-                        onFieldSubmitted: (_) => widget.onVolumeSubmitted(),
-                      ),
-                    ),
-                  ),
+                  if (isRawItem)
+                    _buildDashCell(isDark, flex: 1)
+                  else
+                    _buildTextField(widget.item.volumeController, widget.item.volumeFocusNode, 'Объем', widget.onVolumeSubmitted, 1, isDark),
                 ],
                 const SizedBox(width: 8),
 
@@ -229,22 +236,25 @@ class _ReceiveDocumentItemRowState extends State<ReceiveDocumentItemRow> {
                   ),
                 ),
 
-                // 8. Цена продажи (только для витрины)
-                if (isRetail) ...[
+                // 8. Цена продажи (витрина или прочерк для сырья во вкладке Все)
+                if (showRetailColumns) ...[
                   const SizedBox(width: 8),
-                  ReceiveDocumentNumberCell(
-                    width: 105,
-                    controller: widget.item.sellPriceController,
-                    focusNode: widget.item.sellPriceFocusNode,
-                    hint: '0.00',
-                    textAlign: TextAlign.right,
-                    isDark: isDark,
-                    onChanged: widget.onSellPriceChanged,
-                    onSubmitted: widget.onSellPriceSubmitted,
-                    onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
-                      event: ev, items: widget.items, index: widget.index, targetNode: (r) => r.sellPriceFocusNode,
+                  if (isRawItem)
+                    _buildDashCell(isDark, width: 105)
+                  else
+                    ReceiveDocumentNumberCell(
+                      width: 105,
+                      controller: widget.item.sellPriceController,
+                      focusNode: widget.item.sellPriceFocusNode,
+                      hint: '0.00',
+                      textAlign: TextAlign.right,
+                      isDark: isDark,
+                      onChanged: widget.onSellPriceChanged,
+                      onSubmitted: widget.onSellPriceSubmitted,
+                      onKeyEvent: (_, ev) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
+                        event: ev, items: widget.items, index: widget.index, targetNode: (r) => r.sellPriceFocusNode,
+                      ),
                     ),
-                  ),
                 ],
                 const SizedBox(width: 8),
 

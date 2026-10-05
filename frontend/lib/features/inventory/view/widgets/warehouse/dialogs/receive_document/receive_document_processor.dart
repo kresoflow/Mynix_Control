@@ -5,11 +5,41 @@ import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
+import 'package:kreso_frontend/features/inventory/models/document.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_data.dart';
 
 class ReceiveDocumentProcessor {
   static double getConversionFactor(String fromUnit, String toUnit) {
     return UnitFormatter.getConversionFactor(fromUnit, toUnit);
+  }
+
+  static List<ReceiptRowData> createDraftRows(List<InventoryDocumentItem>? docItems) {
+    if (docItems == null || docItems.isEmpty) return [ReceiptRowData()];
+    return docItems.map((it) => ReceiptRowData(
+      newName: it.ingredientName ?? it.retailProductName ?? '',
+      quantity: it.quantity,
+      price: it.pricePerUnit,
+    ),).toList();
+  }
+
+  static void bindDraftIngredients(
+    List<ReceiptRowData> items,
+    List<Ingredient> available,
+    List<InventoryDocumentItem>? docItems,
+  ) {
+    if (docItems == null) return;
+    for (int i = 0; i < items.length && i < docItems.length; i++) {
+      final it = docItems[i];
+      final match = available.where((ing) =>
+          (it.ingredientId != null && ing.id == it.ingredientId) ||
+          (it.retailProductId != null && ing.id == it.retailProductId) ||
+          ing.name == (it.ingredientName ?? it.retailProductName),).firstOrNull;
+      if (match != null) {
+        items[i].ingredient = match;
+        items[i].nameController.text = match.name;
+      }
+    }
   }
 
   static Future<void> saveDocument({

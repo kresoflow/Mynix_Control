@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -9,12 +9,16 @@ class DocumentDetailFooter extends StatelessWidget {
   final InventoryDocument doc;
   final String currency;
   final ValueChanged<String> onSnack;
+  final VoidCallback? onCompleteDraft;
+  final VoidCallback? onEditDraft;
 
   const DocumentDetailFooter({
     super.key,
     required this.doc,
     required this.currency,
     required this.onSnack,
+    this.onCompleteDraft,
+    this.onEditDraft,
   });
 
   @override
@@ -139,30 +143,47 @@ class DocumentDetailFooter extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          if (doc.status == 'draft') ...[
+            if (onEditDraft != null) ...[
+              AppButton.secondary(
+                label: 'Редактировать',
+                icon: PhosphorIconsRegular.pencilSimple,
+                height: 38,
+                onPressed: onEditDraft,
+              ),
+              const SizedBox(width: 8),
+            ],
+            if (onCompleteDraft != null)
+              AppButton.primary(
+                label: 'Провести накладную',
+                icon: PhosphorIconsRegular.checkCircle,
+                height: 38,
+                onPressed: onCompleteDraft,
+              ),
+          ] else ...[
+            // Кнопка: Печать
+            AppButton.secondary(
+              label: 'Печать',
+              icon: PhosphorIconsRegular.printer,
+              height: 38,
+              onPressed: () async {
+                await DocumentExportService.printDocument(doc, currency);
+              },
+            ),
+            const SizedBox(width: 8),
 
-          // Кнопка: Печать
-          AppButton.secondary(
-            label: 'Печать',
-            icon: PhosphorIconsRegular.printer,
-            height: 38,
-            onPressed: () async {
-              await DocumentExportService.printDocument(doc, currency);
-            },
-          ),
-          const SizedBox(width: 8),
-
-          // Главная кнопка: Скачать PDF
-          AppButton.primary(
-            label: 'Скачать PDF',
-            icon: PhosphorIconsRegular.filePdf,
-            height: 38,
-            onPressed: () async {
-              onSnack('Генерация и скачивание PDF...');
-              await DocumentExportService.downloadPdf(doc, currency);
-              onSnack('Файл PDF скачан');
-            },
-          ),
+            // Главная кнопка: Скачать PDF
+            AppButton.primary(
+              label: 'Скачать PDF',
+              icon: PhosphorIconsRegular.filePdf,
+              height: 38,
+              onPressed: () async {
+                onSnack('Генерация и скачивание PDF...');
+                await DocumentExportService.downloadPdf(doc, currency);
+                onSnack('Файл PDF скачан');
+              },
+            ),
+          ],
         ],
       ),
     );

@@ -16,6 +16,10 @@ class ReceiveDocumentFooter extends StatelessWidget {
   final TextEditingController paidAmountController;
   final ValueChanged<String> onPaymentStatusChanged;
   final ValueChanged<String> onPaymentMethodChanged;
+  final int cartItemCount;
+  final ValueListenable<int>? cartCountListenable;
+  final VoidCallback? onToggleCart;
+  final bool isCartOpen;
   final VoidCallback onCancel;
   final VoidCallback onSaveDraft;
   final VoidCallback onSaveComplete;
@@ -31,6 +35,10 @@ class ReceiveDocumentFooter extends StatelessWidget {
     required this.paidAmountController,
     required this.onPaymentStatusChanged,
     required this.onPaymentMethodChanged,
+    this.cartItemCount = 0,
+    this.cartCountListenable,
+    this.onToggleCart,
+    this.isCartOpen = false,
     required this.onCancel,
     required this.onSaveDraft,
     required this.onSaveComplete,
@@ -51,6 +59,61 @@ class ReceiveDocumentFooter extends StatelessWidget {
       );
     }
 
+    Widget cartButtonWidget(int count) {
+      return InkWell(
+        onTap: onToggleCart,
+        borderRadius: BorderRadius.circular(8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isCartOpen
+                ? AppColors.brandPrimary
+                : (count > 0
+                    ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.16 : 0.10)
+                    : (isDark ? AppColors.darkCard : AppColors.lightBg)),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isCartOpen || count > 0
+                  ? AppColors.brandPrimary.withValues(alpha: 0.4)
+                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                PhosphorIconsRegular.shoppingCart,
+                size: 15,
+                color: isCartOpen
+                    ? AppColors.pureWhite
+                    : (count > 0 ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '$count поз.',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isCartOpen
+                      ? AppColors.pureWhite
+                      : (count > 0 ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                isCartOpen ? PhosphorIconsRegular.caretDown : PhosphorIconsRegular.caretUp,
+                size: 12,
+                color: isCartOpen
+                    ? AppColors.pureWhite
+                    : (count > 0 ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: BoxDecoration(
@@ -64,9 +127,37 @@ class ReceiveDocumentFooter extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // 1. Итого к оплате
+          // 1. Блок условий оплаты (слева)
+          Flexible(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ReceiveDocumentPaymentSection(
+                isDark: isDark,
+                paymentStatus: paymentStatus,
+                paymentMethod: paymentMethod,
+                paidAmountController: paidAmountController,
+                onPaymentStatusChanged: onPaymentStatusChanged,
+                onPaymentMethodChanged: onPaymentMethodChanged,
+              ),
+            ),
+          ),
+          const Spacer(),
+
+          // 2. Кнопка корзины (по центру-справа перед итогом)
+          if (onToggleCart != null) ...[
+            if (cartCountListenable != null)
+              ValueListenableBuilder<int>(
+                valueListenable: cartCountListenable!,
+                builder: (_, count, __) => cartButtonWidget(count),
+              )
+            else
+              cartButtonWidget(cartItemCount),
+            const SizedBox(width: 14),
+          ],
+
+          // 3. Итого к оплате (рядом с проведением)
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
@@ -87,23 +178,14 @@ class ReceiveDocumentFooter extends StatelessWidget {
                 totalTextWidget(totalSum),
             ],
           ),
-          const SizedBox(width: 14),
-
-          // 2. Блок условий оплаты
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: ReceiveDocumentPaymentSection(
-              isDark: isDark,
-              paymentStatus: paymentStatus,
-              paymentMethod: paymentMethod,
-              paidAmountController: paidAmountController,
-              onPaymentStatusChanged: onPaymentStatusChanged,
-              onPaymentMethodChanged: onPaymentMethodChanged,
-            ),
+          Container(
+            width: 1,
+            height: 28,
+            margin: const EdgeInsets.symmetric(horizontal: 14),
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
-          const Spacer(),
 
-          // 3. Кнопки действий
+          // 4. Кнопки действий
           AppButton.ghost(
             label: 'Отмена',
             height: 38,

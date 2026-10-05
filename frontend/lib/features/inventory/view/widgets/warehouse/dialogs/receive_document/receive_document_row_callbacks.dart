@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_data.dart';
@@ -47,7 +47,8 @@ class ReceiveDocumentRowCallbacks {
   }
 
   static void onRowNameSubmitted(ReceiptRowData item, int tabIndex) {
-    if (tabIndex == 1) {
+    final isRetail = item.ingredient != null ? item.ingredient!.isRetail : (tabIndex == 1);
+    if (isRetail) {
       focusRow(item.flavorFocusNode);
     } else {
       focusRow(item.qtyFocusNode);
@@ -60,8 +61,10 @@ class ReceiveDocumentRowCallbacks {
     required int tabIndex,
     required VoidCallback onAddItem,
   }) {
-    if (tabIndex == 1) {
-      focusRow(items[index].sellPriceFocusNode);
+    final item = items[index];
+    final isRetail = item.ingredient != null ? item.ingredient!.isRetail : (tabIndex == 1);
+    if (isRetail) {
+      focusRow(item.sellPriceFocusNode);
     } else {
       if (index == items.length - 1) {
         onAddItem();

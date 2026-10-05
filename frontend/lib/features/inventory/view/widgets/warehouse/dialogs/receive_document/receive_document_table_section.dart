@@ -33,7 +33,7 @@ class ReceiveDocumentTableSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final minWidth = tabIndex == 1 ? 1040.0 : 880.0;
+    final minWidth = (tabIndex == 0 || tabIndex == 1) ? 1040.0 : 880.0;
 
     return Expanded(
       child: LayoutBuilder(
