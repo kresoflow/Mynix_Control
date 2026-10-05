@@ -93,8 +93,21 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   double _calculateTotal() => _items.fold(0.0, (sum, it) => sum + (it.quantity * it.price));
   int _calculateCartCount() => _items.where((r) => r.ingredient != null && r.quantity > 0 && r.price > 0).length;
   void _updateTotal() {
-    _totalSumNotifier.value = _calculateTotal();
+    final t = _calculateTotal();
+    _totalSumNotifier.value = t;
     _cartCountNotifier.value = _calculateCartCount();
+    if (_paymentStatus == 'paid' && t > 0) _paidAmountController.text = t.toStringAsFixed(2);
+  }
+
+  void _onPaymentStatusChanged(String val) {
+    setState(() {
+      _paymentStatus = val;
+      if (val == 'paid' && _totalSumNotifier.value > 0) {
+        _paidAmountController.text = _totalSumNotifier.value.toStringAsFixed(2);
+      } else if (val == 'unpaid') {
+        _paidAmountController.clear();
+      }
+    });
   }
 
   bool get _isDirty {
@@ -152,20 +165,13 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     setState(() => _isSaving = true);
     try {
       final supplierId = _selectedSupplierId == -1 ? null : _selectedSupplierId;
-      final paidAmt = _paymentStatus == 'paid' ? 0.0 : (_paymentStatus == 'partial' ? (double.tryParse(_paidAmountController.text) ?? 0.0) : 0.0);
-
+      final enteredAmt = double.tryParse(_paidAmountController.text) ?? 0.0;
+      final paidAmt = _paymentStatus == 'unpaid' ? 0.0 : (_paymentStatus == 'paid' ? (_totalSumNotifier.value > 0 ? _totalSumNotifier.value : enteredAmt) : enteredAmt);
       await ReceiveDocumentProcessor.saveDocument(
-        context: context,
-        items: _items,
-        selectedSupplierId: supplierId,
-        invoiceNumber: _invoiceNumberController.text,
-        reason: _reasonController.text,
-        documentDate: _documentDate,
-        tabIndex: _tabIndex,
-        paymentStatus: _paymentStatus,
-        paidAmount: paidAmt,
-        paymentMethod: _paymentMethod,
-        complete: complete,
+        context: context, items: _items, selectedSupplierId: supplierId,
+        invoiceNumber: _invoiceNumberController.text, reason: _reasonController.text,
+        documentDate: _documentDate, tabIndex: _tabIndex, paymentStatus: _paymentStatus,
+        paidAmount: paidAmt, paymentMethod: _paymentMethod, complete: complete,
       );
     } catch (e) {
       if (mounted) {
@@ -198,11 +204,9 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
             insetPadding: const EdgeInsets.all(20),
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             child: Container(
-              width: width,
-              height: height,
+              width: width, height: height,
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(24),
+                color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                 boxShadow: [BoxShadow(color: AppColors.darkBg.withValues(alpha: 0.35), blurRadius: 40, offset: const Offset(0, 12))],
               ),
@@ -244,11 +248,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                               onStateUpdate: (fn) => setState(fn),
                             )
                           : ReceiveCategorySection(
-                              availableIngredients: _availableIngredients.where((i) {
-                                if (_tabIndex == 1) return i.isRetail;
-                                if (_tabIndex == 2) return !i.isRetail;
-                                return true;
-                              }).toList(),
+                              availableIngredients: _availableIngredients.where((i) => _tabIndex == 1 ? i.isRetail : (_tabIndex == 2 ? !i.isRetail : true)).toList(),
                               isRetail: _tabIndex == 1,
                               currency: currency,
                               adapter: _categoryAdapter,
@@ -263,7 +263,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                         paymentStatus: _paymentStatus,
                         paymentMethod: _paymentMethod,
                         paidAmountController: _paidAmountController,
-                        onPaymentStatusChanged: (val) => setState(() => _paymentStatus = val),
+                        onPaymentStatusChanged: _onPaymentStatusChanged,
                         onPaymentMethodChanged: (val) => setState(() => _paymentMethod = val),
                         isCartOpen: _isCartOpen,
                         onToggleCart: () => setState(() => _isCartOpen = !_isCartOpen),

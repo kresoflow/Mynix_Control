@@ -115,7 +115,7 @@ class ReceiveDocumentFooter extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightBg,
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
@@ -126,6 +126,7 @@ class ReceiveDocumentFooter extends StatelessWidget {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 1. Блок условий оплаты (слева)
           Flexible(
@@ -141,71 +142,77 @@ class ReceiveDocumentFooter extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 16),
           const Spacer(),
 
-          // 2. Кнопка корзины (по центру-справа перед итогом)
-          if (onToggleCart != null) ...[
-            if (cartCountListenable != null)
-              ValueListenableBuilder<int>(
-                valueListenable: cartCountListenable!,
-                builder: (_, count, __) => cartButtonWidget(count),
-              )
-            else
-              cartButtonWidget(cartItemCount),
-            const SizedBox(width: 14),
-          ],
-
-          // 3. Итого к оплате (рядом с проведением)
+          // 2. Блок проведения: ИТОГО + Корзина НАД кнопками действий
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'ИТОГО:',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10,
-                  letterSpacing: 0.5,
-                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                ),
+              // Верхний ярус: Корзина + ИТОГО
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onToggleCart != null) ...[
+                    if (cartCountListenable != null)
+                      ValueListenableBuilder<int>(
+                        valueListenable: cartCountListenable!,
+                        builder: (_, count, __) => cartButtonWidget(count),
+                      )
+                    else
+                      cartButtonWidget(cartItemCount),
+                    const SizedBox(width: 12),
+                  ],
+                  Text(
+                    'ИТОГО:',
+                    style: AppTextStyles.caption.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      letterSpacing: 0.5,
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  if (totalSumListenable != null)
+                    ValueListenableBuilder<double>(
+                      valueListenable: totalSumListenable!,
+                      builder: (_, sum, __) => totalTextWidget(sum),
+                    )
+                  else
+                    totalTextWidget(totalSum),
+                ],
               ),
-              if (totalSumListenable != null)
-                ValueListenableBuilder<double>(
-                  valueListenable: totalSumListenable!,
-                  builder: (_, sum, __) => totalTextWidget(sum),
-                )
-              else
-                totalTextWidget(totalSum),
-            ],
-          ),
-          Container(
-            width: 1,
-            height: 28,
-            margin: const EdgeInsets.symmetric(horizontal: 14),
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          ),
+              const SizedBox(height: 8),
 
-          // 4. Кнопки действий
-          AppButton.ghost(
-            label: 'Отмена',
-            height: 38,
-            onPressed: onCancel,
-          ),
-          const SizedBox(width: 8),
-          AppButton.secondary(
-            label: 'Черновик',
-            icon: PhosphorIconsRegular.floppyDisk,
-            height: 38,
-            isLoading: isSaving,
-            onPressed: isSaving ? null : onSaveDraft,
-          ),
-          const SizedBox(width: 8),
-          AppButton.primary(
-            label: 'Провести (Ctrl+S)',
-            icon: PhosphorIconsRegular.checkCircle,
-            height: 38,
-            isLoading: isSaving,
-            onPressed: isSaving ? null : onSaveComplete,
+              // Нижний ярус: Кнопки действий
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppButton.ghost(
+                    label: 'Отмена',
+                    height: 36,
+                    onPressed: onCancel,
+                  ),
+                  const SizedBox(width: 8),
+                  AppButton.secondary(
+                    label: 'Черновик',
+                    icon: PhosphorIconsRegular.floppyDisk,
+                    height: 36,
+                    isLoading: isSaving,
+                    onPressed: isSaving ? null : onSaveDraft,
+                  ),
+                  const SizedBox(width: 8),
+                  AppButton.primary(
+                    label: 'Провести (Ctrl+S)',
+                    icon: PhosphorIconsRegular.checkCircle,
+                    height: 36,
+                    isLoading: isSaving,
+                    onPressed: isSaving ? null : onSaveComplete,
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),

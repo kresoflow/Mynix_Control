@@ -14,6 +14,7 @@ import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document/receive_document_footer.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document/receive_document_processor.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document/receive_document_row_callbacks.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document/receive_document_payment_section.dart';
 
 InventoryRepository createTestRepository() {
   final dio = Dio(BaseOptions(baseUrl: 'http://localhost'));
@@ -498,6 +499,68 @@ void main() {
 
       expect(find.text('3 поз.'), findsOneWidget);
       expect(find.text('1500.00 с'), findsOneWidget);
+    });
+
+    testWidgets('ReceiveDocumentPaymentSection displays amount field for paid and partial statuses', (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final paidCtrl = TextEditingController(text: '1250.00');
+
+      // 1. Постоплата (unpaid) - поле суммы скрыто
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ReceiveDocumentPaymentSection(
+              isDark: false,
+              paymentStatus: 'unpaid',
+              paymentMethod: 'cash',
+              paidAmountController: paidCtrl,
+              onPaymentStatusChanged: (_) {},
+              onPaymentMethodChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+      expect(find.text('1250.00'), findsNothing);
+
+      // 2. Оплачено (paid) - поле суммы отображается
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ReceiveDocumentPaymentSection(
+              isDark: false,
+              paymentStatus: 'paid',
+              paymentMethod: 'cash',
+              paidAmountController: paidCtrl,
+              onPaymentStatusChanged: (_) {},
+              onPaymentMethodChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+      expect(find.text('1250.00'), findsOneWidget);
+
+      // 3. Частично (partial) - поле суммы также отображается
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ReceiveDocumentPaymentSection(
+              isDark: false,
+              paymentStatus: 'partial',
+              paymentMethod: 'cash',
+              paidAmountController: paidCtrl,
+              onPaymentStatusChanged: (_) {},
+              onPaymentMethodChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+      expect(find.text('1250.00'), findsOneWidget);
     });
   });
 }

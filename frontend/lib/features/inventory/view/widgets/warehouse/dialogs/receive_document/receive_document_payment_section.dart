@@ -63,10 +63,12 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
           // ── 1. Статус: Постоплата ──────────────────────────────────
           _buildStatusChip(
             label: 'Постоплата',
@@ -93,7 +95,7 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
             onTap: () => onPaymentStatusChanged('partial'),
           ),
 
-          // ── 4. Способ оплаты (если не постоплата) ───────────────────
+          // ── 4. Способ оплаты и сумма (если не постоплата) ───────────
           if (paymentStatus != 'unpaid') ...[
             const SizedBox(width: 8),
             Container(
@@ -103,10 +105,6 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             _buildMethodDropdown(validMethod),
-          ],
-
-          // ── 5. Поле ввода суммы при частичной оплате ─────────────────
-          if (paymentStatus == 'partial') ...[
             const SizedBox(width: 8),
             ReceiveDocumentAmountField(
               controller: paidAmountController,
@@ -114,6 +112,7 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
             ),
           ],
         ],
+      ),
       ),
     );
   }

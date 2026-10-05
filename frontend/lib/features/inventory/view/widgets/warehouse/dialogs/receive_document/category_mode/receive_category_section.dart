@@ -44,15 +44,22 @@ class _ReceiveCategorySectionState extends State<ReceiveCategorySection> {
   }
 
   void _onSearchChanged(String query) {
-    setState(() {
-      _searchQuery = query.trim().toLowerCase();
-    });
+    final trimmed = query.trim().toLowerCase();
+    if (trimmed != _searchQuery) {
+      setState(() {
+        _searchQuery = trimmed;
+        _expansionMap.clear();
+      });
+    }
   }
 
   void _onFilterChanged(ReceiveCategoryFilter filter) {
-    setState(() {
-      _activeFilter = filter;
-    });
+    if (filter != _activeFilter) {
+      setState(() {
+        _activeFilter = filter;
+        _expansionMap.clear();
+      });
+    }
   }
 
   void _toggleExpandAll(List<String> categories) {
@@ -145,8 +152,10 @@ class _ReceiveCategorySectionState extends State<ReceiveCategorySection> {
                     itemBuilder: (context, index) {
                       final catName = sortedCategories[index];
                       final catItems = grouped[catName]!;
-                      final isExpanded = _expansionMap[catName] ??
-                          (_searchQuery.isNotEmpty || _activeFilter != ReceiveCategoryFilter.all || _isAllExpanded);
+                      final isExpanded = _searchQuery.isNotEmpty
+                          ? (_expansionMap[catName] ?? true)
+                          : (_expansionMap[catName] ??
+                              (_activeFilter != ReceiveCategoryFilter.all || _isAllExpanded));
 
                       return ReceiveCategoryAccordion(
                         key: ValueKey(catName),
