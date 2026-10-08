@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
@@ -31,7 +31,7 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
     required this.transferProvider,
     required this.onPaymentMethodChanged,
     required this.onTransferProviderChanged,
-    required this.customer,
+    this.customer,
     required this.cartState,
     required this.isDark,
     required this.border,
@@ -39,45 +39,12 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showGuest = context.watch<PosSettingsCubit>().state.showGuestOption;
-    final authState = context.watch<AuthBloc>().state;
-    final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
-
-    // In Waiter mode: Only show Table selection (and Guest if enabled), hide payment tabs
-    if (isWaiter) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            PosTableChip(cartState: cartState, isDark: isDark, border: border),
-            if (showGuest || customer != null) ...[
-              const SizedBox(width: 8),
-              PosGuestChip(customer: customer, isDark: isDark, border: border),
-            ],
-          ],
-        ),
-      );
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Tier 1: Order Context (Table & Guest) ──────────────────────
-        Row(
-          children: [
-            Expanded(
-              child: PosTableChip(cartState: cartState, isDark: isDark, border: border),
-            ),
-            if (showGuest || customer != null) ...[
-              const SizedBox(width: 8),
-              Expanded(
-                child: PosGuestChip(customer: customer, isDark: isDark, border: border),
-              ),
-            ],
-          ],
-        ),
+        // ── Tier 1: Order Context (Table) ──────────────────────────────
+        PosTableChip(cartState: cartState, isDark: isDark, border: border),
         const SizedBox(height: 8),
 
         // ── Tier 2: Payment Methods (Unified AppSegmentedControl) ──────
@@ -86,15 +53,9 @@ class PosCheckoutPanelPaymentMethods extends StatelessWidget {
           onValueChanged: onPaymentMethodChanged,
           size: AppSegmentedSize.md,
           isExpanded: true,
-          items: [
-            const AppSegmentedItem(value: 'CASH', label: 'Наличные', icon: PhosphorIconsRegular.money),
-            const AppSegmentedItem(value: 'TRANSFER', label: 'Перевод', icon: PhosphorIconsRegular.qrCode),
-            if (customer != null)
-              AppSegmentedItem(
-                value: customer.balance > 0 ? 'DEPOSIT' : 'DEBT',
-                label: customer.balance > 0 ? 'Депозит' : 'В долг',
-                icon: customer.balance > 0 ? PhosphorIconsRegular.wallet : PhosphorIconsRegular.handCoins,
-              ),
+          items: const [
+            AppSegmentedItem(value: 'CASH', label: 'Наличные', icon: PhosphorIconsRegular.money),
+            AppSegmentedItem(value: 'TRANSFER', label: 'Перевод', icon: PhosphorIconsRegular.qrCode),
           ],
         ),
 

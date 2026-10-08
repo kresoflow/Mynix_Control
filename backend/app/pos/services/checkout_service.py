@@ -235,7 +235,7 @@ async def create_order(
 
 async def process_new_order(session: AsyncSession, current_user, data: CreateOrderRequest) -> dict:
     """Orchestrates order creation and triggers appropriate WS notifications."""
-    from app.pos.ws import notify_kitchen_new_order, notify_inventory_updated, notify_pos_incoming_order
+    from app.pos.ws import notify_inventory_updated, notify_pos_incoming_order
 
     order = await create_order(session, current_user.id, current_user.tenant_id, data)
     if getattr(order, "_is_appended_dozakaz", False):
@@ -250,8 +250,6 @@ async def process_new_order(session: AsyncSession, current_user, data: CreateOrd
     if full_order.status == OrderStatus.PENDING_APPROVAL:
         await notify_pos_incoming_order(current_user.tenant_id, order_data)
     else:
-        if any(oi.item_type == "dish" for oi in full_order.items):
-            await notify_kitchen_new_order(current_user.tenant_id, order_data)
         await notify_inventory_updated(current_user.tenant_id)
 
     return order_data
@@ -265,22 +263,20 @@ async def approve_order(
     is_paid: bool = False,
 ) -> dict:
     """Approves a hall order, triggers deferred stock deduction and sends to KDS."""
-    from app.pos.ws import notify_kitchen_new_order, notify_inventory_updated, notify_pos_incoming_resolved
+    from app.pos.ws import notify_inventory_updated, notify_pos_incoming_resolved
 
     order = await get_order_by_id(session, order_id)
     if not order:
         raise NotFoundError(f"Заказ #{order_id} не найден")
 
     tenant = (await session.execute(select(Tenant).where(Tenant.id == current_user.tenant_id))).scalar_one_or_none()
-    use_kds = tenant.use_kds if tenant else True
     enable_inventory = tenant.enable_inventory_deduction if tenant else True
 
-    has_dish = any(oi.item_type == "dish" for oi in order.items)
+    # [PILOT LEAN MVP] Без KDS оплаченный заказ сразу COMPLETED, столик на постоплату — READY
     if is_paid:
-        new_status = OrderStatus.COOKING if (has_dish and use_kds) else OrderStatus.COMPLETED
+        new_status = OrderStatus.COMPLETED
     else:
-        # Unpaid dine-in table order waiting for post-payment
-        new_status = OrderStatus.COOKING if (has_dish and use_kds) else OrderStatus.READY
+        new_status = OrderStatus.READY
 
     order.status = new_status
     if payment_method:
@@ -317,9 +313,6 @@ async def approve_order(
     await session.flush()
     order_data = format_order_dict(order, current_user.full_name)
     await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
-
-    if has_dish and use_kds:
-        await notify_kitchen_new_order(current_user.tenant_id, order_data)
     await notify_inventory_updated(current_user.tenant_id)
 
     return order_data

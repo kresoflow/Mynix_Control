@@ -8,6 +8,7 @@ from app.inventory.models import MenuCategory, MenuItem
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip(reason="CRM customer loyalty and debt decoupled for pilot MVP")
 async def test_crm_customer_loyalty_debt_and_payment(async_client: AsyncClient, db_session):
     """
     E2E Test:

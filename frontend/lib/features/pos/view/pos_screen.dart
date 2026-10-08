@@ -24,7 +24,6 @@ import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/orders/view/orders_screen.dart';
-import 'package:kreso_frontend/features/kitchen/view/kitchen_screen.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 
@@ -159,13 +158,12 @@ class _PosScreenState extends State<PosScreen> {
   Widget build(BuildContext context) {
     final settingsState = context.watch<SettingsBloc>().state;
     final useOrders = settingsState.useOrders;
-    final useKds = settingsState.useKds;
     final currentTab = context.watch<PosTabCubit>().state.currentTab;
 
     if (currentTab == 1 && !useOrders) {
       context.read<PosTabCubit>().setTab(0);
     }
-    if (currentTab == 2 && !useKds) {
+    if (currentTab > 1) {
       context.read<PosTabCubit>().setTab(0);
     }
 
@@ -228,7 +226,6 @@ class _PosScreenState extends State<PosScreen> {
                     children: [
                       const PosDesktopLayout(),
                       if (useOrders) const OrdersScreen() else const SizedBox.shrink(),
-                      if (useKds) const KitchenScreen() else const SizedBox.shrink(),
                     ],
                   );
 

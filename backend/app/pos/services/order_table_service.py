@@ -106,7 +106,6 @@ async def settle_table_order(
     """Settles and completes a dine-in table order (post-payment)."""
     from app.pos.ws import (
         notify_pos_incoming_resolved,
-        notify_kitchen_status_update,
         notify_inventory_updated,
     )
 
@@ -152,7 +151,6 @@ async def settle_table_order(
     order_data = format_order_dict(full_order or order, current_user.full_name)
 
     await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
-    await notify_kitchen_status_update(current_user.tenant_id, order.id, OrderStatus.COMPLETED)
     await notify_inventory_updated(current_user.tenant_id)
 
     return order_data
@@ -165,14 +163,13 @@ async def append_items_to_table_order(
     items_data: list,
 ) -> dict:
     """Appends additional items (дозаказ) to an active table order."""
-    from app.pos.ws import notify_kitchen_new_order, notify_inventory_updated
+    from app.pos.ws import notify_inventory_updated
 
     order = await get_order_by_id(session, order_id)
     if not order:
         raise NotFoundError(f"Заказ #{order_id} не найден")
 
     tenant = (await session.execute(select(Tenant).where(Tenant.id == current_user.tenant_id))).scalar_one_or_none()
-    use_kds = tenant.use_kds if tenant else True
     enable_inventory = tenant.enable_inventory_deduction if tenant else True
 
     new_order_items = []
@@ -248,24 +245,6 @@ async def append_items_to_table_order(
 
     await session.flush()
     order_data = format_order_dict(order, current_user.full_name)
-
-    new_dishes = [oi for oi in new_order_items if oi.item_type == "dish"]
-    if new_dishes and use_kds and order.status != OrderStatus.PENDING_APPROVAL:
-        append_payload = dict(order_data)
-        append_payload["items"] = [
-            {
-                "menu_item_name": oi.menu_item_name,
-                "quantity": oi.quantity,
-                "unit_price": oi.unit_price,
-                "subtotal": oi.subtotal,
-                "selected_options": oi.selected_options,
-                "item_type": oi.item_type,
-            }
-            for oi in new_dishes
-        ]
-        append_payload["is_dozakaz"] = True
-        await notify_kitchen_new_order(current_user.tenant_id, append_payload)
-
     await notify_inventory_updated(current_user.tenant_id)
     return order_data
 
@@ -381,7 +360,7 @@ async def serve_table_order(
     order_id: int,
 ) -> dict:
     """Marks a table order as served (READY) and clears dozakaz items batch flag."""
-    from app.pos.ws import notify_pos_incoming_resolved, notify_kitchen_status_update
+    from app.pos.ws import notify_pos_incoming_resolved
 
     order = await get_order_by_id(session, order_id)
     if not order:
@@ -402,7 +381,6 @@ async def serve_table_order(
     full_order = await get_order_by_id(session, order.id)
     order_data = format_order_dict(full_order or order, current_user.full_name)
     await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
-    await notify_kitchen_status_update(current_user.tenant_id, order.id, OrderStatus.READY)
     return order_data
 
 
