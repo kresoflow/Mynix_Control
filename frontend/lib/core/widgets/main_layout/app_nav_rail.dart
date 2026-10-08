@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -21,11 +21,9 @@ class AppNavRail extends StatelessWidget {
 
   static const _allItems = [
     _NavItem(PhosphorIconsRegular.receipt, PhosphorIconsFill.receipt, 'Касса', '/pos'),
-    _NavItem(PhosphorIconsRegular.cookingPot, PhosphorIconsFill.cookingPot, 'Кухня (KDS)', '/kitchen'),
     _NavItem(PhosphorIconsRegular.bookOpenText, PhosphorIconsFill.bookOpenText, 'Каталог', '/catalog'),
     _NavItem(PhosphorIconsRegular.package, PhosphorIconsFill.package, 'Склад', '/warehouse'),
     _NavItem(PhosphorIconsRegular.chartLineUp, PhosphorIconsFill.chartLineUp, 'Аналитика', '/analytics'),
-    _NavItem(PhosphorIconsRegular.users, PhosphorIconsFill.users, 'CRM', '/crm'),
     _NavItem(PhosphorIconsRegular.gear, PhosphorIconsFill.gear, 'Настройки', '/settings'),
   ];
 
@@ -33,8 +31,6 @@ class AppNavRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final settingsState = context.watch<SettingsBloc>().state;
-    final showKds = settingsState.useKds && settingsState.showKdsInNav;
 
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
@@ -44,27 +40,19 @@ class AppNavRail extends StatelessWidget {
         }
 
         final visibleItems = _allItems.where((item) {
-          if (item.route == '/kitchen' && !showKds) return false;
-
-          if (role.contains('owner') || role.contains('superadmin') || role.contains('admin') || role.contains('manager')) return true;
-          
-          if (role.contains('universal')) {
-            return item.route != '/settings';
+          // 1. Владелец / Superadmin: полный доступ
+          if (role.contains('owner') || role.contains('superadmin') || role.contains('admin')) {
+            return true;
           }
-          if (role.contains('warehouse')) {
-            return item.route == '/catalog' || item.route == '/warehouse';
+          // 2. Управляющий: доступ ко всему, кроме аналитики
+          if (role.contains('manager')) {
+            return item.route != '/analytics';
           }
-          if (role.contains('waiter')) {
+          // 3. Кассир: только касса (и история внутри кассы)
+          if (role.contains('cashier')) {
             return item.route == '/pos';
           }
-          if (role.contains('cashier')) {
-            return item.route == '/pos' || item.route == '/crm' || item.route == '/kitchen';
-          }
-          if (role.contains('cook') || role.contains('kitchen')) {
-            return item.route == '/kitchen' || item.route == '/pos';
-          }
-          
-          return false; // Unknown role
+          return false;
         }).toList();
 
         return AnimatedContainer(

@@ -147,36 +147,6 @@ async def test_ingredient_deletion_ledger_guard(db_session):
 
 
 @pytest.mark.asyncio
-async def test_kitchen_kds_mark_ready_and_undo(db_session):
-    from app.kitchen.services import kds_service
-
-    order = Order(
-        shift_id=1,
-        user_id=1,
-        created_by=1,
-        order_number=99,
-        status=OrderStatus.COOKING.value,
-        total_amount=1200.0,
-        payment_method=PaymentMethod.CASH.value,
-    )
-    db_session.add(order)
-    await db_session.flush()
-
-    # 1. Mark as ready
-    ready_order = await kds_service.mark_order_ready(db_session, order.id)
-    assert ready_order.status == OrderStatus.READY
-
-    # 2. Undo back to cooking
-    cooking_order = await kds_service.revert_order_to_cooking(db_session, order.id)
-    assert cooking_order.status == OrderStatus.COOKING
-
-    # 3. Undo on already COOKING order raises ValueError
-    with pytest.raises(ValueError) as exc_info:
-        await kds_service.revert_order_to_cooking(db_session, order.id)
-    assert "not in ready status" in str(exc_info.value).lower()
-
-
-@pytest.mark.asyncio
 async def test_pin_bruteforce_protection(async_client: AsyncClient, db_session):
     from app.users.routers.auth_router import _pin_failed_attempts, _pin_locked_keys
     _pin_failed_attempts.clear()

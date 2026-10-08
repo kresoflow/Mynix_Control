@@ -27,10 +27,8 @@ class MobileLayout extends StatelessWidget {
     } else if (location.startsWith('/orders')) {
       selectedIndex = 1;
     } else if (location.startsWith('/hub') ||
-        location.startsWith('/kitchen') ||
         location.startsWith('/catalog') ||
         location.startsWith('/warehouse') ||
-        location.startsWith('/crm') ||
         location.startsWith('/analytics')) {
       selectedIndex = 2;
     } else if (location.startsWith('/settings')) {

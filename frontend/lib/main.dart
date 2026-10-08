@@ -19,8 +19,6 @@ import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
-import 'package:kreso_frontend/features/kitchen/repository/kitchen_repository.dart';
-import 'package:kreso_frontend/features/kitchen/bloc/kitchen_bloc.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
@@ -35,13 +33,9 @@ import 'package:kreso_frontend/features/orders/repository/orders_repository.dart
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
-import 'package:kreso_frontend/features/crm/repository/crm_repository.dart';
-import 'package:kreso_frontend/features/crm/bloc/crm_bloc.dart';
 import 'package:kreso_frontend/features/settings/repository/settings_repository.dart';
 import 'package:kreso_frontend/features/pos/services/pos_outbox_service.dart';
 import 'package:kreso_frontend/features/pos/services/pos_sync_service.dart';
-import 'package:kreso_frontend/features/pos/services/lan/local_pos_server.dart';
-import 'package:kreso_frontend/features/settings/services/lan_settings_service.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
@@ -67,7 +61,6 @@ void main() async {
   Hive.registerAdapter(CartItemAdapter());
 
   await PosOutboxService.init();
-  await LanSettingsService.init();
 
   final appWidget = DevicePreview(
     enabled: kEnableDevicePreview,
@@ -101,17 +94,14 @@ class _KresoAppState extends State<KresoApp> {
   late final AuthRepository _authRepository;
   late final MenuRepository _menuRepository;
   late final OrderRepository _orderRepository;
-  late final KitchenRepository _kitchenRepository;
   late final ShiftRepository _shiftRepository;
   late final InventoryRepository _inventoryRepository;
-  late final CrmRepository _crmRepository;
   late final SettingsRepository _settingsRepository;
   late final AuthBloc _authBloc;
   late final ThemeBloc _themeBloc;
   late final SettingsBloc _settingsBloc;
   late final MenuBloc _menuBloc;
   late final CartBloc _cartBloc;
-  late final KitchenBloc _kitchenBloc;
   late final ShiftBloc _shiftBloc;
   late final IngredientBloc _ingredientBloc;
   late final RecipeBloc _recipeBloc;
@@ -119,7 +109,6 @@ class _KresoAppState extends State<KresoApp> {
   late final DocumentBloc _documentBloc;
   late final OrdersRepository _ordersHistoryRepository;
   late final OrdersBloc _ordersBloc;
-  late final CrmBloc _crmBloc;
   late final PosSettingsCubit _posSettingsCubit;
   late final PosTabCubit _posTabCubit;
   late final PosSyncService _posSyncService;
@@ -131,10 +120,8 @@ class _KresoAppState extends State<KresoApp> {
     _authRepository = AuthRepository(apiClient.dio);
     _menuRepository = MenuRepository(apiClient.dio);
     _orderRepository = OrderRepository(apiClient.dio);
-    _kitchenRepository = KitchenRepository();
     _shiftRepository = ShiftRepository(apiClient.dio);
     _inventoryRepository = InventoryRepository(apiClient.dio);
-    _crmRepository = CrmRepository(apiClient.dio);
     _settingsRepository = SettingsRepository(apiClient.dio);
     _posSyncService = PosSyncService(apiClient: apiClient)..start();
     _authBloc = AuthBloc(_authRepository)..add(AppStarted());
@@ -142,7 +129,6 @@ class _KresoAppState extends State<KresoApp> {
     _settingsBloc = SettingsBloc();
     _menuBloc = MenuBloc(_menuRepository);
     _cartBloc = CartBloc(_orderRepository);
-    _kitchenBloc = KitchenBloc(_kitchenRepository);
     _shiftBloc = ShiftBloc(_shiftRepository);
     _ingredientBloc = IngredientBloc(_inventoryRepository);
     _recipeBloc = RecipeBloc(_inventoryRepository);
@@ -151,7 +137,6 @@ class _KresoAppState extends State<KresoApp> {
     DocumentBloc.globalIngredientBloc = _ingredientBloc;
     _ordersHistoryRepository = OrdersRepository(dio: apiClient.dio);
     _ordersBloc = OrdersBloc(repository: _ordersHistoryRepository);
-    _crmBloc = CrmBloc(_crmRepository);
     _posSettingsCubit = PosSettingsCubit();
     _posTabCubit = PosTabCubit(_orderRepository);
     _appRouter = AppRouter(_authBloc);
@@ -174,13 +159,11 @@ class _KresoAppState extends State<KresoApp> {
   @override
   void dispose() {
     _posSyncService.stop();
-    LocalPosServer.stop();
     _authBloc.close();
     _themeBloc.close();
     _settingsBloc.close();
     _menuBloc.close();
     _cartBloc.close();
-    _kitchenBloc.close();
     _shiftBloc.close();
     _ingredientBloc.close();
     _recipeBloc.close();
@@ -188,7 +171,6 @@ class _KresoAppState extends State<KresoApp> {
     _documentBloc.close();
     DocumentBloc.globalIngredientBloc = null;
     _ordersBloc.close();
-    _crmBloc.close();
     _posSettingsCubit.close();
     _posTabCubit.close();
     webSocketService.dispose();
@@ -203,11 +185,9 @@ class _KresoAppState extends State<KresoApp> {
         RepositoryProvider.value(value: _authRepository),
         RepositoryProvider.value(value: _menuRepository),
         RepositoryProvider.value(value: _orderRepository),
-        RepositoryProvider.value(value: _kitchenRepository),
         RepositoryProvider.value(value: _shiftRepository),
         RepositoryProvider.value(value: _inventoryRepository),
         RepositoryProvider.value(value: _ordersHistoryRepository),
-        RepositoryProvider.value(value: _crmRepository),
         RepositoryProvider.value(value: _settingsRepository),
       ],
       child: MultiBlocProvider(
@@ -217,14 +197,12 @@ class _KresoAppState extends State<KresoApp> {
           BlocProvider.value(value: _settingsBloc),
           BlocProvider.value(value: _menuBloc),
           BlocProvider.value(value: _cartBloc),
-          BlocProvider.value(value: _kitchenBloc),
           BlocProvider.value(value: _shiftBloc),
           BlocProvider.value(value: _ingredientBloc),
           BlocProvider.value(value: _recipeBloc),
           BlocProvider.value(value: _categoryBloc),
           BlocProvider.value(value: _documentBloc),
           BlocProvider.value(value: _ordersBloc),
-          BlocProvider.value(value: _crmBloc),
           BlocProvider.value(value: _posSettingsCubit),
           BlocProvider.value(value: _posTabCubit),
         ],

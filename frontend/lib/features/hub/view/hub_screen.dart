@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -8,13 +8,6 @@ class HubScreen extends StatelessWidget {
   const HubScreen({super.key});
 
   static const List<_HubModule> _modules = [
-    _HubModule(
-      title: 'Кухня (KDS)',
-      subtitle: 'Экран заказов повара и сборки',
-      icon: PhosphorIconsRegular.cookingPot,
-      route: '/kitchen',
-      color: Color(0xFFF97316),
-    ),
     _HubModule(
       title: 'Каталог меню',
       subtitle: 'Блюда, модификаторы и цены',
@@ -28,13 +21,6 @@ class HubScreen extends StatelessWidget {
       icon: PhosphorIconsRegular.package,
       route: '/warehouse',
       color: Color(0xFF6366F1),
-    ),
-    _HubModule(
-      title: 'CRM & Гости',
-      subtitle: 'База клиентов, скидки и балансы',
-      icon: PhosphorIconsRegular.usersThree,
-      route: '/crm',
-      color: Color(0xFFEC4899),
     ),
     _HubModule(
       title: 'Аналитика',

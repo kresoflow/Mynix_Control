@@ -1,11 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/general_settings_tab.dart';
-import 'package:kreso_frontend/features/settings/view/tabs/hardware_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/system_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/ui_kit_showcase_screen.dart';
@@ -24,7 +23,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final List<SettingsCategory> _categories = const [
     SettingsCategory(PhosphorIconsRegular.slidersHorizontal, 'Основные'),
-    SettingsCategory(PhosphorIconsRegular.printer, 'Оборудование'),
     SettingsCategory(PhosphorIconsRegular.users, 'Персонал'),
     SettingsCategory(PhosphorIconsRegular.hardDrives, 'Система'),
     SettingsCategory(PhosphorIconsRegular.paintBrushBroad, 'UI Kit & Дизайн'),
@@ -140,12 +138,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case 0:
         return GeneralSettingsTab(isDark: isDark);
       case 1:
-        return HardwareSettingsTab(isDark: isDark);
-      case 2:
         return PersonnelSettingsTab(isDark: isDark);
-      case 3:
+      case 2:
         return SystemSettingsTab(isDark: isDark);
-      case 4:
+      case 3:
         return const UiKitShowcaseScreen();
       default:
         return const SizedBox.shrink();

@@ -13,12 +13,10 @@ from app.gift_cards.models import (
     GiftCardStatus,
     GiftCardTransactionType,
 )
-from app.gift_cards.router import router
 
 __all__ = [
     "GiftCard",
     "GiftCardTransaction",
     "GiftCardStatus",
     "GiftCardTransactionType",
-    "router",
 ]

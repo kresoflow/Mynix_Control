@@ -172,25 +172,19 @@ from app.users.router import router as users_router
 from app.pos.router import router as pos_router
 from app.pos.ws import router as ws_router
 from app.inventory.router import router as inventory_router
-from app.kitchen.router import router as kitchen_router
 from app.analytics.router import router as analytics_router
-from app.crm.router import router as crm_router
-from app.gift_cards.router import router as gift_cards_router
 from app.system.router import router as system_router
 from app.system.integrations import router as integrations_router
 
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(pos_router, prefix="/api/v1")
 app.include_router(inventory_router, prefix="/api/v1")
-app.include_router(kitchen_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1", tags=["Analytics"])
-app.include_router(crm_router, prefix="/api/v1")
-app.include_router(gift_cards_router, prefix="/api/v1")
 app.include_router(system_router, prefix="/api/v1/system")
 app.include_router(system_router, prefix="/system")
 app.include_router(integrations_router, prefix="/api/v1")
 app.include_router(integrations_router, prefix="/system")
-app.include_router(ws_router)  # WebSocket at root /ws/kitchen/{tenant_id}
+app.include_router(ws_router)
 
 
 # ── Health & Diagnostic Routes ───────────────────────────────────
