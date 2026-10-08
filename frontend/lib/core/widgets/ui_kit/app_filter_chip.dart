@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_motion.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 enum AppFilterChipSize {
@@ -121,7 +122,8 @@ class _AppFilterChipState extends State<AppFilterChip> {
           onTap: widget.onTap,
           borderRadius: BorderRadius.circular(AppRadii.md),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 140),
+            duration: AppMotion.fast,
+            curve: AppMotion.standardCurve,
             height: height,
             padding: padding,
             decoration: BoxDecoration(

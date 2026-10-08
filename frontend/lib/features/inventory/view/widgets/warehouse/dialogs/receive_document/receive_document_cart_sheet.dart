@@ -156,7 +156,7 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  'Остаток: ${_fmt(ing.currentStock)} ${ing.unit}',
+                  'Остаток: ${_fmt(ing.currentStock)} ${UnitFormatter.format(ing.unit)}',
                   style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                 ),
               ],

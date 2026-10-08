@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
@@ -86,38 +85,19 @@ class _SuppliersTabState extends State<SuppliersTab> {
     }
   }
 
-  void _confirmDelete(BuildContext ctx, Supplier supplier) {
-    showDialog(
+  Future<void> _confirmDelete(BuildContext ctx, Supplier supplier) async {
+    final confirmed = await AppConfirmDialog.show(
       context: ctx,
-      builder: (dCtx) => AppDialog(
-        title: 'Удалить поставщика?',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
+      title: 'Удалить поставщика?',
+      message:
           'Поставщик «${supplier.name}» будет удалён.\nЕсли к нему привязаны накладные, история взаиморасчётов сохранится в архиве.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(ctx).brightness == Brightness.dark
-                ? AppColors.darkSubtext
-                : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(dCtx),
-          ),
-          AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              Navigator.pop(dCtx);
-              ctx.read<DocumentBloc>().add(DeleteSupplier(supplier.id));
-            },
-          ),
-        ],
-      ),
+      confirmLabel: 'Удалить',
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+    if (confirmed == true && ctx.mounted) {
+      ctx.read<DocumentBloc>().add(DeleteSupplier(supplier.id));
+    }
   }
 
   @override

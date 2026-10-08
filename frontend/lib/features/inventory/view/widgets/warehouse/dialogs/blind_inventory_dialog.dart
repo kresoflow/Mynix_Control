@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog_scaffold.dart';
 import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
@@ -134,68 +134,70 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
       message:
           'Все введенные фактические остатки будут сброшены. Вы уверены, что хотите выйти?',
       confirmLabel: 'Сбросить и выйти',
-      child: AppDialog(
+      child: AppDialogScaffold(
         title: 'Слепая Инвентаризация',
         icon: PhosphorIconsRegular.clipboardText,
-        width: 700,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BlindInventoryToolbar(
-              searchQuery: _searchQuery,
-              onSearchChanged: (val) =>
-                  setState(() => _searchQuery = val.toLowerCase().trim()),
-              onlyUnfilled: _onlyUnfilled,
-              onOnlyUnfilledChanged: (val) =>
-                  setState(() => _onlyUnfilled = val),
-              isAllExpanded: _isAllExpanded,
-              onToggleExpandAll: () =>
-                  setState(() => _isAllExpanded = !_isAllExpanded),
-            ),
-            const SizedBox(height: 12),
-            BlocBuilder<IngredientBloc, IngredientState>(
-              builder: (context, state) {
-                if (state is IngredientLoading) {
-                  return const SizedBox(
-                    height: 240,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                if (state is! IngredientLoaded) {
-                  return const SizedBox(
-                    height: 160,
-                    child: Center(child: Text('Ошибка загрузки позиций')),
-                  );
-                }
+        dialogSize: AppDialogSize.md,
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              BlindInventoryToolbar(
+                searchQuery: _searchQuery,
+                onSearchChanged: (val) =>
+                    setState(() => _searchQuery = val.toLowerCase().trim()),
+                onlyUnfilled: _onlyUnfilled,
+                onOnlyUnfilledChanged: (val) =>
+                    setState(() => _onlyUnfilled = val),
+                isAllExpanded: _isAllExpanded,
+                onToggleExpandAll: () =>
+                    setState(() => _isAllExpanded = !_isAllExpanded),
+              ),
+              const SizedBox(height: 12),
+              BlocBuilder<IngredientBloc, IngredientState>(
+                builder: (context, state) {
+                  if (state is IngredientLoading) {
+                    return const SizedBox(
+                      height: 240,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (state is! IngredientLoaded) {
+                    return const SizedBox(
+                      height: 160,
+                      child: Center(child: Text('Ошибка загрузки позиций')),
+                    );
+                  }
 
-                return BlindInventoryGroupedView(
-                  items: state.ingredients,
-                  controllers: _controllers,
-                  searchQuery: _searchQuery,
-                  onlyUnfilled: _onlyUnfilled,
-                  isAllExpanded: _isAllExpanded,
-                  expansionMap: _expansionMap,
-                  onExpansionChanged: (cat, exp) {
-                    setState(() => _expansionMap[cat] = exp);
-                  },
-                  onChanged: () => setState(() {}),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            BlocBuilder<IngredientBloc, IngredientState>(
-              builder: (context, state) {
-                if (state is! IngredientLoaded) return const SizedBox.shrink();
-                final all =
-                    state.ingredients.where((i) => !i.isArchived).toList();
-                return BlindInventoryProgressCard(
-                  filledCount: _getFilledCount(all),
-                  totalCount: all.length,
-                );
-              },
-            ),
-          ],
+                  return BlindInventoryGroupedView(
+                    items: state.ingredients,
+                    controllers: _controllers,
+                    searchQuery: _searchQuery,
+                    onlyUnfilled: _onlyUnfilled,
+                    isAllExpanded: _isAllExpanded,
+                    expansionMap: _expansionMap,
+                    onExpansionChanged: (cat, exp) {
+                      setState(() => _expansionMap[cat] = exp);
+                    },
+                    onChanged: () => setState(() {}),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              BlocBuilder<IngredientBloc, IngredientState>(
+                builder: (context, state) {
+                  if (state is! IngredientLoaded) return const SizedBox.shrink();
+                  final all =
+                      state.ingredients.where((i) => !i.isArchived).toList();
+                  return BlindInventoryProgressCard(
+                    filledCount: _getFilledCount(all),
+                    totalCount: all.length,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
         actions: [
           AppButton.secondary(

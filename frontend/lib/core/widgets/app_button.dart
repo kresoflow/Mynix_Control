@@ -1,9 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_motion.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 enum AppButtonVariant { primary, secondary, outline, ghost, danger }
+
+/// Интенсивность микро-анимации наведения (Hover Effect)
+enum AppHoverStyle {
+  /// Без увеличения и теней (scale: 1.0) — для плотных таблиц, строк и тулбаров
+  none(1.0, false),
+
+  /// Микро-увеличение на 1% (scale: 1.01, по умолчанию) — стандарт для кнопок форм
+  subtle(1.01, false),
+
+  /// Ощутимый подъем (scale: 1.03 + Ambient Glow) — для главных CTA-кнопок
+  lift(1.03, true),
+
+  /// Без скейла (1.0), но с контурным свечением бренда
+  glow(1.0, true);
+
+  final double scale;
+  final bool hasGlow;
+
+  const AppHoverStyle(this.scale, this.hasGlow);
+}
 
 enum AppButtonSize {
   xs(28.0, 14.0, 11.0, 8.0, 6.0),
@@ -41,6 +62,7 @@ class AppButton extends StatefulWidget {
   final String? tooltip;
   final Color? customColor;
   final double? borderRadius;
+  final AppHoverStyle hoverStyle;
 
   const AppButton({
     super.key,
@@ -57,6 +79,7 @@ class AppButton extends StatefulWidget {
     this.tooltip,
     this.customColor,
     this.borderRadius,
+    this.hoverStyle = AppHoverStyle.subtle,
   });
 
   const AppButton.primary({
@@ -73,6 +96,7 @@ class AppButton extends StatefulWidget {
     this.tooltip,
     this.customColor,
     this.borderRadius,
+    this.hoverStyle = AppHoverStyle.subtle,
   }) : variant = AppButtonVariant.primary;
 
   const AppButton.secondary({
@@ -89,6 +113,7 @@ class AppButton extends StatefulWidget {
     this.tooltip,
     this.customColor,
     this.borderRadius,
+    this.hoverStyle = AppHoverStyle.subtle,
   }) : variant = AppButtonVariant.secondary;
 
   const AppButton.outline({
@@ -105,6 +130,7 @@ class AppButton extends StatefulWidget {
     this.tooltip,
     this.customColor,
     this.borderRadius,
+    this.hoverStyle = AppHoverStyle.subtle,
   }) : variant = AppButtonVariant.outline;
 
   const AppButton.danger({
@@ -121,6 +147,7 @@ class AppButton extends StatefulWidget {
     this.tooltip,
     this.customColor,
     this.borderRadius,
+    this.hoverStyle = AppHoverStyle.subtle,
   }) : variant = AppButtonVariant.danger;
 
   const AppButton.ghost({
@@ -137,6 +164,7 @@ class AppButton extends StatefulWidget {
     this.tooltip,
     this.customColor,
     this.borderRadius,
+    this.hoverStyle = AppHoverStyle.subtle,
   }) : variant = AppButtonVariant.ghost;
 
   @override
@@ -181,11 +209,14 @@ class _AppButtonState extends State<AppButton> {
 
     final primary = widget.customColor ?? AppColors.brandPrimary;
 
+    final isMotionDisabled = AppMotion.disableAnimations;
+    final effectiveHovered = !isMotionDisabled && _isHovered;
+
     switch (widget.variant) {
       case AppButtonVariant.primary:
         bg = enabled ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
         fg = Colors.white;
-        if (enabled) {
+        if (enabled && !isMotionDisabled) {
           shadow = AppShadows.buttonGlow(primary);
         }
         break;
@@ -194,35 +225,22 @@ class _AppButtonState extends State<AppButton> {
         bg = widget.isSelected
             ? primary.withValues(alpha: isDark ? 0.22 : 0.12)
             : (isDark
-                ? (_isHovered ? AppColors.darkCardHover : AppColors.darkCard)
-                : (_isHovered ? AppColors.lightBorder : AppColors.lightSurface));
+                ? (effectiveHovered ? AppColors.darkCardHover : AppColors.darkCard)
+                : (effectiveHovered ? AppColors.lightBorder.withValues(alpha: 0.6) : AppColors.lightSurface));
         fg = widget.isSelected
             ? primary
-            : (_isHovered && enabled
-                ? primary
-                : (isDark ? AppColors.darkText : AppColors.lightText));
+            : (isDark ? AppColors.darkText : AppColors.lightText);
         border = Border.all(
           color: widget.isSelected
               ? primary.withValues(alpha: 0.6)
-              : (_isHovered && enabled
-                  ? primary.withValues(alpha: 0.5)
-                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
+              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
         );
-        if (_isHovered && enabled && !widget.isSelected) {
-          shadow = [
-            BoxShadow(
-              color: primary.withValues(alpha: 0.15),
-              blurRadius: 8,
-              spreadRadius: 0,
-            ),
-          ];
-        }
         break;
 
       case AppButtonVariant.outline:
         bg = widget.isSelected
             ? primary.withValues(alpha: isDark ? 0.22 : 0.12)
-            : (_isHovered ? primary.withValues(alpha: 0.08) : Colors.transparent);
+            : (effectiveHovered ? primary.withValues(alpha: 0.08) : Colors.transparent);
         fg = widget.isSelected
             ? primary
             : (enabled ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext));
@@ -230,30 +248,32 @@ class _AppButtonState extends State<AppButton> {
           color: widget.isSelected
               ? primary
               : (enabled
-                  ? (_isHovered ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder))
+                  ? (effectiveHovered ? primary : (isDark ? AppColors.darkBorder : AppColors.lightBorder))
                   : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
         );
         break;
 
       case AppButtonVariant.danger:
         bg = enabled
-            ? (_isHovered ? AppColors.danger : AppColors.danger.withValues(alpha: 0.12))
+            ? (effectiveHovered ? AppColors.danger : AppColors.danger.withValues(alpha: 0.12))
             : Colors.transparent;
         fg = enabled
-            ? (_isHovered ? Colors.white : AppColors.danger)
+            ? (effectiveHovered ? Colors.white : AppColors.danger)
             : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
-        border = Border.all(color: AppColors.danger.withValues(alpha: _isHovered ? 1.0 : 0.4));
+        border = Border.all(color: AppColors.danger.withValues(alpha: effectiveHovered ? 1.0 : 0.4));
         break;
 
       case AppButtonVariant.ghost:
         bg = widget.isSelected
-            ? primary.withValues(alpha: isDark ? 0.22 : 0.12)
-            : (_isHovered
+            ? (isDark ? AppColors.darkBorder.withValues(alpha: 0.4) : AppColors.lightBorder.withValues(alpha: 0.4))
+            : (effectiveHovered
                 ? (isDark ? AppColors.darkBorder.withValues(alpha: 0.4) : AppColors.lightBorder.withValues(alpha: 0.4))
                 : Colors.transparent);
         fg = widget.isSelected
-            ? primary
-            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
+            ? (isDark ? AppColors.darkText : AppColors.lightText)
+            : (effectiveHovered
+                ? (isDark ? AppColors.darkText : AppColors.lightText)
+                : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext));
         break;
     }
 
@@ -288,6 +308,12 @@ class _AppButtonState extends State<AppButton> {
             ],
           );
 
+    final double targetScale = isMotionDisabled
+        ? 1.0
+        : (_isPressed
+            ? 0.97
+            : (effectiveHovered ? widget.hoverStyle.scale : 1.0));
+
     final buttonWidget = MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -298,10 +324,12 @@ class _AppButtonState extends State<AppButton> {
         onTapCancel: enabled ? () => setState(() => _isPressed = false) : null,
         onTap: enabled ? _handleTap : null,
         child: AnimatedScale(
-          scale: _isPressed ? 0.97 : (_isHovered ? 1.01 : 1.0),
-          duration: const Duration(milliseconds: 100),
+          scale: targetScale,
+          duration: AppMotion.fast,
+          curve: AppMotion.standardCurve,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
+            duration: AppMotion.fast,
+            curve: AppMotion.standardCurve,
             height: effectiveHeight,
             width: effectiveWidth,
             padding: EdgeInsets.symmetric(horizontal: effectiveHorizPadding),
@@ -309,7 +337,7 @@ class _AppButtonState extends State<AppButton> {
               color: bg,
               borderRadius: BorderRadius.circular(radius),
               border: border,
-              boxShadow: shadow,
+              boxShadow: isMotionDisabled ? null : shadow,
             ),
             child: Center(
               widthFactor: (widget.isFullWidth || widget.width != null) ? null : 1.0,
@@ -347,6 +375,7 @@ class AppPrimaryButton extends AppButton {
     super.tooltip,
     super.customColor,
     super.borderRadius,
+    super.hoverStyle = AppHoverStyle.subtle,
   }) : super.primary();
 }
 
@@ -365,6 +394,7 @@ class AppSecondaryButton extends AppButton {
     super.tooltip,
     super.customColor,
     super.borderRadius,
+    super.hoverStyle = AppHoverStyle.subtle,
   }) : super.secondary();
 }
 
@@ -383,6 +413,7 @@ class AppGhostButton extends AppButton {
     super.tooltip,
     super.customColor,
     super.borderRadius,
+    super.hoverStyle = AppHoverStyle.subtle,
   }) : super.ghost();
 }
 
@@ -401,5 +432,6 @@ class AppDangerButton extends AppButton {
     super.tooltip,
     super.customColor,
     super.borderRadius,
+    super.hoverStyle = AppHoverStyle.subtle,
   }) : super.danger();
 }

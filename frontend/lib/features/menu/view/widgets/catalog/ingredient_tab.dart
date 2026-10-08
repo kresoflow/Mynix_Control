@@ -51,47 +51,27 @@ class _IngredientTabState extends State<IngredientTab> {
     });
   }
 
-  void _confirmDeleteSelected() {
+  Future<void> _confirmDeleteSelected() async {
     final isHard = _showArchived;
-    showDialog(
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: isHard ? 'Удаление навсегда' : 'Массовая архивация',
-        icon: isHard ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          isHard
-              ? 'Удалить навсегда выбранные элементы (${_selectedIngredients.length} шт.)?\nЭто действие необратимо и возможно только если по сырью нет складских проводок.'
-              : 'Архивировать выбранные элементы (${_selectedIngredients.length} шт.)?\nОни исчезнут из активных списков, но сохранятся в истории склада.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkSubtext
-                : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(ctx),
-          ),
-          AppDangerButton(
-            label: isHard ? 'Удалить навсегда' : 'Архивировать',
-            icon: isHard ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
-            onPressed: () {
-              for (var itemId in _selectedIngredients) {
-                context.read<IngredientBloc>().add(DeleteIngredient(itemId, mode: isHard ? 'hard' : 'soft'));
-              }
-              setState(() {
-                _selectedIngredients.clear();
-                _isManageMode = false;
-              });
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      title: isHard ? 'Удаление навсегда' : 'Массовая архивация',
+      message: isHard
+          ? 'Удалить навсегда выбранные элементы (${_selectedIngredients.length} шт.)?\nЭто действие необратимо и возможно только если по сырью нет складских проводок.'
+          : 'Архивировать выбранные элементы (${_selectedIngredients.length} шт.)?\nОни исчезнут из активных списков, но сохранятся в истории склада.',
+      confirmLabel: isHard ? 'Удалить навсегда' : 'Архивировать',
+      isDanger: true,
+      icon: isHard ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
     );
+    if (confirmed == true && mounted) {
+      for (var itemId in _selectedIngredients) {
+        context.read<IngredientBloc>().add(DeleteIngredient(itemId, mode: isHard ? 'hard' : 'soft'));
+      }
+      setState(() {
+        _selectedIngredients.clear();
+        _isManageMode = false;
+      });
+    }
   }
 
   @override

@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class RetailSingleProductForm extends StatelessWidget {
@@ -24,6 +25,7 @@ class RetailSingleProductForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currency = CurrencyFormatter.symbol(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -67,10 +69,10 @@ class RetailSingleProductForm extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: purchasePriceController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Цена закупки',
-                  border: OutlineInputBorder(),
-                  prefixText: 'TJS ',
+                  border: const OutlineInputBorder(),
+                  prefixText: '$currency ',
                 ),
                 keyboardType: TextInputType.number,
                 validator: (v) => v == null || v.isEmpty ? 'Заполните' : null,
@@ -80,10 +82,10 @@ class RetailSingleProductForm extends StatelessWidget {
             Expanded(
               child: TextFormField(
                 controller: sellingPriceController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Цена продажи (розница)',
-                  border: OutlineInputBorder(),
-                  prefixText: 'TJS ',
+                  border: const OutlineInputBorder(),
+                  prefixText: '$currency ',
                 ),
                 keyboardType: TextInputType.number,
                 validator: (v) => v == null || v.isEmpty ? 'Заполните' : null,

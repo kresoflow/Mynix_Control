@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -18,6 +18,9 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
   String _recipeFilter = 'all';
   String? _selectedTable = 'VIP 1';
   String? _selectedCustomer = 'Александр В.';
+  bool _sizeSmSelected = false;
+  bool _sizeMdSelected = true;
+  bool _sizeLgSelected = false;
 
   @override
   Widget build(BuildContext context) {
@@ -54,23 +57,23 @@ class _ShowcaseFilterChipSectionState extends State<ShowcaseFilterChipSection> {
                 size: AppFilterChipSize.sm,
                 label: 'SM (26px) Сайдбар',
                 count: 14,
-                isSelected: true,
-                onTap: () {},
+                isSelected: _sizeSmSelected,
+                onTap: () => setState(() => _sizeSmSelected = !_sizeSmSelected),
               ),
               AppFilterChip(
                 size: AppFilterChipSize.md,
                 label: 'MD (32px) Таблицы',
                 count: 42,
-                isSelected: true,
-                onTap: () {},
+                isSelected: _sizeMdSelected,
+                onTap: () => setState(() => _sizeMdSelected = !_sizeMdSelected),
               ),
               AppFilterChip(
                 size: AppFilterChipSize.lg,
                 label: 'LG (40px) Сенсор/POS',
                 count: 99,
                 icon: PhosphorIconsRegular.handTap,
-                isSelected: true,
-                onTap: () {},
+                isSelected: _sizeLgSelected,
+                onTap: () => setState(() => _sizeLgSelected = !_sizeLgSelected),
               ),
             ],
           ),

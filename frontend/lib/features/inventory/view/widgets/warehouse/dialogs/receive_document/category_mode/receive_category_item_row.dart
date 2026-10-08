@@ -146,7 +146,7 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '${_formatNum(widget.item.currentStock)} ${widget.item.unit}',
+                    '${_formatNum(widget.item.currentStock)} ${UnitFormatter.format(widget.item.unit)}',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,

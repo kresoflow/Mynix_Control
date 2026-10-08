@@ -136,11 +136,12 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
     }
     final categories = _selectedType == CashOpType.deposit ? _depCats : _withCats;
 
-    return AppDialog(
+    return AppDialogScaffold(
       title: 'Кассовая операция',
       icon: _selectedType == CashOpType.deposit ? PhosphorIconsBold.arrowDownLeft : PhosphorIconsBold.arrowUpRight,
-      width: 480,
-      content: SingleChildScrollView(
+      dialogSize: AppDialogSize.sm,
+      maxWidth: 520,
+      body: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,

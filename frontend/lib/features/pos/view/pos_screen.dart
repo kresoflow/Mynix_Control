@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/utils/audio_helper.dart';
 import 'package:kreso_frontend/core/network/websocket_service.dart';
@@ -183,34 +182,18 @@ class _PosScreenState extends State<PosScreen> {
           }
           return;
         }
-        final shouldLeave = await showDialog<bool>(
+        final shouldLeave = await AppConfirmDialog.show(
           context: context,
-          builder: (ctx) => AppDialog(
-            title: 'В чеке есть товары',
-            icon: PhosphorIconsRegular.warning,
-            isDestructive: true,
-            width: 420,
-            content: Text(
+          title: 'В чеке есть товары',
+          message:
               'В текущем чеке ${cartItems.length} поз. При выходе чек будет сброшен. Вы действительно хотите покинуть кассу?',
-              style: AppTextStyles.bodyMedium,
-            ),
-            actions: [
-              AppGhostButton(
-                label: 'Остаться в кассе',
-                onPressed: () => Navigator.pop(ctx, false),
-              ),
-              AppDangerButton(
-                label: 'Сбросить и выйти',
-                icon: PhosphorIconsRegular.signOut,
-                onPressed: () {
-                  context.read<CartBloc>().add(ClearCart());
-                  Navigator.pop(ctx, true);
-                },
-              ),
-            ],
-          ),
+          confirmLabel: 'Сбросить и выйти',
+          cancelLabel: 'Остаться в кассе',
+          isDanger: true,
+          icon: PhosphorIconsRegular.warning,
         );
         if (shouldLeave == true && context.mounted) {
+          context.read<CartBloc>().add(ClearCart());
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
           }

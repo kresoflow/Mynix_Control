@@ -3,12 +3,11 @@
 // ==============================================================================
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_stock_category_accordion.dart';
 import 'write_off_items_table.dart';
 import 'write_off_category_item_row.dart';
 
@@ -69,139 +68,62 @@ class WriteOffCategoryAccordion extends StatelessWidget {
       return null;
     });
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isExpanded
-              ? AppColors.brandPrimary.withValues(alpha: 0.5)
-              : (writtenOffCount > 0
-                  ? AppColors.brandPrimary.withValues(alpha: 0.25)
-                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          InkWell(
-            onTap: () => onExpansionChanged(!isExpanded),
-            borderRadius: BorderRadius.circular(10),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              child: Row(
-                children: [
-                  if (iconString != null && iconString.isNotEmpty)
-                    IconHelper.buildIcon(
-                      iconString,
-                      size: 18,
-                      color: isExpanded
-                          ? AppColors.brandPrimary
-                          : (isDark
-                              ? AppColors.darkSubtext
-                              : AppColors.lightSubtext),
-                    )
-                  else
-                    Icon(
-                      PhosphorIconsRegular.folder,
-                      size: 18,
-                      color: isExpanded
-                          ? AppColors.brandPrimary
-                          : (isDark
-                              ? AppColors.darkSubtext
-                              : AppColors.lightSubtext),
-                    ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      categoryName,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                        color:
-                            isDark ? AppColors.darkText : AppColors.lightText,
-                      ),
-                    ),
-                  ),
-                  if (writtenOffCount > 0) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.brandPrimary.withValues(
-                          alpha: isDark ? 0.16 : 0.10,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        'Списано: $writtenOffCount поз. (${writtenOffSum.toStringAsFixed(2)} $currency)',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.brandPrimary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    '${items.length} поз.',
-                    style: AppTextStyles.caption.copyWith(
-                      color: isDark
-                          ? AppColors.darkSubtext
-                          : AppColors.lightSubtext,
-                      fontSize: 11,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    isExpanded
-                        ? PhosphorIconsRegular.caretUp
-                        : PhosphorIconsRegular.caretDown,
-                    size: 14,
-                    color:
-                        isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (isExpanded)
-            Container(
+    return AppStockCategoryAccordion(
+      title: categoryName,
+      leading: (iconString != null && iconString.isNotEmpty)
+          ? IconHelper.buildIcon(
+              iconString,
+              size: 18,
+              color: isExpanded
+                  ? AppColors.brandPrimary
+                  : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+            )
+          : null,
+      isExpanded: isExpanded,
+      onExpansionChanged: onExpansionChanged,
+      itemCount: items.length,
+      totalSum: writtenOffSum > 0 ? writtenOffSum : null,
+      currency: currency,
+      isHighlighted: writtenOffCount > 0,
+      trailingBadge: writtenOffCount > 0
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color:
-                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
+                color: AppColors.brandPrimary.withValues(
+                  alpha: isDark ? 0.16 : 0.10,
+                ),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                'Списано: $writtenOffCount поз.',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.brandPrimary,
                 ),
               ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                itemCount: items.length,
-                separatorBuilder: (_, __) => Divider(
-                  height: 1,
-                  color: isDark
-                      ? AppColors.darkBorder
-                      : AppColors.lightBorder.withValues(alpha: 0.5),
-                ),
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return WriteOffCategoryItemRow(
-                    item: item,
-                    entry: _findEntry(item.id),
-                    currency: currency,
-                    onQuantityChanged: onQuantityChanged,
-                  );
-                },
-              ),
-            ),
-        ],
+            )
+          : null,
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.zero,
+        itemCount: items.length,
+        separatorBuilder: (_, __) => Divider(
+          height: 1,
+          color: isDark
+              ? AppColors.darkBorder
+              : AppColors.lightBorder.withValues(alpha: 0.5),
+        ),
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return WriteOffCategoryItemRow(
+            item: item,
+            entry: _findEntry(item.id),
+            currency: currency,
+            onQuantityChanged: onQuantityChanged,
+          );
+        },
       ),
     );
   }

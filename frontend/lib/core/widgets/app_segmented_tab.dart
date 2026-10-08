@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
+@Deprecated('Используйте AppSegmentedControl из ui_kit.dart')
 class AppSegmentedTabItem<T> {
   final T value;
   final String label;
@@ -14,6 +15,9 @@ class AppSegmentedTabItem<T> {
   });
 }
 
+/// [ЛЕГАСИ / ДЕПРЕКЕЙТЕД] Статичный селектор первого поколения.
+/// В продакшене используйте [AppSegmentedControl] с анимированной плашкой.
+@Deprecated('Используйте AppSegmentedControl с размерами SM/MD/LG из ui_kit.dart')
 class AppSegmentedTab<T> extends StatelessWidget {
   final List<AppSegmentedTabItem<T>> items;
   final T selectedValue;

@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class RetailVariationsEditor extends StatelessWidget {
@@ -22,6 +23,7 @@ class RetailVariationsEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currency = CurrencyFormatter.symbol(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -86,7 +88,7 @@ class RetailVariationsEditor extends StatelessWidget {
                           Expanded(
                             child: TextFormField(
                               initialValue: variations[i]['purchasePrice'].toString(),
-                              decoration: const InputDecoration(labelText: 'Закупка', prefixText: 'TJS ', isDense: true),
+                              decoration: InputDecoration(labelText: 'Закупка', prefixText: '$currency ', isDense: true),
                               keyboardType: TextInputType.number,
                               onChanged: (v) {
                                 variations[i]['purchasePrice'] = double.tryParse(v) ?? 0;
@@ -97,7 +99,7 @@ class RetailVariationsEditor extends StatelessWidget {
                           Expanded(
                             child: TextFormField(
                               initialValue: variations[i]['price'].toString(),
-                              decoration: const InputDecoration(labelText: 'Продажа', prefixText: 'TJS ', isDense: true),
+                              decoration: InputDecoration(labelText: 'Продажа', prefixText: '$currency ', isDense: true),
                               keyboardType: TextInputType.number,
                               onChanged: (v) {
                                 variations[i]['price'] = double.tryParse(v) ?? 0;

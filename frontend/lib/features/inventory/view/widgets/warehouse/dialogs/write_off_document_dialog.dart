@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog_scaffold.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
@@ -179,14 +179,15 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
       message:
           'Все выбранные позиции и данные акта будут сброшены. Вы уверены, что хотите выйти?',
       confirmLabel: 'Сбросить акт',
-      child: AppDialog(
+      child: AppDialogScaffold(
         title: 'Акт списания со склада',
         icon: PhosphorIconsRegular.archive,
-        width: 700,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        dialogSize: AppDialogSize.md,
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             WriteOffMetaRow(
               selectedReason: _selectedReason,
               reasons: _reasons,
@@ -229,7 +230,8 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
             ),
           ],
         ),
-        actions: [
+      ),
+      actions: [
           AppButton.secondary(
             label: 'Отмена',
             height: 40,

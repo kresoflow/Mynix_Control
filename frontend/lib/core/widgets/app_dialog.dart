@@ -1,12 +1,13 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-/// Универсальный компонент для всех модальных окон в дизайн-системе Kreso Flow.
-/// Заменяет стандартный AlertDialog, обеспечивая единый премиальный стиль.
+/// [ЛЕГАСИ / ДЕПРЕКЕЙТЕД] Прежнее поколение модальных окон.
+/// В продакшене используйте [AppDialogScaffold] v2 (SM 440px / MD 720px / LG 1080px).
+@Deprecated('Используйте AppDialogScaffold v2. AppDialog сохранен для обратной совместимости до Спринта 4.')
 class AppDialog extends StatelessWidget {
   final String title;
   final IconData icon;

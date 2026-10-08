@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_motion.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 /// Hoverable card with Kreso Flow Ember styling.
@@ -32,16 +33,19 @@ class _AppCardState extends State<AppCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMotionDisabled = AppMotion.disableAnimations;
+    final effectiveHover = !isMotionDisabled && _hovered;
+
     final borderColor = widget.isSelected
         ? AppColors.brandPrimary.withValues(alpha: 0.8)
-        : _hovered
+        : effectiveHover
             ? AppColors.brandPrimary.withValues(alpha: 0.35)
             : isDark
                 ? AppColors.darkBorder
                 : AppColors.lightBorder;
     final bgColor = widget.isSelected
         ? AppColors.brandPrimary.withValues(alpha: 0.06)
-        : _hovered
+        : effectiveHover
             ? (isDark ? AppColors.darkCardHover : const Color(0xFFF8F9FC))
             : (isDark ? AppColors.darkCard : AppColors.lightCard);
 
@@ -49,34 +53,36 @@ class _AppCardState extends State<AppCard> {
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: isMotionDisabled ? Duration.zero : const Duration(milliseconds: 150),
         curve: Curves.easeOut,
         width: widget.width,
         height: widget.height,
-        transform: _hovered
+        transform: effectiveHover
             ? (Matrix4.identity()..translateByDouble(0.0, -2.0, 0.0, 1.0))
             : Matrix4.identity(),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: borderColor, width: 1),
-          boxShadow: _hovered
-              ? [
-                  BoxShadow(
-                    color: isDark
-                        ? Colors.black.withValues(alpha: 0.4)
-                        : Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+          boxShadow: isMotionDisabled
+              ? null
+              : (_hovered
+                  ? [
+                      BoxShadow(
+                        color: isDark
+                            ? Colors.black.withValues(alpha: 0.4)
+                            : Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]),
         ),
         child: Material(
           color: Colors.transparent,

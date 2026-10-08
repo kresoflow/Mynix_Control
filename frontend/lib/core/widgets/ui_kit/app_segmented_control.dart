@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_motion.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 
@@ -148,7 +149,8 @@ class _SegmentTileState<T> extends State<_SegmentTile<T>> {
     final tileWidth = isIconOnly ? tileHeight : null;
 
     Widget content = AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
+      duration: AppMotion.standard,
+      curve: AppMotion.standardCurve,
       width: tileWidth,
       height: tileHeight,
       padding: isIconOnly ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: size.paddingH),

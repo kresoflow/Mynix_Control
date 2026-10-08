@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_input_decoration.dart';
@@ -128,8 +129,8 @@ class ReceiveDocumentAutocompleteOptionsView extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         child: Container(
-          width: 320,
-          constraints: const BoxConstraints(maxHeight: 200),
+          width: 360,
+          constraints: const BoxConstraints(maxHeight: 220),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
@@ -142,6 +143,7 @@ class ReceiveDocumentAutocompleteOptionsView extends StatelessWidget {
             itemCount: options.length,
             itemBuilder: (context, optIndex) {
               final option = options.elementAt(optIndex);
+              final isDeficit = option.currentStock < 0;
               return ListTile(
                 dense: true,
                 title: Text(
@@ -150,13 +152,41 @@ class ReceiveDocumentAutocompleteOptionsView extends StatelessWidget {
                     color: isDark ? AppColors.darkText : AppColors.lightText,
                     fontSize: 13,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: Text(
-                  '${UnitFormatter.format(option.unit)} • ${option.costPerUnit} TJS',
+                  'Закупка: ${option.costPerUnit.toCurrency(context)}',
                   style: AppTextStyles.caption.copyWith(
                     color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                     fontSize: 11,
                   ),
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      UnitFormatter.formatAmount(option.currentStock, option.unit),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isDeficit
+                            ? AppColors.danger
+                            : (isDark ? AppColors.darkText : AppColors.lightText),
+                      ),
+                    ),
+                    Text(
+                      isDeficit ? 'дефицит' : 'на складе',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: isDeficit ? FontWeight.w600 : FontWeight.normal,
+                        color: isDeficit
+                            ? AppColors.danger
+                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                      ),
+                    ),
+                  ],
                 ),
                 onTap: () => onSelected(option),
               );

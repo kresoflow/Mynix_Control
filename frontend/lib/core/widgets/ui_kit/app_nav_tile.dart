@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_motion.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 /// ── Размерная шкала элементов навигации и списков категорий ─────────────
@@ -119,7 +120,8 @@ class _AppNavTileState extends State<AppNavTile> {
               onTap: widget.onTap,
               borderRadius: BorderRadius.circular(size.radius),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 140),
+                duration: AppMotion.fast,
+                curve: AppMotion.standardCurve,
                 constraints: BoxConstraints(minHeight: size.height),
                 padding: EdgeInsets.symmetric(
                   horizontal: size.paddingH,

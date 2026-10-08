@@ -1,8 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog_scaffold.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -64,11 +64,11 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final debt = widget.supplier.balance < 0 ? widget.supplier.balance.abs() : 0.0;
 
-    return AppDialog(
+    return AppDialogScaffold(
       title: 'Выплата поставщику',
       icon: PhosphorIconsRegular.money,
-      width: 420,
-      content: Column(
+      dialogSize: AppDialogSize.sm,
+      body: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

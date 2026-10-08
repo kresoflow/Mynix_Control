@@ -5,12 +5,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_stock_category_accordion.dart';
 import 'receive_category_item_row.dart';
 import 'receive_category_sync_adapter.dart';
 
@@ -65,141 +64,55 @@ class ReceiveCategoryAccordion extends StatelessWidget {
       return null;
     });
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isExpanded
-              ? AppColors.brandPrimary.withValues(alpha: 0.5)
-              : (itemsInReceiptCount > 0
-                  ? AppColors.brandPrimary.withValues(alpha: 0.25)
-                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-        ),
-      ),
+    return AppStockCategoryAccordion(
+      title: categoryName,
+      leading: (iconString != null && iconString.isNotEmpty)
+          ? IconHelper.buildIcon(
+              iconString,
+              size: 20,
+              color: isExpanded
+                  ? AppColors.brandPrimary
+                  : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+            )
+          : null,
+      isExpanded: isExpanded,
+      onExpansionChanged: onExpansionChanged,
+      lowStockCount: lowStockCount,
+      itemCount: items.length,
+      totalSum: categoryTotalSum > 0 ? categoryTotalSum : null,
+      currency: currency,
+      isHighlighted: itemsInReceiptCount > 0,
+      trailingBadge: itemsInReceiptCount > 0
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.brandPrimary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$itemsInReceiptCount к приходу',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: AppColors.brandPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          InkWell(
-            onTap: () => onExpansionChanged(!isExpanded),
-            borderRadius: BorderRadius.circular(10),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  if (iconString != null && iconString.isNotEmpty)
-                    IconHelper.buildIcon(
-                      iconString,
-                      size: 20,
-                      color: isExpanded
-                          ? AppColors.brandPrimary
-                          : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                    )
-                  else
-                    Icon(
-                      PhosphorIconsRegular.folder,
-                      size: 20,
-                      color: isExpanded
-                          ? AppColors.brandPrimary
-                          : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                    ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      categoryName,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: isExpanded
-                            ? AppColors.brandPrimary
-                            : (isDark ? AppColors.darkText : AppColors.lightText),
-                      ),
-                    ),
-                  ),
-
-                  // Бейдж «X мало»
-                  if (lowStockCount > 0) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.danger.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '$lowStockCount мало',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.danger,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-
-                  // Бейдж «Y к приходу»
-                  if (itemsInReceiptCount > 0) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '$itemsInReceiptCount к приходу',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.brandPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-
-                  Text(
-                    '${items.length} поз.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    ),
-                  ),
-
-                  if (categoryTotalSum > 0) ...[
-                    const SizedBox(width: 12),
-                    Text(
-                      'Σ ${categoryTotalSum.toCurrency(context)}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.darkText : AppColors.lightText,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(width: 8),
-                  Icon(
-                    isExpanded ? PhosphorIconsRegular.caretDown : PhosphorIconsRegular.caretRight,
-                    size: 16,
-                    color: isExpanded ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                  ),
-                ],
-              ),
+          _buildCategoryTableHeader(context, isDark, showRetailColumn),
+          ...items.map(
+            (item) => ReceiveCategoryItemRow(
+              key: ValueKey(item.id),
+              item: item,
+              showRetailColumn: showRetailColumn,
+              currency: currency,
+              adapter: adapter,
             ),
           ),
-          if (isExpanded) ...[
-            _buildCategoryTableHeader(context, isDark, showRetailColumn),
-            ...items.map(
-              (item) => ReceiveCategoryItemRow(
-                key: ValueKey(item.id),
-                item: item,
-                showRetailColumn: showRetailColumn,
-                currency: currency,
-                adapter: adapter,
-              ),
-            ),
-            const SizedBox(height: 6),
-          ],
+          const SizedBox(height: 6),
         ],
       ),
     );

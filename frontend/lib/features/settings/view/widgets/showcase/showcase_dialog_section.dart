@@ -98,15 +98,18 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
                 onPressed: () {
                   showDialog(
                     context: context,
-                    builder: (ctx) => AppDialog(
-                      title: 'Стандартный AppDialog',
+                    builder: (ctx) => AppDialogScaffold(
+                      title: 'Стандартный диалог Kreso Flow (v2)',
                       icon: PhosphorIconsRegular.sparkle,
-                      content: const Text(
-                        'Это диалоговое окно использует скругления AppRadii.dialog (20px), кнопки размера LG и мягкие тени.',
+                      dialogSize: AppDialogSize.sm,
+                      body: const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text(
+                          'Это диалоговое окно использует золотой стандарт AppDialogScaffold v2, скругления AppRadii.dialog, кнопки UI Kit и адаптивные размеры.',
+                        ),
                       ),
                       actions: [
                         AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-                        const SizedBox(width: 8),
                         AppPrimaryButton(label: 'Подтвердить', onPressed: () => Navigator.pop(ctx)),
                       ],
                     ),

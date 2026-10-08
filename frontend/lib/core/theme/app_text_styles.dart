@@ -64,6 +64,12 @@ abstract class AppTextStyles {
     fontSize: 13,
   );
 
+  static TextStyle get monoBold => GoogleFonts.jetBrainsMono(
+    textStyle: const TextStyle(inherit: true),
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+  );
+
   // ── Price (цены в сетке товаров) ──────────────────────────────────────────
   static TextStyle get price => GoogleFonts.jetBrainsMono(
     textStyle: const TextStyle(inherit: true),
