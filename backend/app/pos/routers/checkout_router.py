@@ -9,7 +9,7 @@ from app.users import services as user_svc
 from app.pos.services.shift_service import get_open_shift
 from app.pos.services.checkout_service import (
     create_order, list_orders, get_order_by_id, update_order_status,
-    process_new_order, approve_order, reject_order
+    process_new_order
 )
 from app.pos.services.order_table_service import (
     get_active_tables_orders, settle_table_order, append_items_to_table_order,
@@ -19,13 +19,6 @@ from app.pos.services.order_table_service import (
 router = APIRouter(tags=["POS — Orders & Checkout"])
 
 
-class ApproveOrderRequest(BaseModel):
-    payment_method: Optional[str] = None
-    is_paid: bool = False
-
-
-class RejectOrderRequest(BaseModel):
-    reason: Optional[str] = None
 
 
 class SettleOrderRequest(BaseModel):
@@ -162,38 +155,6 @@ async def api_get_order(
     }
 
 
-@router.post(
-    "/orders/{order_id}/approve",
-    dependencies=[Depends(require_permission(Perm.ORDERS_CREATE))],
-)
-async def api_approve_order(
-    order_id: int,
-    current_user: CurrentUser,
-    session: TenantSession,
-    body: Optional[ApproveOrderRequest] = None,
-):
-    """Cashier approves incoming hall order -> triggers stock deduction and dispatches to KDS."""
-    req = body or ApproveOrderRequest()
-    return await approve_order(
-        session, current_user, order_id,
-        payment_method=req.payment_method,
-        is_paid=req.is_paid
-    )
-
-
-@router.post(
-    "/orders/{order_id}/reject",
-    dependencies=[Depends(require_permission(Perm.ORDERS_CANCEL))],
-)
-async def api_reject_order(
-    order_id: int,
-    current_user: CurrentUser,
-    session: TenantSession,
-    body: Optional[RejectOrderRequest] = None,
-):
-    """Cashier rejects incoming hall order -> cancels without deducting stock."""
-    req = body or RejectOrderRequest()
-    return await reject_order(session, current_user, order_id, reason=req.reason)
 
 
 @router.patch(

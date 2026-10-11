@@ -168,12 +168,9 @@ async def create_order(
     has_dish = any(oi["item_type"] == "dish" for oi in order_items_data)
     all_retail = all(oi["item_type"] == "retail" for oi in order_items_data)
     source_lower = (data.order_source or "").lower()
-    is_waiter_order = source_lower in ("waiter", "qr_guest")
     is_dine_in_order = source_lower in ("dine_in", "hall")
 
-    if is_waiter_order:
-        initial_status = OrderStatus.PENDING_APPROVAL
-    elif is_dine_in_order:
+    if is_dine_in_order:
         initial_status = OrderStatus.COOKING if (has_dish and use_kds) else OrderStatus.READY
     elif not use_kds:
         initial_status = OrderStatus.COMPLETED
@@ -193,7 +190,7 @@ async def create_order(
         table_number=data.table_number,
         order_source=data.order_source or "pos",
         status=initial_status,
-        payment_method="unpaid" if (is_waiter_order or is_dine_in_order) else data.payment_method,
+        payment_method="unpaid" if is_dine_in_order else data.payment_method,
         bonus_spent=round(data.bonus_spent or 0.0, 2),
         total=round(total, 2),
         note=data.note,
@@ -205,7 +202,7 @@ async def create_order(
         oi = OrderItem(order_id=order.id, **oi_data)
         session.add(oi)
 
-    if not is_waiter_order and not is_dine_in_order:
+    if not is_dine_in_order:
         if enable_inventory:
             inventory_items = [
                 {
@@ -235,7 +232,7 @@ async def create_order(
 
 async def process_new_order(session: AsyncSession, current_user, data: CreateOrderRequest) -> dict:
     """Orchestrates order creation and triggers appropriate WS notifications."""
-    from app.pos.ws import notify_inventory_updated, notify_pos_incoming_order
+    from app.pos.ws import notify_inventory_updated
 
     order = await create_order(session, current_user.id, current_user.tenant_id, data)
     if getattr(order, "_is_appended_dozakaz", False):
@@ -246,100 +243,7 @@ async def process_new_order(session: AsyncSession, current_user, data: CreateOrd
         raise NotFoundError("Failed to fetch newly created order")
 
     order_data = format_order_dict(full_order, current_user.full_name)
-
-    if full_order.status == OrderStatus.PENDING_APPROVAL:
-        await notify_pos_incoming_order(current_user.tenant_id, order_data)
-    else:
-        await notify_inventory_updated(current_user.tenant_id)
-
-    return order_data
-
-
-async def approve_order(
-    session: AsyncSession,
-    current_user,
-    order_id: int,
-    payment_method: Optional[str] = None,
-    is_paid: bool = False,
-) -> dict:
-    """Approves a hall order, triggers deferred stock deduction and sends to KDS."""
-    from app.pos.ws import notify_inventory_updated, notify_pos_incoming_resolved
-
-    order = await get_order_by_id(session, order_id)
-    if not order:
-        raise NotFoundError(f"Заказ #{order_id} не найден")
-
-    tenant = (await session.execute(select(Tenant).where(Tenant.id == current_user.tenant_id))).scalar_one_or_none()
-    enable_inventory = tenant.enable_inventory_deduction if tenant else True
-
-    # [PILOT LEAN MVP] Без KDS оплаченный заказ сразу COMPLETED, столик на постоплату — READY
-    if is_paid:
-        new_status = OrderStatus.COMPLETED
-    else:
-        new_status = OrderStatus.READY
-
-    order.status = new_status
-    if payment_method:
-        order.payment_method = payment_method
-    session.add(order)
-
-    if enable_inventory:
-        inventory_items = [
-            {
-                "menu_item_id": oi.menu_item_id,
-                "quantity": oi.quantity,
-                "selected_options": oi.selected_options,
-            }
-            for oi in order.items
-        ]
-        await inventory_svc.deduct_ingredients(session, inventory_items, current_user.id)
-
-    if is_paid:
-        if not order.shift_id:
-            open_shift = await get_open_shift(session, current_user.id)
-            if open_shift:
-                order.shift_id = open_shift.id
-
-        if str(order.payment_method).lower() == "cash" and order.shift_id:
-            tx = CashTransaction(
-                shift_id=order.shift_id,
-                user_id=current_user.id,
-                type=CashTransactionType.INCOME,
-                amount=order.total,
-                description=f"Оплата заказа #{order.order_number} ({order.table_number or 'Зал'})",
-            )
-            session.add(tx)
-
-    await session.flush()
-    order_data = format_order_dict(order, current_user.full_name)
-    await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
     await notify_inventory_updated(current_user.tenant_id)
-
-    return order_data
-
-
-async def reject_order(session: AsyncSession, current_user, order_id: int, reason: Optional[str] = None) -> dict:
-    """Rejects an incoming hall order without inventory deduction."""
-    from app.pos.ws import notify_pos_incoming_resolved
-
-    order = await get_order_by_id(session, order_id)
-    if not order:
-        raise NotFoundError(f"Заказ #{order_id} не найден")
-
-    # Poka-yoke: Prevent rejecting already completed or cancelled orders
-    if order.status in (OrderStatus.COMPLETED, OrderStatus.CANCELLED, OrderStatus.COMPLETED.value, OrderStatus.CANCELLED.value):
-        raise ConflictError(
-            f"Невозможно отклонить заказ #{order_id}: он уже находится в статусе «{order.status}»."
-        )
-
-    order.status = OrderStatus.CANCELLED
-    if reason:
-        order.note = f"{order.note or ''} | Отклонен: {reason}".strip(" |")
-    session.add(order)
-    await session.flush()
-
-    order_data = format_order_dict(order, current_user.full_name)
-    await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
     return order_data
 
 

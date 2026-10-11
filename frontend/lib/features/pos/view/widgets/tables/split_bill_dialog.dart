@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -10,7 +10,7 @@ import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
-import 'package:kreso_frontend/features/pos/view/widgets/dialogs/incoming_order_payment_modal.dart';
+import 'table_order_payment_modal.dart';
 
 class SplitBillDialog extends StatefulWidget {
   final Map<String, dynamic> tableData;
@@ -93,7 +93,7 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
       'items': items,
     };
 
-    await IncomingOrderPaymentModal.show(
+    await TableOrderPaymentModal.show(
       context,
       order: mockOrderPayload,
       onConfirm: (paymentMethod) async {

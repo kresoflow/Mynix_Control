@@ -10,7 +10,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
-import 'package:kreso_frontend/core/utils/audio_helper.dart';
 import 'package:kreso_frontend/core/network/websocket_service.dart';
 
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
@@ -24,8 +23,6 @@ import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/orders/view/orders_screen.dart';
-import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
@@ -62,7 +59,7 @@ class _PosScreenState extends State<PosScreen> {
         context.read<ShiftBloc>().add(CheckCurrentShift());
       }
       context.read<PosTabCubit>().refreshCounts();
-      _initIncomingOrders();
+      _initWebSocketListener();
     });
   }
 
@@ -80,25 +77,12 @@ class _PosScreenState extends State<PosScreen> {
     });
   }
 
-  void _initIncomingOrders() {
+  void _initWebSocketListener() {
     _wsSubscription = webSocketService.messages.listen((msg) {
       if (!mounted) return;
       final event = msg['event'];
 
-      if (event == 'incoming_order') {
-        _debouncedRefreshCounts();
-        AudioHelper.playNewOrderSound();
-        final order = msg['order'] ?? {};
-        final table = order['table_number'] ?? 'Зал';
-        if (mounted) {
-          AppToast.showInfo(context, 'Новый заказ с зала', subtitle: '$table (нажмите на колокольчик)');
-        }
-      } else if (event == 'incoming_order_resolved') {
-        _debouncedRefreshCounts();
-        if (mounted) {
-          _debouncedUpdateOrdersAndShift();
-        }
-      } else if (event == 'status_update') {
+      if (event == 'status_update') {
         _debouncedRefreshCounts();
         final orderId = msg['order_id'];
         final status = msg['status']?.toString().toUpperCase();

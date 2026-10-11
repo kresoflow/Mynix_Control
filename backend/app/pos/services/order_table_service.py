@@ -104,10 +104,7 @@ async def settle_table_order(
     note: Optional[str] = None,
 ) -> dict:
     """Settles and completes a dine-in table order (post-payment)."""
-    from app.pos.ws import (
-        notify_pos_incoming_resolved,
-        notify_inventory_updated,
-    )
+    from app.pos.ws import notify_inventory_updated
 
     # [БЕЗОПАСНОСТЬ] [ТРАНЗАКЦИЯ] Блокировка строки заказа от состояния гонки
     stmt = (
@@ -164,7 +161,6 @@ async def settle_table_order(
     full_order = await get_order_by_id(session, order.id)
     order_data = format_order_dict(full_order or order, current_user.full_name)
 
-    await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
     await notify_inventory_updated(current_user.tenant_id)
 
     return order_data
@@ -272,7 +268,7 @@ async def split_table_order(
     note: Optional[str] = None,
 ) -> dict:
     """Splits selected items from active table order and completes their payment."""
-    from app.pos.ws import notify_pos_incoming_resolved, notify_inventory_updated
+    from app.pos.ws import notify_inventory_updated
 
     order = await get_order_by_id(session, order_id)
     if not order:
@@ -358,7 +354,6 @@ async def split_table_order(
 
     full_child = await get_order_by_id(session, child_order.id)
     order_data = format_order_dict(full_child or child_order, current_user.full_name)
-    await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
     await notify_inventory_updated(current_user.tenant_id)
 
     return {
@@ -374,8 +369,6 @@ async def serve_table_order(
     order_id: int,
 ) -> dict:
     """Marks a table order as served (READY) and clears dozakaz items batch flag."""
-    from app.pos.ws import notify_pos_incoming_resolved
-
     order = await get_order_by_id(session, order_id)
     if not order:
         raise NotFoundError(f"Заказ #{order_id} не найден")
@@ -394,7 +387,6 @@ async def serve_table_order(
 
     full_order = await get_order_by_id(session, order.id)
     order_data = format_order_dict(full_order or order, current_user.full_name)
-    await notify_pos_incoming_resolved(current_user.tenant_id, order_data)
     return order_data
 
 

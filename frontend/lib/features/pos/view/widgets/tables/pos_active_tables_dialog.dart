@@ -11,7 +11,7 @@ import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
-import 'package:kreso_frontend/features/pos/view/widgets/dialogs/incoming_order_payment_modal.dart';
+import 'table_order_payment_modal.dart';
 import 'pos_active_table_card.dart';
 import 'split_bill_dialog.dart';
 
@@ -75,7 +75,7 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
 
   Future<void> _handleSettle(Map<String, dynamic> table) async {
     final orderId = table['order_id'] as int? ?? table['id'] as int;
-    await IncomingOrderPaymentModal.show(
+    await TableOrderPaymentModal.show(
       context,
       order: table,
       onConfirm: (paymentMethod) async {

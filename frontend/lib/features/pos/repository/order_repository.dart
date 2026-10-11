@@ -103,48 +103,6 @@ class OrderRepository {
     }
   }
 
-  /// Fetches incoming orders waiting for cashier approval
-  Future<List<Map<String, dynamic>>> fetchPendingOrders() async {
-    try {
-      final response = await _dio.get('/orders/', queryParameters: {'status': 'pending_approval'});
-      return List<Map<String, dynamic>>.from(response.data);
-    } catch (e) {
-      throw Exception('Не удалось загрузить входящие заказы: $e');
-    }
-  }
-
-  /// Approves incoming hall order -> triggers stock deduction and sends to KDS
-  Future<Map<String, dynamic>> approveOrder(
-    int orderId, {
-    String? paymentMethod,
-    bool isPaid = false,
-  }) async {
-    try {
-      final response = await _dio.post(
-        '/orders/$orderId/approve',
-        data: {
-          if (paymentMethod != null) 'payment_method': paymentMethod,
-          'is_paid': isPaid,
-        },
-      );
-      return Map<String, dynamic>.from(response.data);
-    } catch (e) {
-      throw Exception('Ошибка при подтверждении заказа: $e');
-    }
-  }
-
-  /// Rejects incoming hall order without stock deduction
-  Future<Map<String, dynamic>> rejectOrder(int orderId, {String? reason}) async {
-    try {
-      final response = await _dio.post(
-        '/orders/$orderId/reject',
-        data: {if (reason != null) 'reason': reason},
-      );
-      return Map<String, dynamic>.from(response.data);
-    } catch (e) {
-      throw Exception('Ошибка при отклонении заказа: $e');
-    }
-  }
 
   /// Marks a table order as served in the hall
   Future<Map<String, dynamic>> markOrderServed(int orderId) async {

@@ -1,4 +1,9 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: POS / Модальное окно расчета столика (TableOrderPaymentModal)
+// ДОМЕН: lib/features/pos/view/widgets/tables/table_order_payment_modal.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -6,11 +11,13 @@ import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 
-class IncomingOrderPaymentModal extends StatefulWidget {
+// ── Модальное окно выбора способа оплаты и закрытия столика ──────────────────
+
+class TableOrderPaymentModal extends StatefulWidget {
   final Map<String, dynamic> order;
   final Future<void> Function(String paymentMethod) onConfirm;
 
-  const IncomingOrderPaymentModal({
+  const TableOrderPaymentModal({
     super.key,
     required this.order,
     required this.onConfirm,
@@ -24,15 +31,15 @@ class IncomingOrderPaymentModal extends StatefulWidget {
     return showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (_) => IncomingOrderPaymentModal(order: order, onConfirm: onConfirm),
+      builder: (_) => TableOrderPaymentModal(order: order, onConfirm: onConfirm),
     );
   }
 
   @override
-  State<IncomingOrderPaymentModal> createState() => _IncomingOrderPaymentModalState();
+  State<TableOrderPaymentModal> createState() => _TableOrderPaymentModalState();
 }
 
-class _IncomingOrderPaymentModalState extends State<IncomingOrderPaymentModal> {
+class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
   String _selectedMethod = 'cash'; // 'cash', 'card', 'transfer'
   String _transferProvider = 'dc'; // 'dc', 'alif', 'spitamen', 'other'
   bool _isLoading = false;

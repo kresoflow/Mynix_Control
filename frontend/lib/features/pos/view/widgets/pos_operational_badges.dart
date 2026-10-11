@@ -1,5 +1,5 @@
 // ==============================================================================
-// МОДУЛЬ: POS / Операционные кнопки зала (Столики и Входящие заказы)
+// МОДУЛЬ: POS / Операционные кнопки зала (Активные столики)
 // ДОМЕН: lib/features/pos/view/widgets/pos_operational_badges.dart
 // ==============================================================================
 
@@ -7,11 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'tables/pos_active_tables_dialog.dart';
-import 'dialogs/incoming_orders_dialog.dart';
 
 // ── Виджет оперативных кнопок зала ───────────────────────────────────────────
 
@@ -29,17 +26,7 @@ class PosOperationalBadges extends StatelessWidget {
 
     return BlocBuilder<PosTabCubit, PosTabState>(
       builder: (context, tabState) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 1. Кнопка активных столиков
-            _buildActiveTablesButton(context, tabState.activeTablesCount, isDark),
-            const SizedBox(width: 8),
-
-            // 2. Кнопка входящих заказов с зала
-            _buildIncomingOrdersButton(context, tabState.incomingCount, isDark),
-          ],
-        );
+        return _buildActiveTablesButton(context, tabState.activeTablesCount, isDark);
       },
     );
   }
@@ -86,60 +73,6 @@ class PosOperationalBadges extends StatelessWidget {
             ),
             child: Icon(
               hasTables ? PhosphorIconsBold.chair : PhosphorIconsRegular.chair,
-              size: size > 34 ? 18 : 16,
-              color: iconColor,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── Кнопка входящих заказов ────────────────────────────────────────────────
-
-  Widget _buildIncomingOrdersButton(BuildContext context, int count, bool isDark) {
-    final hasPending = count > 0;
-    final badgeColor = AppColors.warning;
-    final tooltipLabel = 'Входящие заказы с зала ($count)';
-    final icon = hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell;
-
-    final bg = hasPending
-        ? badgeColor.withValues(alpha: isDark ? 0.16 : 0.12)
-        : (isDark ? AppColors.darkCard : AppColors.lightCard);
-    final borderColor = hasPending
-        ? badgeColor.withValues(alpha: isDark ? 0.5 : 0.6)
-        : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
-    final iconColor = hasPending ? badgeColor : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
-
-    return Tooltip(
-      message: tooltipLabel,
-      child: InkWell(
-        onTap: () => IncomingOrdersDialog.show(context).then((_) {
-          if (context.mounted) {
-            context.read<PosTabCubit>().refreshCounts();
-          }
-        }),
-        borderRadius: BorderRadius.circular(10),
-        child: Badge(
-          isLabelVisible: hasPending,
-          backgroundColor: badgeColor,
-          textColor: Colors.white,
-          label: Text(
-            '$count',
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-          ),
-          offset: const Offset(3, -3),
-          child: Container(
-            width: size,
-            height: size,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: borderColor, width: 1.2),
-            ),
-            child: Icon(
-              icon,
               size: size > 34 ? 18 : 16,
               color: iconColor,
             ),

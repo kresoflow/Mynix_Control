@@ -172,20 +172,15 @@ async def get_x_report(
     # Total Items Sold Count
     stmt_items = (
         select(func.coalesce(func.sum(OrderItem.quantity), 0))
-        .select_from(OrderItem)
-        .join(Order, Order.id == OrderItem.order_id)
-        .where(
-            Order.shift_id == shift_id,
-            Order.status != OrderStatus.CANCELLED.value,
-        )
+        .select_from(OrderItem).join(Order, Order.id == OrderItem.order_id)
+        .where(Order.shift_id == shift_id, Order.status != OrderStatus.CANCELLED.value)
     )
     res_items = await session.execute(stmt_items)
     items_sold_count = int(res_items.scalar() or 0)
 
     # Cancelled Orders Count
     stmt_cancelled = select(func.count(Order.id)).where(
-        Order.shift_id == shift_id,
-        Order.status == OrderStatus.CANCELLED.value,
+        Order.shift_id == shift_id, Order.status == OrderStatus.CANCELLED.value
     )
     res_cancelled = await session.execute(stmt_cancelled)
     cancelled_count = int(res_cancelled.scalar() or 0)

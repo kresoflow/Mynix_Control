@@ -7,33 +7,29 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
 
-// ── Состояние вкладок и бейджей кассы ─────────────────────────────────────────
+// ── Состояние вкладок и столиков кассы ───────────────────────────────────────
 
 class PosTabState extends Equatable {
-  final int currentTab; // 0: Касса, 1: Заказы, 2: Кухня (KDS)
-  final int incomingCount;
+  final int currentTab; // 0: Касса, 1: Заказы
   final int activeTablesCount;
 
   const PosTabState({
     this.currentTab = 0,
-    this.incomingCount = 0,
     this.activeTablesCount = 0,
   });
 
   PosTabState copyWith({
     int? currentTab,
-    int? incomingCount,
     int? activeTablesCount,
   }) {
     return PosTabState(
       currentTab: currentTab ?? this.currentTab,
-      incomingCount: incomingCount ?? this.incomingCount,
       activeTablesCount: activeTablesCount ?? this.activeTablesCount,
     );
   }
 
   @override
-  List<Object?> get props => [currentTab, incomingCount, activeTablesCount];
+  List<Object?> get props => [currentTab, activeTablesCount];
 }
 
 // ── Cubit оперативного управления POS ─────────────────────────────────────────
@@ -55,11 +51,9 @@ class PosTabCubit extends Cubit<PosTabState> {
     if (_isRefreshing) return;
     _isRefreshing = true;
     try {
-      final pending = await _orderRepo.fetchPendingOrders();
       final tables = await _orderRepo.fetchActiveTables();
       emit(
         state.copyWith(
-          incomingCount: pending.length,
           activeTablesCount: tables.length,
         ),
       );
@@ -69,10 +63,9 @@ class PosTabCubit extends Cubit<PosTabState> {
     }
   }
 
-  void updateCounts({int? incomingCount, int? activeTablesCount}) {
+  void updateCounts({int? activeTablesCount}) {
     emit(
       state.copyWith(
-        incomingCount: incomingCount,
         activeTablesCount: activeTablesCount,
       ),
     );
