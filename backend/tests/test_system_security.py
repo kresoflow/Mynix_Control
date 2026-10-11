@@ -201,3 +201,24 @@ async def test_tenant_full_update_and_owner_management(db_session):
         assert login_resp.status_code == 200, login_resp.text
         assert "access_token" in login_resp.json()
 
+
+@pytest.mark.asyncio
+async def test_frontend_logs_endpoints_require_admin_token():
+    """Эндпоинты frontend-logs защищены токеном системного администратора."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Без токена
+        unauth_get = await ac.get("/api/v1/system/frontend-logs")
+        assert unauth_get.status_code in (401, 403, 422)
+
+        unauth_del = await ac.delete("/api/v1/system/frontend-logs")
+        assert unauth_del.status_code in (401, 403, 422)
+
+        # С валидным системным токеном
+        auth_get = await ac.get(
+            "/api/v1/system/frontend-logs",
+            headers={"X-System-Token": settings.system_admin_token},
+        )
+        assert auth_get.status_code == 200
+        assert "lines" in auth_get.json()
+

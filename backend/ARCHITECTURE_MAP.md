@@ -61,10 +61,6 @@ backend/
 │   │   ├── services/                 # Бизнес-логика (crm_service, crm_loyalty_service, crm_ledger_service)
 │   │   ├── models.py                 # Модели: Customer, CustomerLedger, LoyaltyTier
 │   │   └── router.py                 # Главный роутер CRM
-│   ├── hardware/                     # Модуль: Интеграция с торговым оборудованием
-│   │   ├── __pycache__/              # Байт-код модуля оборудования
-│   │   ├── __init__.py               # Инициализация пакета hardware
-│   │   └── printer.py                # Драйвер ESC/POS печати чеков (TCP/IP, USB) и денежного ящика
 │   ├── inventory/                    # Модуль: Склад, Меню, Техкарты и Поставщики
 │   │   ├── __pycache__/              # Байт-код модуля склада
 │   │   ├── models/                   # Модели: menu_models, ingredient_models, document_models, enums

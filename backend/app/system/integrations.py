@@ -5,9 +5,10 @@
 
 import logging
 from pydantic import BaseModel, Field
-from fastapi import APIRouter, Request, BackgroundTasks
+from fastapi import APIRouter, Request, BackgroundTasks, Depends
 from app.config import settings
 from app.system.telegram_service import send_telegram_message, send_error_alert
+from app.system.security import require_system_admin
 
 router = APIRouter(tags=["Integrations"])
 
@@ -62,8 +63,8 @@ async def report_client_error(payload: ClientErrorPayload, background_tasks: Bac
     return {"status": "recorded"}
 
 
-@router.get("/system/frontend-logs")
-@router.get("/frontend-logs")
+@router.get("/system/frontend-logs", dependencies=[Depends(require_system_admin)])
+@router.get("/frontend-logs", dependencies=[Depends(require_system_admin)])
 async def get_frontend_logs(lines: int = 100):
     """
     Возвращает последние строки клиентского лога для автономной диагностики агентом.
@@ -79,8 +80,8 @@ async def get_frontend_logs(lines: int = 100):
         return {"error": str(e)}
 
 
-@router.delete("/system/frontend-logs")
-@router.delete("/frontend-logs")
+@router.delete("/system/frontend-logs", dependencies=[Depends(require_system_admin)])
+@router.delete("/frontend-logs", dependencies=[Depends(require_system_admin)])
 async def clear_frontend_logs():
     """Очищает файл клиентских логов фронтенда перед новым прогоном тестов."""
     from app.core.logging_config import FRONTEND_LOG_FILE
