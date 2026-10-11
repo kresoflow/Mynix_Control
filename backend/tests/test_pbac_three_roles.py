@@ -336,3 +336,28 @@ async def test_system_logs_require_admin_token(async_client: AsyncClient):
     """Системные логи недоступны без валидного x-system-token."""
     resp = await async_client.get("/system/logs")
     assert resp.status_code in (422, 403)
+
+
+@pytest.mark.asyncio
+async def test_list_roles_filters_canonical_only(db_session):
+    """Проверяем, что list_roles возвращает строго 3 канонические роли (owner, manager, cashier)."""
+    # Добавляем устаревшие и канонические роли в БД
+    r_owner = Role(name="owner", description="Владелец")
+    r_manager = Role(name="manager", description="Управляющий")
+    r_cashier = Role(name="cashier", description="Кассир")
+    r_cook = Role(name="cook", description="Повар (legacy)")
+    r_waiter = Role(name="waiter", description="Официант (legacy)")
+
+    db_session.add_all([r_owner, r_manager, r_cashier, r_cook, r_waiter])
+    await db_session.commit()
+
+    roles = await user_svc.list_roles(db_session)
+    names = {r.name for r in roles}
+
+    # Строго канонические роли
+    assert "owner" in names
+    assert "manager" in names
+    assert "cashier" in names
+    # Устаревшие роли отсекаются
+    assert "cook" not in names
+    assert "waiter" not in names

@@ -1,23 +1,34 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Настройки / Форма создания и редактирования сотрудника
+// ДОМЕН: lib/features/settings/view/widgets/user_form_dialog.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/core/utils/role_formatter.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 import 'package:kreso_frontend/features/settings/models/user_model.dart';
 import 'package:kreso_frontend/features/settings/bloc/user_bloc.dart';
-import 'package:kreso_frontend/core/utils/role_formatter.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
+
+// ── Диалог управления сотрудником ────────────────────────────────────────────
 
 class UserFormDialog extends StatefulWidget {
   final bool isDark;
   final List<Role> roles;
   final StaffUser? userToEdit;
+  final String? currentUserRole;
 
   const UserFormDialog({
     super.key,
     required this.isDark,
     required this.roles,
     this.userToEdit,
+    this.currentUserRole,
   });
 
   static Future<void> show({
@@ -27,11 +38,19 @@ class UserFormDialog extends StatefulWidget {
     StaffUser? userToEdit,
   }) {
     final userBloc = context.read<UserBloc>();
+    final authState = context.read<AuthBloc>().state;
+    final currentRole = authState is AuthAuthenticated ? authState.role : null;
+
     return showDialog(
       context: context,
       builder: (_) => BlocProvider.value(
         value: userBloc,
-        child: UserFormDialog(isDark: isDark, roles: roles, userToEdit: userToEdit),
+        child: UserFormDialog(
+          isDark: isDark,
+          roles: roles,
+          userToEdit: userToEdit,
+          currentUserRole: currentRole,
+        ),
       ),
     );
   }
@@ -50,6 +69,19 @@ class _UserFormDialogState extends State<UserFormDialog> {
 
   bool get _isEdit => widget.userToEdit != null;
 
+  bool get _isManager {
+    final r = (widget.currentUserRole ?? '').toLowerCase();
+    return r.contains('manager') && !r.contains('owner') && !r.contains('superadmin');
+  }
+
+  Set<String> get _allowedRoleNames => _isManager
+      ? const {'cashier'}
+      : const {'owner', 'manager', 'cashier'};
+
+  List<Role> get _filteredRoles => widget.roles
+      .where((r) => _allowedRoleNames.contains(r.name.toLowerCase()))
+      .toList();
+
   @override
   void initState() {
     super.initState();
@@ -58,9 +90,20 @@ class _UserFormDialogState extends State<UserFormDialog> {
     _fullNameController = TextEditingController(text: u?.fullName ?? '');
     _pinController = TextEditingController(text: u?.pinCode ?? '');
     _passwordController = TextEditingController();
-    _selectedRoleName = (u != null && u.roles.isNotEmpty)
-        ? u.roles.first
-        : (widget.roles.isNotEmpty ? widget.roles.first.name : 'Кассир');
+
+    if (_isManager) {
+      _selectedRoleName = 'cashier';
+    } else {
+      final existingRole = (u != null && u.roles.isNotEmpty) ? u.roles.first : null;
+      final filtered = _filteredRoles;
+      if (existingRole != null && _allowedRoleNames.contains(existingRole.toLowerCase())) {
+        _selectedRoleName = existingRole;
+      } else if (filtered.isNotEmpty) {
+        _selectedRoleName = filtered.first.name;
+      } else {
+        _selectedRoleName = 'cashier';
+      }
+    }
   }
 
   @override
@@ -80,7 +123,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
     if (_passwordController.text.isNotEmpty) return true;
     final initRole = (u != null && u.roles.isNotEmpty)
         ? u.roles.first
-        : (widget.roles.isNotEmpty ? widget.roles.first.name : 'Кассир');
+        : (_filteredRoles.isNotEmpty ? _filteredRoles.first.name : 'cashier');
     if (_selectedRoleName != initRole) return true;
     return false;
   }
@@ -88,8 +131,9 @@ class _UserFormDialogState extends State<UserFormDialog> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
-    final selectedRole = widget.roles.where((r) => r.name == _selectedRoleName).firstOrNull ??
-        (widget.roles.isNotEmpty ? widget.roles.first : null);
+    final filtered = _filteredRoles;
+    final selectedRole = filtered.where((r) => r.name.toLowerCase() == _selectedRoleName.toLowerCase()).firstOrNull ??
+        (filtered.isNotEmpty ? filtered.first : null);
     final roleIds = selectedRole != null ? [selectedRole.id] : <int>[];
 
     if (_isEdit) {
@@ -119,6 +163,8 @@ class _UserFormDialogState extends State<UserFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _filteredRoles;
+
     return DirtyPopScope(
       isDirty: _isDirty,
       title: _isEdit ? 'Отменить изменения?' : 'Отменить создание?',
@@ -128,89 +174,95 @@ class _UserFormDialogState extends State<UserFormDialog> {
       confirmLabel: 'Сбросить и выйти',
       child: AppDialog(
         title: _isEdit ? 'Редактировать сотрудника' : 'Новый сотрудник',
-      icon: PhosphorIconsRegular.user,
-      width: 480,
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextFormField(
-              controller: _fullNameController,
-              decoration: const InputDecoration(labelText: 'ФИО сотрудника', border: OutlineInputBorder()),
-              validator: (v) => v == null || v.isEmpty ? 'Заполните ФИО' : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Логин', border: OutlineInputBorder()),
-              validator: (v) => v == null || v.isEmpty ? 'Заполните логин' : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: _isEdit ? 'Новый пароль (оставьте пустым)' : 'Пароль (по умолч. 123456)',
-                border: const OutlineInputBorder(),
+        icon: PhosphorIconsRegular.user,
+        width: 480,
+        content: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextFormField(
+                controller: _fullNameController,
+                decoration: const InputDecoration(labelText: 'ФИО сотрудника', border: OutlineInputBorder()),
+                validator: (v) => v == null || v.isEmpty ? 'Заполните ФИО' : null,
               ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _pinController,
-              decoration: const InputDecoration(
-                labelText: 'PIN-код для быстрого входа (4 цифры)',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _usernameController,
+                decoration: const InputDecoration(labelText: 'Логин', border: OutlineInputBorder()),
+                validator: (v) => v == null || v.isEmpty ? 'Заполните логин' : null,
               ),
-              keyboardType: TextInputType.number,
-              maxLength: 4,
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return null;
-                if (!RegExp(r'^\d{4}$').hasMatch(v.trim())) {
-                  return 'PIN-код должен содержать ровно 4 цифры';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              initialValue: widget.roles.any((r) => r.name == _selectedRoleName)
-                  ? _selectedRoleName
-                  : (widget.roles.isNotEmpty ? widget.roles.first.name : null),
-              decoration: const InputDecoration(labelText: 'Роль', border: OutlineInputBorder()),
-              items: widget.roles
-                  .map(
-                    (r) => DropdownMenuItem(
-                      value: r.name,
-                      child: Row(
-                        children: [
-                          Icon(RoleFormatter.getRoleIcon(r.name), size: 18, color: RoleFormatter.getRoleColor(r.name)),
-                          const SizedBox(width: 8),
-                          Text(RoleFormatter.formatName(r.name)),
-                        ],
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: _isEdit ? 'Новый пароль (оставьте пустым)' : 'Пароль (по умолч. 123456)',
+                  border: const OutlineInputBorder(),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _pinController,
+                decoration: const InputDecoration(
+                  labelText: 'PIN-код для быстрого входа (4 цифры)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return null;
+                  if (!RegExp(r'^\d{4}$').hasMatch(v.trim())) {
+                    return 'PIN-код должен содержать ровно 4 цифры';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: filtered.any((r) => r.name.toLowerCase() == _selectedRoleName.toLowerCase())
+                    ? filtered.firstWhere((r) => r.name.toLowerCase() == _selectedRoleName.toLowerCase()).name
+                    : (filtered.isNotEmpty ? filtered.first.name : null),
+                decoration: InputDecoration(
+                  labelText: 'Роль',
+                  border: const OutlineInputBorder(),
+                  helperText: _isManager ? 'Управляющий может назначать только кассиров' : null,
+                ),
+                items: filtered
+                    .map(
+                      (r) => DropdownMenuItem(
+                        value: r.name,
+                        child: Row(
+                          children: [
+                            Icon(RoleFormatter.getRoleIcon(r.name), size: 18, color: RoleFormatter.getRoleColor(r.name)),
+                            const SizedBox(width: 8),
+                            Text(RoleFormatter.formatName(r.name)),
+                          ],
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (val) {
-                if (val != null) setState(() => _selectedRoleName = val);
-              },
-            ),
-          ],
+                    )
+                    .toList(),
+                onChanged: _isManager
+                    ? null
+                    : (val) {
+                        if (val != null) setState(() => _selectedRoleName = val);
+                      },
+              ),
+            ],
+          ),
         ),
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          AppPrimaryButton(
+            label: _isEdit ? 'Сохранить' : 'Создать',
+            onPressed: _submit,
+          ),
+        ],
       ),
-      actions: [
-        AppGhostButton(
-          label: 'Отмена',
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        AppPrimaryButton(
-          label: _isEdit ? 'Сохранить' : 'Создать',
-          onPressed: _submit,
-        ),
-      ],
-    ),
-  );
-}
+    );
+  }
 }

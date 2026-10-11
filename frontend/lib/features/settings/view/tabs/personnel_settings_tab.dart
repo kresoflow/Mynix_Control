@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -165,7 +165,7 @@ class _PersonnelSettingsView extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.all(32),
                     child: Center(
-                      child: Text('Нет добавленных сотрудников (кассиров, поваров, управляющих)'),
+                      child: Text('Нет добавленных сотрудников (кассиров, управляющих)'),
                     ),
                   ),
                 ],

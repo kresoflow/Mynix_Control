@@ -231,9 +231,12 @@ async def delete_user(
 async def list_roles(
     session: AsyncSession,
 ) -> list[Role]:
-    """List all roles (shared across all tenants)."""
+    """List all canonical roles (shared across all tenants)."""
+    from app.users.permissions import RoleName
+    canonical_roles = [r.value for r in RoleName]
     stmt = (
         select(Role)
+        .where(Role.name.in_(canonical_roles))
         .options(selectinload(Role.permissions))
     )
     result = await session.execute(stmt)
