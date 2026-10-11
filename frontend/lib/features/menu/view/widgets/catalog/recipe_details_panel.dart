@@ -1,18 +1,23 @@
+// ==============================================================================
+// МОДУЛЬ: Каталог / Детальная панель техкарты блюда
+// ДОМЕН: lib/features/menu/view/widgets/catalog/recipe_details_panel.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
-import 'dialogs/recipe_bulk_edit_dialog.dart';
+import 'dialogs/recipe_bulk_edit/ingredient_picker_dialog.dart';
 import 'recipe/recipe_analytics_header.dart';
-import 'recipe/recipe_ingredient_item_tile.dart';
 import 'recipe/recipe_variation_tabs.dart';
+import 'recipe/recipe_specification_section.dart';
 
 class RecipeDetailsPanel extends StatefulWidget {
   final int selectedMenuItemId;
@@ -70,6 +75,22 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
     return widget.selectedMenuItemId;
   }
 
+  Future<void> _addIngredient(BuildContext context, int targetId) async {
+    final ingState = context.read<IngredientBloc>().state;
+    if (ingState is! IngredientLoaded) return;
+    final available = ingState.ingredients.where((i) => !i.isRetail && !i.isArchived).toList();
+    final selectedId = await IngredientPickerDialog.show(context, available);
+    if (selectedId != null && context.mounted) {
+      context.read<RecipeBloc>().add(
+            AddIngredientToRecipe(
+              menuItemId: targetId,
+              ingredientId: selectedId,
+              quantity: 1.0,
+            ),
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -91,9 +112,11 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
         ? ((activeVariation?['id'] as int?) ?? widget.selectedMenuItemId)
         : widget.selectedMenuItemId;
 
+    final String baseName = menuItem?.cleanName ?? '';
+    final String varName = activeVariation?['name']?.toString() ?? '';
     final String displayName = hasVariations
-        ? '${menuItem?.cleanName ?? ''} (${activeVariation?['name'] ?? ''})'
-        : (menuItem?.cleanName ?? 'Техкарта блюда');
+        ? (varName.toLowerCase().contains(baseName.toLowerCase()) ? varName : '$baseName ($varName)')
+        : (baseName.isNotEmpty ? baseName : 'Техкарта блюда');
 
     final currency = context.watch<SettingsBloc>().state.currency;
 
@@ -114,7 +137,7 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Bar: Back to Summary Button + Dish Clean Name
+            // ── Шапка: Назад к сводке + Название блюда ────────────────────────
             Row(
               children: [
                 if (widget.onBackToSummary != null) ...[
@@ -138,7 +161,7 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
             ),
             const SizedBox(height: 12),
 
-            // Variation Switcher Tabs (if dish has size options S/M/L)
+            // ── Переключатель вариаций порций (Стандарт / Макс / VIP) ────────
             if (hasVariations)
               RecipeVariationTabs(
                 variations: variations,
@@ -151,46 +174,32 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
                 },
               ),
 
-            // KPI Strip (Cost, Active Selling Price, Margin)
+            // ── Финансовый KPI-стрип (Себестоимость, Цена, Маржа) ────────────
             RecipeAnalyticsHeader(
               totalCost: totalCost,
               price: activePrice,
               currency: currency,
             ),
 
-            // Ingredients Header Row
+            // ── Заголовок спецификации + Кнопка добавления сырья ──────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Ингредиенты (${currentRecipes.length})',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  'Состав и расход сырья (${currentRecipes.length})',
+                  style: AppTextStyles.h2.copyWith(fontSize: 18),
                 ),
-                BlocBuilder<IngredientBloc, IngredientState>(
-                  builder: (context, ingState) {
-                    return ElevatedButton.icon(
-                      onPressed: () {
-                        if (ingState is IngredientLoaded) {
-                          showDialog(
-                            context: context,
-                            builder: (_) => RecipeBulkEditDialog(
-                              menuItemId: activeTargetId,
-                              availableIngredients: ingState.ingredients.where((i) => !i.isRetail && !i.isArchived).toList(),
-                              currentRecipes: currentRecipes,
-                            ),
-                          );
-                        }
-                      },
-                      icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 16),
-                      label: const Text('Редактировать состав'),
-                    );
-                  },
+                AppPrimaryButton(
+                  label: 'Добавить ингредиент',
+                  icon: PhosphorIconsRegular.plus,
+                  size: AppButtonSize.sm,
+                  onPressed: () => _addIngredient(context, activeTargetId),
                 ),
               ],
             ),
             const SizedBox(height: 12),
 
-            // Ingredients List Body
+            // ── Инлайн-спецификация ──────────────────────────────────────────
             Expanded(
               child: isCurrentLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -207,69 +216,20 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
                                 label: 'Повторить',
                                 icon: PhosphorIconsRegular.arrowsClockwise,
                                 size: AppButtonSize.md,
-                                onPressed: () => context.read<RecipeBloc>().add(LoadRecipe(activeTargetId, forceRefresh: true)),
+                                onPressed: () => context.read<RecipeBloc>().add(
+                                      LoadRecipe(activeTargetId, forceRefresh: true),
+                                    ),
                               ),
                             ],
                           ),
                         )
-                      : currentRecipes.isEmpty
-                          ? Container(
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.15)),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    PhosphorIconsRegular.cookingPot,
-                                    size: 48,
-                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'В техкарте пока нет ингредиентов',
-                                    style: AppTextStyles.h3.copyWith(
-                                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Нажмите «Редактировать состав», чтобы настроить рецептуру и калькуляцию.',
-                                    style: TextStyle(
-                                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                      fontSize: 13,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: ListView.separated(
-                                  padding: EdgeInsets.zero,
-                                  itemCount: currentRecipes.length,
-                                  separatorBuilder: (context, index) => const Divider(height: 1),
-                                  itemBuilder: (context, index) {
-                                    return RecipeIngredientItemTile(
-                                      recipe: currentRecipes[index],
-                                      selectedMenuItemId: activeTargetId,
-                                      currency: currency,
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
+                      : RecipeSpecificationSection(
+                          recipes: currentRecipes,
+                          targetMenuItemId: activeTargetId,
+                          currency: currency,
+                          isDark: isDark,
+                          onAddIngredient: () => _addIngredient(context, activeTargetId),
+                        ),
             ),
           ],
         );

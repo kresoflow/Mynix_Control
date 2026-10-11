@@ -44,6 +44,7 @@ class AppSpecificationTable extends StatelessWidget {
   final void Function(int index)? onDeleteRow;
   final String emptyTitle;
   final String emptyDescription;
+  final bool allowDecimals;
 
   const AppSpecificationTable({
     super.key,
@@ -52,6 +53,7 @@ class AppSpecificationTable extends StatelessWidget {
     this.onDeleteRow,
     this.emptyTitle = 'В документе нет позиций',
     this.emptyDescription = 'Добавьте товары или ингредиенты через поиск выше',
+    this.allowDecimals = true,
   });
 
   Widget _buildHeaderCell(String text, {double? width, bool isCenter = false, bool isRight = false, int flex = 1, bool isExpanded = false, required bool isDark}) {
@@ -149,6 +151,7 @@ class AppSpecificationTable extends StatelessWidget {
                           value: row.quantity,
                           unit: row.unit,
                           size: AppStepperSize.sm,
+                          allowDecimals: allowDecimals,
                           onChanged: (val) => onQuantityChanged?.call(index, val.toDouble()),
                         ),
                       ),
