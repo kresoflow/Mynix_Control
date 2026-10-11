@@ -1,9 +1,15 @@
+// ==============================================================================
+// МОДУЛЬ: Каталог / Диалог выбора сырья для добавления в техкарту
+// ДОМЕН: lib/features/menu/view/widgets/catalog/recipe/dialogs/ingredient_picker_dialog.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class IngredientPickerDialog extends StatefulWidget {
   final List<dynamic> availableIngredients;
@@ -38,8 +44,9 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final subtextColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
 
-    // Filter ingredients
+    // ─── 1. Фильтрация сырья ─────────────────────────────────────────────────
     final filtered = widget.availableIngredients.where((ing) {
       if (ing.isArchived == true) return false;
       if (_searchQuery.isEmpty) return true;
@@ -50,7 +57,7 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
       return name.contains(q) || code.contains(q) || cat.contains(q);
     }).toList();
 
-    // Group by category
+    // ─── 2. Группировка по категориям склада ────────────────────────────────
     final Map<String, List<dynamic>> grouped = {};
     for (var ing in filtered) {
       final catName = ing.categoryName ?? 'Без категории';
@@ -59,7 +66,7 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
     final sortedKeys = grouped.keys.toList()..sort();
 
     return Dialog(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
@@ -69,17 +76,24 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Шапка диалога
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Выберите сырье', style: AppTextStyles.h3),
-                IconButton(
-                  icon: const Icon(PhosphorIconsRegular.x),
-                  onPressed: () => Navigator.of(context).pop(),
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Icon(PhosphorIconsRegular.x, size: 20, color: subtextColor),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
+
+            // Поле поиска
             AppSearchField(
               size: AppSearchFieldSize.lg,
               controller: _searchController,
@@ -88,9 +102,13 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
             ),
             const SizedBox(height: 12),
             const Divider(height: 1),
+
+            // Список категорий и ингредиентов
             Expanded(
               child: filtered.isEmpty
-                  ? const Center(child: Text('Сырье не найдено', style: TextStyle(color: Colors.grey)))
+                  ? Center(
+                      child: Text('Сырье не найдено', style: TextStyle(color: subtextColor)),
+                    )
                   : ListView.builder(
                       itemCount: sortedKeys.length,
                       itemBuilder: (context, index) {
@@ -127,7 +145,7 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
                                       AnimatedRotation(
                                         turns: isExpanded ? 0.5 : 0.0,
                                         duration: const Duration(milliseconds: 180),
-                                        child: const Icon(PhosphorIconsRegular.caretDown, color: Colors.grey, size: 16),
+                                        child: Icon(PhosphorIconsRegular.caretDown, color: subtextColor, size: 16),
                                       ),
                                     ],
                                   ),
@@ -142,12 +160,15 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
                                     leading: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
-                                        color: isDark ? Colors.white10 : Colors.black12,
+                                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
                                         ing.displayCode,
-                                        style: const TextStyle(fontFamily: 'monospace', fontSize: 11, fontWeight: FontWeight.bold),
+                                        style: GoogleFonts.jetBrainsMono(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                     title: Text(ing.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
@@ -158,7 +179,11 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
                                         fontSize: 12,
                                       ),
                                     ),
-                                    trailing: Icon(PhosphorIconsRegular.plusCircle, size: 20, color: AppColors.brandPrimary),
+                                    trailing: Icon(
+                                      PhosphorIconsRegular.plusCircle,
+                                      size: 20,
+                                      color: AppColors.brandPrimary,
+                                    ),
                                     onTap: () => Navigator.of(context).pop(ing.id),
                                   );
                                 }),

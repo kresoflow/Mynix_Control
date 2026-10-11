@@ -14,7 +14,7 @@ import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
-import 'dialogs/recipe_bulk_edit/ingredient_picker_dialog.dart';
+import 'recipe/dialogs/ingredient_picker_dialog.dart';
 import 'recipe/recipe_analytics_header.dart';
 import 'recipe/recipe_variation_tabs.dart';
 import 'recipe/recipe_specification_section.dart';

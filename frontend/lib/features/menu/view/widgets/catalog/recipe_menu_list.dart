@@ -48,8 +48,9 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final recipeState = context.watch<RecipeBloc>().state;
-    final summaryMap = recipeState.recipesSummary;
+    final summaryMap = context.select<RecipeBloc, Map<int, Map<String, dynamic>>>(
+      (b) => b.state.recipesSummary,
+    );
 
     return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, catState) {

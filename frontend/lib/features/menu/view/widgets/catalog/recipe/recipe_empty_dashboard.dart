@@ -1,13 +1,24 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Каталог / Дэшборд сводки техкарт и фудкоста (RecipeEmptyDashboard)
+// ДОМЕН: lib/features/menu/view/widgets/catalog/recipe/recipe_empty_dashboard.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] Презентационный экран до выбора конкретного блюда: ключевые
+// метрики покрытия меню техкартами на AppKpiCard и быстрый выбор блюда.
+//
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/utils/icon_helper.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'recipe_quick_dish_tile.dart';
 
 class RecipeEmptyDashboard extends StatelessWidget {
   final ValueChanged<int> onSelectDish;
@@ -19,21 +30,24 @@ class RecipeEmptyDashboard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final menuState = context.watch<MenuBloc>().state;
     final catState = context.watch<CategoryBloc>().state;
-    final recipeState = context.watch<RecipeBloc>().state;
-    final summaryMap = recipeState.recipesSummary;
+
+    // [ОПТИМИЗАЦИЯ] Селектор предотвращает лишние перерисовки при инлайн-мутациях
+    final summaryMap = context.select<RecipeBloc, Map<int, Map<String, dynamic>>>(
+      (b) => b.state.recipesSummary,
+    );
 
     final activeCatMap = catState is CategoryLoaded
         ? {for (var c in catState.categories.where((c) => c.isVisible)) c.id.toString(): c}
         : <String, dynamic>{};
 
-    final dishes = menuState is MenuLoaded 
+    final dishes = menuState is MenuLoaded
         ? menuState.items.where((i) {
             if (i.isRetail) return false;
             if (!i.isAvailable) return false;
             final catId = i.categoryId.toString();
             final isRoot = catId == '0' || catId == 'null' || catId == '' || catId == 'uncategorized';
             return isRoot || activeCatMap.containsKey(catId);
-          }).toList() 
+          }).toList()
         : [];
 
     final int totalDishes = dishes.length;
@@ -57,7 +71,7 @@ class RecipeEmptyDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // ── Шапка дэшборда ──────────────────────────────────────────────────
           Row(
             children: [
               Container(
@@ -97,36 +111,36 @@ class RecipeEmptyDashboard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // KPI Summary Row
+          // ── KPI-стрип покрытия меню техкартами ──────────────────────────────
           Row(
             children: [
               Expanded(
-                child: _buildMetricTile(
+                child: AppKpiCard(
                   title: 'Всего блюд кухни',
                   value: '$totalDishes поз.',
                   icon: PhosphorIconsRegular.hamburger,
                   color: AppColors.brandPrimary,
-                  isDark: isDark,
+                  compact: true,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildMetricTile(
+                child: AppKpiCard(
                   title: 'С техкартой',
                   value: '$configuredCount готово',
                   icon: PhosphorIconsRegular.checkCircle,
                   color: AppColors.success,
-                  isDark: isDark,
+                  compact: true,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildMetricTile(
+                child: AppKpiCard(
                   title: 'Требуют техкарты',
                   value: unconfiguredCount > 0 ? '$unconfiguredCount без состава' : 'Все настроены',
                   icon: unconfiguredCount > 0 ? PhosphorIconsRegular.warningCircle : PhosphorIconsRegular.checkCircle,
                   color: unconfiguredCount > 0 ? AppColors.warning : AppColors.success,
-                  isDark: isDark,
+                  compact: true,
                 ),
               ),
             ],
@@ -143,7 +157,7 @@ class RecipeEmptyDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Quick selection list
+          // ── Список быстрого выбора ──────────────────────────────────────────
           Expanded(
             child: dishes.isEmpty
                 ? Center(
@@ -157,198 +171,17 @@ class RecipeEmptyDashboard extends StatelessWidget {
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final dish = dishes[index];
-                      final summary = summaryMap[dish.id];
-                      final bool hasRecipe = summary?['has_recipe'] == true;
-                      final double cost = (summary?['total_cost'] as num?)?.toDouble() ?? 0.0;
-                      final double marginPercent = dish.price > 0 && cost > 0
-                          ? ((dish.price - cost) / dish.price) * 100
-                          : 0.0;
-
-                      // Dynamic Icon resolution
-                      String? iconStr = dish.icon;
-                      if ((iconStr == null || iconStr.isEmpty) && catState is CategoryLoaded) {
-                        final cat = catState.categories.where((c) => c.id.toString() == dish.categoryId).firstOrNull;
-                        iconStr = cat?.getInheritedIcon(catState.categories);
-                      }
-
-                      final bool hasIcon = iconStr != null &&
-                          iconStr.isNotEmpty &&
-                          (IconHelper.getIcon(iconStr) != null || iconStr.startsWith('svg:'));
-
-                      return Material(
-                        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                        borderRadius: BorderRadius.circular(10),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () {
-                            onSelectDish(dish.id);
-                            context.read<RecipeBloc>().add(LoadRecipe(dish.id));
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            child: Row(
-                              children: [
-                                if (hasIcon) ...[
-                                  Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: IconHelper.buildIcon(
-                                      iconStr,
-                                      size: 16,
-                                      color: AppColors.brandPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                ],
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        dish.cleanName,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                          color: isDark ? AppColors.darkText : AppColors.lightText,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            dish.categoryName ?? 'Без категории',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          if (hasRecipe)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                              decoration: BoxDecoration(
-                                                color: (marginPercent >= 0 ? AppColors.success : AppColors.danger).withValues(alpha: 0.12),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                'Себестоимость: ${cost.toStringAsFixed(0)} с (${marginPercent.toStringAsFixed(0)}% маржа)',
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: marginPercent >= 0 ? AppColors.success : AppColors.danger,
-                                                ),
-                                              ),
-                                            )
-                                          else
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.warning.withValues(alpha: 0.12),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: const Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(PhosphorIconsBold.warningCircle, size: 11, color: AppColors.warning),
-                                                  SizedBox(width: 4),
-                                                  Text(
-                                                    'Требуется состав',
-                                                    style: TextStyle(
-                                                      fontSize: 10,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: AppColors.warning,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  '${dish.price.toStringAsFixed(0)} с',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  PhosphorIconsRegular.caretRight,
-                                  size: 16,
-                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      return RecipeQuickDishTile(
+                        dish: dish,
+                        summary: summaryMap[dish.id],
+                        catState: catState,
+                        onTap: () {
+                          onSelectDish(dish.id);
+                          context.read<RecipeBloc>().add(LoadRecipe(dish.id));
+                        },
                       );
                     },
                   ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetricTile({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 18, color: color),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
