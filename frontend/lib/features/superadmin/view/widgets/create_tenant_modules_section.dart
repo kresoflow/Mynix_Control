@@ -10,16 +10,16 @@ import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 // ─── 1. Modules Selection Section ───────────────────────────────────────────
 
 class CreateTenantModulesSection extends StatelessWidget {
-  final bool useKds;
+  final bool? useKds;
   final bool enableInventoryDeduction;
-  final ValueChanged<bool> onKdsChanged;
+  final ValueChanged<bool>? onKdsChanged;
   final ValueChanged<bool> onInventoryChanged;
 
   const CreateTenantModulesSection({
     super.key,
-    required this.useKds,
+    this.useKds,
     required this.enableInventoryDeduction,
-    required this.onKdsChanged,
+    this.onKdsChanged,
     required this.onInventoryChanged,
   });
 
@@ -44,16 +44,6 @@ class CreateTenantModulesSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        _buildSwitchRow(
-          context: context,
-          isDark: isDark,
-          title: 'Кухонный дисплей (KDS)',
-          subtitle: 'Заказы с кассы мгновенно поступают на экран кухни поварам',
-          value: useKds,
-          onChanged: onKdsChanged,
-          icon: PhosphorIconsRegular.cookingPot,
-        ),
-        const SizedBox(height: 10),
         _buildSwitchRow(
           context: context,
           isDark: isDark,

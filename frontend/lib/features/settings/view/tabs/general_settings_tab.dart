@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -19,7 +19,6 @@ class GeneralSettingsTab extends StatefulWidget {
 
 class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
   bool _isLoading = true;
-  bool _useKds = true;
   bool _useOrders = true;
   bool _enableInventory = true;
 
@@ -36,13 +35,12 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
       final data = await repo.getSettings();
       if (mounted) {
         setState(() {
-          _useKds = data['use_kds'] ?? true;
           _useOrders = data['use_orders'] ?? true;
           _enableInventory = data['enable_inventory_deduction'] ?? true;
           _isLoading = false;
         });
         context.read<SettingsBloc>().add(
-          UpdateFeatureFlags(useKds: _useKds, useOrders: _useOrders),
+          UpdateFeatureFlags(useOrders: _useOrders),
         );
       }
     } catch (e) {
@@ -50,22 +48,21 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
     }
   }
 
-  Future<void> _updateSettings(bool useKds, bool useOrders, bool enableInv) async {
+  Future<void> _updateSettings(bool useOrders, bool enableInv) async {
     try {
       final repo = context.read<SettingsRepository>();
       await repo.updateSettings({
-        'use_kds': useKds,
+        'use_kds': false,
         'use_orders': useOrders,
         'enable_inventory_deduction': enableInv,
       });
       if (mounted) {
         setState(() {
-          _useKds = useKds;
           _useOrders = useOrders;
           _enableInventory = enableInv;
         });
         context.read<SettingsBloc>().add(
-          UpdateFeatureFlags(useKds: _useKds, useOrders: _useOrders),
+          UpdateFeatureFlags(useOrders: _useOrders),
         );
       }
     } catch (e) {
@@ -144,36 +141,12 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
               children: [
                 SettingsRow(
                   isDark: isDark,
-                  title: 'Использовать экран повара (KDS)',
-                  subtitle: 'Если выключено, скрывает модуль КДС и заказы сразу готовы',
-                  trailing: Switch(
-                    value: _useKds,
-                    activeThumbColor: AppColors.brandPrimary,
-                    onChanged: (val) => _updateSettings(val, _useOrders, _enableInventory),
-                  ),
-                ),
-                if (_useKds) ...[
-                  SettingsDivider(isDark: isDark),
-                  SettingsRow(
-                    isDark: isDark,
-                    title: 'Отображать KDS в главном меню',
-                    subtitle: 'Показывать пункт «Кухня (KDS)» в боковом меню навигации',
-                    trailing: Switch(
-                      value: state.showKdsInNav,
-                      activeThumbColor: AppColors.brandPrimary,
-                      onChanged: (val) => context.read<SettingsBloc>().add(ToggleShowKdsInNav(val)),
-                    ),
-                  ),
-                ],
-                SettingsDivider(isDark: isDark),
-                SettingsRow(
-                  isDark: isDark,
                   title: 'Показывать вкладку Заказы',
                   subtitle: 'Отображать вкладку с активными заказами на экране кассы',
                   trailing: Switch(
                     value: _useOrders,
                     activeThumbColor: AppColors.brandPrimary,
-                    onChanged: (val) => _updateSettings(_useKds, val, _enableInventory),
+                    onChanged: (val) => _updateSettings(val, _enableInventory),
                   ),
                 ),
                 SettingsDivider(isDark: isDark),
@@ -184,7 +157,7 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   trailing: Switch(
                     value: _enableInventory,
                     activeThumbColor: AppColors.brandPrimary,
-                    onChanged: (val) => _updateSettings(_useKds, _useOrders, val),
+                    onChanged: (val) => _updateSettings(_useOrders, val),
                   ),
                 ),
                 SettingsDivider(isDark: isDark),

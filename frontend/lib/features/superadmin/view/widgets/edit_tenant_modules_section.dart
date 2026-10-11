@@ -11,19 +11,19 @@ import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 // ─── 1. Modules Configuration Section ───────────────────────────────────────
 
 class EditTenantModulesSection extends StatelessWidget {
-  final bool useKds;
+  final bool? useKds;
   final bool useOrders;
   final bool enableInventoryDeduction;
-  final ValueChanged<bool> onKdsChanged;
+  final ValueChanged<bool>? onKdsChanged;
   final ValueChanged<bool> onOrdersChanged;
   final ValueChanged<bool> onInventoryChanged;
 
   const EditTenantModulesSection({
     super.key,
-    required this.useKds,
+    this.useKds,
     required this.useOrders,
     required this.enableInventoryDeduction,
-    required this.onKdsChanged,
+    this.onKdsChanged,
     required this.onOrdersChanged,
     required this.onInventoryChanged,
   });
@@ -36,15 +36,6 @@ class EditTenantModulesSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildModuleTile(
-          title: 'Кухонный дисплей (KDS)',
-          subtitle: 'Отправка заказов поварам на кухонный экран в реальном времени',
-          value: useKds,
-          onChanged: onKdsChanged,
-          icon: PhosphorIconsRegular.cookingPot,
-          isDark: isDark,
-        ),
-        const SizedBox(height: 10),
         _buildModuleTile(
           title: 'Складской учет и автосписание',
           subtitle: 'Автоматическое списание ингредиентов по техкартам при оплате чека',

@@ -50,7 +50,7 @@ class WebSocketService {
     final token = prefs.getString('access_token');
     final query = token != null ? '?token=$token' : '';
 
-    final uri = Uri.parse('$_baseWsUrl/kitchen/$_currentTenantId$query');
+    final uri = Uri.parse('$_baseWsUrl/pos/$_currentTenantId$query');
     if (kDebugMode) {
       print('--> [WebSocket] Connecting to $uri');
     }

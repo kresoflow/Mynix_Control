@@ -170,8 +170,6 @@ class TenantCard extends StatelessWidget {
                               style: AppTextStyles.h3.copyWith(fontSize: 16),
                             ),
                             const SizedBox(width: 10),
-                            if (tenant.useKds)
-                              TenantBadge(label: 'KDS', color: AppColors.brandSecondary, isDark: isDark),
                             if (tenant.enableInventoryDeduction) ...[
                               const SizedBox(width: 6),
                               TenantBadge(label: 'Склад', color: AppColors.brandTertiary, isDark: isDark),

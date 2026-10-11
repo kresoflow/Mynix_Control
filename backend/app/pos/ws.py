@@ -52,16 +52,15 @@ class KitchenConnectionManager:
 kitchen_manager = KitchenConnectionManager()
 
 
-# ── WebSocket Endpoint ───────────────────────────────────────────
-
+@router.websocket("/ws/pos/{tenant_id}")
 @router.websocket("/ws/kitchen/{tenant_id}")
-async def kitchen_websocket(
+async def pos_websocket(
     websocket: WebSocket,
     tenant_id: int,
     token: Optional[str] = Query(None),
 ):
     """
-    Kitchen screen connects here and stays open.
+    Live POS event stream (orders, status updates, inventory synchronization).
     Requires valid JWT token belonging to the target tenant_id.
     """
     # Fallback to query param from websocket if not parsed by Query
