@@ -26,8 +26,6 @@ class PosOperationalBadges extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final authState = context.watch<AuthBloc>().state;
-    final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
 
     return BlocBuilder<PosTabCubit, PosTabState>(
       builder: (context, tabState) {
@@ -39,7 +37,7 @@ class PosOperationalBadges extends StatelessWidget {
             const SizedBox(width: 8),
 
             // 2. Кнопка входящих заказов с зала
-            _buildIncomingOrdersButton(context, tabState.incomingCount, isWaiter, isDark),
+            _buildIncomingOrdersButton(context, tabState.incomingCount, isDark),
           ],
         );
       },
@@ -99,13 +97,11 @@ class PosOperationalBadges extends StatelessWidget {
 
   // ── Кнопка входящих заказов ────────────────────────────────────────────────
 
-  Widget _buildIncomingOrdersButton(BuildContext context, int count, bool isWaiter, bool isDark) {
+  Widget _buildIncomingOrdersButton(BuildContext context, int count, bool isDark) {
     final hasPending = count > 0;
-    final badgeColor = isWaiter ? AppColors.brandPrimary : AppColors.warning;
-    final tooltipLabel = isWaiter ? 'Мои заказы с зала ($count)' : 'Входящие заказы с зала ($count)';
-    final icon = isWaiter
-        ? (hasPending ? PhosphorIconsBold.receipt : PhosphorIconsRegular.receipt)
-        : (hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell);
+    final badgeColor = AppColors.warning;
+    final tooltipLabel = 'Входящие заказы с зала ($count)';
+    final icon = hasPending ? PhosphorIconsBold.bellRinging : PhosphorIconsRegular.bell;
 
     final bg = hasPending
         ? badgeColor.withValues(alpha: isDark ? 0.16 : 0.12)

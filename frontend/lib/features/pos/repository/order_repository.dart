@@ -1,11 +1,9 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:kreso_frontend/core/utils/uuid_helper.dart';
 import 'package:kreso_frontend/features/pos/models/cart_item.dart';
 import 'package:kreso_frontend/features/pos/models/offline_order_payload.dart';
 import 'package:kreso_frontend/features/pos/services/pos_outbox_service.dart';
-import 'package:kreso_frontend/features/pos/services/lan/local_pos_client.dart';
-import 'package:kreso_frontend/features/settings/services/lan_settings_service.dart';
 
 class OrderRepository {
   final Dio _dio;
@@ -267,22 +265,6 @@ class OrderRepository {
       note: note,
       createdAt: DateTime.now(),
     );
-
-    final lan = LanSettingsService.current;
-    if (lan.isClient && lan.masterIp.isNotEmpty) {
-      final sentToMaster = await LocalPosClient.sendOrderToMaster(
-        lan.masterIp,
-        offlinePayload,
-        port: lan.port,
-      );
-      if (sentToMaster) return;
-    }
-
-    if (!lan.isOfflineStorageEnabled) {
-      throw Exception(
-        'Офлайн-режим отключен. Для проведения оплаты требуется активное подключение к интернету.',
-      );
-    }
 
     await PosOutboxService.saveOrder(offlinePayload);
   }

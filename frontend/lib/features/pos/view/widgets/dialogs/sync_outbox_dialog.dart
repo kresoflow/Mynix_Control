@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/network/api_client.dart';
@@ -7,7 +7,6 @@ import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import '../../../services/pos_outbox_service.dart';
 import '../../../services/pos_sync_service.dart';
-import '../../../services/lan/local_pos_server.dart';
 import 'sync_outbox_order_card.dart';
 
 class SyncOutboxDialog extends StatefulWidget {
@@ -58,8 +57,6 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
     final isMobile = screenWidth < 600;
     final orders = PosOutboxService.getPendingOrders();
     final totalAmount = PosOutboxService.pendingTotalAmount;
-    final isLanRunning = LocalPosServer.isRunning;
-    final lanIp = LocalPosServer.localIpAddress ?? '127.0.0.1';
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -148,7 +145,7 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Локальная сеть (Wi-Fi Hub)', style: AppTextStyles.caption),
+                        Text('Синхронизация', style: AppTextStyles.caption),
                         const SizedBox(height: 4),
                         Row(
                           children: [
@@ -157,14 +154,22 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
                               height: 8,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: isLanRunning ? AppColors.success : Colors.grey,
+                                color: orders.isEmpty ? AppColors.success : AppColors.warning,
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Text(isLanRunning ? 'Активен' : 'Остановлен', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                              orders.isEmpty ? 'Все чеки в облаке' : 'Ожидают отправки',
+                              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
-                        Text('IP: $lanIp:${LocalPosServer.port}', style: AppTextStyles.caption.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+                        Text(
+                          orders.isEmpty ? 'Касса синхронизирована' : 'Автоотправка при сети',
+                          style: AppTextStyles.caption.copyWith(
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          ),
+                        ),
                       ],
                     ),
                   ),

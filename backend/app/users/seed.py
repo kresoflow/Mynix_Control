@@ -2,7 +2,7 @@
 Seed data — runs on first launch to populate the database with:
   - 2 tenants (Family café, Street booth)
   - All atomic permissions
-  - Default roles (owner, cashier, cook, universal_worker)
+  - Default roles (owner, manager, cashier)
   - Owner account with default password
   - Sample menu items with recipes (tech cards)
 """
@@ -13,79 +13,73 @@ from sqlmodel import select
 from app.users.models import (
     Tenant, Permission, Role, RolePermission, User, UserRole,
 )
+from app.users.permissions import RoleName, Perm
 from app.users.services import hash_password
 from app.config import settings
 
 
-# ── All atomic permissions in the system ─────────────────────────
+# ── All atomic permissions in the system (Pilot MVP) ─────────────
 PERMISSIONS = [
     # Orders / POS
-    ("orders:create", "Create new orders"),
-    ("orders:view", "View orders list"),
-    ("orders:cancel", "Cancel orders"),
-    ("orders:update_status", "Update order status (cooking → ready)"),
+    (Perm.ORDERS_CREATE.value, "Create new orders"),
+    (Perm.ORDERS_VIEW.value, "View orders list"),
+    (Perm.ORDERS_CANCEL.value, "Cancel orders"),
+    (Perm.ORDERS_UPDATE_STATUS.value, "Update order status"),
     # Cash box
-    ("cashbox:operate", "Accept payments, open cash drawer"),
-    ("cashbox:view", "View cash transactions"),
-    ("cashbox:expense", "Record cash expenses"),
+    (Perm.CASHBOX_OPERATE.value, "Accept payments, open cash drawer"),
+    (Perm.CASHBOX_VIEW.value, "View cash transactions"),
+    (Perm.CASHBOX_EXPENSE.value, "Record cash expenses"),
+    (Perm.POS_CASH_OPERATIONS.value, "Deposit and withdraw cash"),
     # Shifts
-    ("shifts:open", "Open a cash shift"),
-    ("shifts:close", "Close a cash shift"),
-    ("shifts:view", "View shift reports"),
-    # Kitchen
-    ("kitchen:view", "View kitchen order screen"),
+    (Perm.SHIFTS_OPEN.value, "Open a cash shift"),
+    (Perm.SHIFTS_CLOSE.value, "Close a cash shift"),
+    (Perm.SHIFTS_VIEW.value, "View shift reports"),
     # Inventory
-    ("inventory:manage", "Add/edit ingredients, recipes, receive stock"),
-    ("inventory:create", "Create ingredients and raw materials"),
-    ("inventory:view", "View stock levels and menu items"),
+    (Perm.INVENTORY_MANAGE.value, "Add/edit ingredients, recipes, receive stock"),
+    (Perm.INVENTORY_CREATE.value, "Create ingredients and raw materials"),
+    (Perm.INVENTORY_VIEW.value, "View stock levels and menu items"),
     # Users & Roles
-    ("users:manage", "Create/edit/deactivate staff accounts"),
-    ("roles:manage", "Create/edit roles and assign permissions"),
+    (Perm.USERS_MANAGE.value, "Create/edit/deactivate staff accounts"),
+    (Perm.ROLES_MANAGE.value, "Create/edit roles and assign permissions"),
     # Analytics
-    ("analytics:view", "View dashboards, reports, food cost analysis"),
+    (Perm.ANALYTICS_VIEW.value, "View dashboards, reports, food cost analysis"),
     # Menu
-    ("menu:manage", "Create/edit menu items and prices"),
-    ("menu:create", "Create menu items and retail products"),
-    ("menu:view", "View menu (all staff can)"),
+    (Perm.MENU_MANAGE.value, "Create/edit menu items and prices"),
+    (Perm.MENU_CREATE.value, "Create menu items and retail products"),
+    (Perm.MENU_VIEW.value, "View menu (all staff can)"),
     # Settings & System
-    ("settings:manage", "Manage store and tenant settings"),
-    ("system:manage", "System admin and schema inspector"),
-    # CRM & Customers
-    ("crm:manage", "Manage customers and debt ledger"),
-    ("crm:view", "View customers and ledger"),
-    # Gift Cards
-    ("giftcards:manage", "Issue, redeem, and manage gift cards"),
-    ("giftcards:view", "View gift cards and transaction history"),
+    (Perm.SETTINGS_MANAGE.value, "Manage store and tenant settings"),
+    (Perm.SYSTEM_MANAGE.value, "System admin and schema inspector"),
 ]
 
 # ── Role templates with their permission sets ────────────────────
 ROLE_TEMPLATES = {
-    "owner": {
+    RoleName.OWNER.value: {
         "description": "Business owner — full access (superuser)",
         "is_superuser": True,
         "permissions": [],  # superuser bypasses all checks
     },
-    "manager": {
+    RoleName.MANAGER.value: {
         "description": "Store manager — operations, staff, inventory",
         "is_superuser": False,
         "permissions": [
-            "orders:create", "orders:view", "orders:cancel", "orders:update_status",
-            "cashbox:operate", "cashbox:view", "cashbox:expense",
-            "shifts:open", "shifts:close", "shifts:view",
-            "inventory:manage", "inventory:create", "inventory:view",
-            "users:manage",
-            "menu:manage", "menu:create", "menu:view",
-            "settings:manage",
+            Perm.ORDERS_CREATE.value, Perm.ORDERS_VIEW.value, Perm.ORDERS_CANCEL.value, Perm.ORDERS_UPDATE_STATUS.value,
+            Perm.CASHBOX_OPERATE.value, Perm.CASHBOX_VIEW.value, Perm.CASHBOX_EXPENSE.value, Perm.POS_CASH_OPERATIONS.value,
+            Perm.SHIFTS_OPEN.value, Perm.SHIFTS_CLOSE.value, Perm.SHIFTS_VIEW.value,
+            Perm.INVENTORY_MANAGE.value, Perm.INVENTORY_CREATE.value, Perm.INVENTORY_VIEW.value,
+            Perm.USERS_MANAGE.value,
+            Perm.MENU_MANAGE.value, Perm.MENU_CREATE.value, Perm.MENU_VIEW.value,
+            Perm.SETTINGS_MANAGE.value,
         ],
     },
-    "cashier": {
+    RoleName.CASHIER.value: {
         "description": "Cashier — POS, payments, shifts",
         "is_superuser": False,
         "permissions": [
-            "orders:create", "orders:view", "orders:cancel", "orders:update_status",
-            "cashbox:operate", "cashbox:view", "cashbox:expense",
-            "shifts:open", "shifts:close", "shifts:view",
-            "menu:view",
+            Perm.ORDERS_CREATE.value, Perm.ORDERS_VIEW.value, Perm.ORDERS_CANCEL.value, Perm.ORDERS_UPDATE_STATUS.value,
+            Perm.CASHBOX_OPERATE.value, Perm.CASHBOX_VIEW.value, Perm.CASHBOX_EXPENSE.value, Perm.POS_CASH_OPERATIONS.value,
+            Perm.SHIFTS_OPEN.value, Perm.SHIFTS_CLOSE.value, Perm.SHIFTS_VIEW.value,
+            Perm.MENU_VIEW.value,
         ],
     },
 }
@@ -176,7 +170,7 @@ async def seed_database(session: AsyncSession) -> None:
     await session.flush()
     session.add(UserRole(
         user_id=owner_cafe.id,
-        role_id=role_map["owner"].id,
+        role_id=role_map[RoleName.OWNER.value].id,
     ))
 
     owner_booth = User(
@@ -190,7 +184,7 @@ async def seed_database(session: AsyncSession) -> None:
     await session.flush()
     session.add(UserRole(
         user_id=owner_booth.id,
-        role_id=role_map["owner"].id,
+        role_id=role_map[RoleName.OWNER.value].id,
     ))
 
     # Sample worker for booth
@@ -205,7 +199,7 @@ async def seed_database(session: AsyncSession) -> None:
     await session.flush()
     session.add(UserRole(
         user_id=worker.id,
-        role_id=role_map["cashier"].id,
+        role_id=role_map[RoleName.CASHIER.value].id,
     ))
 
     await session.flush()

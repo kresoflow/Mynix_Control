@@ -67,22 +67,14 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
-    final role = authState is AuthAuthenticated ? authState.role.toLowerCase() : '';
-    final isWaiter = role == 'waiter';
     final hasTable = tableNumber != null && tableNumber!.trim().isNotEmpty;
 
-    // 1. Waiter mode: Solid primary full-width "Оформить заказ"
-    if (isWaiter) {
-      return _buildWaiterPrimaryButton(context);
-    }
-
-    // 2. Counter Mode (No table selected): Solid full-width "Оплатить"
+    // 1. Counter Mode (No table selected): Solid full-width "Оплатить"
     if (!hasTable) {
       return _buildCheckoutButton(context, isFullWidth: true);
     }
 
-    // 3. Table Selected Mode (Cashier / Admin): Dual Action
+    // 2. Table Selected Mode: Dual Action ("В стол" + "Оплатить")
     return Row(
       children: [
         Expanded(
@@ -95,20 +87,6 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
           child: _buildCheckoutButton(context, isFullWidth: false, hasTable: true),
         ),
       ],
-    );
-  }
-
-  Widget _buildWaiterPrimaryButton(BuildContext context) {
-    return _buildCtaContainer(
-      context: context,
-      onTap: onSendToBooth,
-      color: AppColors.brandPrimary,
-      textColor: Colors.white,
-      icon: PhosphorIconsBold.paperPlaneTilt,
-      label: 'Оформить заказ',
-      isSubmitting: isSubmitting,
-      isDisabled: isEmpty || isSubmitting,
-      isPrimary: true,
     );
   }
 

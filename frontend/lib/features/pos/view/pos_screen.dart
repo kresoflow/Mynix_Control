@@ -84,32 +84,18 @@ class _PosScreenState extends State<PosScreen> {
     _wsSubscription = webSocketService.messages.listen((msg) {
       if (!mounted) return;
       final event = msg['event'];
-      final authState = context.read<AuthBloc>().state;
-      final isWaiter = authState is AuthAuthenticated && authState.role.toLowerCase() == 'waiter';
 
       if (event == 'incoming_order') {
         _debouncedRefreshCounts();
-        if (!isWaiter) {
-          AudioHelper.playNewOrderSound();
-          final order = msg['order'] ?? {};
-          final table = order['table_number'] ?? 'Зал';
-          if (mounted) {
-            AppToast.showInfo(context, 'Новый заказ с зала', subtitle: '$table (нажмите на колокольчик)');
-          }
+        AudioHelper.playNewOrderSound();
+        final order = msg['order'] ?? {};
+        final table = order['table_number'] ?? 'Зал';
+        if (mounted) {
+          AppToast.showInfo(context, 'Новый заказ с зала', subtitle: '$table (нажмите на колокольчик)');
         }
       } else if (event == 'incoming_order_resolved') {
         _debouncedRefreshCounts();
-        final order = msg['order'] ?? {};
-        final orderNum = order['order_number'] ?? order['id'] ?? '';
-        final status = order['status']?.toString().toUpperCase();
         if (mounted) {
-          if (isWaiter) {
-            if (status == 'CANCELLED' || status == 'REJECTED') {
-              AppToast.showWarning(context, 'Заказ #$orderNum отклонен', subtitle: 'Кассир отклонил заказ');
-            } else {
-              AppToast.showSuccess(context, 'Заказ #$orderNum принят', subtitle: 'Кассир подтвердил заказ');
-            }
-          }
           _debouncedUpdateOrdersAndShift();
         }
       } else if (event == 'status_update') {

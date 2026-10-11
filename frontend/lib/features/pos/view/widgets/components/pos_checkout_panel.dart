@@ -40,10 +40,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
   }
 
   void _handleSendToBooth(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    final role = authState is AuthAuthenticated ? authState.role.toLowerCase() : '';
-    final isWaiter = role == 'waiter';
-    final targetSource = isWaiter ? 'waiter' : 'dine_in';
+    const targetSource = 'dine_in';
 
     final cartState = context.read<CartBloc>().state;
     if (cartState.tableNumber == null || cartState.tableNumber!.trim().isEmpty) {
@@ -123,13 +120,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
             context.read<ShiftBloc>().add(CheckCurrentShift());
 
-            if (state.lastSubmittedSource == 'waiter') {
-              AppToast.showInfo(
-                context,
-                'Заказ передан в будку',
-                subtitle: 'Кассир оповещен и видит счет столика',
-              );
-            } else if (state.lastSubmittedSource == 'dine_in' || state.lastSubmittedSource == 'hall') {
+            if (state.lastSubmittedSource == 'dine_in' || state.lastSubmittedSource == 'hall') {
               AppToast.showSuccess(
                 context,
                 'Заказ передан на столик',

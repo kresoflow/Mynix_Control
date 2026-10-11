@@ -1,8 +1,18 @@
 """
-Kreso Flow - Centralized Permission Registry (PBAC).
-Defines all atomic permissions as a strongly-typed StrEnum to eliminate string hardcode.
+Kreso Flow - Centralized Role and Permission Registry (PBAC).
+Defines all system roles and atomic permissions as strongly-typed Enums.
+[БЕЗОПАСНОСТЬ] [PBAC] Единая точка правды для ролей и прав.
 """
 from enum import Enum
+
+
+class RoleName(str, Enum):
+    """
+    Канонические системные роли заведения (Единая точка правды).
+    """
+    OWNER = "owner"
+    MANAGER = "manager"
+    CASHIER = "cashier"
 
 
 class Perm(str, Enum):
@@ -23,9 +33,6 @@ class Perm(str, Enum):
     SHIFTS_CLOSE = "shifts:close"
     SHIFTS_VIEW = "shifts:view"
 
-    # Kitchen
-    KITCHEN_VIEW = "kitchen:view"
-
     # Inventory
     INVENTORY_MANAGE = "inventory:manage"
     INVENTORY_CREATE = "inventory:create"
@@ -42,14 +49,6 @@ class Perm(str, Enum):
 
     # Analytics
     ANALYTICS_VIEW = "analytics:view"
-
-    # CRM
-    CRM_MANAGE = "crm:manage"
-    CRM_VIEW = "crm:view"
-
-    # Gift Cards
-    GIFTCARDS_MANAGE = "giftcards:manage"
-    GIFTCARDS_VIEW = "giftcards:view"
 
     # Settings & System
     SETTINGS_MANAGE = "settings:manage"

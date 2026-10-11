@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -22,11 +22,9 @@ class MobileNavDrawer extends StatelessWidget {
 
   static const _navItems = [
     (icon: PhosphorIconsRegular.receipt, label: 'Касса (POS)', route: '/pos'),
-    (icon: PhosphorIconsRegular.cookingPot, label: 'Кухня (KDS)', route: '/kitchen'),
     (icon: PhosphorIconsRegular.clockCounterClockwise, label: 'История заказов', route: '/orders'),
     (icon: PhosphorIconsRegular.bookOpenText, label: 'Каталог меню', route: '/catalog'),
     (icon: PhosphorIconsRegular.package, label: 'Склад & Приходы', route: '/warehouse'),
-    (icon: PhosphorIconsRegular.users, label: 'CRM & Гости', route: '/crm'),
     (icon: PhosphorIconsRegular.chartLineUp, label: 'Аналитика', route: '/analytics'),
     (icon: PhosphorIconsRegular.gear, label: 'Настройки', route: '/settings'),
   ];
@@ -48,30 +46,26 @@ class MobileNavDrawer extends StatelessWidget {
     }
 
     final settingsState = context.watch<SettingsBloc>().state;
-    final showKds = settingsState.useKds && settingsState.showKdsInNav;
     final showOrders = settingsState.useOrders;
 
     final visibleNavItems = _navItems.where((item) {
-      if (item.route == '/kitchen' && !showKds) return false;
       if (item.route == '/orders' && !showOrders) return false;
 
       final r = role.toLowerCase();
-      if (r.contains('owner') || r.contains('superadmin') || r.contains('admin') || r.contains('manager')) {
-        return true;
+      final isOwner = r.contains('owner') || r.contains('superadmin');
+      final isManager = r.contains('manager');
+      final isCashier = r.contains('cashier');
+
+      if (isOwner) return true;
+      if (isManager) {
+        // Управляющий видит всё, кроме аналитики
+        return item.route != '/analytics';
       }
-      if (r.contains('waiter')) {
-        return item.route == '/pos';
+      if (isCashier) {
+        // Кассир видит только терминал кассы и историю заказов смены
+        return item.route == '/pos' || item.route == '/orders';
       }
-      if (r.contains('cashier')) {
-        return item.route == '/pos' || item.route == '/orders' || item.route == '/crm' || item.route == '/kitchen';
-      }
-      if (r.contains('cook') || r.contains('kitchen')) {
-        return item.route == '/kitchen' || item.route == '/orders';
-      }
-      if (r.contains('warehouse')) {
-        return item.route == '/catalog' || item.route == '/warehouse';
-      }
-      return true;
+      return item.route == '/pos';
     }).toList();
 
     return Drawer(

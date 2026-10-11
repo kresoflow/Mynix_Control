@@ -113,7 +113,6 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildPosSegmentedControl(BuildContext context) {
     final settingsState = context.watch<SettingsBloc>().state;
     final useOrders = settingsState.useOrders;
-    final useKds = settingsState.useKds;
 
     return BlocBuilder<PosTabCubit, PosTabState>(
       builder: (context, tabState) {
@@ -132,12 +131,6 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
                 value: 1,
                 label: 'Заказы',
                 icon: PhosphorIconsRegular.listNumbers,
-              ),
-            if (useKds)
-              const AppSegmentedItem(
-                value: 2,
-                label: 'Кухня (KDS)',
-                icon: PhosphorIconsRegular.cookingPot,
               ),
           ],
         );

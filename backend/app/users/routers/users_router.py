@@ -6,6 +6,7 @@ from sqlmodel import select
 from app.database import get_session
 from app.dependencies import require_permission, CurrentUser
 from app.users import services as svc
+from app.users.permissions import RoleName
 from app.users.models import (
     UserRead, UserCreate, UserUpdate, Role,
 )
@@ -17,7 +18,7 @@ def _is_owner_or_superuser(user) -> bool:
     """Проверяет, является ли пользователь владельцем или суперюзером."""
     if svc.is_superuser(user):
         return True
-    return any(r.name == "owner" for r in (getattr(user, "roles", None) or []))
+    return any(r.name == RoleName.OWNER.value for r in (getattr(user, "roles", None) or []))
 
 
 async def _validate_manager_role_assignment(session: AsyncSession, role_ids: list[int]) -> None:
@@ -27,7 +28,7 @@ async def _validate_manager_role_assignment(session: AsyncSession, role_ids: lis
     res = await session.execute(select(Role).where(Role.id.in_(role_ids)))
     assigned_roles = res.scalars().all()
     for role in assigned_roles:
-        if role.name != "cashier":
+        if role.name != RoleName.CASHIER.value:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Управляющий может назначать только роль кассира.",
@@ -107,7 +108,7 @@ async def update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     target_is_privileged = any(
-        r.name in ("owner", "manager") or r.is_superuser
+        r.name in (RoleName.OWNER.value, RoleName.MANAGER.value) or r.is_superuser
         for r in (user.roles or [])
     )
     if not _is_owner_or_superuser(current_user):
@@ -155,7 +156,7 @@ async def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     target_is_privileged = any(
-        r.name in ("owner", "manager") or r.is_superuser
+        r.name in (RoleName.OWNER.value, RoleName.MANAGER.value) or r.is_superuser
         for r in (user.roles or [])
     )
     if not _is_owner_or_superuser(current_user) and target_is_privileged:
@@ -165,7 +166,7 @@ async def delete_user(
         )
 
     # Poka-yoke: Prevent deleting the last active owner of the tenant
-    is_owner = any(r.name == "owner" for r in (user.roles or []))
+    is_owner = any(r.name == RoleName.OWNER.value for r in (user.roles or []))
     if is_owner:
         all_users = await svc.list_users(session, current_user.tenant_id)
         active_owners = [

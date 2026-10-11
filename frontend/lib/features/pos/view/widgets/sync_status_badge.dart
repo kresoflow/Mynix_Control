@@ -9,7 +9,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import '../../services/pos_outbox_service.dart';
-import '../../services/lan/local_pos_server.dart';
 import 'dialogs/sync_outbox_dialog.dart';
 
 // ── Индикатор статуса синхронизации ──────────────────────────────────────────
@@ -26,8 +25,6 @@ class SyncStatusBadge extends StatelessWidget {
       builder: (context, box, _) {
         final pendingCount = box.length;
         final hasPending = pendingCount > 0;
-        final isLanActive = LocalPosServer.isRunning;
-
         final statusColor = hasPending ? AppColors.danger : AppColors.success;
         final bgColor = hasPending
             ? AppColors.danger.withValues(alpha: 0.16)
@@ -78,23 +75,6 @@ class SyncStatusBadge extends StatelessWidget {
                         color: AppColors.danger,
                         fontSize: 12,
                       ),
-                    ),
-                  ],
-                  if (isLanActive) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.brandPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      PhosphorIconsRegular.wifiHigh,
-                      size: 14,
-                      color: AppColors.brandPrimary,
                     ),
                   ],
                 ],
