@@ -124,6 +124,13 @@ async def record_expense(
     if not shift:
         raise ValueError("Cannot record expense: no open shift.")
 
+    current_cash = await calculate_expected_cash(session, shift.id, shift.opening_cash)
+    if current_cash < amount:
+        raise ValueError(
+            f"Недостаточно наличных средств в кассе смены. "
+            f"Текущий остаток: {current_cash:.2f} ₽, запрошено: {amount:.2f} ₽."
+        )
+
     txn = CashTransaction(
         shift_id=shift.id,
         user_id=user_id,

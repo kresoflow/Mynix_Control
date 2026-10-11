@@ -86,6 +86,15 @@ async def test_pos_shift_lifecycle_x_and_z_reports(async_client: AsyncClient, db
     assert resp_exp.status_code == 200, resp_exp.text
     assert resp_exp.json()["amount"] == 50.0
 
+    # 4.1. Negative test: Attempt expense exceeding drawer balance (500 - 50 = 450 max)
+    resp_exp_excess = await async_client.post(
+        "/api/v1/cash/expense",
+        json={"amount": 1000.0, "description": "Слишком большой расход"},
+        headers=headers,
+    )
+    assert resp_exp_excess.status_code == 400
+    assert "Недостаточно наличных средств" in resp_exp_excess.json()["detail"]
+
     # 5. Check X-Report
     resp_x = await async_client.get("/api/v1/shifts/x-report", headers=headers)
     assert resp_x.status_code == 200, resp_x.text
