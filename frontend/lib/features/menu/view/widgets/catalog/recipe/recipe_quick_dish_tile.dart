@@ -34,11 +34,17 @@ class RecipeQuickDishTile extends StatelessWidget {
         ? ((dish.price - cost) / dish.price) * 100
         : 0.0;
 
+    String? categoryName = dish.categoryName;
     String? iconStr = dish.icon;
-    if ((iconStr == null || iconStr.isEmpty) && catState is CategoryLoaded) {
+    if (catState is CategoryLoaded) {
       final loaded = catState as CategoryLoaded;
       final cat = loaded.categories.where((c) => c.id.toString() == dish.categoryId).firstOrNull;
-      iconStr = cat?.getInheritedIcon(loaded.categories);
+      if (iconStr == null || iconStr.isEmpty) {
+        iconStr = cat?.getInheritedIcon(loaded.categories);
+      }
+      if (categoryName == null || categoryName.isEmpty) {
+        categoryName = cat?.name;
+      }
     }
 
     final bool hasIcon = iconStr != null &&
@@ -88,7 +94,7 @@ class RecipeQuickDishTile extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          dish.categoryName ?? 'Без категории',
+                          categoryName ?? 'Без категории',
                           style: TextStyle(
                             fontSize: 11,
                             color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,

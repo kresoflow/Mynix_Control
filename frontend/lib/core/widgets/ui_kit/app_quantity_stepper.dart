@@ -3,7 +3,8 @@
 // ==============================================================================
 //
 // [ИНВАРИАНТ] Премиальный тактильный степпер: цельная капсула без резких полос,
-// закругленные микро-кнопки [-] и [+] с подсветкой, плюс прямой ввод без синих рамок.
+// закругленные микро-кнопки [-] и [+] с подсветкой, плюс прямой ввод (Click-to-Type)
+// с мгновенной реактивностью (onChanged) и поддержкой точности до 3 знаков (0.015).
 //
 // ==============================================================================
 
@@ -16,13 +17,13 @@ import 'package:kreso_frontend/core/theme/app_motion.dart';
 /// Размерная шкала для счетчиков количества
 enum AppStepperSize {
   /// SM (28px): Компактный для табличных строк, накладных и спецификаций
-  sm(height: 28, btnSize: 22, valueWidth: 38, iconSize: 11, fontSize: 12, radius: 8),
+  sm(height: 28, btnSize: 22, valueWidth: 46, iconSize: 11, fontSize: 12, radius: 8),
 
   /// MD (34px): Стандартный для корзин и карточек заказов
-  md(height: 34, btnSize: 26, valueWidth: 46, iconSize: 13, fontSize: 13, radius: 9),
+  md(height: 34, btnSize: 26, valueWidth: 54, iconSize: 13, fontSize: 13, radius: 9),
 
   /// LG (42px): Просторный для сенсорных экранов кассы (POS Touch)
-  lg(height: 42, btnSize: 32, valueWidth: 56, iconSize: 16, fontSize: 15, radius: 10);
+  lg(height: 42, btnSize: 32, valueWidth: 64, iconSize: 16, fontSize: 15, radius: 10);
 
   final double height;
   final double btnSize;
@@ -105,21 +106,37 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
     }
   }
 
+  void _handleTypingChange(String text) {
+    final cleaned = text.replaceAll(',', '.').trim();
+    if (cleaned.isEmpty) return;
+    final parsed = double.tryParse(cleaned);
+    if (parsed != null && parsed >= widget.min) {
+      final clamped = parsed.clamp(widget.min.toDouble(), (widget.max ?? double.infinity).toDouble());
+      final rounded = double.parse(clamped.toStringAsFixed(3));
+      widget.onChanged(widget.allowDecimals ? rounded : clamped.toInt());
+    }
+  }
+
   void _submitDirectInput() {
     setState(() => _isEditing = false);
     final text = _controller.text.replaceAll(',', '.').trim();
     final parsed = double.tryParse(text);
     if (parsed != null) {
       final clamped = parsed.clamp(widget.min.toDouble(), (widget.max ?? double.infinity).toDouble());
-      widget.onChanged(widget.allowDecimals ? double.parse(clamped.toStringAsFixed(2)) : clamped.toInt());
+      final rounded = double.parse(clamped.toStringAsFixed(3));
+      widget.onChanged(widget.allowDecimals ? rounded : clamped.toInt());
+      _controller.text = _formatValue(rounded);
     } else {
       _controller.text = _formatValue(widget.value);
     }
   }
 
   String _formatValue(num val) {
+    if (val == 0) return '0';
     if (widget.allowDecimals) {
-      return val.toStringAsFixed(val.truncateToDouble() == val ? 0 : 2);
+      final str = val.toDouble().toStringAsFixed(3);
+      final trimmed = str.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+      return trimmed.isEmpty ? '0' : trimmed;
     }
     return val.toInt().toString();
   }
@@ -130,13 +147,15 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
       return;
     }
     final next = (widget.value - widget.step).clamp(widget.min, widget.max ?? double.infinity);
-    widget.onChanged(widget.allowDecimals ? double.parse(next.toStringAsFixed(2)) : next.toInt());
+    final rounded = double.parse(next.toDouble().toStringAsFixed(3));
+    widget.onChanged(widget.allowDecimals ? rounded : rounded.toInt());
   }
 
   void _handleIncrement() {
     if (widget.max != null && widget.value >= widget.max!) return;
     final next = (widget.value + widget.step).clamp(widget.min, widget.max ?? double.infinity);
-    widget.onChanged(widget.allowDecimals ? double.parse(next.toStringAsFixed(2)) : next.toInt());
+    final rounded = double.parse(next.toDouble().toStringAsFixed(3));
+    widget.onChanged(widget.allowDecimals ? rounded : rounded.toInt());
   }
 
   @override
@@ -158,7 +177,7 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ── Микро-кнопка [-] (Тактильная скругленная) ──
+          // ── Микро-кнопка [-] ──
           _MicroButton(
             icon: isTrashAction ? PhosphorIconsBold.trash : PhosphorIconsBold.minus,
             iconColor: isTrashAction ? AppColors.danger : null,
@@ -166,7 +185,7 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
             onTap: _handleDecrement,
           ),
 
-          // ── Центральное значение (Click-to-Type без синих рамок) ──
+          // ── Центральное значение (Click-to-Type с постоянной единицей) ──
           GestureDetector(
             onTap: () {
               setState(() => _isEditing = true);
@@ -178,8 +197,11 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
               constraints: BoxConstraints(minWidth: widget.size.valueWidth),
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: _isEditing
-                  ? SizedBox(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_isEditing)
+                    SizedBox(
                       width: widget.size.valueWidth,
                       child: TextField(
                         controller: _controller,
@@ -202,37 +224,36 @@ class _AppQuantityStepperState extends State<AppQuantityStepper> {
                           fillColor: Colors.transparent,
                           filled: false,
                         ),
+                        onChanged: _handleTypingChange,
                         onSubmitted: (_) => _submitDirectInput(),
                       ),
                     )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _formatValue(widget.value),
-                          style: GoogleFonts.jetBrainsMono(
-                            fontSize: widget.size.fontSize,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.darkText : AppColors.lightText,
-                          ),
-                        ),
-                        if (widget.unit != null) ...[
-                          const SizedBox(width: 3),
-                          Text(
-                            widget.unit!,
-                            style: TextStyle(
-                              fontSize: widget.size.fontSize - 1,
-                              fontWeight: FontWeight.w500,
-                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                            ),
-                          ),
-                        ],
-                      ],
+                  else
+                    Text(
+                      _formatValue(widget.value),
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: widget.size.fontSize,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
                     ),
+                  if (widget.unit != null) ...[
+                    const SizedBox(width: 3),
+                    Text(
+                      widget.unit!,
+                      style: TextStyle(
+                        fontSize: widget.size.fontSize - 1,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
 
-          // ── Микро-кнопка [+] (Тактильная скругленная) ──
+          // ── Микро-кнопка [+] ──
           _MicroButton(
             icon: PhosphorIconsBold.plus,
             size: widget.size,
@@ -268,7 +289,6 @@ class _MicroButtonState extends State<_MicroButton> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final defaultColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
-
     final defaultBg = isDark
         ? Colors.white.withValues(alpha: 0.05)
         : Colors.black.withValues(alpha: 0.04);

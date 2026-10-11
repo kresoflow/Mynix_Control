@@ -81,11 +81,16 @@ class _RecipeDetailsPanelState extends State<RecipeDetailsPanel> {
     final available = ingState.ingredients.where((i) => !i.isRetail && !i.isArchived).toList();
     final selectedId = await IngredientPickerDialog.show(context, available);
     if (selectedId != null && context.mounted) {
+      final ing = available.where((i) => i.id == selectedId).firstOrNull;
+      final unit = ing?.unit.toString().toLowerCase() ?? '';
+      final defaultQty = (unit.contains('kg') || unit.contains('кг') || unit.contains('l') || unit.contains('л'))
+          ? 0.05
+          : 1.0;
       context.read<RecipeBloc>().add(
             AddIngredientToRecipe(
               menuItemId: targetId,
               ingredientId: selectedId,
-              quantity: 1.0,
+              quantity: defaultQty,
             ),
           );
     }

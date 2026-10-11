@@ -66,6 +66,16 @@ class AppSpecificationTable extends StatelessWidget {
     return isExpanded ? Expanded(flex: flex, child: aligned) : SizedBox(width: width, child: aligned);
   }
 
+  double _resolveStep(String unit) {
+    final u = unit.toLowerCase();
+    if (u.contains('кг') || u.contains('kg') || u.contains('л') || u.contains('l')) {
+      return 0.01;
+    } else if (u.contains('г') || u.contains('g') || u.contains('мл') || u.contains('ml')) {
+      return 5.0;
+    }
+    return 1.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -109,7 +119,7 @@ class AppSpecificationTable extends StatelessWidget {
               children: [
                 _buildHeaderCell('№', width: 32, isDark: isDark),
                 _buildHeaderCell('Позиция', isExpanded: true, flex: 3, isDark: isDark),
-                _buildHeaderCell('Количество', width: 110, isCenter: true, isDark: isDark),
+                _buildHeaderCell('Количество', width: 124, isCenter: true, isDark: isDark),
                 _buildHeaderCell('Цена', width: 100, isRight: true, isDark: isDark),
                 _buildHeaderCell('Сумма', width: 110, isRight: true, isDark: isDark),
                 const SizedBox(width: 44),
@@ -145,11 +155,12 @@ class AppSpecificationTable extends StatelessWidget {
                       ),
                     ),
                     SizedBox(
-                      width: 110,
+                      width: 124,
                       child: Center(
                         child: AppQuantityStepper(
                           value: row.quantity,
                           unit: row.unit,
+                          step: _resolveStep(row.unit),
                           size: AppStepperSize.sm,
                           allowDecimals: allowDecimals,
                           onChanged: (val) => onQuantityChanged?.call(index, val.toDouble()),

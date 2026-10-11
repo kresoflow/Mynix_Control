@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -15,6 +15,15 @@ class RecipeVariationTabs extends StatelessWidget {
     required this.onSelectVariation,
     required this.currency,
   });
+
+  String _formatVariationName(String rawName) {
+    var cleaned = rawName.trim();
+    final match = RegExp(r'\(([^)]+)\)').firstMatch(cleaned);
+    if (match != null && match.group(1) != null && match.group(1)!.trim().isNotEmpty) {
+      cleaned = match.group(1)!.trim();
+    }
+    return cleaned;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +64,10 @@ class RecipeVariationTabs extends StatelessWidget {
                   final name = v['name']?.toString() ?? 'Вариант ${idx + 1}';
                   final price = (v['price'] as num?)?.toDouble() ?? 0.0;
                   final isSelected = idx == selectedIndex;
+                  final formattedName = _formatVariationName(name);
+                  final isPriceOnly = formattedName == price.toStringAsFixed(0) ||
+                      formattedName.toLowerCase() == '${price.toStringAsFixed(0)} ${currency.toLowerCase()}' ||
+                      formattedName.toLowerCase() == '${price.toStringAsFixed(0)}${currency.toLowerCase()}';
 
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
@@ -76,41 +89,52 @@ class RecipeVariationTabs extends StatelessWidget {
                             width: isSelected ? 1.5 : 1.0,
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              name,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                color: isSelected
-                                    ? AppColors.brandPrimary
-                                    : (isDark ? AppColors.darkText : AppColors.lightText),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.brandPrimary.withValues(alpha: 0.2)
-                                    : (isDark ? AppColors.darkBg : AppColors.lightBg),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
+                        child: isPriceOnly
+                            ? Text(
                                 '${price.toStringAsFixed(0)} $currency',
                                 style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                                   color: isSelected
                                       ? AppColors.brandPrimary
-                                      : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                                      : (isDark ? AppColors.darkText : AppColors.lightText),
                                 ),
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    formattedName,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                      color: isSelected
+                                          ? AppColors.brandPrimary
+                                          : (isDark ? AppColors.darkText : AppColors.lightText),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? AppColors.brandPrimary.withValues(alpha: 0.2)
+                                          : (isDark ? AppColors.darkBg : AppColors.lightBg),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '${price.toStringAsFixed(0)} $currency',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected
+                                            ? AppColors.brandPrimary
+                                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   );

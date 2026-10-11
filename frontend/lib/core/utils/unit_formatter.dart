@@ -104,10 +104,18 @@ class UnitFormatter {
     return _dbToUi[normalized] ?? unit;
   }
 
-  /// Форматирует количество вместе с локализованной единицей измерения (напр. "2 000 г", "1.5 л")
+  /// Форматирует количество вместе с локализованной единицей измерения (напр. "0.015 кг", "1.5 л", "2 шт")
   static String formatAmount(num amount, String? unit) {
+    if (amount == 0) return '0 ${format(unit)}';
     final isInt = amount.truncateToDouble() == amount;
-    final qtyStr = isInt ? amount.toInt().toString() : amount.toStringAsFixed(1);
+    final String qtyStr;
+    if (isInt) {
+      qtyStr = amount.toInt().toString();
+    } else {
+      final str = amount.toDouble().toStringAsFixed(3);
+      final trimmed = str.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+      qtyStr = trimmed.isEmpty ? '0' : trimmed;
+    }
     return '$qtyStr ${format(unit)}';
   }
 

@@ -45,12 +45,14 @@ void main() {
       expect(UnitFormatter.format(null), equals('шт'));
     });
 
-    test('formatAmount renders integers without trailing zeros and decimals with 1 digit', () {
+    test('formatAmount renders integers without trailing zeros and decimals with up to 3 digits', () {
       expect(UnitFormatter.formatAmount(2000, 'g'), equals('2000 г'));
       expect(UnitFormatter.formatAmount(10.0, 'kg'), equals('10 кг'));
       expect(UnitFormatter.formatAmount(0.0, 'pcs'), equals('0 шт'));
       expect(UnitFormatter.formatAmount(1.5, 'l'), equals('1.5 л'));
-      expect(UnitFormatter.formatAmount(250.75, 'ml'), equals('250.8 мл'));
+      expect(UnitFormatter.formatAmount(250.75, 'ml'), equals('250.75 мл'));
+      expect(UnitFormatter.formatAmount(0.015, 'kg'), equals('0.015 кг'));
+      expect(UnitFormatter.formatAmount(0.005, 'kg'), equals('0.005 кг'));
     });
 
     // ─── 3. Нормализация toDbKey ───────────────────────────────────────────────

@@ -53,9 +53,17 @@ class RecipeEmptyDashboard extends StatelessWidget {
     final int totalDishes = dishes.length;
     int configuredCount = 0;
     for (final d in dishes) {
-      if (summaryMap[d.id]?['has_recipe'] == true) {
-        configuredCount++;
+      bool has = summaryMap[d.id]?['has_recipe'] == true;
+      if (!has && d.variations is List) {
+        for (final v in (d.variations as List)) {
+          final vId = v is Map ? v['id'] : v.id;
+          if (summaryMap[vId]?['has_recipe'] == true) {
+            has = true;
+            break;
+          }
+        }
       }
+      if (has) configuredCount++;
     }
     final int unconfiguredCount = totalDishes - configuredCount;
 
@@ -171,9 +179,20 @@ class RecipeEmptyDashboard extends StatelessWidget {
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final dish = dishes[index];
+                      Map<String, dynamic>? dishSummary = summaryMap[dish.id];
+                      if ((dishSummary == null || dishSummary['has_recipe'] != true) && dish.variations is List) {
+                        for (final v in (dish.variations as List)) {
+                          final vId = v is Map ? v['id'] : v.id;
+                          final vs = summaryMap[vId];
+                          if (vs != null && vs['has_recipe'] == true) {
+                            dishSummary = vs;
+                            break;
+                          }
+                        }
+                      }
                       return RecipeQuickDishTile(
                         dish: dish,
-                        summary: summaryMap[dish.id],
+                        summary: dishSummary,
                         catState: catState,
                         onTap: () {
                           onSelectDish(dish.id);
