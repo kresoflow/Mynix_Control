@@ -7,7 +7,7 @@ Registers all module routers, runs seed on startup, connects to DB.
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
@@ -189,20 +189,38 @@ app.include_router(ws_router)
 
 # ── Health & Diagnostic Routes ───────────────────────────────────
 
+from app.system.security import require_system_admin
+
 @app.get("/health", tags=["System"])
 async def health_check():
     return {"status": "ok", "service": settings.app_name}
 
 
-@app.get("/api/v1/system/test-error", tags=["System"])
-@app.get("/system/test-error", tags=["System"])
+@app.get(
+    "/api/v1/system/test-error",
+    tags=["System"],
+    dependencies=[Depends(require_system_admin)],
+)
+@app.get(
+    "/system/test-error",
+    tags=["System"],
+    dependencies=[Depends(require_system_admin)],
+)
 async def trigger_test_error():
     """Trigger intentional test error to verify Sentry and Telegram alerts."""
     raise RuntimeError("🧪 Тестовая ошибка мониторинга Kreso Flow")
 
 
-@app.get("/api/v1/system/logs", tags=["System"])
-@app.get("/system/logs", tags=["System"])
+@app.get(
+    "/api/v1/system/logs",
+    tags=["System"],
+    dependencies=[Depends(require_system_admin)],
+)
+@app.get(
+    "/system/logs",
+    tags=["System"],
+    dependencies=[Depends(require_system_admin)],
+)
 async def get_recent_logs(lines: int = 100):
     """Возвращает последние строки серверного лога для автономной диагностики агентом."""
     from app.core.logging_config import BACKEND_LOG_FILE

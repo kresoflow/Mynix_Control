@@ -9,7 +9,9 @@ from sqlalchemy.pool import StaticPool
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.compiler import compiles
 
-from app.main import app
+from app.crm import models as _crm_models
+from app.gift_cards import models as _gc_models
+from app.main import app as fastapi_app
 from app.database import get_session
 from app.users.models import Tenant, User, Role, Permission
 from app.inventory.models import Ingredient, MenuItem, Recipe, StockTransaction
@@ -65,8 +67,8 @@ async def override_get_tenant_session():
             raise
 
 
-app.dependency_overrides[get_session] = override_get_session
-app.dependency_overrides[get_tenant_session] = override_get_tenant_session
+fastapi_app.dependency_overrides[get_session] = override_get_session
+fastapi_app.dependency_overrides[get_tenant_session] = override_get_tenant_session
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
@@ -87,5 +89,5 @@ async def db_session():
 
 @pytest_asyncio.fixture(scope="function")
 async def async_client():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=fastapi_app), base_url="http://test") as ac:
         yield ac

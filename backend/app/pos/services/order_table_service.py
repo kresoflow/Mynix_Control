@@ -15,7 +15,7 @@ from app.inventory import services as inventory_svc
 from app.pos.services.shift_service import get_open_shift
 from app.pos.services.checkout_service import format_order_dict, get_order_by_id
 from app.users.models import Tenant
-from app.exceptions import NotFoundError
+from app.exceptions import NotFoundError, ConflictError
 
 
 async def get_active_tables_orders(session: AsyncSession) -> List[dict]:
@@ -109,9 +109,23 @@ async def settle_table_order(
         notify_inventory_updated,
     )
 
-    order = await get_order_by_id(session, order_id)
+    # [БЕЗОПАСНОСТЬ] [ТРАНЗАКЦИЯ] Блокировка строки заказа от состояния гонки
+    stmt = (
+        select(Order)
+        .where(Order.id == order_id)
+        .options(selectinload(Order.items))
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    res = await session.execute(stmt)
+    order = res.scalar_one_or_none()
     if not order:
         raise NotFoundError(f"Заказ #{order_id} не найден")
+
+    if order.status in (OrderStatus.COMPLETED, OrderStatus.COMPLETED.value):
+        raise ConflictError(f"Заказ #{order.order_number} уже был оплачен и закрыт.")
+    if order.status in (OrderStatus.CANCELLED, OrderStatus.CANCELLED.value):
+        raise ConflictError(f"Заказ #{order.order_number} отменен и не может быть оплачен.")
 
     tenant = (await session.execute(select(Tenant).where(Tenant.id == current_user.tenant_id))).scalar_one_or_none()
     enable_inventory = tenant.enable_inventory_deduction if tenant else True

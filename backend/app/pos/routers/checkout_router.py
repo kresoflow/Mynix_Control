@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from app.dependencies import require_permission, require_any_permission, CurrentUser, TenantSession
 from app.users.permissions import Perm
 from app.pos.models import CreateOrderRequest, OrderStatus, OrderItemCreate
+from app.users import services as user_svc
+from app.pos.services.shift_service import get_open_shift
 from app.pos.services.checkout_service import (
     create_order, list_orders, get_order_by_id, update_order_status,
     process_new_order, approve_order, reject_order
@@ -82,6 +84,19 @@ async def api_list_orders(
     end_date: Optional[str] = Query(None),
 ):
     """List orders, optionally filtered by shift and/or status."""
+    # [БЕЗОПАСНОСТЬ] [PBAC] Кассир видит заказы строго текущей открытой смены.
+    # Доступ к полной истории заказов за произвольные даты имеют только Владелец и Управляющий.
+    is_privileged = user_svc.is_superuser(current_user) or any(
+        r.name in ("owner", "manager") for r in (current_user.roles or [])
+    )
+    if not is_privileged:
+        open_shift = await get_open_shift(session)
+        if not open_shift:
+            return []
+        shift_id = open_shift.id
+        start_date = None
+        end_date = None
+
     orders = await list_orders(session, shift_id, status_filter, start_date, end_date)
     return [
         {

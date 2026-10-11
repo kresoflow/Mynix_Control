@@ -66,20 +66,16 @@ ROLE_TEMPLATES = {
         "permissions": [],  # superuser bypasses all checks
     },
     "manager": {
-        "description": "Store manager — operations, staff, analytics, CRM",
+        "description": "Store manager — operations, staff, inventory",
         "is_superuser": False,
         "permissions": [
             "orders:create", "orders:view", "orders:cancel", "orders:update_status",
             "cashbox:operate", "cashbox:view", "cashbox:expense",
             "shifts:open", "shifts:close", "shifts:view",
-            "kitchen:view",
             "inventory:manage", "inventory:create", "inventory:view",
-            "users:manage", "roles:manage",
-            "analytics:view",
+            "users:manage",
             "menu:manage", "menu:create", "menu:view",
             "settings:manage",
-            "crm:manage", "crm:view",
-            "giftcards:manage", "giftcards:view",
         ],
     },
     "cashier": {
@@ -89,49 +85,6 @@ ROLE_TEMPLATES = {
             "orders:create", "orders:view", "orders:cancel", "orders:update_status",
             "cashbox:operate", "cashbox:view", "cashbox:expense",
             "shifts:open", "shifts:close", "shifts:view",
-            "menu:view",
-            "crm:view", "crm:manage",
-            "giftcards:manage", "giftcards:view",
-        ],
-    },
-    "waiter": {
-        "description": "Waiter — hall orders, table service, quick submit",
-        "is_superuser": False,
-        "permissions": [
-            "orders:create", "orders:view", "orders:cancel", "orders:update_status",
-            "menu:view",
-            "crm:view",
-            "shifts:view",
-        ],
-    },
-    "cook": {
-        "description": "Cook — kitchen screen, order status updates",
-        "is_superuser": False,
-        "permissions": [
-            "kitchen:view",
-            "orders:view", "orders:update_status",
-            "inventory:view",
-            "menu:view",
-        ],
-    },
-    "universal_worker": {
-        "description": "Universal — cashier + cook combined (street booth)",
-        "is_superuser": False,
-        "permissions": [
-            "orders:create", "orders:view", "orders:cancel", "orders:update_status",
-            "cashbox:operate", "cashbox:view", "cashbox:expense",
-            "shifts:open", "shifts:close", "shifts:view",
-            "kitchen:view",
-            "inventory:view",
-            "menu:view",
-            "crm:view", "crm:manage",
-        ],
-    },
-    "warehouse_manager": {
-        "description": "Warehouse manager — inventory, stock documents, supplies",
-        "is_superuser": False,
-        "permissions": [
-            "inventory:manage", "inventory:view",
             "menu:view",
         ],
     },
@@ -244,7 +197,7 @@ async def seed_database(session: AsyncSession) -> None:
     worker = User(
         tenant_id=tenant_booth.id,
         username="worker1",
-        full_name="Иван Универсал",
+        full_name="Иван Кассир",
         hashed_password=hash_password("worker123"),
         pin_code="1234",
     )
@@ -252,7 +205,7 @@ async def seed_database(session: AsyncSession) -> None:
     await session.flush()
     session.add(UserRole(
         user_id=worker.id,
-        role_id=role_map["universal_worker"].id,
+        role_id=role_map["cashier"].id,
     ))
 
     await session.flush()

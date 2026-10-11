@@ -3,6 +3,7 @@ Application configuration via environment variables.
 Uses pydantic-settings for type-safe config with .env file support.
 """
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,7 +30,7 @@ class Settings(BaseSettings):
     # ── JWT Authentication ───────────────────────────────────────
     secret_key: str = "CHANGE-ME-IN-PRODUCTION-USE-LONG-RANDOM-STRING"
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 480  # 8-hour shift
+    access_token_expire_minutes: int = 840  # 14-hour shift (extended for full-day cashier shift)
 
     # ── Seed defaults ────────────────────────────────────────────
     owner_default_username: str = "owner"
@@ -42,6 +43,19 @@ class Settings(BaseSettings):
     sentry_dsn: str = "https://ee579c86969f6643e4786fef0ebd98a6@o4511875643015168.ingest.de.sentry.io/4511875720544336"
     telegram_bot_token: str | None = None
     telegram_chat_id: str | None = None
+
+    @model_validator(mode="after")
+    def validate_production_secrets(self) -> "Settings":
+        if not self.debug:
+            if self.system_admin_token == "super_secret_kreso_token_2026":
+                raise ValueError(
+                    "В боевом режиме (debug=False) SYSTEM_ADMIN_TOKEN обязан быть задан через .env и отличаться от дефолтного значения!"
+                )
+            if self.secret_key == "CHANGE-ME-IN-PRODUCTION-USE-LONG-RANDOM-STRING":
+                raise ValueError(
+                    "В боевом режиме (debug=False) SECRET_KEY обязан быть задан через .env и быть криптографически стойким!"
+                )
+        return self
 
 
 settings = Settings()

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.database import get_session
-from app.dependencies import require_permission, CurrentUser
+from app.dependencies import require_permission, require_any_permission, CurrentUser
 from app.users import services as svc
 from app.users.models import Tenant
 
@@ -26,7 +26,7 @@ class TenantSettingsRead(BaseModel):
 
 @router.get(
     "/roles/",
-    dependencies=[Depends(require_permission("roles:manage"))],
+    dependencies=[Depends(require_any_permission("roles:manage", "users:manage"))],
 )
 async def list_roles(
     current_user: CurrentUser,

@@ -35,6 +35,19 @@ async def create_cash_operation(
     if data.amount <= 0:
         raise ValueError("Сумма кассовой операции должна быть строго больше нуля.")
 
+    # 0. [ИДЕМПОТЕНТНОСТЬ] Защита от повторного списания/внесения по client_uuid (двойной тап/сетевой повтор)
+    if data.client_uuid:
+        stmt_exist = select(CashOperation).where(CashOperation.client_uuid == data.client_uuid)
+        res_exist = await session.execute(stmt_exist)
+        existing_op = res_exist.scalar_one_or_none()
+        if existing_op:
+            stmt_s = select(Shift).where(Shift.id == existing_op.shift_id)
+            res_s = await session.execute(stmt_s)
+            shift_obj = res_s.scalar_one_or_none()
+            opening = shift_obj.opening_cash if shift_obj else 0.0
+            current_balance = await calculate_expected_cash(session, existing_op.shift_id, opening)
+            return existing_op, current_balance
+
     # 1. Поиск и валидация активной смены
     if data.shift_id:
         stmt_shift = select(Shift).where(Shift.id == data.shift_id)

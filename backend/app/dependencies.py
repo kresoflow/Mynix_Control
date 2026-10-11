@@ -135,6 +135,8 @@ async def get_tenant_session(
         except Exception:
             await session.rollback()
             raise
+        finally:
+            await session.execute(text("SET search_path TO public"))
 
 TenantSession = Annotated[AsyncSession, Depends(get_tenant_session)]
 """Type alias for injecting a tenant-scoped async DB session."""

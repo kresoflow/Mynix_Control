@@ -222,7 +222,7 @@ class UserCreate(SQLModel):
     full_name: str
     password: str
     pin_code: Optional[str] = None
-    tenant_id: int
+    tenant_id: Optional[int] = None
     role_ids: List[int] = []
 
 class UserUpdate(SQLModel):
