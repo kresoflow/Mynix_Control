@@ -1,5 +1,5 @@
 // ==============================================================================
-// МОДУЛЬ: Склад / Аккордеон категории в приходной накладной
+// МОДУЛЬ: Склад / Заголовок категории и шапка таблицы в приходной накладной
 // ДОМЕН: lib/features/inventory/view/widgets/warehouse/dialogs/receive_document/category_mode/
 // ==============================================================================
 
@@ -10,10 +10,9 @@ import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/app_stock_category_accordion.dart';
-import 'receive_category_item_row.dart';
 import 'receive_category_sync_adapter.dart';
 
-/// Аккордеон папки категории склада с отображением товаров и инпутов прихода.
+/// Виртуализированный заголовок категории склада (0 мс время раскрытия).
 class ReceiveCategoryAccordion extends StatelessWidget {
   final String categoryName;
   final List<Ingredient> items;
@@ -54,7 +53,6 @@ class ReceiveCategoryAccordion extends StatelessWidget {
         categoryTotalSum += (qty * price);
       }
     }
-    final bool showRetailColumn = isRetail || items.any((i) => i.isRetail);
 
     final iconString = context.select<CategoryBloc, String?>((bloc) {
       final state = bloc.state;
@@ -99,26 +97,28 @@ class ReceiveCategoryAccordion extends StatelessWidget {
               ),
             )
           : null,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildCategoryTableHeader(context, isDark, showRetailColumn),
-          ...items.map(
-            (item) => ReceiveCategoryItemRow(
-              key: ValueKey(item.id),
-              item: item,
-              showRetailColumn: showRetailColumn,
-              currency: currency,
-              adapter: adapter,
-            ),
-          ),
-          const SizedBox(height: 6),
-        ],
-      ),
+      child: null, // [ОПТИМИЗАЦИЯ] child=null для виртуализации! Содержимое рендерится через единый ListView.builder
     );
   }
+}
 
-  Widget _buildCategoryTableHeader(BuildContext context, bool isDark, bool showRetail) {
+/// Шапка таблицы колонок внутри категории прихода
+class ReceiveCategoryTableHeader extends StatelessWidget {
+  final bool showRetail;
+  final String currency;
+
+  const ReceiveCategoryTableHeader({
+    super.key,
+    required this.showRetail,
+    required this.currency,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderSide = BorderSide(
+      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    );
     final style = TextStyle(
       fontSize: 11,
       fontWeight: FontWeight.w700,
@@ -127,7 +127,14 @@ class ReceiveCategoryAccordion extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: isDark ? AppColors.darkSurface : AppColors.lightBg,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightBg,
+        border: Border(
+          left: borderSide,
+          right: borderSide,
+          bottom: borderSide,
+        ),
+      ),
       child: Row(
         children: [
           Expanded(flex: 4, child: Text('Товар', style: style)),

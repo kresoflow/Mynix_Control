@@ -13,12 +13,13 @@ import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_input_decoration.dart';
 import 'receive_category_sync_adapter.dart';
 
-/// Строка номенклатурной позиции внутри аккордеона категории склада.
+/// Виртуализированная строка номенклатурной позиции внутри категории склада.
 class ReceiveCategoryItemRow extends StatefulWidget {
   final Ingredient item;
   final bool showRetailColumn;
   final String currency;
   final ReceiveCategorySyncAdapter adapter;
+  final bool isLast;
 
   const ReceiveCategoryItemRow({
     super.key,
@@ -26,6 +27,7 @@ class ReceiveCategoryItemRow extends StatefulWidget {
     required this.showRetailColumn,
     required this.currency,
     required this.adapter,
+    this.isLast = false,
   });
 
   @override
@@ -46,6 +48,18 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
     _qtyController = TextEditingController(text: q > 0 ? _formatNum(q) : '');
     _priceController = TextEditingController(text: p > 0 ? _formatNum(p) : '');
     _sellPriceController = TextEditingController(text: s > 0 ? _formatNum(s) : '');
+  }
+
+  @override
+  void didUpdateWidget(covariant ReceiveCategoryItemRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.id != widget.item.id) {
+      final a = widget.adapter;
+      final q = a.getQuantity(widget.item), p = a.getCostPrice(widget.item), s = a.getSellPrice(widget.item);
+      _qtyController.text = q > 0 ? _formatNum(q) : '';
+      _priceController.text = p > 0 ? _formatNum(p) : '';
+      _sellPriceController.text = s > 0 ? _formatNum(s) : '';
+    }
   }
 
   @override
@@ -92,17 +106,22 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
     final rowTotal = _currentQty * _currentPrice;
     final isDeficit = widget.item.isLowStock || widget.item.currentStock <= widget.item.minStockAlert;
     final hasReceipt = _currentQty > 0;
+    final borderSide = BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: Container(
+        margin: EdgeInsets.only(bottom: widget.isLast ? 10 : 0),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
           color: hasReceipt
               ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.08 : 0.04)
-              : (_isHovered ? (isDark ? AppColors.darkSurface : AppColors.lightSurface) : Colors.transparent),
-          border: Border(bottom: BorderSide(color: isDark ? AppColors.darkBorder.withValues(alpha: 0.5) : AppColors.lightBorder.withValues(alpha: 0.5))),
+              : (_isHovered
+                  ? (isDark ? AppColors.darkSurface : AppColors.lightSurface)
+                  : (isDark ? AppColors.darkCard : AppColors.lightCard)),
+          borderRadius: widget.isLast ? const BorderRadius.vertical(bottom: Radius.circular(10)) : BorderRadius.zero,
+          border: Border(left: borderSide, right: borderSide, bottom: borderSide),
         ),
         child: Row(
           children: [

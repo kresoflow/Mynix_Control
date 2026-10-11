@@ -1,5 +1,5 @@
 // ==============================================================================
-// МОДУЛЬ: Склад / Секция прихода товаров по категориям склада
+// МОДУЛЬ: Склад / Виртуализированная секция прихода товаров по категориям склада
 // ДОМЕН: lib/features/inventory/view/widgets/warehouse/dialogs/receive_document/category_mode/
 // ==============================================================================
 
@@ -8,10 +8,11 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'receive_category_accordion.dart';
+import 'receive_category_item_row.dart';
 import 'receive_category_sync_adapter.dart';
 import 'receive_category_toolbar.dart';
 
-/// Секция прихода номенклатуры в виде структурированного каталога категорий склада.
+/// Секция прихода номенклатуры с плоской виртуализацией (0 мс время раскрытия).
 class ReceiveCategorySection extends StatefulWidget {
   final List<Ingredient> availableIngredients;
   final bool isRetail;
@@ -127,6 +128,42 @@ class _ReceiveCategorySectionState extends State<ReceiveCategorySection> {
         return a.toLowerCase().compareTo(b.toLowerCase());
       });
 
+    // 4. Построение плоского виртуализированного списка (Flat List Virtualization)
+    final List<dynamic> flatList = [];
+    for (final catName in sortedCategories) {
+      final catItems = grouped[catName]!;
+      final isExpanded = _searchQuery.isNotEmpty
+          ? (_expansionMap[catName] ?? true)
+          : (_expansionMap[catName] ??
+              (_activeFilter != ReceiveCategoryFilter.all || _isAllExpanded));
+
+      // 4.1 Заголовок категории (аккордеон)
+      flatList.add({
+        'type': 'header',
+        'categoryName': catName,
+        'items': catItems,
+        'isExpanded': isExpanded,
+      });
+
+      // 4.2 Если раскрыто и есть позиции — добавляем шапку таблицы и виртуализированные строки
+      if (isExpanded && catItems.isNotEmpty) {
+        final bool showRetail = widget.isRetail || catItems.any((i) => i.isRetail);
+        flatList.add({
+          'type': 'table_header',
+          'showRetail': showRetail,
+        });
+
+        for (int i = 0; i < catItems.length; i++) {
+          flatList.add({
+            'type': 'item',
+            'item': catItems[i],
+            'showRetail': showRetail,
+            'isLast': i == catItems.length - 1,
+          });
+        }
+      }
+    }
+
     return Expanded(
       child: Column(
         children: [
@@ -142,35 +179,50 @@ class _ReceiveCategorySectionState extends State<ReceiveCategorySection> {
             onToggleExpandAll: () => _toggleExpandAll(sortedCategories),
           ),
 
-          // Список аккордеонов категорий
+          // Единый виртуализированный список (строит только видимые строки на экране)
           Expanded(
             child: sortedCategories.isEmpty
                 ? _buildEmptyState(isDark)
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    itemCount: sortedCategories.length,
+                    itemCount: flatList.length,
                     itemBuilder: (context, index) {
-                      final catName = sortedCategories[index];
-                      final catItems = grouped[catName]!;
-                      final isExpanded = _searchQuery.isNotEmpty
-                          ? (_expansionMap[catName] ?? true)
-                          : (_expansionMap[catName] ??
-                              (_activeFilter != ReceiveCategoryFilter.all || _isAllExpanded));
-
-                      return ReceiveCategoryAccordion(
-                        key: ValueKey(catName),
-                        categoryName: catName,
-                        items: catItems,
-                        isRetail: widget.isRetail,
-                        currency: widget.currency,
-                        isExpanded: isExpanded,
-                        onExpansionChanged: (expanded) {
-                          setState(() {
-                            _expansionMap[catName] = expanded;
-                          });
-                        },
-                        adapter: widget.adapter,
-                      );
+                      final entry = flatList[index];
+                      if (entry['type'] == 'header') {
+                        final catName = entry['categoryName'] as String;
+                        final isExpanded = entry['isExpanded'] as bool;
+                        return ReceiveCategoryAccordion(
+                          key: ValueKey('header-$catName'),
+                          categoryName: catName,
+                          items: entry['items'] as List<Ingredient>,
+                          isRetail: widget.isRetail,
+                          currency: widget.currency,
+                          isExpanded: isExpanded,
+                          onExpansionChanged: (expanded) {
+                            setState(() {
+                              _expansionMap[catName] = expanded;
+                            });
+                          },
+                          adapter: widget.adapter,
+                        );
+                      } else if (entry['type'] == 'table_header') {
+                        return ReceiveCategoryTableHeader(
+                          showRetail: entry['showRetail'] as bool,
+                          currency: widget.currency,
+                        );
+                      } else {
+                        final item = entry['item'] as Ingredient;
+                        final showRetail = entry['showRetail'] as bool;
+                        final isLast = entry['isLast'] as bool;
+                        return ReceiveCategoryItemRow(
+                          key: ValueKey('item-${item.id}'),
+                          item: item,
+                          showRetailColumn: showRetail,
+                          currency: widget.currency,
+                          adapter: widget.adapter,
+                          isLast: isLast,
+                        );
+                      }
                     },
                   ),
           ),
