@@ -1,47 +1,20 @@
+// ==============================================================================
+// БЛОК: Технологические карты и рецептуры (RecipeBloc)
+// ДОМЕН: lib/features/inventory/bloc/recipe_bloc.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] Бесшовный Optimistic UI: операции изменения расхода, добавления
+// и удаления сырья применяются в памяти мгновенно (0 мс), не сбрасывая
+// дерево виджетов в RecipeLoading и сохраняя скролл и фокус пользователя.
+//
+// ==============================================================================
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'recipe_event.dart';
+import 'recipe_state.dart';
 
-abstract class RecipeState extends Equatable {
-  final Map<int, Map<String, dynamic>> recipesSummary;
-
-  const RecipeState({this.recipesSummary = const {}});
-
-  @override
-  List<Object?> get props => [recipesSummary];
-}
-
-class RecipeInitial extends RecipeState {
-  const RecipeInitial({super.recipesSummary});
-}
-
-class RecipeLoading extends RecipeState {
-  const RecipeLoading({super.recipesSummary});
-}
-
-class RecipeLoaded extends RecipeState {
-  final int? menuItemId;
-  final List<Map<String, dynamic>> recipes;
-
-  const RecipeLoaded({
-    this.menuItemId,
-    this.recipes = const [],
-    super.recipesSummary,
-  });
-
-  @override
-  List<Object?> get props => [menuItemId, recipes, recipesSummary];
-}
-
-class RecipeError extends RecipeState {
-  final String message;
-
-  const RecipeError({required this.message, super.recipesSummary});
-
-  @override
-  List<Object?> get props => [message, recipesSummary];
-}
+export 'recipe_state.dart';
 
 class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   final InventoryRepository repository;
@@ -56,6 +29,26 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   }
 
   bool _isLoadingSummary = false;
+
+  Map<int, Map<String, dynamic>> _recalculateSummary({
+    required Map<int, Map<String, dynamic>> currentSummary,
+    required int menuItemId,
+    required List<Map<String, dynamic>> recipes,
+  }) {
+    final updated = Map<int, Map<String, dynamic>>.from(currentSummary);
+    final double totalCost = recipes.fold(0.0, (sum, r) {
+      final q = (r['quantity_required'] as num?)?.toDouble() ?? 0.0;
+      final c = (r['cost_per_unit'] as num?)?.toDouble() ?? 0.0;
+      return sum + (q * c);
+    });
+    updated[menuItemId] = {
+      'menu_item_id': menuItemId,
+      'ingredients_count': recipes.length,
+      'total_cost': totalCost,
+      'has_recipe': recipes.isNotEmpty,
+    };
+    return updated;
+  }
 
   Future<void> _onLoadRecipesSummary(
     LoadRecipesSummary event,
@@ -86,8 +79,8 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
           ),
         );
       }
-    } catch (e) {
-      // Keep existing state on error
+    } catch (_) {
+      // Сохраняем текущее состояние при временной ошибке сводки
     } finally {
       _isLoadingSummary = false;
     }
@@ -100,21 +93,115 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     if (!event.forceRefresh && state is RecipeLoaded) {
       final loaded = state as RecipeLoaded;
       if (loaded.menuItemId == event.menuItemId) {
-        return; // Already loaded! Avoid redundant network trip
+        return;
       }
     }
-    emit(RecipeLoading(recipesSummary: state.recipesSummary));
+
+    // Показывать лоадер только при первом открытии блюда или смене позиции
+    final isSwitchingDish = state is! RecipeLoaded || (state as RecipeLoaded).menuItemId != event.menuItemId;
+    if (isSwitchingDish) {
+      emit(RecipeLoading(recipesSummary: state.recipesSummary));
+    }
+
     try {
       final data = await repository.getRecipe(event.menuItemId);
+      final updatedSummary = _recalculateSummary(
+        currentSummary: state.recipesSummary,
+        menuItemId: event.menuItemId,
+        recipes: data,
+      );
       emit(
         RecipeLoaded(
           menuItemId: event.menuItemId,
           recipes: data,
-          recipesSummary: state.recipesSummary,
+          recipesSummary: updatedSummary,
         ),
       );
     } catch (e) {
-      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
+      if (isSwitchingDish) {
+        emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
+      }
+    }
+  }
+
+  Future<void> _onUpdateQuantity(
+    UpdateIngredientQuantityInRecipe event,
+    Emitter<RecipeState> emit,
+  ) async {
+    final previousState = state;
+    if (state is RecipeLoaded && (state as RecipeLoaded).menuItemId == event.menuItemId) {
+      final current = state as RecipeLoaded;
+      final updatedRecipes = current.recipes.map((r) {
+        if (r['ingredient_id'] == event.ingredientId) {
+          return Map<String, dynamic>.from(r)..['quantity_required'] = event.quantity;
+        }
+        return Map<String, dynamic>.from(r);
+      }).toList();
+
+      final updatedSummary = _recalculateSummary(
+        currentSummary: current.recipesSummary,
+        menuItemId: event.menuItemId,
+        recipes: updatedRecipes,
+      );
+
+      // [ИНВАРИАНТ] Мгновенное обновление UI (0 мс задержки)
+      emit(
+        RecipeLoaded(
+          menuItemId: event.menuItemId,
+          recipes: updatedRecipes,
+          recipesSummary: updatedSummary,
+        ),
+      );
+    }
+
+    try {
+      await repository.addIngredientToRecipe(
+        event.menuItemId,
+        event.ingredientId,
+        event.quantity,
+      );
+    } catch (e) {
+      // Откат при сетевом сбое
+      emit(previousState);
+    }
+  }
+
+  Future<void> _onRemoveIngredient(
+    RemoveIngredientFromRecipe event,
+    Emitter<RecipeState> emit,
+  ) async {
+    final previousState = state;
+    if (state is RecipeLoaded && (state as RecipeLoaded).menuItemId == event.menuItemId) {
+      final current = state as RecipeLoaded;
+      final updatedRecipes = current.recipes
+          .where((r) => r['ingredient_id'] != event.ingredientId)
+          .map((r) => Map<String, dynamic>.from(r))
+          .toList();
+
+      final updatedSummary = _recalculateSummary(
+        currentSummary: current.recipesSummary,
+        menuItemId: event.menuItemId,
+        recipes: updatedRecipes,
+      );
+
+      // [ИНВАРИАНТ] Мгновенное удаление строки из UI (0 мс задержки)
+      emit(
+        RecipeLoaded(
+          menuItemId: event.menuItemId,
+          recipes: updatedRecipes,
+          recipesSummary: updatedSummary,
+        ),
+      );
+    }
+
+    try {
+      await repository.removeIngredientFromRecipe(
+        event.menuItemId,
+        event.ingredientId,
+      );
+    } catch (e) {
+      // Откат при сетевом сбое
+      emit(previousState);
     }
   }
 
@@ -128,43 +215,24 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         event.ingredientId,
         event.quantity,
       );
-      add(LoadRecipe(event.menuItemId, forceRefresh: true));
-      add(LoadRecipesSummary());
-    } catch (e) {
-      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
-    }
-  }
-
-  Future<void> _onRemoveIngredient(
-    RemoveIngredientFromRecipe event,
-    Emitter<RecipeState> emit,
-  ) async {
-    try {
-      await repository.removeIngredientFromRecipe(
-        event.menuItemId,
-        event.ingredientId,
+      // Бесшовная загрузка обновленной техкарты без RecipeLoading
+      final data = await repository.getRecipe(event.menuItemId);
+      final updatedSummary = _recalculateSummary(
+        currentSummary: state.recipesSummary,
+        menuItemId: event.menuItemId,
+        recipes: data,
       );
-      add(LoadRecipe(event.menuItemId, forceRefresh: true));
-      add(LoadRecipesSummary());
-    } catch (e) {
-      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
-    }
-  }
-
-  Future<void> _onUpdateQuantity(
-    UpdateIngredientQuantityInRecipe event,
-    Emitter<RecipeState> emit,
-  ) async {
-    try {
-      await repository.addIngredientToRecipe(
-        event.menuItemId,
-        event.ingredientId,
-        event.quantity,
+      emit(
+        RecipeLoaded(
+          menuItemId: event.menuItemId,
+          recipes: data,
+          recipesSummary: updatedSummary,
+        ),
       );
-      add(LoadRecipe(event.menuItemId, forceRefresh: true));
-      add(LoadRecipesSummary());
     } catch (e) {
-      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
+      if (state is! RecipeLoaded) {
+        emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
+      }
     }
   }
 
@@ -174,10 +242,23 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   ) async {
     try {
       await repository.bulkUpdateRecipe(event.menuItemId, event.recipes);
-      add(LoadRecipe(event.menuItemId, forceRefresh: true));
-      add(LoadRecipesSummary());
+      final data = await repository.getRecipe(event.menuItemId);
+      final updatedSummary = _recalculateSummary(
+        currentSummary: state.recipesSummary,
+        menuItemId: event.menuItemId,
+        recipes: data,
+      );
+      emit(
+        RecipeLoaded(
+          menuItemId: event.menuItemId,
+          recipes: data,
+          recipesSummary: updatedSummary,
+        ),
+      );
     } catch (e) {
-      emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
+      if (state is! RecipeLoaded) {
+        emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
+      }
     }
   }
 }
