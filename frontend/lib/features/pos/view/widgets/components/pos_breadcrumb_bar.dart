@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -36,6 +36,41 @@ class PosBreadcrumbBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
+
+    // ── Полноэкранный поиск для мобильных экранов (исключает оверфлоу) ────
+    if (isMobile && isSearchOpen) {
+      return Container(
+        height: 54,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: bg,
+          border: Border(bottom: BorderSide(color: border, width: 1)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: AppSearchField(
+                controller: searchController,
+                focusNode: searchFocusNode,
+                hintText: 'Поиск блюд...',
+                size: AppSearchFieldSize.md,
+                mode: AppSearchMode.standard,
+                autoFocus: true,
+                onChanged: onSearchChanged,
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(PhosphorIconsRegular.x, size: 20),
+              color: AppColors.darkSubtext,
+              onPressed: onCloseSearch,
+              tooltip: 'Закрыть поиск',
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       height: 54,
@@ -99,24 +134,26 @@ class PosBreadcrumbBar extends StatelessWidget {
             controller: searchController,
             focusNode: searchFocusNode,
             hintText: 'Поиск блюд...',
-            shortcutHint: 'Ctrl+F',
+            shortcutHint: isMobile ? null : 'Ctrl+F',
             size: AppSearchFieldSize.md,
             mode: AppSearchMode.collapsible,
             isInitiallyExpanded: isSearchOpen,
-            width: 280,
+            width: isMobile ? null : 280,
             onChanged: onSearchChanged,
             onExpandedChanged: (expanded) => expanded ? onOpenSearch() : onCloseSearch(),
             onCollapsed: onCloseSearch,
           ),
-          const SizedBox(width: 4),
 
-          // ── POS Settings Button ─────────────────────────────────────
-          IconButton(
-            icon: const Icon(PhosphorIconsRegular.slidersHorizontal),
-            color: AppColors.darkSubtext,
-            onPressed: () => PosSettingsModal.show(context),
-            tooltip: 'Настройки кассы',
-          ),
+          if (!isMobile) ...[
+            const SizedBox(width: 4),
+            // ── POS Settings Button (Desktop/Tablet only) ────────────────
+            IconButton(
+              icon: const Icon(PhosphorIconsRegular.slidersHorizontal),
+              color: AppColors.darkSubtext,
+              onPressed: () => PosSettingsModal.show(context),
+              tooltip: 'Настройки кассы',
+            ),
+          ],
         ],
       ),
     );

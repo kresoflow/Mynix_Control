@@ -165,12 +165,12 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   builder: (context, posState) {
                     return SettingsRow(
                       isDark: isDark,
-                      title: 'Кнопка «Гость» на кассе',
-                      subtitle: 'Прикрепление клиента и бонусной программы к чеку',
+                      title: 'Цветные категории',
+                      subtitle: 'Использовать цвета категорий из каталога для карточек меню',
                       trailing: Switch(
-                        value: posState.showGuestOption,
+                        value: posState.enableRainbowColors,
                         activeThumbColor: AppColors.brandPrimary,
-                        onChanged: (_) => context.read<PosSettingsCubit>().toggleShowGuestOption(),
+                        onChanged: (_) => context.read<PosSettingsCubit>().toggleRainbowColors(),
                       ),
                     );
                   },

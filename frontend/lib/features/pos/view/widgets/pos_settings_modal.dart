@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -135,65 +135,30 @@ class PosSettingsModal extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Цветные категории',
-                                  style: AppTextStyles.h3,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Использовать цвета категорий из каталога',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Цветные категории',
+                                    style: AppTextStyles.h3,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Использовать цвета категорий из каталога',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 12),
                             Switch(
                               value: state.enableRainbowColors,
                               activeThumbColor: AppColors.brandPrimary,
                               onChanged: (val) {
                                 context.read<PosSettingsCubit>().toggleRainbowColors();
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // ── Show Guest Option Switch ──
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Кнопка «Гость» на кассе',
-                                  style: AppTextStyles.h3,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Прикрепление клиента и бонусов к чеку',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Switch(
-                              value: state.showGuestOption,
-                              activeThumbColor: AppColors.brandPrimary,
-                              onChanged: (val) {
-                                context.read<PosSettingsCubit>().toggleShowGuestOption();
                               },
                             ),
                           ],

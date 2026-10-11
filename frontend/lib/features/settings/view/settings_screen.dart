@@ -9,7 +9,6 @@ import 'package:kreso_frontend/features/settings/view/tabs/personnel_settings_ta
 import 'package:kreso_frontend/features/settings/view/tabs/system_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/ui_kit_showcase_screen.dart';
 import 'package:kreso_frontend/features/settings/view/widgets/settings_category_tile.dart';
-import 'package:kreso_frontend/features/settings/view/widgets/mobile_settings_user_header.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -42,27 +41,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Container(
                   color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  child: Column(
-                    children: [
-                      MobileSettingsUserHeader(isDark: isDark),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: AppSegmentedControl<int>(
-                          selectedValue: _selectedIndex,
-                          size: AppSegmentedSize.sm,
-                          onValueChanged: (idx) => setState(() => _selectedIndex = idx),
-                          items: List.generate(_categories.length, (index) {
-                            final cat = _categories[index];
-                            return AppSegmentedItem<int>(
-                              value: index,
-                              label: cat.title,
-                              icon: cat.icon,
-                            );
-                          }),
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: AppSegmentedControl<int>(
+                      selectedValue: _selectedIndex,
+                      size: AppSegmentedSize.sm,
+                      onValueChanged: (idx) => setState(() => _selectedIndex = idx),
+                      items: List.generate(_categories.length, (index) {
+                        final cat = _categories[index];
+                        return AppSegmentedItem<int>(
+                          value: index,
+                          label: cat.title,
+                          icon: cat.icon,
+                        );
+                      }),
+                    ),
                   ),
                 ),
                 Expanded(

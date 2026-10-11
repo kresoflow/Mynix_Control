@@ -3,26 +3,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PosSettingsState {
   final bool enableRainbowColors;
-  final bool showGuestOption;
   final int cartWidthPercentage; // 20 to 50
   final double cardSize; // 150.0 to 300.0
 
   const PosSettingsState({
     required this.enableRainbowColors,
-    required this.showGuestOption,
     required this.cartWidthPercentage,
     required this.cardSize,
   });
 
   PosSettingsState copyWith({
     bool? enableRainbowColors,
-    bool? showGuestOption,
     int? cartWidthPercentage,
     double? cardSize,
   }) {
     return PosSettingsState(
       enableRainbowColors: enableRainbowColors ?? this.enableRainbowColors,
-      showGuestOption: showGuestOption ?? this.showGuestOption,
       cartWidthPercentage: cartWidthPercentage ?? this.cartWidthPercentage,
       cardSize: cardSize ?? this.cardSize,
     );
@@ -31,13 +27,11 @@ class PosSettingsState {
 
 class PosSettingsCubit extends Cubit<PosSettingsState> {
   static const _kRainbowColorsKey = 'pos_rainbow_colors';
-  static const _kShowGuestOptionKey = 'pos_show_guest_option';
   static const _kCartWidthKey = 'pos_cart_width';
   static const _kCardSizeKey = 'pos_card_size';
 
   PosSettingsCubit() : super(const PosSettingsState(
     enableRainbowColors: true,
-    showGuestOption: true,
     cartWidthPercentage: 30, // Default 30%
     cardSize: 220.0, // Default 220px
   )) {
@@ -48,13 +42,11 @@ class PosSettingsCubit extends Cubit<PosSettingsState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final enabled = prefs.getBool(_kRainbowColorsKey) ?? true;
-      final showGuest = prefs.getBool(_kShowGuestOptionKey) ?? true;
       final cartWidth = prefs.getInt(_kCartWidthKey) ?? 30;
       final cardSize = prefs.getDouble(_kCardSizeKey) ?? 220.0;
       
       emit(PosSettingsState(
         enableRainbowColors: enabled,
-        showGuestOption: showGuest,
         cartWidthPercentage: cartWidth,
         cardSize: cardSize,
       ));
@@ -67,15 +59,6 @@ class PosSettingsCubit extends Cubit<PosSettingsState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_kRainbowColorsKey, newState);
-    } catch (_) {}
-  }
-
-  Future<void> toggleShowGuestOption() async {
-    final newState = !state.showGuestOption;
-    emit(state.copyWith(showGuestOption: newState));
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_kShowGuestOptionKey, newState);
     } catch (_) {}
   }
 

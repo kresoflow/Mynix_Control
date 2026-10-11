@@ -9,6 +9,7 @@ import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/app_logo_base64.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/pos_operational_badges.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/sync_status_badge.dart';
+import 'app_bar_profile_menu.dart';
 
 // ── Мобильная шапка приложения ───────────────────────────────────────────────
 
@@ -55,9 +56,11 @@ class MobileAppBar extends StatelessWidget implements PreferredSizeWidget {
             const Spacer(),
             if (showOperationalBadges) ...[
               const PosOperationalBadges(size: 34),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
             ],
             const SyncStatusBadge(),
+            const SizedBox(width: 8),
+            const AppBarProfileMenu(),
           ],
         ),
       ),
