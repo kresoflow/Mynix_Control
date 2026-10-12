@@ -95,3 +95,56 @@ class BlindInventoryCategoryAccordion extends StatelessWidget {
     );
   }
 }
+
+// ==============================================================================
+// 3. ШАПКА ТАБЛИЦЫ ВНУТРИ КАТЕГОРИИ ИНВЕНТАРИЗАЦИИ
+// ==============================================================================
+/// [ИНВАРИАНТ] Шапка таблицы колонок внутри категории инвентаризации.
+class BlindInventoryCategoryTableHeader extends StatelessWidget {
+  const BlindInventoryCategoryTableHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderSide = BorderSide(
+      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    );
+    final style = TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightBg,
+        border: Border(
+          left: borderSide,
+          right: borderSide,
+          bottom: borderSide,
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 28,
+            child: Text('№', textAlign: TextAlign.center, style: style),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text('Номенклатура', style: style)),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 90,
+            child: Text('Статус', textAlign: TextAlign.center, style: style),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 85,
+            child: Text('Факт', textAlign: TextAlign.center, style: style),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -100,6 +100,12 @@ class BlindInventoryGroupedView extends StatelessWidget {
       });
 
       if (isExpanded) {
+        if (catItems.isNotEmpty) {
+          flatList.add({
+            'type': 'table_header',
+            'categoryName': cat,
+          });
+        }
         for (int i = 0; i < catItems.length; i++) {
           final it = catItems[i];
           if (!controllers.containsKey(it.id)) {
@@ -116,9 +122,7 @@ class BlindInventoryGroupedView extends StatelessWidget {
     }
 
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.44,
-      ),
+      constraints: const BoxConstraints(maxHeight: 340),
       child: ListView.builder(
         padding: EdgeInsets.zero,
         itemCount: flatList.length,
@@ -133,6 +137,11 @@ class BlindInventoryGroupedView extends StatelessWidget {
               controllers: controllers,
               isExpanded: entry['isExpanded'] as bool,
               onExpansionChanged: (exp) => onExpansionChanged(catName, exp),
+            );
+          } else if (entry['type'] == 'table_header') {
+            final catName = entry['categoryName'] as String;
+            return BlindInventoryCategoryTableHeader(
+              key: ValueKey('th-$catName'),
             );
           } else {
             final item = entry['item'] as Ingredient;

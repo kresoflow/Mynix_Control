@@ -37,7 +37,7 @@ class BlindInventoryToolbar extends StatelessWidget {
       children: [
         Expanded(
           child: AppSearchField(
-            size: AppSearchFieldSize.md,
+            size: AppSearchFieldSize.sm,
             hintText: 'Поиск номенклатуры для пересчета...',
             onChanged: onSearchChanged,
           ),
@@ -48,7 +48,7 @@ class BlindInventoryToolbar extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
-            height: 38,
+            height: 36,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
               color: onlyUnfilled
@@ -98,7 +98,7 @@ class BlindInventoryToolbar extends StatelessWidget {
           onTap: onToggleExpandAll,
           borderRadius: BorderRadius.circular(8),
           child: Container(
-            height: 38,
+            height: 36,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightBg,
