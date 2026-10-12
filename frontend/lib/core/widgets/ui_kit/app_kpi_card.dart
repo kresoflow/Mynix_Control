@@ -83,6 +83,9 @@ class _AppKpiCardState extends State<AppKpiCard> {
         child: AnimatedContainer(
           duration: AppMotion.fast,
           curve: AppMotion.standardCurve,
+          constraints: BoxConstraints(
+            minHeight: widget.compact ? 78 : 96,
+          ),
           padding: padding,
           decoration: BoxDecoration(
             color: _isHovered ? (isDark ? AppColors.darkCardHover : AppColors.lightBg) : bg,
