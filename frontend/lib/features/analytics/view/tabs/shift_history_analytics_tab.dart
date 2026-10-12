@@ -1,13 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
-import 'package:kreso_frontend/core/widgets/app_text_field.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
-import '../widgets/analytics_kpi_card.dart';
 import '../widgets/analytics_shift_row.dart';
 
 class ShiftHistoryAnalyticsTab extends StatefulWidget {
@@ -139,31 +137,34 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
           Row(
             children: [
               Expanded(
-                child: AnalyticsKpiCard(
+                child: AppKpiCard(
                   title: 'Всего смен в журнале',
                   value: '${_history.length}',
                   icon: PhosphorIconsRegular.clockCounterClockwise,
                   color: AppColors.brandPrimary,
+                  subtitle: 'Закрытые смены за период',
                 ),
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: AnalyticsKpiCard(
+                child: AppKpiCard(
                   title: 'Суммарная выручка',
                   value: totalRevenue.toCurrency(context),
                   icon: PhosphorIconsRegular.chartLineUp,
                   color: AppColors.success,
+                  subtitle: 'Выручка всех смен',
                 ),
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: AnalyticsKpiCard(
+                child: AppKpiCard(
                   title: 'Чистое расхождение кассы',
                   value: totalDiscrepancy == 0
                       ? '0 с (Точно)'
                       : (totalDiscrepancy < 0 ? totalDiscrepancy.toCurrency(context) : '+${totalDiscrepancy.toCurrency(context)}'),
                   icon: PhosphorIconsRegular.scales,
                   color: totalDiscrepancy == 0 ? AppColors.success : (totalDiscrepancy < 0 ? AppColors.danger : AppColors.warning),
+                  subtitle: totalDiscrepancy == 0 ? 'Без расхождений' : (totalDiscrepancy < 0 ? 'Недостача в кассе' : 'Излишек в кассе'),
                 ),
               ),
             ],

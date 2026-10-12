@@ -1,9 +1,16 @@
+// ==============================================================================
+// МОДУЛЬ: Склад / Сводка ключевых метрик остатков (KPI Header)
+// ДОМЕН: lib/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
-import 'package:kreso_frontend/features/analytics/view/widgets/dashboard_metric_card.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
+// ─── 1. Виджет полосы метрик остатков склада ─────────────────────────────────
+/// [UI-KIT] Полоса ключевых KPI показателей складского учета на базе AppKpiCard.
 class StockMetricsHeader extends StatelessWidget {
   final int totalCount;
   final int lowStockCount;
@@ -29,41 +36,49 @@ class StockMetricsHeader extends StatelessWidget {
           final isWide = constraints.maxWidth >= 1150;
           final isMedium = constraints.maxWidth >= 700;
 
-          final card1 = DashboardMetricCard(
+          final card1 = AppKpiCard(
             title: 'Всего позиций',
             value: '$totalCount шт.',
             icon: PhosphorIconsRegular.package,
-            gradientColors: [AppColors.brandTertiary, AppColors.chartPalette[6]],
+            color: AppColors.brandPrimary,
+            compact: true,
+            subtitle: 'Активная номенклатура',
           );
 
-          final card2 = DashboardMetricCard(
+          final card2 = AppKpiCard(
             title: 'Вложено (Опт)',
             value: totalCapital.toCurrency(context),
             icon: PhosphorIconsRegular.wallet,
-            gradientColors: [AppColors.brandPrimary, AppColors.brandSecondary],
+            color: AppColors.brandSecondary,
+            compact: true,
+            subtitle: 'Себестоимость склада',
           );
 
-          final card3 = DashboardMetricCard(
+          final card3 = AppKpiCard(
             title: 'В рознице',
             value: potentialRevenue.toCurrency(context),
             icon: PhosphorIconsRegular.trendUp,
-            gradientColors: [AppColors.chartPalette[3], AppColors.categoryRainbowPalette[3]],
+            color: AppColors.info,
+            compact: true,
+            subtitle: 'Оценка по прайс-листу',
           );
 
-          final card4 = DashboardMetricCard(
-            title: 'Ожид. Прибыль',
+          final card4 = AppKpiCard(
+            title: 'Ожид. прибыль',
             value: expectedProfit.toCurrency(context),
             icon: PhosphorIconsRegular.money,
-            gradientColors: [AppColors.chartPalette[1], AppColors.success],
+            color: AppColors.success,
+            compact: true,
+            subtitle: 'Маржинальный доход',
           );
 
-          final card5 = DashboardMetricCard(
+          final card5 = AppKpiCard(
             title: 'На исходе',
             value: '$lowStockCount поз.',
             icon: PhosphorIconsRegular.warningCircle,
-            gradientColors: lowStockCount > 0
-                ? [AppColors.danger, AppColors.categoryRainbowPalette[4]]
-                : [AppColors.darkBorder, AppColors.darkSurface],
+            color: lowStockCount > 0 ? AppColors.danger : AppColors.success,
+            compact: true,
+            subtitle: lowStockCount > 0 ? 'Ниже минимума' : 'В норме',
           );
 
           if (isWide) {
