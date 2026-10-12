@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/features/analytics/view/widgets/dashboard_metric_card.dart';
@@ -33,7 +33,7 @@ class StockMetricsHeader extends StatelessWidget {
             title: 'Всего позиций',
             value: '$totalCount шт.',
             icon: PhosphorIconsRegular.package,
-            gradientColors: [AppColors.brandTertiary, const Color(0xFF00B4D8)],
+            gradientColors: [AppColors.brandTertiary, AppColors.chartPalette[6]],
           );
 
           final card2 = DashboardMetricCard(
@@ -47,14 +47,14 @@ class StockMetricsHeader extends StatelessWidget {
             title: 'В рознице',
             value: potentialRevenue.toCurrency(context),
             icon: PhosphorIconsRegular.trendUp,
-            gradientColors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            gradientColors: [AppColors.chartPalette[3], AppColors.categoryRainbowPalette[3]],
           );
 
           final card4 = DashboardMetricCard(
             title: 'Ожид. Прибыль',
             value: expectedProfit.toCurrency(context),
             icon: PhosphorIconsRegular.money,
-            gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
+            gradientColors: [AppColors.chartPalette[1], AppColors.success],
           );
 
           final card5 = DashboardMetricCard(
@@ -62,8 +62,8 @@ class StockMetricsHeader extends StatelessWidget {
             value: '$lowStockCount поз.',
             icon: PhosphorIconsRegular.warningCircle,
             gradientColors: lowStockCount > 0
-                ? const [Color(0xFFEF4444), Color(0xFFDC2626)]
-                : const [Color(0xFF64748B), Color(0xFF475569)],
+                ? [AppColors.danger, AppColors.categoryRainbowPalette[4]]
+                : [AppColors.darkBorder, AppColors.darkSurface],
           );
 
           if (isWide) {

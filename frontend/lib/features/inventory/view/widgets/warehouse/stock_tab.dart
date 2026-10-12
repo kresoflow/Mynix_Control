@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_capital_chart_card.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_empty_state.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_hierarchy_builder.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_low_inventory_widget.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart';
@@ -102,41 +104,12 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
     );
   }
 
-  // ─── 3. Иерархическая группировка категорий ────────────────────────────────
-
-  /// Определяет путь категории (Корневая папка и Подпапка) для позиции склада.
-  (String rootName, String subName) _getCategoryHierarchy(
-    Ingredient item,
-    List<MenuCategory> allCategories,
-  ) {
-    if (item.categoryId == null) {
-      return (item.categoryName ?? 'Без категории', '');
-    }
-
-    final currentCat = allCategories.where((c) => c.id == item.categoryId).firstOrNull;
-    if (currentCat == null) {
-      return (item.categoryName ?? 'Без категории', '');
-    }
-
-    if (currentCat.parentId == null) {
-      return (currentCat.name, '');
-    }
-
-    var root = allCategories.where((c) => c.id == currentCat.parentId).firstOrNull;
-    while (root?.parentId != null) {
-      final parent = allCategories.where((c) => c.id == root!.parentId).firstOrNull;
-      if (parent == null) break;
-      root = parent;
-    }
-
-    return (root?.name ?? currentCat.name, currentCat.name);
-  }
-
-  // ─── 4. Построение интерфейса ──────────────────────────────────────────────
+  // ─── 3. Построение интерфейса ──────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocBuilder<IngredientBloc, IngredientState>(
       builder: (context, state) {
@@ -151,12 +124,18 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                 const SizedBox(height: 12),
                 Text('Не удалось загрузить остатки склада', style: AppTextStyles.h3),
                 const SizedBox(height: 6),
-                Text(state.message.replaceAll('Exception: ', ''), style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                Text(
+                  state.message.replaceAll('Exception: ', ''),
+                  style: AppTextStyles.caption.copyWith(
+                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 16),
-                ElevatedButton.icon(
+                AppSecondaryButton(
                   onPressed: () => context.read<IngredientBloc>().add(const LoadIngredients()),
-                  icon: const Icon(PhosphorIconsRegular.arrowsClockwise, size: 16),
-                  label: const Text('Повторить попытку'),
+                  icon: PhosphorIconsRegular.arrowsClockwise,
+                  label: 'Повторить попытку',
                 ),
               ],
             ),
@@ -186,125 +165,23 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
           return true;
         }).toList();
 
+        // [ИНВАРИАНТ] Доменная группировка категорий и расчет финансовых метрик
+        final result = StockHierarchyBuilder.build(
+          items: filtered,
+          allCategories: allCategories,
+          searchQuery: _searchQuery,
+          expandedCategories: _expandedCategories,
+          expandedSubcategories: _expandedSubcategories,
+          isExpandedAll: _isExpandedAll,
+        );
 
-        double totalCapital = 0;
-        double potentialRevenue = 0;
-        int lowStockCount = 0;
-        final List<Ingredient> lowStockItems = [];
-
-        for (var item in filtered) {
-          if (item.currentStock > 0) {
-            totalCapital += item.currentStock * item.costPerUnit;
-            potentialRevenue += item.currentStock * (item.price ?? item.costPerUnit);
-          }
-          if (item.isLowStock || item.currentStock <= 0) {
-            lowStockCount++;
-            lowStockItems.add(item);
-          }
-        }
-        final double expectedProfit = potentialRevenue - totalCapital;
-
-        // Группировка 2 уровней: Корневая папка -> Подпапки -> Позиции
-        final Map<String, Map<String, List<Ingredient>>> hierarchy = {};
-        final Map<String, List<Ingredient>> allRootItems = {};
-        final Map<String, double> categoryCapitals = {};
-
-        for (var item in filtered) {
-          final (rootName, subName) = _getCategoryHierarchy(item, allCategories);
-
-          hierarchy.putIfAbsent(rootName, () => {});
-          hierarchy[rootName]!.putIfAbsent(subName, () => []).add(item);
-
-          allRootItems.putIfAbsent(rootName, () => []).add(item);
-
-          if (!_expandedCategories.containsKey(rootName)) {
-            _expandedCategories[rootName] = _isExpandedAll;
-          }
-
-          final subKey = '$rootName::$subName';
-          if (!_expandedSubcategories.containsKey(subKey)) {
-            _expandedSubcategories[subKey] = _isExpandedAll;
-          }
-
-          if (item.currentStock > 0) {
-            categoryCapitals[rootName] = (categoryCapitals[rootName] ?? 0) + (item.currentStock * item.costPerUnit);
-          }
-        }
-
-        final sortedRootCategories = hierarchy.keys.toList()..sort((a, b) {
-          if (a == 'Без категории') return 1;
-          if (b == 'Без категории') return -1;
-          return a.compareTo(b);
-        });
-
-        // Построение плоского списка элементов с иерархией для виртуализации
-        final List<dynamic> flatList = [];
-        for (final rootCategory in sortedRootCategories) {
-          final items = allRootItems[rootCategory]!;
-          final subMap = hierarchy[rootCategory]!;
-          final isRootExpanded = _searchQuery.isNotEmpty || (_expandedCategories[rootCategory] ?? false);
-
-          flatList.add({
-            'type': 'header',
-            'categoryName': rootCategory,
-            'items': items,
-            'isExpanded': isRootExpanded,
-          });
-
-          if (isRootExpanded) {
-            final hasRealSubcategories = subMap.keys.any((k) => k.isNotEmpty);
-
-            if (hasRealSubcategories) {
-              final sortedSubcategories = subMap.keys.toList()..sort((a, b) {
-                if (a.isEmpty) return -1;
-                if (b.isEmpty) return 1;
-                return a.compareTo(b);
-              });
-
-              for (final subName in sortedSubcategories) {
-                final subItems = subMap[subName]!;
-                final subKey = '$rootCategory::$subName';
-                final isSubExpanded = _searchQuery.isNotEmpty || (_expandedSubcategories[subKey] ?? false);
-
-                if (subName.isNotEmpty) {
-                  flatList.add({
-                    'type': 'subcategory_header',
-                    'subcategoryName': subName,
-                    'subKey': subKey,
-                    'items': subItems,
-                    'isExpanded': isSubExpanded,
-                  });
-
-                  if (isSubExpanded) {
-                    for (int i = 0; i < subItems.length; i++) {
-                      flatList.add({
-                        'type': 'item',
-                        'item': subItems[i],
-                        'isLast': i == subItems.length - 1,
-                      });
-                    }
-                  }
-                } else {
-                  for (int i = 0; i < subItems.length; i++) {
-                    flatList.add({
-                      'type': 'item',
-                      'item': subItems[i],
-                      'isLast': i == subItems.length - 1,
-                    });
-                  }
-                }
-              }
-            } else {
-              for (int i = 0; i < items.length; i++) {
-                flatList.add({
-                  'type': 'item',
-                  'item': items[i],
-                  'isLast': i == items.length - 1,
-                });
-              }
-            }
-          }
-        }
+        final totalCapital = result.totalCapital;
+        final potentialRevenue = result.potentialRevenue;
+        final expectedProfit = potentialRevenue - totalCapital;
+        final lowStockCount = result.lowStockCount;
+        final lowStockItems = result.lowStockItems;
+        final categoryCapitals = result.categoryCapitals;
+        final flatList = result.flatList;
 
         final itemsList = ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -348,6 +225,21 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
               )
             : itemsList;
 
+        final mainStockColumn = Column(
+          children: [
+            StockPillFilters(
+              currentFilter: _filter,
+              onFilterChanged: (val) => setState(() => _filter = val),
+              isExpandedAll: _isExpandedAll,
+              onToggleExpandAll: _toggleExpandAll,
+              searchController: _searchController,
+              onSearchChanged: (val) =>
+                  setState(() => _searchQuery = val.trim().toLowerCase()),
+            ),
+            Expanded(child: contentWidget),
+          ],
+        );
+
         return Column(
           children: [
             StockMetricsHeader(
@@ -360,46 +252,21 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final isDesktop = constraints.maxWidth >= 1050;
-
-                  if (!isDesktop) {
-                    return Column(
-                      children: [
-                        StockPillFilters(
-                          currentFilter: _filter,
-                          onFilterChanged: (val) => setState(() => _filter = val),
-                          isExpandedAll: _isExpandedAll,
-                          onToggleExpandAll: _toggleExpandAll,
-                          searchController: _searchController,
-                          onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                        ),
-                        Expanded(child: contentWidget),
-                      ],
-                    );
+                  if (constraints.maxWidth < 1050) {
+                    return mainStockColumn;
                   }
 
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        flex: 65,
-                        child: Column(
-                          children: [
-                            StockPillFilters(
-                              currentFilter: _filter,
-                              onFilterChanged: (val) => setState(() => _filter = val),
-                              isExpandedAll: _isExpandedAll,
-                              onToggleExpandAll: _toggleExpandAll,
-                              searchController: _searchController,
-                              onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                            ),
-                            Expanded(child: contentWidget),
-                          ],
-                        ),
-                      ),
+                      Expanded(flex: 65, child: mainStockColumn),
                       Container(
                         width: 350,
-                        padding: const EdgeInsets.only(right: 24, top: 8, bottom: 16),
+                        padding: const EdgeInsets.only(
+                          right: 24,
+                          top: 8,
+                          bottom: 16,
+                        ),
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
@@ -411,7 +278,8 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                               const SizedBox(height: 14),
                               StockLowInventoryWidget(
                                 lowStockItems: lowStockItems,
-                                onReceiveTap: () => _openReceiveDialog(context),
+                                onReceiveTap: () =>
+                                    _openReceiveDialog(context),
                               ),
                             ],
                           ),

@@ -1,8 +1,17 @@
-﻿import 'package:flutter/material.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/features/inventory/models/supplier.dart';
+// ==============================================================================
+// 1. ИМПОРТЫ
+// ==============================================================================
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/main_layout/icon_btn.dart';
+import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 
+// ==============================================================================
+// 2. СТРОКА ТАБЛИЦЫ ПОСТАВЩИКОВ
+// ==============================================================================
+/// [ИНВАРИАНТ] Строка отображения данных контрагента с балансом взаиморасчетов.
 class SupplierRow extends StatefulWidget {
   final Supplier supplier;
   final String currency;
@@ -65,7 +74,7 @@ class _SupplierRowState extends State<SupplierRow> {
                 width: 44,
                 child: Text(
                   '#${s.id}',
-                  style: TextStyle(
+                  style: AppTextStyles.caption.copyWith(
                     fontSize: 12,
                     color: widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                   ),
@@ -85,7 +94,7 @@ class _SupplierRowState extends State<SupplierRow> {
                       child: Center(
                         child: Text(
                           s.name.isNotEmpty ? s.name[0].toUpperCase() : '?',
-                          style: TextStyle(
+                          style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.brandPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -97,7 +106,7 @@ class _SupplierRowState extends State<SupplierRow> {
                     Expanded(
                       child: Text(
                         s.name,
-                        style: TextStyle(
+                        style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                           color: s.isActive
@@ -115,7 +124,7 @@ class _SupplierRowState extends State<SupplierRow> {
                 flex: 2,
                 child: Text(
                   (s.contactInfo ?? '').isNotEmpty ? s.contactInfo! : '—',
-                  style: TextStyle(
+                  style: AppTextStyles.body.copyWith(
                     fontSize: 13,
                     color: (s.contactInfo ?? '').isNotEmpty
                         ? (widget.isDark ? AppColors.darkText : AppColors.lightText)
@@ -166,7 +175,7 @@ class _SupplierRowState extends State<SupplierRow> {
                         const SizedBox(width: 5),
                         Text(
                           s.isActive ? 'Активен' : 'Неактивен',
-                          style: TextStyle(
+                          style: AppTextStyles.caption.copyWith(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: s.isActive ? AppColors.success : AppColors.darkSubtext,
@@ -184,19 +193,24 @@ class _SupplierRowState extends State<SupplierRow> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    IconButton(
-                      icon: Icon(PhosphorIconsRegular.wallet, size: 18, color: AppColors.brandPrimary),
+                    IconBtn(
+                      icon: PhosphorIconsRegular.wallet,
                       tooltip: 'Взаиморасчёты и долги',
+                      color: AppColors.brandPrimary,
                       onPressed: widget.onOpenSettlement,
                     ),
-                    IconButton(
-                      icon: Icon(PhosphorIconsRegular.pencilSimple, size: 16, color: AppColors.darkSubtext),
+                    const SizedBox(width: 2),
+                    IconBtn(
+                      icon: PhosphorIconsRegular.pencilSimple,
                       tooltip: 'Редактировать',
+                      color: AppColors.darkSubtext,
                       onPressed: widget.onEdit,
                     ),
-                    IconButton(
-                      icon: Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
+                    const SizedBox(width: 2),
+                    IconBtn(
+                      icon: PhosphorIconsRegular.trash,
                       tooltip: 'Удалить',
+                      color: AppColors.danger,
                       onPressed: widget.onDelete,
                     ),
                   ],
@@ -220,11 +234,11 @@ class _SupplierRowState extends State<SupplierRow> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(PhosphorIconsRegular.warningCircle, size: 13, color: AppColors.danger),
+            const Icon(PhosphorIconsRegular.warningCircle, size: 13, color: AppColors.danger),
             const SizedBox(width: 4),
             Text(
               'Долг: ${balance.abs().toStringAsFixed(2)} $currency',
-              style: const TextStyle(
+              style: AppTextStyles.caption.copyWith(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: AppColors.danger,
@@ -242,7 +256,7 @@ class _SupplierRowState extends State<SupplierRow> {
         ),
         child: Text(
           '+${balance.toStringAsFixed(2)} $currency (Аванс)',
-          style: const TextStyle(
+          style: AppTextStyles.caption.copyWith(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             color: AppColors.success,
@@ -252,7 +266,7 @@ class _SupplierRowState extends State<SupplierRow> {
     }
     return Text(
       '0.00 $currency',
-      style: TextStyle(
+      style: AppTextStyles.caption.copyWith(
         fontSize: 12,
         fontWeight: FontWeight.w500,
         color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
