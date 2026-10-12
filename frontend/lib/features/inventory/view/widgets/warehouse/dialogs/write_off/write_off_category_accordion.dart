@@ -105,3 +105,71 @@ class WriteOffCategoryAccordion extends StatelessWidget {
     );
   }
 }
+
+// ==============================================================================
+// 3. ШАПКА ТАБЛИЦЫ ВНУТРИ КАТЕГОРИИ СПИСАНИЯ
+// ==============================================================================
+/// [ИНВАРИАНТ] Шапка колонок таблицы позиций внутри категории списания.
+class WriteOffCategoryTableHeader extends StatelessWidget {
+  final String currency;
+
+  const WriteOffCategoryTableHeader({
+    super.key,
+    required this.currency,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderSide = BorderSide(
+      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    );
+    final style = TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightBg,
+        border: Border(
+          left: borderSide,
+          right: borderSide,
+          bottom: borderSide,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text('Товар', style: style)),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 85,
+            child: Text('Остаток', textAlign: TextAlign.right, style: style),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 85,
+            child:
+                Text('К списанию', textAlign: TextAlign.center, style: style),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 95,
+            child: Text(
+              'Себестоимость',
+              textAlign: TextAlign.right,
+              style: style,
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 85,
+            child: Text('Сумма', textAlign: TextAlign.right, style: style),
+          ),
+        ],
+      ),
+    );
+  }
+}

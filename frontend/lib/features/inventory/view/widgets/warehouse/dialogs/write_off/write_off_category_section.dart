@@ -98,6 +98,12 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
       });
 
       if (isExpanded) {
+        if (items.isNotEmpty) {
+          flatList.add({
+            'type': 'table_header',
+            'categoryName': cat,
+          });
+        }
         for (int i = 0; i < items.length; i++) {
           flatList.add({
             'type': 'item',
@@ -215,6 +221,12 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
                     onExpansionChanged: (exp) {
                       setState(() => _expansionMap[catName] = exp);
                     },
+                  );
+                } else if (entry['type'] == 'table_header') {
+                  final catName = entry['categoryName'] as String;
+                  return WriteOffCategoryTableHeader(
+                    key: ValueKey('th-$catName'),
+                    currency: widget.currency,
                   );
                 } else {
                   final item = entry['item'] as Ingredient;

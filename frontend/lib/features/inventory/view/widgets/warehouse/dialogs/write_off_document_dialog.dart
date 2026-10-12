@@ -228,12 +228,12 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
           ],
         ),
         actions: [
-          AppButton.secondary(
+          AppGhostButton(
             label: 'Отмена',
             height: 38,
             onPressed: _isLoading ? null : () => Navigator.maybePop(context),
           ),
-          AppButton.primary(
+          AppPrimaryButton(
             label: 'Провести списание',
             icon: PhosphorIconsRegular.checkCircle,
             height: 38,

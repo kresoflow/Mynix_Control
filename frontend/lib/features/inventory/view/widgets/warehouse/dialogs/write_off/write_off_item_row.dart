@@ -6,6 +6,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_input_decoration.dart';
 import 'write_off_items_table.dart';
 
 // ==============================================================================
@@ -54,6 +55,7 @@ class WriteOffItemRow extends StatelessWidget {
               style: const TextStyle(fontSize: 11, color: Colors.grey),
             ),
           ),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,6 +87,7 @@ class WriteOffItemRow extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 8),
           SizedBox(
             width: WriteOffItemsTable.colStockWidth,
             child: Text(
@@ -99,32 +102,29 @@ class WriteOffItemRow extends StatelessWidget {
           const SizedBox(width: 8),
           SizedBox(
             width: WriteOffItemsTable.colQtyWidth,
-            height: 32,
+            height: 34,
             child: TextField(
               controller: entry.controller,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: '0',
-                suffixText: unit,
-                suffixStyle: const TextStyle(fontSize: 11, color: Colors.grey),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+              ),
+              decoration: buildBulkInputDecoration(
+                context,
+                '0',
+                isHintOnly: true,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 7,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color:
-                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
+                  horizontal: 6,
+                  vertical: 8,
                 ),
               ),
               onChanged: (val) {
-                entry.quantity = double.tryParse(val.replaceAll(',', '.')) ?? 0.0;
+                entry.quantity =
+                    double.tryParse(val.replaceAll(',', '.')) ?? 0.0;
                 onChanged();
               },
             ),
@@ -156,6 +156,7 @@ class WriteOffItemRow extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 8),
           SizedBox(
             width: WriteOffItemsTable.colActionWidth,
             child: Center(

@@ -50,10 +50,10 @@ class WriteOffItemsTable extends StatelessWidget {
   });
 
   static const double colNumWidth = 32.0;
-  static const double colStockWidth = 78.0;
-  static const double colQtyWidth = 96.0;
-  static const double colCostWidth = 84.0;
-  static const double colTotalWidth = 88.0;
+  static const double colStockWidth = 85.0;
+  static const double colQtyWidth = 85.0;
+  static const double colCostWidth = 105.0;
+  static const double colTotalWidth = 100.0;
   static const double colActionWidth = 36.0;
 
   @override
@@ -129,7 +129,9 @@ class WriteOffItemsTable extends StatelessWidget {
               style: hStyle,
             ),
           ),
+          const SizedBox(width: 8),
           Expanded(child: Text('Наименование', style: hStyle)),
+          const SizedBox(width: 8),
           SizedBox(
             width: colStockWidth,
             child: Text('Остаток', textAlign: TextAlign.right, style: hStyle),
@@ -138,19 +140,23 @@ class WriteOffItemsTable extends StatelessWidget {
           SizedBox(
             width: colQtyWidth,
             child:
-                Text('К списанию', textAlign: TextAlign.right, style: hStyle),
+                Text('К списанию', textAlign: TextAlign.center, style: hStyle),
           ),
           const SizedBox(width: 8),
           SizedBox(
             width: colCostWidth,
-            child: Text('Себестоимость',
-                textAlign: TextAlign.right, style: hStyle,),
+            child: Text(
+              'Себестоимость',
+              textAlign: TextAlign.right,
+              style: hStyle,
+            ),
           ),
           const SizedBox(width: 8),
           SizedBox(
             width: colTotalWidth,
             child: Text('Сумма', textAlign: TextAlign.right, style: hStyle),
           ),
+          const SizedBox(width: 8),
           const SizedBox(width: colActionWidth),
         ],
       ),
