@@ -16,6 +16,7 @@ class AppTextField extends StatelessWidget {
   final bool obscureText;
   final TextInputType keyboardType;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
   final VoidCallback? onTap;
   final FocusNode? focusNode;
   final String? errorText;
@@ -34,6 +35,7 @@ class AppTextField extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.onChanged,
+    this.onSubmitted,
     this.onTap,
     this.focusNode,
     this.errorText,
@@ -69,6 +71,7 @@ class AppTextField extends StatelessWidget {
             obscureText: obscureText,
             keyboardType: keyboardType,
             onChanged: onChanged,
+            onSubmitted: onSubmitted,
             onTap: onTap,
             style: AppTextStyles.bodyMedium.copyWith(
               color: isDark ? AppColors.darkText : AppColors.lightText,

@@ -1,8 +1,18 @@
+// ==============================================================================
+// МОДУЛЬ: Ядро / Форматирование ролей и бейджей сотрудников
+// ДОМЕН: lib/core/utils/role_formatter.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
+// ─── 1. Форматтер и фабрика бейджей ролей ────────────────────────────────────
+/// Вспомогательный класс для отображения человекопонятных названий,
+/// семантических иконок, цветов и бейджей ролей персонала в Kreso Flow.
 class RoleFormatter {
+  /// Возвращает локализованное название роли.
   static String formatName(String role) {
     final r = role.toLowerCase().trim();
     if (r == 'superadmin' || r == 'platform_owner') return 'Владелец платформы';
@@ -12,6 +22,7 @@ class RoleFormatter {
     return role.isNotEmpty ? '${role[0].toUpperCase()}${role.substring(1)}' : 'Сотрудник';
   }
 
+  /// Возвращает Phosphor-иконку для роли.
   static IconData getRoleIcon(String role) {
     final r = role.toLowerCase().trim();
     if (r == 'superadmin' || r == 'platform_owner') return PhosphorIconsRegular.lightning;
@@ -21,42 +32,36 @@ class RoleFormatter {
     return PhosphorIconsRegular.user;
   }
 
+  /// Возвращает семантический цвет дизайн-системы для роли.
   static Color getRoleColor(String role) {
     final r = role.toLowerCase().trim();
-    if (r == 'superadmin' || r == 'platform_owner') return const Color(0xFFEC4899); // Rose
-    if (r == 'owner') return AppColors.brandPrimary; // Golden Orange
-    if (r == 'manager') return const Color(0xFF818CF8); // Indigo
-    if (r == 'cashier') return const Color(0xFF10B981); // Emerald
-    return AppColors.brandPrimary;
+    if (r == 'superadmin' || r == 'platform_owner') return AppColors.danger;
+    if (r == 'owner') return AppColors.brandPrimary;
+    if (r == 'manager') return AppColors.info;
+    if (r == 'cashier') return AppColors.success;
+    return AppColors.brandSecondary;
   }
 
-  static Widget buildBadge(String role, {double fontSize = 11}) {
-    final color = getRoleColor(role);
+  /// Возвращает вариант бейджа AppStatusBadge для роли.
+  static AppBadgeVariant getRoleVariant(String role) {
+    final r = role.toLowerCase().trim();
+    if (r == 'superadmin' || r == 'platform_owner') return AppBadgeVariant.danger;
+    if (r == 'owner') return AppBadgeVariant.brand;
+    if (r == 'manager') return AppBadgeVariant.info;
+    if (r == 'cashier') return AppBadgeVariant.success;
+    return AppBadgeVariant.neutral;
+  }
+
+  /// Создает стандартизированный бейдж роли на базе UI Kit компонента AppStatusBadge.
+  static Widget buildBadge(String role) {
     final label = formatName(role);
     final icon = getRoleIcon(role);
+    final variant = getRoleVariant(role);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: fontSize + 2, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
-          ),
-        ],
-      ),
+    return AppStatusBadge(
+      label: label,
+      icon: icon,
+      variant: variant,
     );
   }
 }

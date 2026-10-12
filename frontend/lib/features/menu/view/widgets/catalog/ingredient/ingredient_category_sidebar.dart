@@ -1,3 +1,8 @@
+// ==============================================================================
+// МОДУЛЬ: Меню и Склад / Боковая панель категорий ингредиентов
+// ДОМЕН: lib/features/menu/view/widgets/catalog/ingredient/ingredient_category_sidebar.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -30,47 +35,37 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
   bool? _forceExpanded;
   String _searchQuery = '';
 
-  void _confirmDeleteCategory(BuildContext context, MenuCategory category) {
-    showDialog(
+  Future<void> _confirmDeleteCategory(BuildContext context, MenuCategory category) async {
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Удаление категории'),
-        content: Text('Удалить полку «${category.name}»? Привязанное сырьё станет «Без категории».'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
-            onPressed: () {
-              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'auto'));
-              Navigator.pop(ctx);
-            },
-            child: const Text('Удалить'),
-          ),
-        ],
-      ),
+      title: 'Удаление категории',
+      message: 'Удалить полку «${category.name}»?\nПривязанное сырьё станет «Без категории».',
+      confirmLabel: 'Удалить',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'auto'));
+    }
   }
 
-  void _confirmDeleteAllCategories(BuildContext context, List<MenuCategory> categories) {
-    showDialog(
+  Future<void> _confirmDeleteAllCategories(BuildContext context, List<MenuCategory> categories) async {
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Массовое удаление полок'),
-        content: Text('Удалить все категории сырья (${categories.length} шт.)? Привязанное сырьё станет «Без категории».'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, foregroundColor: Colors.white),
-            onPressed: () {
-              final ids = categories.map((c) => c.id).toList();
-              context.read<CategoryBloc>().add(DeleteCategoriesBulk(ids, mode: 'auto'));
-              Navigator.pop(ctx);
-            },
-            child: const Text('Удалить все'),
-          ),
-        ],
-      ),
+      title: 'Массовое удаление полок',
+      message: 'Удалить все категории сырья (${categories.length} шт.)?\nПривязанное сырьё станет «Без категории».',
+      confirmLabel: 'Удалить все',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+
+    if (confirmed == true && context.mounted) {
+      final ids = categories.map((c) => c.id).toList();
+      context.read<CategoryBloc>().add(DeleteCategoriesBulk(ids, mode: 'auto'));
+    }
   }
 
   @override

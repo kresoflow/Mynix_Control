@@ -1,6 +1,14 @@
-﻿import 'package:flutter/material.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+// ==============================================================================
+// МОДУЛЬ: Склад / Диалог создания поставщика
+// ДОМЕН: lib/features/inventory/view/widgets/warehouse/dialogs/create_supplier_dialog.dart
+// ==============================================================================
 
+import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+
+// ─── 1. Диалог добавления нового поставщика ──────────────────────────────────
+/// [UI-KIT] Модальное окно добавления контрагента на базе AppDialogScaffold v2.
 class CreateSupplierDialog extends StatefulWidget {
   const CreateSupplierDialog({super.key});
 
@@ -22,115 +30,64 @@ class _CreateSupplierDialogState extends State<CreateSupplierDialog> {
   void _save() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Внимание'),
-          content: const Text('Введите название поставщика.'),
-          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('ОК'))],
-        ),
-      );
+      AppToast.showError(context, 'Введите название поставщика');
       return;
     }
 
     final result = {
       'name': name,
-      'contact_info': _contactController.text.trim().isEmpty ? null : _contactController.text.trim(),
+      'contact_info': _contactController.text.trim().isEmpty
+          ? null
+          : _contactController.text.trim(),
     };
     Navigator.of(context).pop(result);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(24),
-      child: Container(
-        width: 400,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-        ),
+    return AppDialogScaffold(
+      title: 'Новый поставщик',
+      subtitle: 'Создание контрагента для поставок',
+      icon: PhosphorIconsRegular.truck,
+      dialogSize: AppDialogSize.sm,
+      maxHeight: 340,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Новый поставщик', style: AppTextStyles.h3),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                    splashRadius: 24,
-                  ),
-                ],
-              ),
+            AppTextField(
+              labelText: 'Название поставщика',
+              hintText: 'Например: ОсОО «Берекет»',
+              controller: _nameController,
+              autofocus: true,
+              prefixIcon: const Icon(PhosphorIconsRegular.buildings, size: 18),
+              onSubmitted: (_) => _save(),
             ),
-            
-            // Body
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    autofocus: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Название поставщика',
-                      border: OutlineInputBorder(),
-                    ),
-                    onFieldSubmitted: (_) => _save(),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _contactController,
-                    decoration: const InputDecoration(
-                      labelText: 'Контактные данные (необязательно)',
-                      border: OutlineInputBorder(),
-                    ),
-                    onFieldSubmitted: (_) => _save(),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Footer
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Отмена'),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: _save,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    child: const Text('Сохранить'),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 16),
+            AppTextField(
+              labelText: 'Контактные данные (необязательно)',
+              hintText: '+996 555 12-34-56 / менеджер',
+              controller: _contactController,
+              prefixIcon: const Icon(PhosphorIconsRegular.phone, size: 18),
+              onSubmitted: (_) => _save(),
             ),
           ],
         ),
       ),
+      actions: [
+        AppGhostButton(
+          label: 'Отмена',
+          size: AppButtonSize.md,
+          onPressed: () => Navigator.pop(context),
+        ),
+        AppPrimaryButton(
+          label: 'Сохранить',
+          icon: PhosphorIconsRegular.check,
+          size: AppButtonSize.md,
+          onPressed: _save,
+        ),
+      ],
     );
   }
 }

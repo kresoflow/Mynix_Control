@@ -1,8 +1,12 @@
+// ==============================================================================
+// МОДУЛЬ: Настройки / Вкладка персонала и управления доступом
+// ДОМЕН: lib/features/settings/view/tabs/personnel_settings_tab.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/core/utils/role_formatter.dart';
 import 'package:kreso_frontend/features/settings/models/user_model.dart';
@@ -48,13 +52,23 @@ class _PersonnelSettingsView extends StatelessWidget {
         return ListView(
           padding: EdgeInsets.all(isMobile ? 16 : 32),
           children: [
-            Text(
-              'Управление персоналом',
-              style: AppTextStyles.h2.copyWith(
-                color: isDark ? AppColors.darkText : AppColors.lightText,
-              ),
+            AppPageHeader(
+              title: 'Управление персоналом',
+              subtitle: 'Сотрудники, роли и уровни доступа в системе',
+              actions: [
+                AppPrimaryButton(
+                  label: 'Добавить сотрудника',
+                  icon: PhosphorIconsRegular.plus,
+                  size: AppButtonSize.md,
+                  onPressed: () => UserFormDialog.show(
+                    context: context,
+                    isDark: isDark,
+                    roles: state.roles,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // ── 1. Владелец заведения (VIP Card) ──────────────────────
             Text(
@@ -110,50 +124,16 @@ class _PersonnelSettingsView extends StatelessWidget {
                 ],
               ),
 
-            const SizedBox(height: 36),
+            const SizedBox(height: 32),
 
             // ── 2. Штат сотрудников (Линейный персонал) ───────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Штат сотрудников (${staffUsers.length})',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  ),
-                ),
-                InkWell(
-                  onTap: () => UserFormDialog.show(
-                    context: context,
-                    isDark: isDark,
-                    roles: state.roles,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.brandPrimary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(PhosphorIconsRegular.plus, size: 16, color: AppColors.darkBg),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Добавить сотрудника',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.darkBg,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            Text(
+              'Штат сотрудников (${staffUsers.length})',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
             ),
             const SizedBox(height: 10),
 
