@@ -5,14 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_search_field.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'write_off_category_accordion.dart';
+import 'write_off_category_item_row.dart';
 import 'write_off_items_table.dart';
 
 // ==============================================================================
 // 2. СЕКЦИЯ КАТЕГОРИЙ СПИСАНИЯ
 // ==============================================================================
-/// [ИНВАРИАНТ] Каталог категорий склада с локальным поиском и аккордеонами.
+/// [ИНВАРИАНТ] Каталог категорий списания с плоской виртуализацией (0 мс время отклика).
 class WriteOffCategorySection extends StatefulWidget {
   final List<Ingredient> availableIngredients;
   final List<WriteOffItemEntry> activeEntries;
@@ -33,9 +35,16 @@ class WriteOffCategorySection extends StatefulWidget {
 }
 
 class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
+  final TextEditingController _searchController = TextEditingController();
   final Map<String, bool> _expansionMap = {};
   String _searchQuery = '';
   bool _isAllExpanded = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _toggleExpandAll(List<String> categories) {
     setState(() {
@@ -44,6 +53,13 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
         _expansionMap[cat] = _isAllExpanded;
       }
     });
+  }
+
+  WriteOffItemEntry? _findEntry(int itemId) {
+    for (final e in widget.activeEntries) {
+      if (e.item.id == itemId) return e;
+    }
+    return null;
   }
 
   @override
@@ -66,53 +82,46 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
 
     final categories = grouped.keys.toList()..sort();
 
+    // 2. Построение плоского виртуализированного списка (Flat List Virtualization)
+    final List<dynamic> flatList = [];
+    for (final cat in categories) {
+      final items = grouped[cat]!;
+      final isExpanded = _isAllExpanded ||
+          _searchQuery.isNotEmpty ||
+          (_expansionMap[cat] ?? false);
+
+      flatList.add({
+        'type': 'header',
+        'categoryName': cat,
+        'items': items,
+        'isExpanded': isExpanded,
+      });
+
+      if (isExpanded) {
+        for (int i = 0; i < items.length; i++) {
+          flatList.add({
+            'type': 'item',
+            'item': items[i],
+            'isLast': i == items.length - 1,
+          });
+        }
+      }
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // ─── Поиск и кнопка Развернуть все ───
         Row(
           children: [
             Expanded(
-              child: SizedBox(
-                height: 36,
-                child: TextField(
-                  onChanged: (val) =>
-                      setState(() => _searchQuery = val.trim().toLowerCase()),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                    fontSize: 12,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Фильтр позиций внутри категорий...',
-                    prefixIcon: const Icon(
-                      PhosphorIconsRegular.magnifyingGlass,
-                      size: 16,
-                    ),
-                    isDense: true,
-                    filled: true,
-                    fillColor:
-                        isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: isDark
-                            ? AppColors.darkBorder
-                            : AppColors.lightBorder,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: isDark
-                            ? AppColors.darkBorder
-                            : AppColors.lightBorder,
-                      ),
-                    ),
-                  ),
-                ),
+              child: AppSearchField(
+                controller: _searchController,
+                size: AppSearchFieldSize.sm,
+                hintText: 'Фильтр позиций внутри категорий...',
+                onChanged: (val) {
+                  setState(() => _searchQuery = val.trim().toLowerCase());
+                },
               ),
             ),
             const SizedBox(width: 8),
@@ -128,8 +137,9 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
                   color: isDark ? AppColors.darkCard : AppColors.lightBg,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color:
-                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    color: isDark
+                        ? AppColors.darkBorder
+                        : AppColors.lightBorder,
                   ),
                 ),
                 child: Row(
@@ -150,8 +160,9 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
                       style: AppTextStyles.caption.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 11,
-                        color:
-                            isDark ? AppColors.darkText : AppColors.lightText,
+                        color: isDark
+                            ? AppColors.darkText
+                            : AppColors.lightText,
                       ),
                     ),
                   ],
@@ -161,6 +172,8 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
           ],
         ),
         const SizedBox(height: 10),
+
+        // ─── Содержимое: Пустое состояние или виртуализированный список ───
         if (categories.isEmpty)
           Container(
             padding: const EdgeInsets.all(24),
@@ -175,35 +188,46 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
               child: Text(
                 'Позиции не найдены',
                 style: AppTextStyles.caption.copyWith(
-                  color:
-                      isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  color: isDark
+                      ? AppColors.darkSubtext
+                      : AppColors.lightSubtext,
                 ),
               ),
             ),
           )
         else
           ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 280),
+            constraints: const BoxConstraints(maxHeight: 320),
             child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: categories.length,
+              padding: EdgeInsets.zero,
+              itemCount: flatList.length,
               itemBuilder: (context, index) {
-                final cat = categories[index];
-                final isExpanded = _isAllExpanded ||
-                    _searchQuery.isNotEmpty ||
-                    (_expansionMap[cat] ?? false);
-
-                return WriteOffCategoryAccordion(
-                  categoryName: cat,
-                  items: grouped[cat]!,
-                  activeEntries: widget.activeEntries,
-                  currency: widget.currency,
-                  isExpanded: isExpanded,
-                  onExpansionChanged: (exp) {
-                    setState(() => _expansionMap[cat] = exp);
-                  },
-                  onQuantityChanged: widget.onQuantityChanged,
-                );
+                final entry = flatList[index];
+                if (entry['type'] == 'header') {
+                  final catName = entry['categoryName'] as String;
+                  return WriteOffCategoryAccordion(
+                    key: ValueKey('header-$catName'),
+                    categoryName: catName,
+                    items: entry['items'] as List<Ingredient>,
+                    activeEntries: widget.activeEntries,
+                    currency: widget.currency,
+                    isExpanded: entry['isExpanded'] as bool,
+                    onExpansionChanged: (exp) {
+                      setState(() => _expansionMap[catName] = exp);
+                    },
+                  );
+                } else {
+                  final item = entry['item'] as Ingredient;
+                  final isLast = entry['isLast'] as bool;
+                  return WriteOffCategoryItemRow(
+                    key: ValueKey('item-${item.id}'),
+                    item: item,
+                    entry: _findEntry(item.id),
+                    currency: widget.currency,
+                    onQuantityChanged: widget.onQuantityChanged,
+                    isLast: isLast,
+                  );
+                }
               },
             ),
           ),

@@ -17,6 +17,7 @@ class WriteOffCategoryItemRow extends StatelessWidget {
   final WriteOffItemEntry? entry;
   final String currency;
   final void Function(Ingredient item, double qty) onQuantityChanged;
+  final bool isLast;
 
   const WriteOffCategoryItemRow({
     super.key,
@@ -24,6 +25,7 @@ class WriteOffCategoryItemRow extends StatelessWidget {
     required this.entry,
     required this.currency,
     required this.onQuantityChanged,
+    this.isLast = false,
   });
 
   @override
@@ -31,9 +33,23 @@ class WriteOffCategoryItemRow extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final unit = UnitFormatter.format(item.unit);
     final isStockLow = entry != null && item.currentStock < entry!.quantity;
+    final isWrittenOff = entry != null && entry!.quantity > 0;
+    final borderSide = BorderSide(
+      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    );
 
-    return Padding(
+    return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 8 : 0),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: isWrittenOff
+            ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.08 : 0.04)
+            : (isDark ? AppColors.darkCard : AppColors.lightCard),
+        borderRadius: isLast
+            ? const BorderRadius.vertical(bottom: Radius.circular(10))
+            : BorderRadius.zero,
+        border: Border(left: borderSide, right: borderSide, bottom: borderSide),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -71,9 +87,9 @@ class WriteOffCategoryItemRow extends StatelessWidget {
                     ),
                     if (isStockLow) ...[
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Превышает остаток!',
-                        style: TextStyle(
+                        style: AppTextStyles.caption.copyWith(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: AppColors.danger,
@@ -93,11 +109,18 @@ class WriteOffCategoryItemRow extends StatelessWidget {
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: AppTextStyles.monoBold.copyWith(
+                fontSize: 12,
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+              ),
               decoration: InputDecoration(
                 hintText: '0',
                 suffixText: unit,
-                suffixStyle: const TextStyle(fontSize: 11, color: Colors.grey),
+                suffixStyle: AppTextStyles.caption.copyWith(
+                  fontSize: 11,
+                  color:
+                      isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 8,
@@ -105,11 +128,16 @@ class WriteOffCategoryItemRow extends StatelessWidget {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color:
-                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
+                  borderSide: borderSide,
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(6),
+                  borderSide: borderSide,
+                ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6),
+                    borderSide: BorderSide(color: AppColors.brandPrimary),
+                  ),
               ),
               onChanged: (val) {
                 final parsed = double.tryParse(val) ?? 0.0;

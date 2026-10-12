@@ -9,12 +9,11 @@ import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/app_stock_category_accordion.dart';
 import 'write_off_items_table.dart';
-import 'write_off_category_item_row.dart';
 
 // ==============================================================================
 // 2. АККОРДЕОН КАТЕГОРИИ СПИСАНИЯ
 // ==============================================================================
-/// [ИНВАРИАНТ] Аккордеон категории склада для быстрого списания позиций группы.
+/// [ИНВАРИАНТ] Заголовок категории склада для быстрого списания (плоская виртуализация).
 class WriteOffCategoryAccordion extends StatelessWidget {
   final String categoryName;
   final List<Ingredient> items;
@@ -22,7 +21,6 @@ class WriteOffCategoryAccordion extends StatelessWidget {
   final String currency;
   final bool isExpanded;
   final ValueChanged<bool> onExpansionChanged;
-  final void Function(Ingredient item, double qty) onQuantityChanged;
 
   const WriteOffCategoryAccordion({
     super.key,
@@ -32,7 +30,6 @@ class WriteOffCategoryAccordion extends StatelessWidget {
     required this.currency,
     required this.isExpanded,
     required this.onExpansionChanged,
-    required this.onQuantityChanged,
   });
 
   WriteOffItemEntry? _findEntry(int itemId) {
@@ -104,27 +101,7 @@ class WriteOffCategoryAccordion extends StatelessWidget {
               ),
             )
           : null,
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.zero,
-        itemCount: items.length,
-        separatorBuilder: (_, __) => Divider(
-          height: 1,
-          color: isDark
-              ? AppColors.darkBorder
-              : AppColors.lightBorder.withValues(alpha: 0.5),
-        ),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return WriteOffCategoryItemRow(
-            item: item,
-            entry: _findEntry(item.id),
-            currency: currency,
-            onQuantityChanged: onQuantityChanged,
-          );
-        },
-      ),
+      child: null, // [ОПТИМИЗАЦИЯ] child=null для плоской виртуализации (0 мс время раскрытия)
     );
   }
 }

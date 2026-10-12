@@ -57,33 +57,39 @@ class MenuCategory {
     };
   }
 
-  String? getInheritedIcon(List<MenuCategory> allCategories) {
+  String? getInheritedIcon(List<MenuCategory> allCategories, [Set<int>? visited]) {
     if (icon != null && icon!.isNotEmpty) {
       final cleanIcon = icon!.replaceAll('icon:', '').trim();
       if (cleanIcon.isNotEmpty && cleanIcon != 'null' && cleanIcon != 'none' && cleanIcon != 'undefined') {
         return icon;
       }
     }
-    if (parentId != null) {
-      try {
-        final parent = allCategories.firstWhere((c) => c.id == parentId);
-        final parentIcon = parent.getInheritedIcon(allCategories);
-        if (parentIcon != null && parentIcon.isNotEmpty) return parentIcon;
-      } catch (_) {}
+    if (parentId != null && parentId != id) {
+      final seen = visited ?? <int>{};
+      if (seen.add(id)) {
+        try {
+          final parent = allCategories.firstWhere((c) => c.id == parentId);
+          final parentIcon = parent.getInheritedIcon(allCategories, seen);
+          if (parentIcon != null && parentIcon.isNotEmpty) return parentIcon;
+        } catch (_) {}
+      }
     }
     return null;
   }
 
-  String? getInheritedColor(List<MenuCategory> allCategories) {
+  String? getInheritedColor(List<MenuCategory> allCategories, [Set<int>? visited]) {
     if (color != null && color!.trim().isNotEmpty && color != 'null' && color != 'none') {
       return color;
     }
-    if (parentId != null) {
-      try {
-        final parent = allCategories.firstWhere((c) => c.id == parentId);
-        final parentColor = parent.getInheritedColor(allCategories);
-        if (parentColor != null && parentColor.isNotEmpty) return parentColor;
-      } catch (_) {}
+    if (parentId != null && parentId != id) {
+      final seen = visited ?? <int>{};
+      if (seen.add(id)) {
+        try {
+          final parent = allCategories.firstWhere((c) => c.id == parentId);
+          final parentColor = parent.getInheritedColor(allCategories, seen);
+          if (parentColor != null && parentColor.isNotEmpty) return parentColor;
+        } catch (_) {}
+      }
     }
     return null;
   }
