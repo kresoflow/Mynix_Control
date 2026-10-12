@@ -8,7 +8,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
@@ -29,31 +28,24 @@ class RecipeSpecificationSection extends StatelessWidget {
     required this.onAddIngredient,
   });
 
-  void _confirmDelete(BuildContext context, int ingId, String ingName) {
-    showDialog(
+  Future<void> _confirmDelete(BuildContext context, int ingId, String ingName) async {
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Удаление из техкарты',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        content: Text('Удалить $ingName из техкарты?'),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Удалить',
-            onPressed: () {
-              context.read<RecipeBloc>().add(
-                    RemoveIngredientFromRecipe(
-                      menuItemId: targetMenuItemId,
-                      ingredientId: ingId,
-                    ),
-                  );
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      title: 'Удаление из техкарты',
+      message: 'Удалить «$ingName» из состава текущей техкарты?',
+      confirmLabel: 'Удалить',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+    if (confirmed == true && context.mounted) {
+      context.read<RecipeBloc>().add(
+            RemoveIngredientFromRecipe(
+              menuItemId: targetMenuItemId,
+              ingredientId: ingId,
+            ),
+          );
+    }
   }
 
   @override

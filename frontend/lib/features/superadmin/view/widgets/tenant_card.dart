@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import '../../models/tenant.dart';
 import '../../bloc/superadmin_bloc.dart';
 import '../../bloc/tenant_explorer_bloc.dart';
@@ -15,7 +15,6 @@ import '../tenant_explorer_screen.dart';
 import 'delete_tenant_dialog.dart';
 import 'edit_tenant_modal.dart';
 import 'tenant_status_badge.dart';
-import 'toggle_tenant_status_dialog.dart';
 
 // ─── 1. Tenant Overview Card ────────────────────────────────────────────────
 
@@ -46,16 +45,26 @@ class TenantCard extends StatelessWidget {
     );
   }
 
-  void _confirmToggleStatus(BuildContext context) {
-    showDialog(
+  Future<void> _confirmToggleStatus(BuildContext context) async {
+    final willFreeze = tenant.isActive;
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (_) => ToggleTenantStatusDialog(
-        tenant: tenant,
-        onConfirm: () => context
-            .read<SuperadminBloc>()
-            .toggleTenantStatus(tenant.id, !tenant.isActive),
-      ),
+      title: willFreeze ? 'Приостановить заведение?' : 'Активировать заведение?',
+      message: willFreeze
+          ? 'Заведение «${tenant.name}» будет заморожено. Персонал потеряет доступ к кассе и не сможет пробивать заказы.'
+          : 'Доступ к POS-терминалам и заказам заведения «${tenant.name}» будет немедленно восстановлен.',
+      confirmLabel: willFreeze ? 'Заморозить' : 'Активировать',
+      confirmIcon: willFreeze ? PhosphorIconsRegular.pauseCircle : PhosphorIconsRegular.playCircle,
+      cancelLabel: 'Отмена',
+      isDanger: willFreeze,
+      icon: willFreeze ? PhosphorIconsRegular.pauseCircle : PhosphorIconsRegular.playCircle,
     );
+
+    if (confirmed == true && context.mounted) {
+      context
+          .read<SuperadminBloc>()
+          .toggleTenantStatus(tenant.id, !tenant.isActive);
+    }
   }
 
   void _confirmDelete(BuildContext context) {

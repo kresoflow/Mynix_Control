@@ -1,11 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
 
@@ -169,27 +168,15 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
 
     // Guard 1: Zero cash entered while positive expected cash
     if (_actualCash <= 0 && widget.expectedCash > 0) {
-      final confirmed = await showDialog<bool>(
+      final confirmed = await AppConfirmDialog.show(
         context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AppDialog(
-          title: 'Касса пуста?',
-          icon: PhosphorIconsRegular.warningOctagon,
-          isDestructive: true,
-          width: 440,
-          content: Text(
-            'Вы указали 0.00 $symbol наличных, хотя в кассе ожидается ${widget.expectedCash.toCurrency(context)}.\n\nЭто зафиксирует полную недостачу в кассе.\nВы действительно пересчитали ящик и там 0.00?',
-            style: AppTextStyles.bodyMedium,
-          ),
-          actions: [
-            AppGhostButton(label: 'Пересчитать', onPressed: () => Navigator.pop(ctx, false)),
-            AppDangerButton(
-              label: 'Да, в кассе пусто',
-              icon: PhosphorIconsRegular.lockKey,
-              onPressed: () => Navigator.pop(ctx, true),
-            ),
-          ],
-        ),
+        title: 'Касса пуста?',
+        message: 'Вы указали 0.00 $symbol наличных, хотя в кассе ожидается ${widget.expectedCash.toCurrency(context)}.\n\nЭто зафиксирует полную недостачу в кассе.\nВы действительно пересчитали ящик и там 0.00?',
+        confirmLabel: 'Да, в кассе пусто',
+        confirmIcon: PhosphorIconsRegular.lockKey,
+        cancelLabel: 'Пересчитать',
+        isDanger: true,
+        icon: PhosphorIconsRegular.warningOctagon,
       );
       if (confirmed != true || !mounted) return;
     }
@@ -198,27 +185,15 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
       final diffText = diff < 0
           ? 'недостача ${diff.abs().toCurrency(context)}'
           : 'излишек ${diff.toCurrency(context)}';
-      final confirmed = await showDialog<bool>(
+      final confirmed = await AppConfirmDialog.show(
         context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AppDialog(
-          title: 'Подтвердите расхождение',
-          icon: PhosphorIconsRegular.warning,
-          isDestructive: diff < 0,
-          width: 440,
-          content: Text(
-            'Фактический остаток не сходится с кассой:\n$diffText.\n\nЗафиксировать закрытие смены с данным расхождением?',
-            style: AppTextStyles.bodyMedium,
-          ),
-          actions: [
-            AppGhostButton(label: 'Перепроверить', onPressed: () => Navigator.pop(ctx, false)),
-            AppDangerButton(
-              label: 'Закрыть с расхождением',
-              icon: PhosphorIconsRegular.check,
-              onPressed: () => Navigator.pop(ctx, true),
-            ),
-          ],
-        ),
+        title: 'Подтвердите расхождение',
+        message: 'Фактический остаток не сходится с кассой:\n$diffText.\n\nЗафиксировать закрытие смены с данным расхождением?',
+        confirmLabel: 'Закрыть с расхождением',
+        confirmIcon: PhosphorIconsRegular.check,
+        cancelLabel: 'Перепроверить',
+        isDanger: diff < 0,
+        icon: PhosphorIconsRegular.warning,
       );
       if (confirmed != true || !mounted) return;
     }

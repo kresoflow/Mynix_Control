@@ -1,10 +1,12 @@
+// ==============================================================================
+// МОДУЛЬ: Меню / Каталог / Стандартизированные диалоги удаления и архивации
+// ДОМЕН: lib/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -13,77 +15,54 @@ import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'dialogs/catalog_variation_deletion_modal.dart';
 
+// ─── 1. Менеджер диалогов подтверждения удаления ─────────────────────────────
+/// [UI-KIT] Набор стандартизированных диалогов удаления и архивации каталога
+/// на базе компонента AppConfirmDialog.
 class CatalogDeletionDialogs {
-  static void confirmDeleteCategory(BuildContext context, dynamic category) {
+  /// Подтверждение мягкой архивации категории.
+  static Future<void> confirmDeleteCategory(BuildContext context, dynamic category) async {
     if (category.isArchived == true) {
-      confirmHardDeleteCategory(context, category);
-      return;
+      return confirmHardDeleteCategory(context, category);
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Архивация категории',
-        icon: PhosphorIconsRegular.archive,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Переместить категорию «${category.name}» в архив?\n'
+      title: 'Архивация категории',
+      message: 'Переместить категорию «${category.name}» в архив?\n'
           'Все её позиции будут скрыты из кассы и активных списков, но сохранятся в архиве.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Архивировать',
-            icon: PhosphorIconsRegular.archive,
-            onPressed: () {
-              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'soft'));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      confirmLabel: 'Архивировать',
+      confirmIcon: PhosphorIconsRegular.archive,
+      isDanger: true,
+      icon: PhosphorIconsRegular.archive,
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'soft'));
+    }
   }
 
-  static void confirmHardDeleteCategory(BuildContext context, dynamic category) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
+  /// Подтверждение безвозвратного удаления категории из БД.
+  static Future<void> confirmHardDeleteCategory(BuildContext context, dynamic category) async {
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Удаление навсегда',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Окончательно стереть категорию «${category.name}» из базы данных?\nЭто действие необратимо и возможно только если по её товарам нет истории продаж и склада.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Удалить навсегда',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'hard'));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      title: 'Удаление навсегда',
+      message: 'Окончательно стереть категорию «${category.name}» из базы данных?\n'
+          'Это действие необратимо и возможно только если по её товарам нет истории продаж и склада.',
+      confirmLabel: 'Удалить навсегда',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<CategoryBloc>().add(DeleteCategory(category.id, mode: 'hard'));
+    }
   }
 
-  static void confirmDeleteItem(BuildContext context, dynamic item) {
+  /// Подтверждение мягкой архивации блюда или розничного товара.
+  static Future<void> confirmDeleteItem(BuildContext context, dynamic item) async {
     if (!item.isAvailable) {
-      confirmHardDeleteItem(context, item);
-      return;
+      return confirmHardDeleteItem(context, item);
     }
 
     if (item is MenuItem) {
@@ -95,177 +74,113 @@ class CatalogDeletionDialogs {
       }
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayName = item.cleanName ?? item.name;
-    showDialog(
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Архивация позиции',
-        icon: PhosphorIconsRegular.archive,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Переместить позицию «$displayName» в архив?\n'
+      title: 'Архивация позиции',
+      message: 'Переместить позицию «$displayName» в архив?\n'
           'Она исчезнет из кассы и накладных, но её всегда можно будет восстановить из архива.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Архивировать',
-            icon: PhosphorIconsRegular.archive,
-            onPressed: () {
-              context.read<MenuBloc>().add(DeleteMenuItem(item.id, mode: 'soft'));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      confirmLabel: 'Архивировать',
+      confirmIcon: PhosphorIconsRegular.archive,
+      isDanger: true,
+      icon: PhosphorIconsRegular.archive,
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<MenuBloc>().add(DeleteMenuItem(item.id, mode: 'soft'));
+    }
   }
 
-  static void confirmHardDeleteItem(BuildContext context, dynamic item) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  /// Подтверждение безвозвратного удаления блюда/товара из БД.
+  static Future<void> confirmHardDeleteItem(BuildContext context, dynamic item) async {
     final displayName = item.cleanName ?? item.name;
-    showDialog(
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Удаление навсегда',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Окончательно удалить позицию «$displayName» из базы данных?\nЭто действие необратимо и возможно только если по ней нет истории продаж и склада.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Удалить навсегда',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<MenuBloc>().add(DeleteMenuItem(item.id, mode: 'hard'));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      title: 'Удаление навсегда',
+      message: 'Окончательно удалить позицию «$displayName» из базы данных?\n'
+          'Это действие необратимо и возможно только если по ней нет истории продаж и склада.',
+      confirmLabel: 'Удалить навсегда',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<MenuBloc>().add(DeleteMenuItem(item.id, mode: 'hard'));
+    }
   }
 
-  static void confirmDeleteSelected({
+  /// Подтверждение массовой архивации выбранных элементов каталога.
+  static Future<void> confirmDeleteSelected({
     required BuildContext context,
     required Set<int> selectedItems,
     required Set<int> selectedCategories,
     required VoidCallback onCleared,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  }) async {
     final selectedCount = selectedItems.length + selectedCategories.length;
-    showDialog(
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Массовая архивация',
-        icon: PhosphorIconsRegular.archive,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Переместить выбранные элементы ($selectedCount шт.) в архив?\n'
+      title: 'Массовая архивация',
+      message: 'Переместить выбранные элементы ($selectedCount шт.) в архив?\n'
           'Они будут скрыты из кассы, но сохранятся в архиве.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Архивировать',
-            icon: PhosphorIconsRegular.archive,
-            onPressed: () {
-              if (selectedItems.isNotEmpty) {
-                context.read<MenuBloc>().add(
-                  DeleteMenuItemsBulk(selectedItems.toList(), mode: 'soft'),
-                );
-              }
-              if (selectedCategories.isNotEmpty) {
-                context.read<CategoryBloc>().add(
-                  DeleteCategoriesBulk(selectedCategories.toList(), mode: 'soft'),
-                );
-              }
-              Navigator.pop(ctx);
-              onCleared();
-            },
-          ),
-        ],
-      ),
+      confirmLabel: 'Архивировать',
+      confirmIcon: PhosphorIconsRegular.archive,
+      isDanger: true,
+      icon: PhosphorIconsRegular.archive,
     );
+
+    if (confirmed == true && context.mounted) {
+      if (selectedItems.isNotEmpty) {
+        context.read<MenuBloc>().add(
+          DeleteMenuItemsBulk(selectedItems.toList(), mode: 'soft'),
+        );
+      }
+      if (selectedCategories.isNotEmpty) {
+        context.read<CategoryBloc>().add(
+          DeleteCategoriesBulk(selectedCategories.toList(), mode: 'soft'),
+        );
+      }
+      onCleared();
+    }
   }
 
-  static void confirmDeleteIngredient(BuildContext context, Ingredient item) {
+  /// Подтверждение мягкой архивации единицы сырья.
+  static Future<void> confirmDeleteIngredient(BuildContext context, Ingredient item) async {
     if (item.isArchived) {
-      confirmHardDeleteIngredient(context, item);
-      return;
+      return confirmHardDeleteIngredient(context, item);
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Архивация сырья',
-        icon: PhosphorIconsRegular.archive,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Архивировать позицию «${item.name}»?\nОна исчезнет из активных списков, но сохранится в истории движения склада.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Архивировать',
-            icon: PhosphorIconsRegular.archive,
-            onPressed: () {
-              context.read<IngredientBloc>().add(DeleteIngredient(item.id, mode: 'soft'));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      title: 'Архивация сырья',
+      message: 'Архивировать позицию «${item.name}»?\n'
+          'Она исчезнет из активных списков, но сохранится в истории движения склада.',
+      confirmLabel: 'Архивировать',
+      confirmIcon: PhosphorIconsRegular.archive,
+      isDanger: true,
+      icon: PhosphorIconsRegular.archive,
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<IngredientBloc>().add(DeleteIngredient(item.id, mode: 'soft'));
+    }
   }
 
-  static void confirmHardDeleteIngredient(BuildContext context, Ingredient item) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
+  /// Подтверждение безвозвратного удаления сырья из БД.
+  static Future<void> confirmHardDeleteIngredient(BuildContext context, Ingredient item) async {
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Удаление навсегда',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Окончательно удалить позицию сырья «${item.name}» из базы данных?\nЭто возможно только если по ней нет документов, проводок и связей с техкартами.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-          AppDangerButton(
-            label: 'Удалить навсегда',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<IngredientBloc>().add(DeleteIngredient(item.id, mode: 'hard'));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      title: 'Удаление навсегда',
+      message: 'Окончательно удалить позицию сырья «${item.name}» из базы данных?\n'
+          'Это возможно только если по ней нет документов, проводок и связей с техкартами.',
+      confirmLabel: 'Удалить навсегда',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+
+    if (confirmed == true && context.mounted) {
+      context.read<IngredientBloc>().add(DeleteIngredient(item.id, mode: 'hard'));
+    }
   }
 }

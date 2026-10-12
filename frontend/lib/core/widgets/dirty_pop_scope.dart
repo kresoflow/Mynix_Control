@@ -1,9 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 /// Shows a standard confirmation dialog before discarding unsaved form data.
 Future<bool> showDiscardChangesDialog(
@@ -12,34 +9,16 @@ Future<bool> showDiscardChangesDialog(
   String? message,
   String? confirmLabel,
 }) async {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  final result = await showDialog<bool>(
+  return AppConfirmDialog.show(
     context: context,
-    builder: (ctx) => AppDialog(
-      title: title ?? 'Несохраненные изменения',
-      icon: PhosphorIconsRegular.warning,
-      isDestructive: true,
-      width: 420,
-      content: Text(
-        message ?? 'Выйти без сохранения? Все внесенные данные будут потеряны.',
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-        ),
-      ),
-      actions: [
-        AppGhostButton(
-          label: 'Остаться',
-          onPressed: () => Navigator.pop(ctx, false),
-        ),
-        AppDangerButton(
-          label: confirmLabel ?? 'Сбросить и выйти',
-          icon: PhosphorIconsRegular.trash,
-          onPressed: () => Navigator.pop(ctx, true),
-        ),
-      ],
-    ),
+    title: title ?? 'Несохраненные изменения',
+    message: message ?? 'Выйти без сохранения? Все внесенные данные будут потеряны.',
+    confirmLabel: confirmLabel ?? 'Сбросить и выйти',
+    confirmIcon: PhosphorIconsRegular.trash,
+    cancelLabel: 'Остаться',
+    isDanger: true,
+    icon: PhosphorIconsRegular.warning,
   );
-  return result ?? false;
 }
 
 /// A wrapper around [PopScope] that intercepts back gestures, Escape keys,

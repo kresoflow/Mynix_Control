@@ -1,9 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
@@ -97,38 +96,19 @@ class PosCartHeader extends StatelessWidget {
     );
   }
 
-  void _confirmClearCart(BuildContext context, int itemCount) {
-    showDialog(
+  Future<void> _confirmClearCart(BuildContext context, int itemCount) async {
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Очистить заказ?',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Вы действительно хотите удалить все $itemCount поз. из текущего чека?\nЭто действие нельзя отменить.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkSubtext
-                : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(ctx),
-          ),
-          AppDangerButton(
-            label: 'Очистить чек',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<CartBloc>().add(ClearCart());
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      title: 'Очистить заказ?',
+      message: 'Вы действительно хотите удалить все $itemCount поз. из текущего чека?\nЭто действие нельзя отменить.',
+      confirmLabel: 'Очистить чек',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+    if (confirmed == true && context.mounted) {
+      context.read<CartBloc>().add(ClearCart());
+    }
   }
 
   Widget _buildDraftsButton(BuildContext context, Map<String, List> heldCarts, bool isDark) {

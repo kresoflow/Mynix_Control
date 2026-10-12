@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/core/utils/role_formatter.dart';
 import 'package:kreso_frontend/features/settings/models/user_model.dart';
 import 'package:kreso_frontend/features/settings/bloc/user_bloc.dart';
@@ -213,36 +212,19 @@ class _PersonnelSettingsView extends StatelessWidget {
     );
   }
 
-  void _confirmDeleteUser(BuildContext context, StaffUser user) {
+  Future<void> _confirmDeleteUser(BuildContext context, StaffUser user) async {
     final name = user.fullName.isNotEmpty ? user.fullName : '@${user.username}';
-    showDialog(
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AppDialog(
-        title: 'Удалить сотрудника?',
-        icon: PhosphorIconsRegular.trash,
-        isDestructive: true,
-        width: 420,
-        content: Text(
-          'Вы уверены, что хотите удалить сотрудника «$name»?\nДоступ к кассе и системе будет немедленно заблокирован.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-          ),
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(ctx),
-          ),
-          AppDangerButton(
-            label: 'Удалить',
-            icon: PhosphorIconsRegular.trash,
-            onPressed: () {
-              context.read<UserBloc>().add(DeleteUser(user.id));
-              Navigator.pop(ctx);
-            },
-          ),
-        ],
-      ),
+      title: 'Удалить сотрудника?',
+      message: 'Вы уверены, что хотите удалить сотрудника «$name»?\nДоступ к кассе и системе будет немедленно заблокирован.',
+      confirmLabel: 'Удалить',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+    if (confirmed == true && context.mounted) {
+      context.read<UserBloc>().add(DeleteUser(user.id));
+    }
   }
 }

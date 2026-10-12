@@ -107,7 +107,12 @@ class AppDialog extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(isMobile ? 16 : 28, 0, isMobile ? 16 : 28, 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: actions,
+                  children: [
+                    for (int i = 0; i < actions.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 12),
+                      actions[i],
+                    ],
+                  ],
                 ),
               ),
           ],

@@ -23,6 +23,7 @@ class AppConfirmDialog extends StatelessWidget {
   final String cancelLabel;
   final bool isDanger;
   final IconData? icon;
+  final IconData? confirmIcon;
   final Widget? customContent;
 
   const AppConfirmDialog({
@@ -33,6 +34,7 @@ class AppConfirmDialog extends StatelessWidget {
     this.cancelLabel = 'Отмена',
     this.isDanger = false,
     this.icon,
+    this.confirmIcon,
     this.customContent,
   });
 
@@ -47,6 +49,7 @@ class AppConfirmDialog extends StatelessWidget {
     String cancelLabel = 'Отмена',
     bool isDanger = false,
     IconData? icon,
+    IconData? confirmIcon,
     Widget? customContent,
   }) async {
     final result = await showGeneralDialog<bool>(
@@ -62,6 +65,7 @@ class AppConfirmDialog extends StatelessWidget {
         cancelLabel: cancelLabel,
         isDanger: isDanger,
         icon: icon,
+        confirmIcon: confirmIcon,
         customContent: customContent,
       ),
       transitionBuilder: (ctx, anim, secondaryAnim, child) {
@@ -162,16 +166,18 @@ class AppConfirmDialog extends StatelessWidget {
                     size: AppButtonSize.md,
                     onPressed: () => Navigator.of(context).pop(false),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   if (isDanger)
                     AppDangerButton(
                       label: confirmLabel,
+                      icon: confirmIcon,
                       size: AppButtonSize.md,
                       onPressed: () => Navigator.of(context).pop(true),
                     )
                   else
                     AppPrimaryButton(
                       label: confirmLabel,
+                      icon: confirmIcon,
                       size: AppButtonSize.md,
                       onPressed: () => Navigator.of(context).pop(true),
                     ),
