@@ -4,9 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog_scaffold.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
-import 'package:kreso_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
@@ -179,15 +177,14 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
       message:
           'Все выбранные позиции и данные акта будут сброшены. Вы уверены, что хотите выйти?',
       confirmLabel: 'Сбросить акт',
-      child: AppDialogScaffold(
+      child: AppCardDialog(
         title: 'Акт списания со склада',
         icon: PhosphorIconsRegular.archive,
-        dialogSize: AppDialogSize.md,
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        width: 680,
+        body: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             WriteOffMetaRow(
               selectedReason: _selectedReason,
               reasons: _reasons,
@@ -230,18 +227,16 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
             ),
           ],
         ),
-      ),
-      actions: [
+        actions: [
           AppButton.secondary(
             label: 'Отмена',
-            height: 40,
+            height: 38,
             onPressed: _isLoading ? null : () => Navigator.maybePop(context),
           ),
-          const SizedBox(width: 10),
           AppButton.primary(
             label: 'Провести списание',
             icon: PhosphorIconsRegular.checkCircle,
-            height: 40,
+            height: 38,
             isLoading: _isLoading,
             onPressed: _isLoading || _entries.isEmpty ? null : _submit,
           ),

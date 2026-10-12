@@ -22,6 +22,7 @@ export 'app_accordion.dart';
 export 'app_specification_table.dart';
 export 'app_stock_category_accordion.dart';
 export 'app_checkbox.dart';
+export 'app_card_dialog.dart';
 export '../../theme/app_radii.dart';
 export '../../theme/app_motion.dart';
 
