@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -12,6 +12,7 @@ import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/write_off_document_dialog.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/document_detail/document_detail_dialog.dart';
+import 'documents/document_journal_header.dart';
 import 'documents/document_journal_row.dart';
 import 'documents/documents_toolbar.dart';
 
@@ -121,88 +122,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
                 child: Column(
                   children: [
                     // Table Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF161B26) : const Color(0xFFF1F5F9),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 60,
-                            child: Text(
-                              'ID',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              'ДАТА',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              'ТИП',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              'ПОСТАВЩИК / КОММЕНТАРИЙ',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              'СУММА',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              'СТАТУС',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 40),
-                        ],
-                      ),
-                    ),
+                    const DocumentJournalHeader(),
 
                     // Table Body
                     Expanded(
@@ -216,7 +136,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
                             return Center(
                               child: Text(
                                 'Ошибка загрузки: ${state.errorMessage}',
-                                style: const TextStyle(color: AppColors.danger),
+                                style: AppTextStyles.caption.copyWith(color: AppColors.danger),
                               ),
                             );
                           }
@@ -234,7 +154,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
                             return Center(
                               child: Text(
                                 'Документы не найдены',
-                                style: TextStyle(
+                                style: AppTextStyles.caption.copyWith(
                                   color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                                 ),
                               ),
