@@ -17,7 +17,7 @@ import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 class BlindInventoryCategoryAccordion extends StatelessWidget {
   final String categoryName;
   final List<Ingredient> items;
-  final Map<int, TextEditingController> controllers;
+  final Map<String, TextEditingController> controllers;
   final bool isExpanded;
   final ValueChanged<bool> onExpansionChanged;
 
@@ -36,7 +36,7 @@ class BlindInventoryCategoryAccordion extends StatelessWidget {
 
     int filledCount = 0;
     for (final it in items) {
-      if (controllers[it.id]?.text.trim().isNotEmpty == true) {
+      if (controllers[it.uniqueKey]?.text.trim().isNotEmpty == true) {
         filledCount++;
       }
     }

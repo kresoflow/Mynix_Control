@@ -19,6 +19,12 @@ class Ingredient {
   bool get isRetail => attributes?['is_retail'] == true;
   String? get sku => attributes?['sku']?.toString();
 
+  /// [ИНВАРИАНТ] Уникальный составной ключ для исключения коллизий ID между сырьем и товарами.
+  String get uniqueKey => '${isRetail ? "retail" : "ingredient"}_$id';
+
+  /// Проверяет совпадение сущности с учетом типа (сырье или розничный товар).
+  bool isSameAs(Ingredient other) => id == other.id && isRetail == other.isRetail;
+
   Ingredient({
     required this.id,
     required this.name,

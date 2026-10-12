@@ -108,5 +108,54 @@ void main() {
       expect(grouped['Овощи']?.first.name, 'Томаты свежие');
       expect(grouped['Напитки']?.first.name, 'Rc Cola 1 л');
     });
+
+    // ============================================================================
+    // 5. ТЕСТЫ ЗАЩИТЫ ОТ КОЛЛИЗИЙ ID (СЫРЬЕ VS РОЗНИЧНЫЙ ТОВАР)
+    // ============================================================================
+    test('uniqueKey and isSameAs prevent collision when raw and retail have same ID', () {
+      final rawBurger = Ingredient(
+        id: 1,
+        name: 'Говяжья котлета',
+        unit: 'шт',
+        costPerUnit: 150.0,
+        currentStock: 20.0,
+        minStockAlert: 5.0,
+        isLowStock: false,
+        categoryName: 'Мясо',
+      );
+
+      final retailCola = Ingredient(
+        id: 1,
+        name: 'Rc Cola',
+        unit: 'шт',
+        costPerUnit: 40.0,
+        currentStock: 30.0,
+        minStockAlert: 5.0,
+        isLowStock: false,
+        attributes: {'is_retail': true},
+        categoryName: 'Без категории',
+      );
+
+      // Проверка различия уникальных ключей и предикатов совпадения
+      expect(rawBurger.id, equals(retailCola.id));
+      expect(rawBurger.uniqueKey, equals('ingredient_1'));
+      expect(retailCola.uniqueKey, equals('retail_1'));
+      expect(rawBurger.uniqueKey, isNot(equals(retailCola.uniqueKey)));
+      expect(rawBurger.isSameAs(retailCola), isFalse);
+
+      // Изоляция контроллеров в слепой инвентаризации
+      final controllers = <String, String>{};
+      controllers[rawBurger.uniqueKey] = '5';
+      expect(controllers.containsKey(retailCola.uniqueKey), isFalse);
+
+      int filledCount = 0;
+      for (final item in [rawBurger, retailCola]) {
+        if (controllers[item.uniqueKey]?.isNotEmpty == true) {
+          filledCount++;
+        }
+      }
+      // [ИНВАРИАНТ] Должно быть ровно 1, а не 2
+      expect(filledCount, equals(1));
+    });
   });
 }

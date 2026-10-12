@@ -63,9 +63,12 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
   }
 
   void _addItem(Ingredient item) {
-    if (_entries.any((e) => e.item.id == item.id)) {
-      AppToast.showWarning(context, 'Внимание',
-          subtitle: '«${item.name}» уже в списке',);
+    if (_entries.any((e) => e.item.isSameAs(item))) {
+      AppToast.showWarning(
+        context,
+        'Внимание',
+        subtitle: '«${item.name}» уже в списке',
+      );
       return;
     }
     setState(() {
@@ -81,7 +84,7 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
   }
 
   void _onCategoryQuantityChanged(Ingredient item, double qty) {
-    final idx = _entries.indexWhere((e) => e.item.id == item.id);
+    final idx = _entries.indexWhere((e) => e.item.isSameAs(item));
     if (idx != -1) {
       if (qty <= 0) {
         final removed = _entries.removeAt(idx);
@@ -123,7 +126,7 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
           : _selectedReason;
 
       final items = validEntries.map((e) {
-        final isRetail = e.item.attributes?['is_retail'] == true;
+        final isRetail = e.item.isRetail;
         return {
           if (isRetail)
             'retail_product_id': e.item.id

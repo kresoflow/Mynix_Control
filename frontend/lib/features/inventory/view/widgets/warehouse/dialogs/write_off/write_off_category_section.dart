@@ -2,13 +2,12 @@
 // 1. ИМПОРТЫ
 // ==============================================================================
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/ui_kit/app_search_field.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'write_off_category_accordion.dart';
 import 'write_off_category_item_row.dart';
+import 'write_off_category_toolbar.dart';
 import 'write_off_items_table.dart';
 
 // ==============================================================================
@@ -38,6 +37,7 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
   final TextEditingController _searchController = TextEditingController();
   final Map<String, bool> _expansionMap = {};
   String _searchQuery = '';
+  WriteOffCategoryFilter _activeFilter = WriteOffCategoryFilter.all;
   bool _isAllExpanded = false;
 
   @override
@@ -55,9 +55,9 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
     });
   }
 
-  WriteOffItemEntry? _findEntry(int itemId) {
+  WriteOffItemEntry? _findEntry(Ingredient item) {
     for (final e in widget.activeEntries) {
-      if (e.item.id == itemId) return e;
+      if (e.item.isSameAs(item)) return e;
     }
     return null;
   }
@@ -66,7 +66,14 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // 1. Группировка ингредиентов по категориям
+    // ─── 1. Подсчет счетчиков для фильтров ───
+    final inActCount =
+        widget.activeEntries.where((e) => e.quantity > 0).length;
+    final inStockCount = widget.availableIngredients
+        .where((it) => !it.isArchived && it.currentStock > 0)
+        .length;
+
+    // ─── 2. Группировка ингредиентов по категориям и фильтрация ───
     final Map<String, List<Ingredient>> grouped = {};
     for (final it in widget.availableIngredients) {
       if (it.isArchived) continue;
@@ -74,6 +81,17 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
           !it.name.toLowerCase().contains(_searchQuery)) {
         continue;
       }
+
+      if (_activeFilter == WriteOffCategoryFilter.inAct) {
+        final hasAct = widget.activeEntries
+            .any((e) => e.item.isSameAs(it) && e.quantity > 0);
+        if (!hasAct) continue;
+      }
+
+      if (_activeFilter == WriteOffCategoryFilter.inStock) {
+        if (it.currentStock <= 0) continue;
+      }
+
       final cat = it.categoryName?.isNotEmpty == true
           ? it.categoryName!
           : 'Без категории';
@@ -82,12 +100,13 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
 
     final categories = grouped.keys.toList()..sort();
 
-    // 2. Построение плоского виртуализированного списка (Flat List Virtualization)
+    // ─── 3. Построение плоского виртуализированного списка ───
     final List<dynamic> flatList = [];
     for (final cat in categories) {
       final items = grouped[cat]!;
       final isExpanded = _isAllExpanded ||
           _searchQuery.isNotEmpty ||
+          _activeFilter != WriteOffCategoryFilter.all ||
           (_expansionMap[cat] ?? false);
 
       flatList.add({
@@ -117,65 +136,22 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ─── Поиск и кнопка Развернуть все ───
-        Row(
-          children: [
-            Expanded(
-              child: AppSearchField(
-                controller: _searchController,
-                size: AppSearchFieldSize.sm,
-                hintText: 'Фильтр позиций внутри категорий...',
-                onChanged: (val) {
-                  setState(() => _searchQuery = val.trim().toLowerCase());
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            InkWell(
-              onTap: categories.isEmpty
-                  ? null
-                  : () => _toggleExpandAll(categories),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkCard : AppColors.lightBg,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isDark
-                        ? AppColors.darkBorder
-                        : AppColors.lightBorder,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _isAllExpanded
-                          ? PhosphorIconsRegular.arrowsInSimple
-                          : PhosphorIconsRegular.arrowsOutSimple,
-                      size: 14,
-                      color: isDark
-                          ? AppColors.darkSubtext
-                          : AppColors.lightSubtext,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      _isAllExpanded ? 'Свернуть' : 'Развернуть',
-                      style: AppTextStyles.caption.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11,
-                        color: isDark
-                            ? AppColors.darkText
-                            : AppColors.lightText,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        // ─── Панель инструментов: поиск и быстрые фильтры ───
+        WriteOffCategoryToolbar(
+          searchController: _searchController,
+          onSearchChanged: (val) {
+            setState(() => _searchQuery = val.trim().toLowerCase());
+          },
+          activeFilter: _activeFilter,
+          onFilterChanged: (filter) {
+            setState(() => _activeFilter = filter);
+          },
+          inActCount: inActCount,
+          inStockCount: inStockCount,
+          isAllExpanded: _isAllExpanded,
+          onToggleExpandAll: categories.isEmpty
+              ? () {}
+              : () => _toggleExpandAll(categories),
         ),
         const SizedBox(height: 10),
 
@@ -192,11 +168,14 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
             ),
             child: Center(
               child: Text(
-                'Позиции не найдены',
+                _activeFilter == WriteOffCategoryFilter.inAct
+                    ? 'В акте списания пока нет позиций'
+                    : (_activeFilter == WriteOffCategoryFilter.inStock
+                        ? 'Нет позиций с положительным остатком'
+                        : 'Позиции не найдены'),
                 style: AppTextStyles.caption.copyWith(
-                  color: isDark
-                      ? AppColors.darkSubtext
-                      : AppColors.lightSubtext,
+                  color:
+                      isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                 ),
               ),
             ),
@@ -232,9 +211,9 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
                   final item = entry['item'] as Ingredient;
                   final isLast = entry['isLast'] as bool;
                   return WriteOffCategoryItemRow(
-                    key: ValueKey('item-${item.id}'),
+                    key: ValueKey('item-${item.uniqueKey}'),
                     item: item,
-                    entry: _findEntry(item.id),
+                    entry: _findEntry(item),
                     currency: widget.currency,
                     onQuantityChanged: widget.onQuantityChanged,
                     isLast: isLast,

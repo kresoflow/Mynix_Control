@@ -7,6 +7,7 @@ import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'blind_inventory_category_accordion.dart';
 import 'blind_inventory_category_item_row.dart';
+import 'blind_inventory_toolbar.dart';
 
 // ==============================================================================
 // 2. КАТЕГОРИЙНЫЙ СПИСОК НОМЕНКЛАТУРЫ ИНВЕНТАРИЗАЦИИ
@@ -14,9 +15,9 @@ import 'blind_inventory_category_item_row.dart';
 /// [ИНВАРИАНТ] Группировка номенклатуры ревизии с плоской виртуализацией (0 мс).
 class BlindInventoryGroupedView extends StatelessWidget {
   final List<Ingredient> items;
-  final Map<int, TextEditingController> controllers;
+  final Map<String, TextEditingController> controllers;
   final String searchQuery;
-  final bool onlyUnfilled;
+  final BlindInventoryFilter activeFilter;
   final bool isAllExpanded;
   final Map<String, bool> expansionMap;
   final void Function(String category, bool isExpanded) onExpansionChanged;
@@ -27,7 +28,7 @@ class BlindInventoryGroupedView extends StatelessWidget {
     required this.items,
     required this.controllers,
     required this.searchQuery,
-    required this.onlyUnfilled,
+    required this.activeFilter,
     required this.isAllExpanded,
     required this.expansionMap,
     required this.onExpansionChanged,
@@ -38,7 +39,7 @@ class BlindInventoryGroupedView extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // 1. Группировка элементов по категориям
+    // ─── 1. Группировка элементов по категориям и фильтрация ───
     final Map<String, List<Ingredient>> grouped = {};
     for (final it in items) {
       if (it.isArchived) continue;
@@ -48,7 +49,14 @@ class BlindInventoryGroupedView extends StatelessWidget {
         continue;
       }
 
-      if (onlyUnfilled && controllers[it.id]?.text.trim().isNotEmpty == true) {
+      final isFilled =
+          controllers[it.uniqueKey]?.text.trim().isNotEmpty == true;
+
+      if (activeFilter == BlindInventoryFilter.unfilled && isFilled) {
+        continue;
+      }
+
+      if (activeFilter == BlindInventoryFilter.filled && !isFilled) {
         continue;
       }
 
@@ -61,6 +69,13 @@ class BlindInventoryGroupedView extends StatelessWidget {
     final categories = grouped.keys.toList()..sort();
 
     if (categories.isEmpty) {
+      String emptyMessage = 'Позиции не найдены';
+      if (activeFilter == BlindInventoryFilter.unfilled) {
+        emptyMessage = 'Все позиции в этой выборке уже пересчитаны!';
+      } else if (activeFilter == BlindInventoryFilter.filled) {
+        emptyMessage = 'Пока не внесено ни одного остатка';
+      }
+
       return Container(
         height: 200,
         decoration: BoxDecoration(
@@ -72,9 +87,7 @@ class BlindInventoryGroupedView extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            onlyUnfilled
-                ? 'Все позиции в этой выборке уже пересчитаны!'
-                : 'Позиции не найдены',
+            emptyMessage,
             style: AppTextStyles.caption.copyWith(
               color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
             ),
@@ -83,13 +96,13 @@ class BlindInventoryGroupedView extends StatelessWidget {
       );
     }
 
-    // 2. Построение плоского виртуализированного списка (Flat List Virtualization)
+    // ─── 2. Построение плоского виртуализированного списка ───
     final List<dynamic> flatList = [];
     for (final cat in categories) {
       final catItems = grouped[cat]!;
       final isExpanded = isAllExpanded ||
           searchQuery.isNotEmpty ||
-          onlyUnfilled ||
+          activeFilter != BlindInventoryFilter.all ||
           (expansionMap[cat] ?? false);
 
       flatList.add({
@@ -108,8 +121,8 @@ class BlindInventoryGroupedView extends StatelessWidget {
         }
         for (int i = 0; i < catItems.length; i++) {
           final it = catItems[i];
-          if (!controllers.containsKey(it.id)) {
-            controllers[it.id] = TextEditingController();
+          if (!controllers.containsKey(it.uniqueKey)) {
+            controllers[it.uniqueKey] = TextEditingController();
           }
           flatList.add({
             'type': 'item',
@@ -148,10 +161,10 @@ class BlindInventoryGroupedView extends StatelessWidget {
             final isLast = entry['isLast'] as bool;
             final idx = entry['index'] as int;
             return BlindInventoryCategoryItemRow(
-              key: ValueKey('item-${item.id}'),
+              key: ValueKey('item-${item.uniqueKey}'),
               item: item,
               index: idx,
-              controller: controllers[item.id]!,
+              controller: controllers[item.uniqueKey]!,
               onChanged: onChanged,
               isLast: isLast,
             );

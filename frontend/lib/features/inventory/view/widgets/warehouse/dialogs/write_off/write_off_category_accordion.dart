@@ -32,9 +32,9 @@ class WriteOffCategoryAccordion extends StatelessWidget {
     required this.onExpansionChanged,
   });
 
-  WriteOffItemEntry? _findEntry(int itemId) {
+  WriteOffItemEntry? _findEntry(Ingredient item) {
     for (final e in activeEntries) {
-      if (e.item.id == itemId) return e;
+      if (e.item.isSameAs(item)) return e;
     }
     return null;
   }
@@ -47,7 +47,7 @@ class WriteOffCategoryAccordion extends StatelessWidget {
     double writtenOffSum = 0.0;
 
     for (final item in items) {
-      final entry = _findEntry(item.id);
+      final entry = _findEntry(item);
       if (entry != null && entry.quantity > 0) {
         writtenOffCount++;
         writtenOffSum += entry.total;

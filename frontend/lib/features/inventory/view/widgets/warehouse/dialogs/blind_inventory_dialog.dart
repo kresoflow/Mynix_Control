@@ -35,10 +35,10 @@ class BlindInventoryDialog extends StatefulWidget {
 }
 
 class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
-  final Map<int, TextEditingController> _controllers = {};
+  final Map<String, TextEditingController> _controllers = {};
   final Map<String, bool> _expansionMap = {};
   String _searchQuery = '';
-  bool _onlyUnfilled = false;
+  BlindInventoryFilter _activeFilter = BlindInventoryFilter.all;
   bool _isAllExpanded = false;
   bool _isLoading = false;
 
@@ -55,7 +55,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
   int _getFilledCount(List<Ingredient> ingredients) {
     int count = 0;
     for (final it in ingredients) {
-      if (_controllers[it.id]?.text.trim().isNotEmpty == true) {
+      if (_controllers[it.uniqueKey]?.text.trim().isNotEmpty == true) {
         count++;
       }
     }
@@ -69,9 +69,9 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
       final List<Map<String, dynamic>> items = [];
 
       for (final item in ingredients) {
-        final actualQty = double.tryParse((_controllers[item.id]?.text ?? '').replaceAll(',', '.'));
+        final actualQty = double.tryParse((_controllers[item.uniqueKey]?.text ?? '').replaceAll(',', '.'));
         if (actualQty == null) continue;
-        final isRetail = item.attributes?['is_retail'] == true;
+        final isRetail = item.isRetail;
         items.add({
           isRetail ? 'retail_product_id' : 'ingredient_id': item.id,
           'quantity': actualQty,
@@ -141,16 +141,28 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            BlindInventoryToolbar(
-              searchQuery: _searchQuery,
-              onSearchChanged: (val) =>
-                  setState(() => _searchQuery = val.toLowerCase().trim()),
-              onlyUnfilled: _onlyUnfilled,
-              onOnlyUnfilledChanged: (val) =>
-                  setState(() => _onlyUnfilled = val),
-              isAllExpanded: _isAllExpanded,
-              onToggleExpandAll: () =>
-                  setState(() => _isAllExpanded = !_isAllExpanded),
+            BlocBuilder<IngredientBloc, IngredientState>(
+              builder: (context, state) {
+                final all = (state is IngredientLoaded)
+                    ? state.ingredients.where((i) => !i.isArchived).toList()
+                    : <Ingredient>[];
+                final filledCount = _getFilledCount(all);
+                final unfilledCount = all.length - filledCount;
+
+                return BlindInventoryToolbar(
+                  searchQuery: _searchQuery,
+                  onSearchChanged: (val) =>
+                      setState(() => _searchQuery = val.toLowerCase().trim()),
+                  activeFilter: _activeFilter,
+                  onFilterChanged: (filter) =>
+                      setState(() => _activeFilter = filter),
+                  unfilledCount: unfilledCount,
+                  filledCount: filledCount,
+                  isAllExpanded: _isAllExpanded,
+                  onToggleExpandAll: () =>
+                      setState(() => _isAllExpanded = !_isAllExpanded),
+                );
+              },
             ),
             const SizedBox(height: 12),
             BlocBuilder<IngredientBloc, IngredientState>(
@@ -172,7 +184,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
                   items: state.ingredients,
                   controllers: _controllers,
                   searchQuery: _searchQuery,
-                  onlyUnfilled: _onlyUnfilled,
+                  activeFilter: _activeFilter,
                   isAllExpanded: _isAllExpanded,
                   expansionMap: _expansionMap,
                   onExpansionChanged: (cat, exp) {

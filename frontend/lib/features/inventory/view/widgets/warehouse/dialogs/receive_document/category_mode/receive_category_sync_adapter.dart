@@ -28,19 +28,26 @@ class ReceiveCategorySyncAdapter {
   });
 
   /// Находит строку накладной, привязанную к конкретному ингредиенту/товару.
-  ReceiptRowData? getRowForIngredient(int ingredientId) {
-    return items.where((r) => r.ingredient?.id == ingredientId).firstOrNull;
+  ReceiptRowData? getRowForIngredient(dynamic ingredientOrId) {
+    if (ingredientOrId is Ingredient) {
+      return items
+          .where((r) => r.ingredient?.isSameAs(ingredientOrId) == true)
+          .firstOrNull;
+    } else if (ingredientOrId is int) {
+      return items.where((r) => r.ingredient?.id == ingredientOrId).firstOrNull;
+    }
+    return null;
   }
 
   /// Возвращает текущее введённое количество к приходу для позиции каталога.
   double getQuantity(Ingredient ingredient) {
-    final row = getRowForIngredient(ingredient.id);
+    final row = getRowForIngredient(ingredient);
     return row?.quantity ?? 0.0;
   }
 
   /// Возвращает закупочную цену (из строки накладной либо последнюю из каталога).
   double getCostPrice(Ingredient ingredient) {
-    final row = getRowForIngredient(ingredient.id);
+    final row = getRowForIngredient(ingredient);
     if (row != null && row.price > 0) {
       return row.price;
     }
@@ -49,7 +56,7 @@ class ReceiveCategorySyncAdapter {
 
   /// Возвращает розничную цену продажи (для витрины).
   double getSellPrice(Ingredient ingredient) {
-    final row = getRowForIngredient(ingredient.id);
+    final row = getRowForIngredient(ingredient);
     if (row != null && row.sellPrice > 0) {
       return row.sellPrice;
     }
@@ -57,15 +64,15 @@ class ReceiveCategorySyncAdapter {
   }
 
   /// Проверяет, добавлена ли позиция в текущую накладную с ненулевым приходом.
-  bool isInReceipt(int ingredientId) {
-    final row = getRowForIngredient(ingredientId);
+  bool isInReceipt(dynamic ingredientOrId) {
+    final row = getRowForIngredient(ingredientOrId);
     return row != null && row.quantity > 0;
   }
 
   /// Обновляет количество прихода для позиции.
   /// При qty > 0 автоматически создаёт или обновляет [ReceiptRowData].
   void updateQuantity(Ingredient ingredient, double qty) {
-    var row = getRowForIngredient(ingredient.id);
+    var row = getRowForIngredient(ingredient);
 
     if (qty > 0) {
       if (row == null) {
@@ -101,7 +108,7 @@ class ReceiveCategorySyncAdapter {
 
   /// Обновляет цену закупки позиции в накладной.
   void updateCostPrice(Ingredient ingredient, double price) {
-    var row = getRowForIngredient(ingredient.id);
+    var row = getRowForIngredient(ingredient);
     if (row == null) {
       row = ReceiptRowData(
         ingredient: ingredient,
@@ -124,7 +131,7 @@ class ReceiveCategorySyncAdapter {
 
   /// Обновляет розничную цену продажи позиции.
   void updateSellPrice(Ingredient ingredient, double sellPrice) {
-    var row = getRowForIngredient(ingredient.id);
+    var row = getRowForIngredient(ingredient);
     if (row == null) {
       row = ReceiptRowData(
         ingredient: ingredient,

@@ -84,7 +84,7 @@ class _ReceiveCategorySectionState extends State<ReceiveCategorySection> {
       if (item.isLowStock || item.currentStock <= item.minStockAlert) {
         totalDeficit++;
       }
-      if (widget.adapter.isInReceipt(item.id)) {
+      if (widget.adapter.isInReceipt(item)) {
         totalInReceipt++;
       }
     }
@@ -107,7 +107,7 @@ class _ReceiveCategorySectionState extends State<ReceiveCategorySection> {
         case ReceiveCategoryFilter.onlyDeficit:
           return item.isLowStock || item.currentStock <= item.minStockAlert;
         case ReceiveCategoryFilter.inReceipt:
-          return widget.adapter.isInReceipt(item.id);
+          return widget.adapter.isInReceipt(item);
       }
     }).toList();
 
