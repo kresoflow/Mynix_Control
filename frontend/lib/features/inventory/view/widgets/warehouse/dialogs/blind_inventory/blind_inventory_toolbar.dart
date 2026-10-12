@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_search_field.dart';
 
 // ==============================================================================
 // 2. ТУЛБАР ФИЛЬТРАЦИИ И ПОИСКА ИНВЕНТАРИЗАЦИИ
@@ -35,44 +36,10 @@ class BlindInventoryToolbar extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: SizedBox(
-            height: 38,
-            child: TextField(
-              onChanged: onSearchChanged,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: isDark ? AppColors.darkText : AppColors.lightText,
-                fontSize: 13,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Поиск номенклатуры для пересчета...',
-                prefixIcon: const Icon(
-                  PhosphorIconsRegular.magnifyingGlass,
-                  size: 17,
-                ),
-                isDense: true,
-                filled: true,
-                fillColor:
-                    isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 9,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(
-                    color:
-                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(
-                    color:
-                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
-                ),
-              ),
-            ),
+          child: AppSearchField(
+            size: AppSearchFieldSize.md,
+            hintText: 'Поиск номенклатуры для пересчета...',
+            onChanged: onSearchChanged,
           ),
         ),
         const SizedBox(width: 8),
@@ -111,7 +78,7 @@ class BlindInventoryToolbar extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   'Незаполненные',
-                  style: TextStyle(
+                  style: AppTextStyles.caption.copyWith(
                     fontSize: 11,
                     fontWeight:
                         onlyUnfilled ? FontWeight.bold : FontWeight.w500,

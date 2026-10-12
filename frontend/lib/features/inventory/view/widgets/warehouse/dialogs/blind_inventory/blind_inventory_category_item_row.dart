@@ -16,6 +16,7 @@ class BlindInventoryCategoryItemRow extends StatelessWidget {
   final int index;
   final TextEditingController controller;
   final VoidCallback onChanged;
+  final bool isLast;
 
   const BlindInventoryCategoryItemRow({
     super.key,
@@ -23,6 +24,7 @@ class BlindInventoryCategoryItemRow extends StatelessWidget {
     required this.index,
     required this.controller,
     required this.onChanged,
+    this.isLast = false,
   });
 
   @override
@@ -30,16 +32,33 @@ class BlindInventoryCategoryItemRow extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final unit = UnitFormatter.format(item.unit);
     final isRetail = item.attributes?['is_retail'] == true;
+    final isFilled = controller.text.trim().isNotEmpty;
+    final borderSide = BorderSide(
+      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    );
 
-    return Padding(
+    return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 8 : 0),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: isFilled
+            ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.08 : 0.04)
+            : (isDark ? AppColors.darkCard : AppColors.lightCard),
+        borderRadius: isLast
+            ? const BorderRadius.vertical(bottom: Radius.circular(10))
+            : BorderRadius.zero,
+        border: Border(left: borderSide, right: borderSide, bottom: borderSide),
+      ),
       child: Row(
         children: [
           SizedBox(
             width: 24,
             child: Text(
               '${index + 1}',
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 11,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
             ),
           ),
           Expanded(
@@ -73,11 +92,17 @@ class BlindInventoryCategoryItemRow extends StatelessWidget {
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: AppTextStyles.monoBold.copyWith(
+                fontSize: 12,
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+              ),
               decoration: InputDecoration(
                 hintText: 'Факт',
                 suffixText: unit,
-                suffixStyle: const TextStyle(fontSize: 11, color: Colors.grey),
+                suffixStyle: AppTextStyles.caption.copyWith(
+                  fontSize: 11,
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 8,
@@ -85,10 +110,15 @@ class BlindInventoryCategoryItemRow extends StatelessWidget {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color:
-                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
+                  borderSide: borderSide,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(6),
+                  borderSide: borderSide,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(6),
+                  borderSide: BorderSide(color: AppColors.brandPrimary),
                 ),
               ),
               onChanged: (_) => onChanged(),

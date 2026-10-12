@@ -6,11 +6,12 @@ import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'blind_inventory_category_accordion.dart';
+import 'blind_inventory_category_item_row.dart';
 
 // ==============================================================================
 // 2. КАТЕГОРИЙНЫЙ СПИСОК НОМЕНКЛАТУРЫ ИНВЕНТАРИЗАЦИИ
 // ==============================================================================
-/// [ИНВАРИАНТ] Группировка позиций склада по категориям для ревизии.
+/// [ИНВАРИАНТ] Группировка номенклатуры ревизии с плоской виртуализацией (0 мс).
 class BlindInventoryGroupedView extends StatelessWidget {
   final List<Ingredient> items;
   final Map<int, TextEditingController> controllers;
@@ -82,28 +83,70 @@ class BlindInventoryGroupedView extends StatelessWidget {
       );
     }
 
+    // 2. Построение плоского виртуализированного списка (Flat List Virtualization)
+    final List<dynamic> flatList = [];
+    for (final cat in categories) {
+      final catItems = grouped[cat]!;
+      final isExpanded = isAllExpanded ||
+          searchQuery.isNotEmpty ||
+          onlyUnfilled ||
+          (expansionMap[cat] ?? false);
+
+      flatList.add({
+        'type': 'header',
+        'categoryName': cat,
+        'items': catItems,
+        'isExpanded': isExpanded,
+      });
+
+      if (isExpanded) {
+        for (int i = 0; i < catItems.length; i++) {
+          final it = catItems[i];
+          if (!controllers.containsKey(it.id)) {
+            controllers[it.id] = TextEditingController();
+          }
+          flatList.add({
+            'type': 'item',
+            'item': it,
+            'index': i,
+            'isLast': i == catItems.length - 1,
+          });
+        }
+      }
+    }
+
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.44,
       ),
       child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: categories.length,
+        padding: EdgeInsets.zero,
+        itemCount: flatList.length,
         itemBuilder: (context, index) {
-          final cat = categories[index];
-          final isExpanded = isAllExpanded ||
-              searchQuery.isNotEmpty ||
-              onlyUnfilled ||
-              (expansionMap[cat] ?? false);
-
-          return BlindInventoryCategoryAccordion(
-            categoryName: cat,
-            items: grouped[cat]!,
-            controllers: controllers,
-            isExpanded: isExpanded,
-            onExpansionChanged: (exp) => onExpansionChanged(cat, exp),
-            onChanged: onChanged,
-          );
+          final entry = flatList[index];
+          if (entry['type'] == 'header') {
+            final catName = entry['categoryName'] as String;
+            return BlindInventoryCategoryAccordion(
+              key: ValueKey('header-$catName'),
+              categoryName: catName,
+              items: entry['items'] as List<Ingredient>,
+              controllers: controllers,
+              isExpanded: entry['isExpanded'] as bool,
+              onExpansionChanged: (exp) => onExpansionChanged(catName, exp),
+            );
+          } else {
+            final item = entry['item'] as Ingredient;
+            final isLast = entry['isLast'] as bool;
+            final idx = entry['index'] as int;
+            return BlindInventoryCategoryItemRow(
+              key: ValueKey('item-${item.id}'),
+              item: item,
+              index: idx,
+              controller: controllers[item.id]!,
+              onChanged: onChanged,
+              isLast: isLast,
+            );
+          }
         },
       ),
     );
