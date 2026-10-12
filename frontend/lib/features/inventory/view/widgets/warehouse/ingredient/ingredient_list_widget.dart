@@ -214,7 +214,7 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                               ),
                           ],
                         ),
-                        subtitle: Text('Остаток: ${item.currentStock.toInt()} ${UnitFormatter.format(item.unit)} | Алерт: ${item.minStockAlert.toInt()} ${UnitFormatter.format(item.unit)}'),
+                        subtitle: Text('Остаток: ${UnitFormatter.formatAmount(item.currentStock, item.unit)} | Алерт: ${UnitFormatter.formatAmount(item.minStockAlert, item.unit)}'),
                         trailing: widget.isManageMode ? null : Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

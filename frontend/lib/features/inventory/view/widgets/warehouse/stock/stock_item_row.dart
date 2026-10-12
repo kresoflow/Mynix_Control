@@ -141,7 +141,7 @@ class StockItemRow extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${item.currentStock.toStringAsFixed(1)} $translatedUnit',
+                            UnitFormatter.formatAmount(item.currentStock, item.unit),
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
@@ -154,7 +154,7 @@ class StockItemRow extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
                         child: Text(
-                          'Мин: ${item.minStockAlert.toStringAsFixed(1)}',
+                          'Мин: ${UnitFormatter.formatAmount(item.minStockAlert, item.unit)}',
                           style: TextStyle(
                             fontSize: 12,
                             color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,

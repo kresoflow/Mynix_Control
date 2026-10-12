@@ -46,7 +46,7 @@ class _QuickStockActionDialogState extends State<QuickStockActionDialog> {
   }
 
   Future<void> _submit() async {
-    final qty = double.tryParse(_qtyController.text);
+    final qty = double.tryParse(_qtyController.text.replaceAll(',', '.'));
     if (qty == null || qty <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Введите корректное количество')),
@@ -133,7 +133,7 @@ class _QuickStockActionDialogState extends State<QuickStockActionDialog> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Текущий остаток: ${widget.item.currentStock.toStringAsFixed(2)} ${UnitFormatter.format(widget.item.unit)}',
+              'Текущий остаток: ${UnitFormatter.formatAmount(widget.item.currentStock, widget.item.unit)}',
               style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),

@@ -161,9 +161,11 @@ class ReceiveCategorySyncAdapter {
   }
 
   String _formatNum(double val) {
-    if (val == val.roundToDouble()) {
+    if (val == val.truncateToDouble()) {
       return val.toInt().toString();
     }
-    return val.toString();
+    final str = val.toStringAsFixed(3);
+    final trimmed = str.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return trimmed.isEmpty ? '0' : trimmed;
   }
 }

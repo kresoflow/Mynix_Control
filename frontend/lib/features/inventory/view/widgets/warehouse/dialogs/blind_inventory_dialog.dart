@@ -71,7 +71,7 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
       final List<Map<String, dynamic>> items = [];
 
       for (final item in ingredients) {
-        final actualQty = double.tryParse(_controllers[item.id]?.text ?? '');
+        final actualQty = double.tryParse((_controllers[item.id]?.text ?? '').replaceAll(',', '.'));
         if (actualQty == null) continue;
         final isRetail = item.attributes?['is_retail'] == true;
         items.add({

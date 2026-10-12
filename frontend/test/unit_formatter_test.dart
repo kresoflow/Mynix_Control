@@ -52,7 +52,10 @@ void main() {
       expect(UnitFormatter.formatAmount(1.5, 'l'), equals('1.5 л'));
       expect(UnitFormatter.formatAmount(250.75, 'ml'), equals('250.75 мл'));
       expect(UnitFormatter.formatAmount(0.015, 'kg'), equals('0.015 кг'));
+      expect(UnitFormatter.formatAmount(0.015, 'l'), equals('0.015 л'));
       expect(UnitFormatter.formatAmount(0.005, 'kg'), equals('0.005 кг'));
+      expect(UnitFormatter.formatAmount(0.001, 'kg'), equals('0.001 кг'));
+      expect(UnitFormatter.formatAmount(0.010, 'kg'), equals('0.01 кг'));
     });
 
     // ─── 3. Нормализация toDbKey ───────────────────────────────────────────────

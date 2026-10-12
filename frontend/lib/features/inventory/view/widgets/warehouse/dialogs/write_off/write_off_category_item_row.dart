@@ -140,7 +140,7 @@ class WriteOffCategoryItemRow extends StatelessWidget {
                   ),
               ),
               onChanged: (val) {
-                final parsed = double.tryParse(val) ?? 0.0;
+                final parsed = double.tryParse(val.replaceAll(',', '.')) ?? 0.0;
                 onQuantityChanged(item, parsed);
               },
             ),

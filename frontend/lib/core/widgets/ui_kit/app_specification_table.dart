@@ -69,7 +69,7 @@ class AppSpecificationTable extends StatelessWidget {
   double _resolveStep(String unit) {
     final u = unit.toLowerCase();
     if (u.contains('кг') || u.contains('kg') || u.contains('л') || u.contains('l')) {
-      return 0.01;
+      return 0.001;
     } else if (u.contains('г') || u.contains('g') || u.contains('мл') || u.contains('ml')) {
       return 5.0;
     }

@@ -28,7 +28,12 @@ class WriteOffItemRow extends StatelessWidget {
     required this.onChanged,
   });
 
-  String _fmt(double v) => v.toStringAsFixed(v.truncateToDouble() == v ? 0 : 2);
+  String _fmt(double v) {
+    if (v == v.truncateToDouble()) return v.toInt().toString();
+    final str = v.toStringAsFixed(3);
+    final trimmed = str.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return trimmed.isEmpty ? '0' : trimmed;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +124,7 @@ class WriteOffItemRow extends StatelessWidget {
                 ),
               ),
               onChanged: (val) {
-                entry.quantity = double.tryParse(val) ?? 0.0;
+                entry.quantity = double.tryParse(val.replaceAll(',', '.')) ?? 0.0;
                 onChanged();
               },
             ),

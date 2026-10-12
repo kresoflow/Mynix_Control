@@ -48,7 +48,7 @@ void showAddIngredientToRecipeDialog(BuildContext context, int menuItemId, List<
               ),
               ElevatedButton(
                 onPressed: () {
-                  final qty = double.tryParse(qtyController.text) ?? 0;
+                  final qty = double.tryParse(qtyController.text.replaceAll(',', '.')) ?? 0;
                   if (selectedIngredientId != null && qty > 0) {
                     context.read<RecipeBloc>().add(
                           AddIngredientToRecipe(

@@ -104,13 +104,8 @@ class StockLowInventoryWidget extends StatelessWidget {
             )
           else ...[
             ...topLow.map((item) {
-              final unit = UnitFormatter.format(item.unit);
-              final stockStr = item.currentStock % 1 == 0
-                  ? item.currentStock.toInt().toString()
-                  : item.currentStock.toStringAsFixed(2);
-              final minStr = item.minStockAlert % 1 == 0
-                  ? item.minStockAlert.toInt().toString()
-                  : item.minStockAlert.toStringAsFixed(2);
+              final stockStr = UnitFormatter.formatAmount(item.currentStock, item.unit);
+              final minStr = UnitFormatter.formatAmount(item.minStockAlert, item.unit);
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
@@ -141,7 +136,7 @@ class StockLowInventoryWidget extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Остаток: $stockStr $unit • Мин: $minStr $unit',
+                              'Остаток: $stockStr • Мин: $minStr',
                               style: AppTextStyles.caption.copyWith(
                                 color: AppColors.danger,
                                 fontSize: 11,

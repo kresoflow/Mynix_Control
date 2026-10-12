@@ -175,7 +175,7 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               decoration: buildBulkInputDecoration(context, '0', isHintOnly: true, contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6)),
               onChanged: (val) {
-                final qty = double.tryParse(val) ?? 0.0;
+                final qty = double.tryParse(val.replaceAll(',', '.')) ?? 0.0;
                 adapter.updateQuantity(ing, qty);
                 onStateUpdate();
               },
@@ -228,5 +228,10 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
     );
   }
 
-  String _fmt(double val) => val == val.roundToDouble() ? val.toInt().toString() : val.toString();
+  String _fmt(double val) {
+    if (val == val.truncateToDouble()) return val.toInt().toString();
+    final str = val.toStringAsFixed(3);
+    final trimmed = str.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return trimmed.isEmpty ? '0' : trimmed;
+  }
 }

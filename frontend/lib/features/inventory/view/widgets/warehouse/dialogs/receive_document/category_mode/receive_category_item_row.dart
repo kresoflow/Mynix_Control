@@ -70,9 +70,14 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
     super.dispose();
   }
 
-  String _formatNum(double val) => val == val.roundToDouble() ? val.toInt().toString() : val.toString();
-  double get _currentQty => double.tryParse(_qtyController.text) ?? 0.0;
-  double get _currentPrice => double.tryParse(_priceController.text) ?? 0.0;
+  String _formatNum(double val) {
+    if (val == val.truncateToDouble()) return val.toInt().toString();
+    final str = val.toStringAsFixed(3);
+    final trimmed = str.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return trimmed.isEmpty ? '0' : trimmed;
+  }
+  double get _currentQty => double.tryParse(_qtyController.text.replaceAll(',', '.')) ?? 0.0;
+  double get _currentPrice => double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0;
 
   Widget _buildField({
     required TextEditingController controller,
@@ -189,7 +194,7 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
               width: 80,
               isDark: isDark,
               onChanged: (val) {
-                widget.adapter.updateQuantity(widget.item, double.tryParse(val) ?? 0.0);
+                widget.adapter.updateQuantity(widget.item, double.tryParse(val.replaceAll(',', '.')) ?? 0.0);
                 setState(() {});
               },
             ),
@@ -202,7 +207,7 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
               width: 90,
               isDark: isDark,
               onChanged: (val) {
-                widget.adapter.updateCostPrice(widget.item, double.tryParse(val) ?? 0.0);
+                widget.adapter.updateCostPrice(widget.item, double.tryParse(val.replaceAll(',', '.')) ?? 0.0);
                 setState(() {});
               },
             ),
@@ -217,7 +222,7 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
                   width: 90,
                   isDark: isDark,
                   onChanged: (val) {
-                    widget.adapter.updateSellPrice(widget.item, double.tryParse(val) ?? 0.0);
+                    widget.adapter.updateSellPrice(widget.item, double.tryParse(val.replaceAll(',', '.')) ?? 0.0);
                     setState(() {});
                   },
                 )

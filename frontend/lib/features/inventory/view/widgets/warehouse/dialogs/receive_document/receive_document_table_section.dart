@@ -88,7 +88,7 @@ class ReceiveDocumentTableSection extends StatelessWidget {
                 if (val != null) onStateUpdate(() => items[i].selectedUnit = val);
               },
               onQtyChanged: (i, val) {
-                final n = double.tryParse(val);
+                final n = double.tryParse(val.replaceAll(',', '.'));
                 if (n != null) {
                   items[i].quantity = n;
                   items[i].updateTotal();
@@ -96,11 +96,11 @@ class ReceiveDocumentTableSection extends StatelessWidget {
                 }
               },
               onMinStockAlertChanged: (i, val) {
-                final n = double.tryParse(val);
+                final n = double.tryParse(val.replaceAll(',', '.'));
                 if (n != null) items[i].minStockAlert = n;
               },
               onPriceChanged: (i, val) {
-                final n = double.tryParse(val);
+                final n = double.tryParse(val.replaceAll(',', '.'));
                 if (n != null) {
                   items[i].price = n;
                   items[i].updateTotal();
@@ -108,7 +108,7 @@ class ReceiveDocumentTableSection extends StatelessWidget {
                 }
               },
               onSellPriceChanged: (i, val) {
-                final n = double.tryParse(val);
+                final n = double.tryParse(val.replaceAll(',', '.'));
                 if (n != null) items[i].sellPrice = n;
               },
               onRemove: onRemoveItem,
