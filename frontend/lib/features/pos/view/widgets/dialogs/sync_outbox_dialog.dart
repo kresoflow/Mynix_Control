@@ -220,7 +220,7 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
               children: [
                 Expanded(
                   child: AppButton.secondary(
-                    label: 'Закрыть',
+                    label: 'Отмена',
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -230,7 +230,7 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
                   child: AppButton.primary(
                     label: _isSyncing
                         ? 'Синхронизация...'
-                        : (isMobile ? 'Выгрузить' : 'Синхронизировать сейчас'),
+                        : (isMobile ? 'Выгрузить' : 'Синхронизировать'),
                     icon: PhosphorIconsRegular.arrowsClockwise,
                     isLoading: _isSyncing,
                     onPressed: _handleManualSync,

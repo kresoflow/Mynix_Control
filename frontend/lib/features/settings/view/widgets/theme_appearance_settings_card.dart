@@ -99,7 +99,7 @@ class ThemeAppearanceSettingsCard extends StatelessWidget {
                   _buildPaletteBtn(
                     context,
                     isDark: isDark,
-                    label: 'Classic Ember (Янтарь)',
+                    label: 'Ember',
                     accentColor: const Color(0xFFE8A020),
                     isSelected: themeState.palette == ThemePalette.ember,
                     onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.ember)),
@@ -107,7 +107,7 @@ class ThemeAppearanceSettingsCard extends StatelessWidget {
                   _buildPaletteBtn(
                     context,
                     isDark: isDark,
-                    label: 'Soft Cream (Крем / Эспрессо)',
+                    label: 'Cream',
                     accentColor: const Color(0xFFD97706),
                     isSelected: themeState.palette == ThemePalette.cream,
                     onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.cream)),
@@ -115,7 +115,7 @@ class ThemeAppearanceSettingsCard extends StatelessWidget {
                   _buildPaletteBtn(
                     context,
                     isDark: isDark,
-                    label: 'Deep Ocean (Контраст / Океан)',
+                    label: 'Ocean',
                     accentColor: const Color(0xFF00F0FF),
                     isSelected: themeState.palette == ThemePalette.ocean,
                     onTap: () => context.read<ThemeBloc>().add(const SetThemePalette(ThemePalette.ocean)),
