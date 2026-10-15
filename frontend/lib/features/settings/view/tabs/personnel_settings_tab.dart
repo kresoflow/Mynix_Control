@@ -70,16 +70,12 @@ class _PersonnelSettingsView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // ── 1. Владелец заведения (VIP Card) ──────────────────────
-            Text(
-              'Владелец заведения',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
+            SettingsSectionHeader(
+              title: 'Владелец заведения',
+              isDark: isDark,
+              subtitle: 'Главный аккаунт с полными правами доступа',
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             if (ownerUsers.isEmpty)
               SettingsCard(
@@ -126,16 +122,12 @@ class _PersonnelSettingsView extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // ── 2. Штат сотрудников (Линейный персонал) ───────────────
-            Text(
-              'Штат сотрудников (${staffUsers.length})',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
+            SettingsSectionHeader(
+              title: 'Штат сотрудников (${staffUsers.length})',
+              isDark: isDark,
+              subtitle: 'Кассиры, управляющие и линейный персонал',
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             if (staffUsers.isEmpty)
               SettingsCard(

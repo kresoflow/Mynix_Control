@@ -1,4 +1,9 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Настройки / Карточка выбора темы и палитры бренда
+// ДОМЕН: lib/features/settings/view/widgets/theme_appearance_settings_card.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/theme_bloc.dart';

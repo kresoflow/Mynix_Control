@@ -1,14 +1,24 @@
+// ==============================================================================
+// МОДУЛЬ: Настройки / Главный экран настроек системы (SettingsScreen)
+// ДОМЕН: lib/features/settings/view/settings_screen.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/general_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/system_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/ui_kit_showcase_screen.dart';
-import 'package:kreso_frontend/features/settings/view/widgets/settings_category_tile.dart';
+
+class _SettingsCategory {
+  final IconData icon;
+  final String title;
+
+  const _SettingsCategory(this.icon, this.title);
+}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -20,11 +30,11 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   int _selectedIndex = 0;
 
-  final List<SettingsCategory> _categories = const [
-    SettingsCategory(PhosphorIconsRegular.slidersHorizontal, 'Основные'),
-    SettingsCategory(PhosphorIconsRegular.users, 'Персонал'),
-    SettingsCategory(PhosphorIconsRegular.hardDrives, 'Система'),
-    SettingsCategory(PhosphorIconsRegular.paintBrushBroad, 'UI Kit & Дизайн'),
+  final List<_SettingsCategory> _categories = const [
+    _SettingsCategory(PhosphorIconsRegular.slidersHorizontal, 'Основные'),
+    _SettingsCategory(PhosphorIconsRegular.users, 'Персонал'),
+    _SettingsCategory(PhosphorIconsRegular.hardDrives, 'Система'),
+    _SettingsCategory(PhosphorIconsRegular.paintBrushBroad, 'UI Kit & Дизайн'),
   ];
 
   @override
@@ -100,10 +110,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           final category = _categories[index];
                           final isSelected = index == _selectedIndex;
 
-                          return SettingsCategoryTile(
-                            category: category,
+                          return AppNavTile(
+                            title: category.title,
+                            icon: category.icon,
                             isSelected: isSelected,
-                            isDark: isDark,
+                            size: AppNavTileSize.lg,
                             onTap: () {
                               setState(() {
                                 _selectedIndex = index;
@@ -128,17 +139,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildCategoryContent(bool isDark) {
+    if (_selectedIndex == 3) {
+      return const UiKitShowcaseScreen();
+    }
+
+    final Widget content;
     switch (_selectedIndex) {
       case 0:
-        return GeneralSettingsTab(isDark: isDark);
+        content = GeneralSettingsTab(isDark: isDark);
+        break;
       case 1:
-        return PersonnelSettingsTab(isDark: isDark);
+        content = PersonnelSettingsTab(isDark: isDark);
+        break;
       case 2:
-        return SystemSettingsTab(isDark: isDark);
-      case 3:
-        return const UiKitShowcaseScreen();
+        content = SystemSettingsTab(isDark: isDark);
+        break;
       default:
-        return const SizedBox.shrink();
+        content = const SizedBox.shrink();
     }
+
+    return Align(
+      alignment: Alignment.topLeft,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 920),
+        child: content,
+      ),
+    );
   }
 }

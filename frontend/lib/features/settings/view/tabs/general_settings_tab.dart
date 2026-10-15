@@ -1,141 +1,51 @@
+// ==============================================================================
+// МОДУЛЬ: Настройки / Вкладка основных настроек заведения (GeneralSettingsTab)
+// ДОМЕН: lib/features/settings/view/tabs/general_settings_tab.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:kreso_frontend/features/settings/repository/settings_repository.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:kreso_frontend/features/settings/view/widgets/settings_ui_components.dart';
 import 'package:kreso_frontend/features/settings/view/widgets/theme_appearance_settings_card.dart';
-import 'package:kreso_frontend/core/widgets/app_toast.dart';
-import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 
-class GeneralSettingsTab extends StatefulWidget {
+// ─── 1. Главная вкладка базовых параметров заведения ─────────────────────────
+
+/// [UI-KIT] Вкладка параметров заведения, внешнего вида, региональных настроек.
+class GeneralSettingsTab extends StatelessWidget {
   final bool isDark;
+
   const GeneralSettingsTab({super.key, required this.isDark});
 
   @override
-  State<GeneralSettingsTab> createState() => _GeneralSettingsTabState();
-}
-
-class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
-  bool _isLoading = true;
-  bool _useOrders = true;
-  bool _enableInventory = true;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchSettings());
-  }
-
-  Future<void> _fetchSettings() async {
-    if (!mounted) return;
-    try {
-      final repo = context.read<SettingsRepository>();
-      final data = await repo.getSettings();
-      if (mounted) {
-        setState(() {
-          _useOrders = data['use_orders'] ?? true;
-          _enableInventory = data['enable_inventory_deduction'] ?? true;
-          _isLoading = false;
-        });
-        context.read<SettingsBloc>().add(
-          UpdateFeatureFlags(useOrders: _useOrders),
-        );
-      }
-    } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _updateSettings(bool useOrders, bool enableInv) async {
-    try {
-      final repo = context.read<SettingsRepository>();
-      await repo.updateSettings({
-        'use_kds': false,
-        'use_orders': useOrders,
-        'enable_inventory_deduction': enableInv,
-      });
-      if (mounted) {
-        setState(() {
-          _useOrders = useOrders;
-          _enableInventory = enableInv;
-        });
-        context.read<SettingsBloc>().add(
-          UpdateFeatureFlags(useOrders: _useOrders),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        AppToast.showError(
-          context,
-          'Ошибка сохранения настроек',
-          subtitle: e.toString(),
-        );
-      }
-    }
-  }
-
-  Widget _buildCurrencyBtn(BuildContext context, bool isDark, SettingsState state, String symbol, String name) {
-    final isSelected = state.currency == symbol;
-    return InkWell(
-      onTap: () => context.read<SettingsBloc>().add(UpdateCurrency(symbol)),
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandPrimary.withValues(alpha: 0.15)
-              : (isDark ? AppColors.darkBg : AppColors.lightBg),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.brandPrimary
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            width: isSelected ? 1.5 : 1.0,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              symbol,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              name,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final isDark = widget.isDark;
-
     return BlocBuilder<SettingsBloc, SettingsState>(
       builder: (context, state) {
-        if (_isLoading) {
+        if (state.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
         final isMobile = MediaQuery.of(context).size.width < 700;
+
         return ListView(
           padding: EdgeInsets.all(isMobile ? 16 : 32),
           children: [
-            buildSettingsHeader('Функции заведения', isDark),
-            const SizedBox(height: 32),
+            // Заголовок страницы
+            const AppPageHeader(
+              title: 'Основные настройки',
+              subtitle: 'Конфигурация бизнес-функций, интерфейса и параметров заведения',
+            ),
+            const SizedBox(height: 24),
+
+            // ── 1. Функции заведения ─────────────────────────────────────────
+            SettingsSectionHeader(
+              title: 'Функции заведения',
+              isDark: isDark,
+              subtitle: 'Отображение заказов, списание и каталоги',
+            ),
+            const SizedBox(height: 12),
             SettingsCard(
               isDark: isDark,
               children: [
@@ -143,10 +53,13 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   isDark: isDark,
                   title: 'Показывать вкладку Заказы',
                   subtitle: 'Отображать вкладку с активными заказами на экране кассы',
-                  trailing: Switch(
-                    value: _useOrders,
-                    activeThumbColor: AppColors.brandPrimary,
-                    onChanged: (val) => _updateSettings(val, _enableInventory),
+                  trailing: AppSwitch(
+                    value: state.useOrders,
+                    onChanged: (val) {
+                      context.read<SettingsBloc>().add(
+                            UpdateStoreSettings(useOrders: val),
+                          );
+                    },
                   ),
                 ),
                 SettingsDivider(isDark: isDark),
@@ -154,10 +67,13 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   isDark: isDark,
                   title: 'Списание ингредиентов',
                   subtitle: 'Минусовать сырье по тех. картам при продаже',
-                  trailing: Switch(
-                    value: _enableInventory,
-                    activeThumbColor: AppColors.brandPrimary,
-                    onChanged: (val) => _updateSettings(_useOrders, val),
+                  trailing: AppSwitch(
+                    value: state.enableInventory,
+                    onChanged: (val) {
+                      context.read<SettingsBloc>().add(
+                            UpdateStoreSettings(enableInventory: val),
+                          );
+                    },
                   ),
                 ),
                 SettingsDivider(isDark: isDark),
@@ -167,23 +83,36 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                       isDark: isDark,
                       title: 'Цветные категории',
                       subtitle: 'Использовать цвета категорий из каталога для карточек меню',
-                      trailing: Switch(
+                      trailing: AppSwitch(
                         value: posState.enableRainbowColors,
-                        activeThumbColor: AppColors.brandPrimary,
-                        onChanged: (_) => context.read<PosSettingsCubit>().toggleRainbowColors(),
+                        onChanged: (_) {
+                          context.read<PosSettingsCubit>().toggleRainbowColors();
+                        },
                       ),
                     );
                   },
                 ),
               ],
             ),
-            const SizedBox(height: 48),
-            buildSettingsHeader('Внешний вид', isDark),
             const SizedBox(height: 32),
+
+            // ── 2. Внешний вид ───────────────────────────────────────────────
+            SettingsSectionHeader(
+              title: 'Внешний вид',
+              isDark: isDark,
+              subtitle: 'Тема интерфейса и палитра бренда Kreso Flow',
+            ),
+            const SizedBox(height: 12),
             ThemeAppearanceSettingsCard(isDark: isDark),
-            const SizedBox(height: 40),
-            buildSettingsHeader('Региональные настройки', isDark),
             const SizedBox(height: 32),
+
+            // ── 3. Региональные настройки ────────────────────────────────────
+            SettingsSectionHeader(
+              title: 'Региональные настройки',
+              isDark: isDark,
+              subtitle: 'Валюта расчетов и системный часовой пояс',
+            ),
+            const SizedBox(height: 12),
             SettingsCard(
               isDark: isDark,
               children: [
@@ -191,13 +120,16 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   isDark: isDark,
                   title: 'Валюта по умолчанию',
                   subtitle: 'Отображается в кассе, чеках и аналитике',
-                  trailing: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildCurrencyBtn(context, isDark, state, '₽', 'Рубль'),
-                      _buildCurrencyBtn(context, isDark, state, '₸', 'Тенге'),
-                      _buildCurrencyBtn(context, isDark, state, 'с', 'TJS'),
+                  trailing: AppSegmentedControl<String>(
+                    selectedValue: state.currency,
+                    size: AppSegmentedSize.sm,
+                    onValueChanged: (val) {
+                      context.read<SettingsBloc>().add(UpdateCurrency(val));
+                    },
+                    items: const [
+                      AppSegmentedItem(value: '₽', label: '₽ Рубль'),
+                      AppSegmentedItem(value: '₸', label: '₸ Тенге'),
+                      AppSegmentedItem(value: 'с', label: 'с TJS'),
                     ],
                   ),
                 ),
@@ -206,13 +138,33 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   isDark: isDark,
                   title: 'Часовой пояс',
                   subtitle: 'Определяет время чеков и смен',
-                  trailing: DropdownStub(isDark: isDark, value: 'GMT+3 (Москва)'),
+                  trailing: SettingsDropdown<String>(
+                    isDark: isDark,
+                    value: state.timezone,
+                    items: const [
+                      'GMT+3 (Москва)',
+                      'GMT+5 (Ташкент/Душанбе)',
+                      'GMT+6 (Бишкек/Алматы)',
+                    ],
+                    itemLabel: (item) => item,
+                    onSelected: (tz) {
+                      context.read<SettingsBloc>().add(
+                            UpdateStoreSettings(timezone: tz),
+                          );
+                    },
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
-            buildSettingsHeader('Системные настройки', isDark),
             const SizedBox(height: 32),
+
+            // ── 4. Системные настройки ───────────────────────────────────────
+            SettingsSectionHeader(
+              title: 'Системные настройки',
+              isDark: isDark,
+              subtitle: 'Звуковые сигналы и обратная связь',
+            ),
+            const SizedBox(height: 12),
             SettingsCard(
               isDark: isDark,
               children: [
@@ -220,7 +172,14 @@ class _GeneralSettingsTabState extends State<GeneralSettingsTab> {
                   isDark: isDark,
                   title: 'Звуковые уведомления',
                   subtitle: 'Звуки при успешной оплате или ошибках',
-                  trailing: Switch(value: true, onChanged: (_) {}, activeThumbColor: AppColors.brandPrimary),
+                  trailing: AppSwitch(
+                    value: state.soundEnabled,
+                    onChanged: (val) {
+                      context.read<SettingsBloc>().add(
+                            UpdateStoreSettings(soundEnabled: val),
+                          );
+                    },
+                  ),
                 ),
               ],
             ),

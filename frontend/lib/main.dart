@@ -126,7 +126,7 @@ class _KresoAppState extends State<KresoApp> {
     _posSyncService = PosSyncService(apiClient: apiClient)..start();
     _authBloc = AuthBloc(_authRepository)..add(AppStarted());
     _themeBloc = ThemeBloc()..add(LoadSavedTheme());
-    _settingsBloc = SettingsBloc();
+    _settingsBloc = SettingsBloc(settingsRepository: _settingsRepository);
     _menuBloc = MenuBloc(_menuRepository);
     _cartBloc = CartBloc(_orderRepository);
     _shiftBloc = ShiftBloc(_shiftRepository);
@@ -213,6 +213,7 @@ class _KresoAppState extends State<KresoApp> {
               context.read<MenuBloc>().add(LoadMenu());
               context.read<ShiftBloc>().add(CheckCurrentShift());
               context.read<CategoryBloc>().add(LoadCategories());
+              context.read<SettingsBloc>().add(const LoadSettings());
               if (state.hasPermission('inventory:view')) {
                 context.read<IngredientBloc>().add(const LoadIngredients());
                 context.read<DocumentBloc>().add(const LoadDocuments());

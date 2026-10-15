@@ -1,18 +1,64 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Настройки / Общие компоненты разметки настроек (Settings UI Components)
+// ДОМЕН: lib/features/settings/view/widgets/settings_ui_components.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-Widget buildSettingsHeader(String title, bool isDark) {
-  return Text(
-    title,
-    style: AppTextStyles.h1.copyWith(
-      color: isDark ? AppColors.darkText : AppColors.lightText,
-      fontSize: 28,
-    ),
-  );
+// ─── 1. Заголовки секций настроек ─────────────────────────────────────────────
+
+/// Заголовок секции настроек (например, "Функции заведения", "Внешний вид").
+class SettingsSectionHeader extends StatelessWidget {
+  final String title;
+  final bool isDark;
+  final String? subtitle;
+
+  const SettingsSectionHeader({
+    super.key,
+    required this.title,
+    required this.isDark,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.1,
+            color: isDark ? AppColors.darkText : AppColors.lightText,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle!,
+            style: AppTextStyles.caption.copyWith(
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
 }
 
+/// Для обратной совместимости вызовов
+Widget buildSettingsHeader(String title, bool isDark) {
+  return SettingsSectionHeader(title: title, isDark: isDark);
+}
+
+// ─── 2. Карточка и строки настроек ───────────────────────────────────────────
+
+/// Обертка секции настроек в единую скругленную карточку
 class SettingsCard extends StatelessWidget {
   final bool isDark;
   final List<Widget> children;
@@ -36,6 +82,7 @@ class SettingsCard extends StatelessWidget {
   }
 }
 
+/// Строка параметра настройки с заголовком, описанием и управляющим элементом справа
 class SettingsRow extends StatelessWidget {
   final bool isDark;
   final String title;
@@ -56,7 +103,7 @@ class SettingsRow extends StatelessWidget {
 
     if (isDesktop) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
         child: Row(
           children: [
             Expanded(
@@ -81,10 +128,7 @@ class SettingsRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 24),
-            Flexible(
-              flex: 2,
-              child: trailing,
-            ),
+            trailing,
           ],
         ),
       );
@@ -120,6 +164,7 @@ class SettingsRow extends StatelessWidget {
   }
 }
 
+/// Тонкий разделитель между строками настроек
 class SettingsDivider extends StatelessWidget {
   final bool isDark;
 
@@ -135,6 +180,85 @@ class SettingsDivider extends StatelessWidget {
   }
 }
 
+// ─── 3. Вспомогательные контролы настроек ─────────────────────────────────────
+
+/// Интерактивный селектор выпадающего значения
+class SettingsDropdown<T> extends StatelessWidget {
+  final bool isDark;
+  final T value;
+  final List<T> items;
+  final String Function(T) itemLabel;
+  final ValueChanged<T> onSelected;
+
+  const SettingsDropdown({
+    super.key,
+    required this.isDark,
+    required this.value,
+    required this.items,
+    required this.itemLabel,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<T>(
+      initialValue: value,
+      onSelected: onSelected,
+      color: isDark ? AppColors.darkCard : AppColors.lightCard,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkBg : AppColors.lightBg,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              itemLabel(value),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              PhosphorIconsRegular.caretDown,
+              size: 14,
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            ),
+          ],
+        ),
+      ),
+      itemBuilder: (context) {
+        return items.map((item) {
+          final isSelected = item == value;
+          return PopupMenuItem<T>(
+            value: item,
+            child: Text(
+              itemLabel(item),
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                color: isSelected ? AppColors.brandPrimary : null,
+              ),
+            ),
+          );
+        }).toList();
+      },
+    );
+  }
+}
+
+/// Для совместимости со старыми заглушками DropdownStub
 class DropdownStub extends StatelessWidget {
   final bool isDark;
   final String value;
@@ -144,7 +268,7 @@ class DropdownStub extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkBg : AppColors.lightBg,
         borderRadius: BorderRadius.circular(8),
@@ -164,48 +288,10 @@ class DropdownStub extends StatelessWidget {
           const SizedBox(width: 8),
           Icon(
             PhosphorIconsRegular.caretDown,
-            size: 16,
+            size: 14,
             color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class ButtonStub extends StatelessWidget {
-  final bool isDark;
-  final String label;
-  final bool isPrimary;
-
-  const ButtonStub({
-    super.key,
-    required this.isDark,
-    required this.label,
-    required this.isPrimary,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: isPrimary
-            ? AppColors.brandPrimary
-            : (isDark ? AppColors.darkBg : AppColors.lightBg),
-        borderRadius: BorderRadius.circular(8),
-        border: isPrimary
-            ? null
-            : Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: isPrimary
-              ? Colors.white
-              : (isDark ? AppColors.darkText : AppColors.lightText),
-          fontWeight: isPrimary ? FontWeight.w600 : FontWeight.w500,
-        ),
       ),
     );
   }
