@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
@@ -51,7 +51,7 @@ class AppPageHeader extends StatelessWidget {
                     ],
                     Text(
                       title,
-                      style: AppTextStyles.h2.copyWith(
+                      style: AppTextStyles.h1.copyWith(
                         color: isDark ? AppColors.darkText : AppColors.lightText,
                         fontWeight: FontWeight.w700,
                       ),

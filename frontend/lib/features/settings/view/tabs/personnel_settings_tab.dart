@@ -15,15 +15,34 @@ import 'package:kreso_frontend/features/settings/repository/user_repository.dart
 import 'package:kreso_frontend/features/settings/view/widgets/settings_ui_components.dart';
 import 'package:kreso_frontend/features/settings/view/widgets/user_form_dialog.dart';
 
-class PersonnelSettingsTab extends StatelessWidget {
+class PersonnelSettingsTab extends StatefulWidget {
   final bool isDark;
   const PersonnelSettingsTab({super.key, required this.isDark});
 
   @override
+  State<PersonnelSettingsTab> createState() => _PersonnelSettingsTabState();
+}
+
+class _PersonnelSettingsTabState extends State<PersonnelSettingsTab> {
+  late final UserBloc _userBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _userBloc = UserBloc(repository: UserRepository())..add(LoadUsers());
+  }
+
+  @override
+  void dispose() {
+    _userBloc.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => UserBloc(repository: UserRepository())..add(LoadUsers()),
-      child: _PersonnelSettingsView(isDark: isDark),
+    return BlocProvider.value(
+      value: _userBloc,
+      child: _PersonnelSettingsView(isDark: widget.isDark),
     );
   }
 }
@@ -36,7 +55,7 @@ class _PersonnelSettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
-        if (state.isLoading) {
+        if (state.isLoading && state.users.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 

@@ -7,13 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:kreso_frontend/features/settings/view/widgets/settings_ui_components.dart';
-import 'package:kreso_frontend/features/settings/view/widgets/theme_appearance_settings_card.dart';
 
 // ─── 1. Главная вкладка базовых параметров заведения ─────────────────────────
 
-/// [UI-KIT] Вкладка параметров заведения, внешнего вида, региональных настроек.
+/// [UI-KIT] Вкладка параметров заведения, региональных настроек и уведомлений.
 class GeneralSettingsTab extends StatelessWidget {
   final bool isDark;
 
@@ -35,7 +33,7 @@ class GeneralSettingsTab extends StatelessWidget {
             // Заголовок страницы
             const AppPageHeader(
               title: 'Основные настройки',
-              subtitle: 'Конфигурация бизнес-функций, интерфейса и параметров заведения',
+              subtitle: 'Конфигурация бизнес-функций, параметров учета и заведения',
             ),
             const SizedBox(height: 24),
 
@@ -43,7 +41,7 @@ class GeneralSettingsTab extends StatelessWidget {
             SettingsSectionHeader(
               title: 'Функции заведения',
               isDark: isDark,
-              subtitle: 'Отображение заказов, списание и каталоги',
+              subtitle: 'Отображение заказов и автоматическое списание сырья',
             ),
             const SizedBox(height: 12),
             SettingsCard(
@@ -76,41 +74,15 @@ class GeneralSettingsTab extends StatelessWidget {
                     },
                   ),
                 ),
-                SettingsDivider(isDark: isDark),
-                BlocBuilder<PosSettingsCubit, PosSettingsState>(
-                  builder: (context, posState) {
-                    return SettingsRow(
-                      isDark: isDark,
-                      title: 'Цветные категории',
-                      subtitle: 'Использовать цвета категорий из каталога для карточек меню',
-                      trailing: AppSwitch(
-                        value: posState.enableRainbowColors,
-                        onChanged: (_) {
-                          context.read<PosSettingsCubit>().toggleRainbowColors();
-                        },
-                      ),
-                    );
-                  },
-                ),
               ],
             ),
             const SizedBox(height: 32),
 
-            // ── 2. Внешний вид ───────────────────────────────────────────────
-            SettingsSectionHeader(
-              title: 'Внешний вид',
-              isDark: isDark,
-              subtitle: 'Тема интерфейса и палитра бренда Kreso Flow',
-            ),
-            const SizedBox(height: 12),
-            ThemeAppearanceSettingsCard(isDark: isDark),
-            const SizedBox(height: 32),
-
-            // ── 3. Региональные настройки ────────────────────────────────────
+            // ── 2. Региональные настройки ────────────────────────────────────
             SettingsSectionHeader(
               title: 'Региональные настройки',
               isDark: isDark,
-              subtitle: 'Валюта расчетов и системный часовой пояс',
+              subtitle: 'Валюта расчетов и системный часовой пояс торговой точки',
             ),
             const SizedBox(height: 12),
             SettingsCard(
@@ -122,7 +94,7 @@ class GeneralSettingsTab extends StatelessWidget {
                   subtitle: 'Отображается в кассе, чеках и аналитике',
                   trailing: AppSegmentedControl<String>(
                     selectedValue: state.currency,
-                    size: AppSegmentedSize.sm,
+                    size: AppSegmentedSize.md,
                     onValueChanged: (val) {
                       context.read<SettingsBloc>().add(UpdateCurrency(val));
                     },
@@ -158,7 +130,7 @@ class GeneralSettingsTab extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // ── 4. Системные настройки ───────────────────────────────────────
+            // ── 3. Системные уведомления ─────────────────────────────────────
             SettingsSectionHeader(
               title: 'Системные настройки',
               isDark: isDark,

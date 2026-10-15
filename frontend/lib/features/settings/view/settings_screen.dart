@@ -9,6 +9,7 @@ import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/general_settings_tab.dart';
+import 'package:kreso_frontend/features/settings/view/tabs/appearance_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/system_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/ui_kit_showcase_screen.dart';
@@ -32,6 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final List<_SettingsCategory> _categories = const [
     _SettingsCategory(PhosphorIconsRegular.slidersHorizontal, 'Основные'),
+    _SettingsCategory(PhosphorIconsRegular.palette, 'Оформление'),
     _SettingsCategory(PhosphorIconsRegular.users, 'Персонал'),
     _SettingsCategory(PhosphorIconsRegular.hardDrives, 'Система'),
     _SettingsCategory(PhosphorIconsRegular.paintBrushBroad, 'UI Kit & Дизайн'),
@@ -139,30 +141,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildCategoryContent(bool isDark) {
-    if (_selectedIndex == 3) {
-      return const UiKitShowcaseScreen();
-    }
-
-    final Widget content;
-    switch (_selectedIndex) {
-      case 0:
-        content = GeneralSettingsTab(isDark: isDark);
-        break;
-      case 1:
-        content = PersonnelSettingsTab(isDark: isDark);
-        break;
-      case 2:
-        content = SystemSettingsTab(isDark: isDark);
-        break;
-      default:
-        content = const SizedBox.shrink();
-    }
-
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 920),
-        child: content,
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            GeneralSettingsTab(isDark: isDark),
+            AppearanceSettingsTab(isDark: isDark),
+            PersonnelSettingsTab(isDark: isDark),
+            SystemSettingsTab(isDark: isDark),
+            const UiKitShowcaseScreen(),
+          ],
+        ),
       ),
     );
   }
