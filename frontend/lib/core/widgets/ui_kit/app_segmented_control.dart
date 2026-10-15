@@ -37,6 +37,7 @@ class AppSegmentedItem<T> {
   final String label;
   final String? tooltip;
   final IconData? icon;
+  final Widget? leading;
   final int? count;
 
   const AppSegmentedItem({
@@ -44,6 +45,7 @@ class AppSegmentedItem<T> {
     this.label = '',
     this.tooltip,
     this.icon,
+    this.leading,
     this.count,
   });
 }
@@ -164,7 +166,10 @@ class _SegmentTileState<T> extends State<_SegmentTile<T>> {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (item.icon != null) ...[
+          if (item.leading != null) ...[
+            item.leading!,
+            if (!isIconOnly) const SizedBox(width: 6),
+          ] else if (item.icon != null) ...[
             Icon(item.icon, size: size.iconSize, color: fg),
             if (!isIconOnly) const SizedBox(width: 6),
           ],

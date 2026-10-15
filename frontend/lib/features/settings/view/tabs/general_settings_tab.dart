@@ -100,7 +100,7 @@ class GeneralSettingsTab extends StatelessWidget {
                     },
                     items: const [
                       AppSegmentedItem(value: '₽', label: '₽ Рубль'),
-                      AppSegmentedItem(value: '₸', label: '₸ Тенге'),
+                      AppSegmentedItem(value: r'$', label: r'$ Доллар'),
                       AppSegmentedItem(value: 'с', label: 'с TJS'),
                     ],
                   ),
