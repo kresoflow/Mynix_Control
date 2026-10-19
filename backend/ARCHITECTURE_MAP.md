@@ -55,12 +55,15 @@ backend/
 │   │   ├── models.py                 # DTO и схемы финансовых KPI и сменных отчетов
 │   │   ├── router.py                 # Главный объединяющий роутер аналитики
 │   │   └── utils.py                  # Хелперы форматирования дат и периодов
-│   ├── crm/                          # Модуль: Клиенты и Программа лояльности
-│   │   ├── __pycache__/              # Байт-код модуля CRM
-│   │   ├── routers/                  # HTTP-маршруты (crm_router)
-│   │   ├── services/                 # Бизнес-логика (crm_service, crm_loyalty_service, crm_ledger_service)
-│   │   ├── models.py                 # Модели: Customer, CustomerLedger, LoyaltyTier
-│   │   └── router.py                 # Главный роутер CRM
+│   ├── core/                         # Ядро: Системное логирование и аудит трафика
+│   │   ├── __init__.py               # Инициализация пакета core
+│   │   ├── logging_config.py         # Настройка многопоточного логирования (консоль + backend.log)
+│   │   └── traffic_audit.py          # Middleware аудита HTTP-трафика и задержек
+│   ├── crm/                          # [Спящая схема] Клиенты и история операций
+│   │   └── models.py                 # Модели схемы: Customer, CustomerTransaction, BonusTransaction (сохранены для FK orders.customer_id и целостности БД)
+│   ├── gift_cards/                   # [Спящая схема] Сертификаты и подарочные карты
+│   │   ├── __init__.py               # Экспорт моделей пакета gift_cards
+│   │   └── models.py                 # Модели схемы: GiftCard, GiftCardTransaction (сохранены для целостности существующих таблиц БД)
 │   ├── inventory/                    # Модуль: Склад, Меню, Техкарты и Поставщики
 │   │   ├── __pycache__/              # Байт-код модуля склада
 │   │   ├── models/                   # Модели: menu_models, ingredient_models, document_models, enums
@@ -69,18 +72,13 @@ backend/
 │   │   ├── __init__.py               # Инициализация пакета inventory
 │   │   ├── router.py                 # Главный роутер склада и каталога
 │   │   └── seed.py                   # Базовый сид тестового меню и ингредиентов
-│   ├── kitchen/                      # Модуль: Кухонный терминал (KDS)
-│   │   ├── __pycache__/              # Байт-код модуля кухни
-│   │   ├── routers/                  # HTTP-маршруты: kitchen_router
-│   │   ├── services/                 # Бизнес-логика: kitchen_service (распределение по цехам)
-│   │   ├── __init__.py               # Инициализация пакета kitchen
-│   │   └── models.py                 # Модели: KitchenTicket, KitchenItemStatus
-│   ├── pos/                          # Модуль: Кассовый терминал, Заказы и Смены
+│   ├── pos/                          # Модуль: Кассовый терминал, Заказы, Смены и WebSocket
 │   │   ├── __pycache__/              # Байт-код модуля POS
 │   │   ├── routers/                  # HTTP-маршруты: checkout_router, shift_router, cashbox_router, table_router
 │   │   ├── services/                 # Бизнес-логика: checkout_service, shift_service, order_table_service
 │   │   ├── __init__.py               # Инициализация пакета pos
-│   │   └── models.py                 # Модели: Order, OrderItem, Shift, Cashbox, OrderTable
+│   │   ├── models.py                 # Модели: Order, OrderItem, Shift, Cashbox, OrderTable
+│   │   └── ws.py                     # WebSocket хаб реального времени (включая уведомления поваров)
 │   ├── system/                       # Модуль: Системные настройки, Управление кластером и Диагностика
 │   │   ├── __pycache__/              # Байт-код модуля system
 │   │   ├── routers/                  # HTTP-маршруты системного управления
@@ -121,23 +119,29 @@ backend/
 │   ├── manual_tests/                 # Ручные сценарии проверки API (смены, печать, X-отчеты)
 │   └── seed_data.py                  # Утилита наполнения тестовыми данными
 │
-├── tests/                            # Набор автоматических тестов pytest
+├── tests/                            # Набор автоматических тестов pytest (124 теста)
 │   ├── __pycache__/                  # Служебный кэш байт-кода тестов
 │   ├── conftest.py                   # Корневые фикстуры (SQLite in-memory, моки сессий)
 │   ├── test_adversarial_m1.py        # Стресс-тестирование граничных условий
 │   ├── test_analytics.py             # Тесты аналитики и сменных отчетов
 │   ├── test_bulk_endpoints.py        # Тесты батч-эндпоинтов номенклатуры
-│   ├── test_crm_and_ledger.py        # Тесты балансов клиентов и лояльности
+│   ├── test_cash_operations.py       # Тесты кассовых операций и инкассации
 │   ├── test_e2e_requirements.py      # E2E приёмочные сценарии
-│   ├── test_hall_orders_and_approval.py # Тесты заказов зала и столов
+│   ├── test_frontend_logs.py         # Тесты ingestion логов фронтенда
 │   ├── test_inventory_deduction.py   # Тесты автоматического списания ингредиентов
 │   ├── test_m1_adversarial.py        # Стресс-тесты PBAC прав и безопасности
 │   ├── test_main.py                  # Тесты точки входа и healthcheck
+│   ├── test_menu_topology.py         # Тесты топологии категорий и позиций меню
 │   ├── test_multitenancy_and_idor.py # Тесты изоляции схем тенантов и IDOR защиты
+│   ├── test_pbac_three_roles.py      # Тесты матриц ролей PBAC
+│   ├── test_poka_yoke_guards.py      # Тесты защиты от дублей и ошибок ввода (Poka-Yoke)
 │   ├── test_pos_offline_idempotency.py # Тесты идемпотентности кассы
 │   ├── test_pos_shifts.py            # Тесты открытия и закрытия смен
+│   ├── test_recipe_api.py            # Тесты калькуляций техкарт и граммовок
+│   ├── test_retail_variations.py     # Тесты вариаций штучного ритейла и упаковок
 │   ├── test_supplier_debt_and_documents.py # Тесты долгов поставщиков и накладных
 │   ├── test_system_security.py       # Тесты управления тенантами, сброса паролей и системного токена
+│   ├── test_tenant_migrations.py     # Тесты миграций схем тенантов
 │   └── test_users.py                 # Тесты пользователей и авторизации
 │
 ├── .env                              # Локальные переменные окружения разработчика

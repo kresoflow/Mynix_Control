@@ -60,10 +60,10 @@ d:\Kreso_Flow/
 │   ├── .pytest_cache/                # Служебный кэш pytest в backend
 │   ├── .venv/                        # Виртуальное окружение Python 3.12 со всеми библиотеками
 │   ├── alembic/                      # Миграции схемы public (tenants, users, roles)
-│   ├── app/                          # Исходный код бэкенда (analytics, crm, hardware, inventory, kitchen, pos, system, users)
+│   ├── app/                          # Исходный код бэкенда (analytics, core, crm, gift_cards, inventory, pos, system, users)
 │   ├── migrations/                   # SQL-миграции схем тенантов (tenant_patches/001_initial_schema.sql)
 │   ├── scripts/                      # Скрипты ручного тестирования и сиды
-│   ├── tests/                        # 15 тестовых наборов pytest + conftest.py
+│   ├── tests/                        # 21 тестовый набор pytest (124 теста) + conftest.py
 │   └── ARCHITECTURE_MAP.md           # Детальная архитектурная карта бэкенда
 │
 ├── docs/                             # Документация, отчеты аудитов и архив сессий
