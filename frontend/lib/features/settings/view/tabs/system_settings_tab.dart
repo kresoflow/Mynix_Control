@@ -108,7 +108,7 @@ class SystemSettingsTab extends StatelessWidget {
         SettingsSectionHeader(
           title: 'Диагностика окружения',
           isDark: isDark,
-          subtitle: 'Сетевые протоколы и конфигурация среды исполнения',
+          subtitle: 'Статус сетевого соединения с сервером',
         ),
         const SizedBox(height: 12),
         SettingsCard(
@@ -124,28 +124,7 @@ class SystemSettingsTab extends StatelessWidget {
                 variant: AppBadgeVariant.success,
               ),
             ),
-            SettingsDivider(isDark: isDark),
-            SettingsRow(
-              isDark: isDark,
-              title: 'Среда исполнения',
-              subtitle: 'Flutter Web / Desktop Release Engine',
-              trailing: const AppStatusBadge(
-                label: 'Production',
-                icon: PhosphorIconsRegular.desktop,
-                variant: AppBadgeVariant.neutral,
-              ),
-            ),
-            SettingsDivider(isDark: isDark),
-            SettingsRow(
-              isDark: isDark,
-              title: 'API Протокол',
-              subtitle: 'FastAPI PostgreSQL Multi-Tenant (search_path)',
-              trailing: const AppStatusBadge(
-                label: 'v1.0 API',
-                icon: PhosphorIconsRegular.cpu,
-                variant: AppBadgeVariant.brand,
-              ),
-            ),
+
           ],
         ),
       ],

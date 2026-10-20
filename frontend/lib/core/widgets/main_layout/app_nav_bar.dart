@@ -111,9 +111,22 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   // ── Центр: Сегментированный переключатель вкладок POS ──────────────────────
 
   Widget _buildPosSegmentedControl(BuildContext context) {
-    final settingsState = context.watch<SettingsBloc>().state;
-    final useOrders = settingsState.useOrders;
+    return const _PosTabSegmentedControl();
+  }
+}
 
+// ── Изолированный виджет переключателя POS-вкладок ───────────────────────────
+// [ИНВАРИАНТ] Отдельный StatelessWidget гарантирует, что ребилд при изменении
+// PosTabCubit или SettingsBloc НЕ затрагивает логотип, бренд-название и кнопку
+// бокового меню. Только этот виджет (~44px высотой) перерисовывается при клике.
+class _PosTabSegmentedControl extends StatelessWidget {
+  const _PosTabSegmentedControl();
+
+  @override
+  Widget build(BuildContext context) {
+    final useOrders = context.select<SettingsBloc, bool>(
+      (bloc) => bloc.state.useOrders,
+    );
     return BlocBuilder<PosTabCubit, PosTabState>(
       builder: (context, tabState) {
         return AppSegmentedControl<int>(
