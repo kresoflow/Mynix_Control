@@ -20,7 +20,29 @@ class DesktopLayout extends StatefulWidget {
 }
 
 class _DesktopLayoutState extends State<DesktopLayout> {
-  bool _isSidebarOpen = false;
+  // [ИНВАРИАНТ] ValueNotifier вместо setState — изменение флага сайдбара
+  // НЕ вызывает rebuild AppNavBar (логотип, сегментированный контрол, etc.).
+  // Перестраивается только ValueListenableBuilder вокруг AppNavRail.
+  final _sidebarNotifier = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    _sidebarNotifier.dispose();
+    super.dispose();
+  }
+
+  void _handleCashTap() {
+    final state = context.read<ShiftBloc>().state;
+    if (state is ShiftOpen) {
+      showShiftHubModal(context);
+    } else {
+      showOpenShiftDialog(context);
+    }
+  }
+
+  void _toggleSidebar() {
+    _sidebarNotifier.value = !_sidebarNotifier.value;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,28 +50,23 @@ class _DesktopLayoutState extends State<DesktopLayout> {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+      // AppNavBar получает стабильные ссылки на методы — не пересоздаётся
+      // при каждом rebuild. Логотип и сегментированный контрол не дёргаются.
       appBar: AppNavBar(
         location: widget.location,
-        onCashTap: () {
-          final state = context.read<ShiftBloc>().state;
-          if (state is ShiftOpen) {
-            showShiftHubModal(context);
-          } else {
-            showOpenShiftDialog(context);
-          }
-        },
-        onToggleSidebar: () {
-          setState(() {
-            _isSidebarOpen = !_isSidebarOpen;
-          });
-        },
+        onCashTap: _handleCashTap,
+        onToggleSidebar: _toggleSidebar,
       ),
       body: Row(
         children: [
-          AppNavRail(
-            isOpen: _isSidebarOpen,
-            location: widget.location,
-            onRouteSelected: (route) => context.go(route),
+          // Только AppNavRail обновляется при открытии/закрытии сайдбара
+          ValueListenableBuilder<bool>(
+            valueListenable: _sidebarNotifier,
+            builder: (context, isOpen, _) => AppNavRail(
+              isOpen: isOpen,
+              location: widget.location,
+              onRouteSelected: (route) => context.go(route),
+            ),
           ),
           Container(
             width: 1,
