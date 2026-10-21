@@ -124,29 +124,33 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
                 _buildTabsBar(isDark),
                 const SizedBox(height: 10),
                 Expanded(
-                  child: IndexedStack(
-                    index: _selectedTab,
-                    children: [
-                      SingleChildScrollView(
-                        child: ShiftXReportTab(
-                          report: _report,
-                          isLoading: _isLoadingReport,
-                          error: _reportError,
-                          hideAmounts: !isUnlocked,
-                          expectedCash: expectedCash,
-                          onUnlockPin: _handleUnlockPin,
-                          onRefresh: _loadReport,
+                  child: SizedBox(
+                    height: 330,
+                    child: IndexedStack(
+                      sizing: StackFit.expand,
+                      index: _selectedTab,
+                      children: [
+                        SingleChildScrollView(
+                          child: ShiftXReportTab(
+                            report: _report,
+                            isLoading: _isLoadingReport,
+                            error: _reportError,
+                            hideAmounts: !isUnlocked,
+                            expectedCash: expectedCash,
+                            onUnlockPin: _handleUnlockPin,
+                            onRefresh: _loadReport,
+                          ),
                         ),
-                      ),
-                      SingleChildScrollView(
-                        child: ShiftZCloseTab(
-                          expectedCash: expectedCash,
-                          onUnlockPin: _handleUnlockPin,
-                          isPinUnlocked: isUnlocked,
+                        SingleChildScrollView(
+                          child: ShiftZCloseTab(
+                            expectedCash: expectedCash,
+                            onUnlockPin: _handleUnlockPin,
+                            isPinUnlocked: isUnlocked,
+                          ),
                         ),
-                      ),
-                      const ShiftHistoryTab(),
-                    ],
+                        const ShiftHistoryTab(),
+                      ],
+                    ),
                   ),
                 ),
               ],

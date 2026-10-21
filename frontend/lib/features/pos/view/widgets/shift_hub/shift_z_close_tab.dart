@@ -58,17 +58,20 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
         ),
         const SizedBox(height: 8),
 
-        TextField(
+        AppTextField(
           controller: _cashController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          autofocus: true,
-          style: AppTextStyles.h1.copyWith(fontWeight: FontWeight.w900, fontSize: 24),
-          decoration: InputDecoration(
-            hintText: '0.00',
-            prefixIcon: const Icon(PhosphorIconsRegular.money, size: 22),
-            suffixText: CurrencyFormatter.symbol(context),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          hintText: '0.00',
+          prefixIcon: const Icon(PhosphorIconsRegular.money, size: 20),
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(
+              widthFactor: 1,
+              child: Text(
+                CurrencyFormatter.symbol(context),
+                style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -152,7 +155,7 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
 
         SizedBox(
           width: double.infinity,
-          height: 48,
+          height: 44,
           child: AppDangerButton(
             label: 'Подтвердить и закрыть смену',
             icon: PhosphorIconsRegular.lockKey,

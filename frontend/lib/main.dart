@@ -150,6 +150,7 @@ class _KresoAppState extends State<KresoApp> {
 
     apiClient.onUnauthorized = () {
       if (mounted) {
+        rootNavigatorKey.currentState?.popUntil((route) => route.isFirst);
         _authBloc.add(LoggedOut());
       }
     };
