@@ -37,7 +37,7 @@ class CashOperationTypeSwitcher extends StatelessWidget {
 
   Widget _buildButton(CashOpType type, String label, IconData icon, bool isDark) {
     final isSelected = selectedType == type;
-    final color = isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText);
+    final color = isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText);
     return InkWell(
       onTap: () => onTypeChanged(type),
       borderRadius: BorderRadius.circular(8),

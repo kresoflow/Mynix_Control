@@ -17,7 +17,15 @@ import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
 
 class ShiftHistoryTab extends StatefulWidget {
   final bool isActive;
-  const ShiftHistoryTab({super.key, this.isActive = true});
+  final bool hideAmounts;
+  final VoidCallback? onUnlockPin;
+
+  const ShiftHistoryTab({
+    super.key,
+    this.isActive = true,
+    this.hideAmounts = false,
+    this.onUnlockPin,
+  });
 
   @override
   State<ShiftHistoryTab> createState() => _ShiftHistoryTabState();
@@ -167,14 +175,29 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
     final diff = (item['discrepancy'] as num?)?.toDouble();
     final employee = item['opened_by_name']?.toString() ?? 'Кассир';
 
+    final totalRevStr = widget.hideAmounts ? '••••' : totalRev.toCurrency(context);
+    final cashRevStr = widget.hideAmounts ? '••••' : cashRev.toCurrency(context);
+    final transferRevStr = widget.hideAmounts ? '••••' : transferRev.toCurrency(context);
+
     String openDate = '-';
     if (item['opened_at'] != null) {
       final p = DateTime.tryParse(item['opened_at'].toString());
       if (p != null) openDate = DateFormat('dd.MM HH:mm').format(p.toLocal());
     }
 
+    String diffText = 'Точно';
+    if (diff != null && diff != 0) {
+      diffText = widget.hideAmounts ? '••••' : (diff < 0 ? diff.toCurrency(context) : '+${diff.toCurrency(context)}');
+    }
+
     return InkWell(
-      onTap: () => ShiftHistoryDetailsDialog.show(context, item),
+      onTap: () {
+        if (widget.hideAmounts && widget.onUnlockPin != null) {
+          widget.onUnlockPin!();
+          return;
+        }
+        ShiftHistoryDetailsDialog.show(context, item);
+      },
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -217,7 +240,7 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    'Выручка: ${totalRev.toCurrency(context)} (Нал: ${cashRev.toCurrency(context)}, Б/н: ${transferRev.toCurrency(context)}) • $ordersCount чк.',
+                    'Выручка: $totalRevStr (Нал: $cashRevStr, Б/н: $transferRevStr) • $ordersCount чк.',
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -234,7 +257,7 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  diff == 0 ? 'Точно' : (diff < 0 ? diff.toCurrency(context) : '+${diff.toCurrency(context)}'),
+                  diffText,
                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning)),
                 ),
               ),

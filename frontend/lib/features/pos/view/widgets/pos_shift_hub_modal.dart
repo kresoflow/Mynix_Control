@@ -148,6 +148,8 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
                       ),
                       ShiftHistoryTab(
                         isActive: _selectedTab == 2,
+                        hideAmounts: !isUnlocked,
+                        onUnlockPin: _handleUnlockPin,
                       ),
                     ],
                   ),
@@ -218,7 +220,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
 
   Widget _buildTabButton(int index, String label, IconData icon, bool isDark) {
     final isSelected = _selectedTab == index;
-    final color = isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText);
+    final color = isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText);
     return InkWell(
       onTap: () => setState(() => _selectedTab = index),
       borderRadius: BorderRadius.circular(8),

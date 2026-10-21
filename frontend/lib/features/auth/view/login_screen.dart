@@ -273,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? Colors.black : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              color: isSelected ? Colors.white : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
             ),
             const SizedBox(width: 6),
             Text(
@@ -281,7 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText),
+                color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
               ),
             ),
           ],
