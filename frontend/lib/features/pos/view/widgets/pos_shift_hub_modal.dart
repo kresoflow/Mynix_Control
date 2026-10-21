@@ -181,25 +181,34 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
               ),
               const SizedBox(height: 16),
 
-              // ── Active Tab Content ───────────────────────────────────────
-              if (_selectedTab == 0)
-                ShiftXReportTab(
-                  report: _report,
-                  isLoading: _isLoadingReport,
-                  error: _reportError,
-                  hideAmounts: !isUnlocked,
-                  expectedCash: expectedCash,
-                  onUnlockPin: _handleUnlockPin,
-                  onRefresh: _loadReport,
-                )
-              else if (_selectedTab == 1)
-                ShiftZCloseTab(
-                  expectedCash: expectedCash,
-                  onUnlockPin: _handleUnlockPin,
-                  isPinUnlocked: isUnlocked,
-                )
-              else
-                const ShiftHistoryTab(),
+              // ── Active Tab Content (Стабильная высота и сохранение состояния) ──
+              SizedBox(
+                height: 500,
+                child: IndexedStack(
+                  index: _selectedTab,
+                  children: [
+                    SingleChildScrollView(
+                      child: ShiftXReportTab(
+                        report: _report,
+                        isLoading: _isLoadingReport,
+                        error: _reportError,
+                        hideAmounts: !isUnlocked,
+                        expectedCash: expectedCash,
+                        onUnlockPin: _handleUnlockPin,
+                        onRefresh: _loadReport,
+                      ),
+                    ),
+                    SingleChildScrollView(
+                      child: ShiftZCloseTab(
+                        expectedCash: expectedCash,
+                        onUnlockPin: _handleUnlockPin,
+                        isPinUnlocked: isUnlocked,
+                      ),
+                    ),
+                    const ShiftHistoryTab(),
+                  ],
+                ),
+              ),
             ],
           ),
         );

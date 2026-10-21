@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -105,10 +105,21 @@ class _UserProfileModalState extends State<UserProfileModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
-      return const Dialog(
-        child: SizedBox(
-          height: 150,
-          child: Center(child: CircularProgressIndicator()),
+      return AppDialog(
+        title: 'Мой профиль',
+        icon: PhosphorIconsRegular.userCircle,
+        width: 440,
+        actions: [
+          AppButton.secondary(
+            label: 'Закрыть',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+        content: SizedBox(
+          height: 200,
+          child: Center(
+            child: CircularProgressIndicator(color: AppColors.brandPrimary),
+          ),
         ),
       );
     }

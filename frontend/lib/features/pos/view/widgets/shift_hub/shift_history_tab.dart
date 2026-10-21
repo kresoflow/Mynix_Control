@@ -1,4 +1,9 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Касса / Смены / Вкладка истории смен (ShiftHistoryTab)
+// ДОМЕН: lib/features/pos/view/widgets/shift_hub/shift_history_tab.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -13,10 +18,14 @@ class ShiftHistoryTab extends StatefulWidget {
   State<ShiftHistoryTab> createState() => _ShiftHistoryTabState();
 }
 
-class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
+class _ShiftHistoryTabState extends State<ShiftHistoryTab>
+    with AutomaticKeepAliveClientMixin {
   bool _isLoading = true;
   String? _error;
   List<Map<String, dynamic>> _history = [];
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -51,21 +60,24 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 40),
-        child: Center(child: CircularProgressIndicator()),
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.brandPrimary),
       );
     }
 
     if (_error != null) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+      return Center(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Ошибка: $_error', style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+            Text(
+              'Ошибка: $_error',
+              style: const TextStyle(color: AppColors.danger, fontSize: 12),
+            ),
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: _loadHistory,
@@ -78,123 +90,148 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
     }
 
     if (_history.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 36),
-        child: Center(
-          child: Column(
-            children: [
-              Icon(PhosphorIconsRegular.archive, size: 36, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              const SizedBox(height: 8),
-              Text(
-                'История смен пуста',
-                style: TextStyle(fontSize: 13, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              PhosphorIconsRegular.archive,
+              size: 36,
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'История смен пуста',
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
-    return SizedBox(
-      height: 320,
-      child: ListView.separated(
-        itemCount: _history.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final item = _history[index];
-          final shiftId = item['id'];
-          final isOpen = item['is_open'] == true;
-          final totalRev = (item['total_revenue'] as num?)?.toDouble() ?? 0.0;
-          final diff = (item['discrepancy'] as num?)?.toDouble();
+    return ListView.separated(
+      itemCount: _history.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final item = _history[index];
+        final shiftId = item['id'];
+        final isOpen = item['is_open'] == true;
+        final totalRev = (item['total_revenue'] as num?)?.toDouble() ?? 0.0;
+        final diff = (item['discrepancy'] as num?)?.toDouble();
 
-          String dateStr = '-';
-          if (item['opened_at'] != null) {
-            final parsed = DateTime.tryParse(item['opened_at'].toString());
-            if (parsed != null) {
-              dateStr = DateFormat('dd.MM, HH:mm').format(parsed.toLocal());
-            }
+        String dateStr = '-';
+        if (item['opened_at'] != null) {
+          final parsed = DateTime.tryParse(item['opened_at'].toString());
+          if (parsed != null) {
+            dateStr = DateFormat('dd.MM, HH:mm').format(parsed.toLocal());
           }
+        }
 
-          return Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isOpen
-                    ? AppColors.brandTertiary.withValues(alpha: 0.4)
-                    : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              ),
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkCard : AppColors.lightCard,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isOpen
+                  ? AppColors.brandTertiary.withValues(alpha: 0.4)
+                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: isOpen ? AppColors.success.withValues(alpha: 0.15) : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '#$shiftId',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText),
-                    ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isOpen
+                      ? AppColors.success.withValues(alpha: 0.15)
+                      : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '#$shiftId',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: isOpen
+                        ? AppColors.success
+                        : (isDark ? AppColors.darkText : AppColors.lightText),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            isOpen ? 'Смена активна' : 'Смена закрыта',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText),
-                            ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          isOpen ? 'Смена активна' : 'Смена закрыта',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: isOpen
+                                ? AppColors.success
+                                : (isDark ? AppColors.darkText : AppColors.lightText),
                           ),
-                          const SizedBox(width: 6),
-                          Text('($dateStr)', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Выручка: ${totalRev.toCurrency(context)} • ${item['orders_count'] ?? 0} чеков',
-                        style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                      ),
-                    ],
-                  ),
-                ),
-                if (!isOpen && diff != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: diff == 0
-                          ? AppColors.success.withValues(alpha: 0.1)
-                          : (diff < 0 ? AppColors.danger.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1)),
-                      borderRadius: BorderRadius.circular(6),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '($dateStr)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          ),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      diff == 0 ? 'Точно' : (diff < 0 ? diff.toCurrency(context) : '+${diff.toCurrency(context)}'),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Выручка: ${totalRev.toCurrency(context)} • ${item['orders_count'] ?? 0} чеков',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       ),
                     ),
+                  ],
+                ),
+              ),
+              if (!isOpen && diff != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: diff == 0
+                        ? AppColors.success.withValues(alpha: 0.1)
+                        : (diff < 0
+                            ? AppColors.danger.withValues(alpha: 0.1)
+                            : AppColors.warning.withValues(alpha: 0.1)),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-              ],
-            ),
-          );
-        },
-      ),
+                  child: Text(
+                    diff == 0
+                        ? 'Точно'
+                        : (diff < 0
+                            ? diff.toCurrency(context)
+                            : '+${diff.toCurrency(context)}'),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: diff == 0
+                          ? AppColors.success
+                          : (diff < 0 ? AppColors.danger : AppColors.warning),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
