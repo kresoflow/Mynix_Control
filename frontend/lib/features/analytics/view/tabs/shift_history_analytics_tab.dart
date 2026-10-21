@@ -1,13 +1,18 @@
+// ==============================================================================
+// МОДУЛЬ: Аналитика / Вкладка истории кассовых смен (Shift History)
+// ДОМЕН: lib/features/analytics/view/tabs/shift_history_analytics_tab.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
-import '../widgets/analytics_shift_row.dart';
+import '../widgets/shift_history_kpi_cards.dart';
+import '../widgets/shift_history_table.dart';
 
+/// Вкладка аналитики и журнала кассовых смен
 class ShiftHistoryAnalyticsTab extends StatefulWidget {
   final String? period;
   final DateTime? startDate;
@@ -29,7 +34,9 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
   String? _error;
   List<Map<String, dynamic>> _history = [];
   String _searchQuery = '';
-  String _filterType = 'all'; // all, active, closed, diff
+  String _filterType = 'all';
+  String _sortColumn = 'id';
+  bool _sortAscending = false;
 
   @override
   void initState() {
@@ -62,8 +69,19 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
     }
   }
 
+  void _toggleSort(String column) {
+    setState(() {
+      if (_sortColumn == column) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumn = column;
+        _sortAscending = false;
+      }
+    });
+  }
+
   List<Map<String, dynamic>> get _filteredHistory {
-    return _history.where((s) {
+    final list = _history.where((s) {
       final shiftId = '${s['id']}';
       final openedBy = (s['opened_by_name'] ?? '').toString().toLowerCase();
       final query = _searchQuery.toLowerCase().trim();
@@ -81,12 +99,26 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
 
       return true;
     }).toList();
+
+    list.sort((a, b) {
+      int cmp = 0;
+      if (_sortColumn == 'id') {
+        final idA = (a['id'] as num?)?.toInt() ?? 0;
+        final idB = (b['id'] as num?)?.toInt() ?? 0;
+        cmp = idA.compareTo(idB);
+      } else if (_sortColumn == 'revenue') {
+        final revA = (a['total_revenue'] as num?)?.toDouble() ?? 0.0;
+        final revB = (b['total_revenue'] as num?)?.toDouble() ?? 0.0;
+        cmp = revA.compareTo(revB);
+      }
+      return _sortAscending ? cmp : -cmp;
+    });
+
+    return list;
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -98,10 +130,10 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
           children: [
             Text('Ошибка: $_error', style: const TextStyle(color: AppColors.danger)),
             const SizedBox(height: 12),
-            ElevatedButton.icon(
+            AppButton.secondary(
               onPressed: _loadHistory,
-              icon: const Icon(PhosphorIconsRegular.arrowClockwise),
-              label: const Text('Повторить'),
+              icon: PhosphorIconsRegular.arrowClockwise,
+              label: 'Повторить',
             ),
           ],
         ),
@@ -134,40 +166,10 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // ── KPI Summary Cards ───────────────────────────────────────
-          Row(
-            children: [
-              Expanded(
-                child: AppKpiCard(
-                  title: 'Всего смен в журнале',
-                  value: '${_history.length}',
-                  icon: PhosphorIconsRegular.clockCounterClockwise,
-                  color: AppColors.brandPrimary,
-                  subtitle: 'Закрытые смены за период',
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: AppKpiCard(
-                  title: 'Суммарная выручка',
-                  value: totalRevenue.toCurrency(context),
-                  icon: PhosphorIconsRegular.chartLineUp,
-                  color: AppColors.success,
-                  subtitle: 'Выручка всех смен',
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: AppKpiCard(
-                  title: 'Чистое расхождение кассы',
-                  value: totalDiscrepancy == 0
-                      ? '0 с (Точно)'
-                      : (totalDiscrepancy < 0 ? totalDiscrepancy.toCurrency(context) : '+${totalDiscrepancy.toCurrency(context)}'),
-                  icon: PhosphorIconsRegular.scales,
-                  color: totalDiscrepancy == 0 ? AppColors.success : (totalDiscrepancy < 0 ? AppColors.danger : AppColors.warning),
-                  subtitle: totalDiscrepancy == 0 ? 'Без расхождений' : (totalDiscrepancy < 0 ? 'Недостача в кассе' : 'Излишек в кассе'),
-                ),
-              ),
-            ],
+          ShiftHistoryKpiCards(
+            totalCount: _history.length,
+            totalRevenue: totalRevenue,
+            totalDiscrepancy: totalDiscrepancy,
           ),
           const SizedBox(height: 16),
 
@@ -219,55 +221,14 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
           ),
           const SizedBox(height: 14),
 
-          // ── Table Column Headers (CRM Style) ────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                const SizedBox(width: 52), // Space for avatar badge (38 + 14)
-                Expanded(flex: 4, child: _buildHeaderLabel('СМЕНА / КАССИР', isDark)),
-                Expanded(flex: 3, child: _buildHeaderLabel('РАЗМЕН / ПРОДАЖИ', isDark)),
-                Expanded(flex: 2, child: _buildHeaderLabel('ВЫРУЧКА', isDark)),
-                SizedBox(
-                  width: 170,
-                  child: _buildHeaderLabel('РЕЗУЛЬТАТ КАССЫ', isDark),
-                ),
-                const SizedBox(width: 24), // Caret space (8 + 16)
-              ],
-            ),
+          // ── Unified Data Table (AppDataTableHeader + AppDataTableRow) ──
+          ShiftHistoryTable(
+            shifts: filtered,
+            sortColumn: _sortColumn,
+            sortAscending: _sortAscending,
+            onToggleSort: _toggleSort,
           ),
-          const SizedBox(height: 4),
-
-          // ── Shifts List Cards ───────────────────────────────────────
-          if (filtered.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(32),
-              alignment: Alignment.center,
-              child: Text(
-                'Смены не найдены',
-                style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              ),
-            )
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: filtered.length,
-              itemBuilder: (context, index) => AnalyticsShiftRow(shift: filtered[index]),
-            ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderLabel(String label, bool isDark) {
-    return Text(
-      label,
-      style: AppTextStyles.caption.copyWith(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0.5,
-        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
       ),
     );
   }

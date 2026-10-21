@@ -1,26 +1,30 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Аналитика / Стандартизированная строка таблицы кассовых смен
+// ДОМЕН: lib/features/analytics/view/widgets/analytics_shift_row.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'dialogs/shift_history_details_dialog.dart';
 
-class AnalyticsShiftRow extends StatefulWidget {
+/// [UI-KIT] Интерактивная строка таблицы истории смен (AppDataTableRow)
+class AnalyticsShiftRow extends StatelessWidget {
   final Map<String, dynamic> shift;
+  final List<AppDataTableColumn> columns;
 
-  const AnalyticsShiftRow({super.key, required this.shift});
-
-  @override
-  State<AnalyticsShiftRow> createState() => _AnalyticsShiftRowState();
-}
-
-class _AnalyticsShiftRowState extends State<AnalyticsShiftRow> {
-  bool _isHovered = false;
+  const AnalyticsShiftRow({
+    super.key,
+    required this.shift,
+    required this.columns,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final shift = widget.shift;
     final shiftId = shift['id'];
     final isOpen = shift['is_open'] == true;
     final totalRev = (shift['total_revenue'] as num?)?.toDouble() ?? 0.0;
@@ -42,201 +46,149 @@ class _AnalyticsShiftRowState extends State<AnalyticsShiftRow> {
       if (p != null) closedStr = DateFormat('dd.MM, HH:mm').format(p.toLocal());
     }
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => ShiftHistoryDetailsDialog.show(context, shift),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    return AppDataTableRow(
+      columns: columns,
+      horizontalPadding: 16,
+      minHeight: 56,
+      onTap: () => ShiftHistoryDetailsDialog.show(context, shift),
+      children: [
+        // 0. Аватар / Идентификатор смены
+        Container(
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            color: _isHovered
-                ? (isDark ? const Color(0xFF1B2232) : const Color(0xFFF1F5F9))
-                : (isDark ? AppColors.darkCard : AppColors.lightCard),
-            borderRadius: BorderRadius.circular(14),
+            color: isDark ? AppColors.darkCard : AppColors.lightBg,
+            shape: BoxShape.circle,
             border: Border.all(
-              color: _isHovered
-                  ? AppColors.brandPrimary.withValues(alpha: 0.4)
+              color: isOpen
+                  ? AppColors.success.withValues(alpha: 0.5)
                   : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              width: 1,
             ),
           ),
-          child: Row(
+          alignment: Alignment.center,
+          child: Text(
+            '#$shiftId',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText),
+            ),
+          ),
+        ),
+
+        // 1. Смена и кассир
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Avatar Badge: 38px
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isOpen
-                        ? AppColors.success.withValues(alpha: 0.5)
-                        : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '#$shiftId',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14), // 38 + 14 = 52px
-
-              // Shift & Cashier Column: flex: 4
-              Expanded(
-                flex: 4,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: isOpen ? AppColors.success : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          openedBy,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? AppColors.darkText : AppColors.lightText,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+              Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: isOpen ? AppColors.success : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      isOpen ? 'Открыта: $openedStr (Активна)' : '$openedStr → $closedStr',
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      openedBy,
                       style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Float & Sales Column: flex: 3
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${openingCash.toCurrency(context)} размен',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                         color: isDark ? AppColors.darkText : AppColors.lightText,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$ordersCount заказов • $itemsCount поз.',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Revenue Column: flex: 2
-              Expanded(
-                flex: 2,
-                child: Text(
-                  totalRev.toCurrency(context),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
-                ),
+                ],
               ),
-
-              // Discrepancy Result Badge: exactly 170px
-              SizedBox(
-                width: 170,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: !isOpen && diff != null
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: diff == 0
-                                ? AppColors.success.withValues(alpha: 0.1)
-                                : (diff < 0 ? AppColors.danger.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1)),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                diff == 0 ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.warningCircle,
-                                size: 12,
-                                color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                diff == 0
-                                    ? 'Точно (0 с)'
-                                    : (diff < 0 ? 'Недостача: ${diff.toCurrency(context)}' : 'Излишек: +${diff.toCurrency(context)}'),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: AppColors.success.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
-                          ),
-                          child: const Text(
-                            'Активна',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
-                          ),
-                        ),
+              const SizedBox(height: 3),
+              Text(
+                isOpen ? 'Открыта: $openedStr (Активна)' : '$openedStr → $closedStr',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                 ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Right Action Caret: 16px (8 + 16 = 24px)
-              Icon(
-                PhosphorIconsRegular.caretRight,
-                size: 16,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
               ),
             ],
           ),
         ),
-      ),
+
+        // 2. Размен и количество продаж
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${openingCash.toCurrency(context)} размен',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '$ordersCount заказов • $itemsCount поз.',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // 3. Суммарная выручка
+        Text(
+          totalRev.toCurrency(context),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: isDark ? AppColors.darkText : AppColors.lightText,
+          ),
+        ),
+
+        // 4. Результат кассы (Унифицированный бейдж UI Kit)
+        isOpen || diff == null
+            ? const AppStatusBadge(
+                label: 'Активна',
+                variant: AppBadgeVariant.success,
+                hasDot: true,
+              )
+            : (diff == 0
+                ? const AppStatusBadge(
+                    label: 'Точно (0 с)',
+                    variant: AppBadgeVariant.success,
+                    icon: PhosphorIconsRegular.checkCircle,
+                  )
+                : (diff < 0
+                    ? AppStatusBadge(
+                        label: 'Недостача: ${diff.toCurrency(context)}',
+                        variant: AppBadgeVariant.danger,
+                        icon: PhosphorIconsRegular.warningCircle,
+                      )
+                    : AppStatusBadge(
+                        label: 'Излишек: +${diff.toCurrency(context)}',
+                        variant: AppBadgeVariant.warning,
+                        icon: PhosphorIconsRegular.warningCircle,
+                      ))),
+
+        // 5. Иконка перехода к деталям
+        Icon(
+          PhosphorIconsRegular.caretRight,
+          size: 16,
+          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+        ),
+      ],
     );
   }
 }
