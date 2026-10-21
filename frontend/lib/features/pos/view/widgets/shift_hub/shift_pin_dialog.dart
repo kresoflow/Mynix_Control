@@ -1,101 +1,146 @@
 // ==============================================================================
-// 1. Title: Shift PIN Dialog (Protected Financials Access)
-// 2. Role: Secure prompt for manager / owner PIN code with brute-force guards.
+// МОДУЛЬ: Касса / Диалог ввода PIN-кода администратора (ShiftPinDialog)
+// ДОМЕН: lib/features/pos/view/widgets/shift_hub/shift_pin_dialog.dart
 // ==============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_text_field.dart';
-import 'package:kreso_frontend/features/auth/repository/auth_repository.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/features/auth/repository/auth_repository.dart';
 
-Future<bool> showShiftPinDialog(BuildContext context) async {
-  final pinController = TextEditingController();
-  final authRepo = context.read<AuthRepository>();
-  String? error;
-  bool isChecking = false;
+// ─── 1. Функция открытия диалога (для обратной совместимости) ─────────────────
 
-  final result = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => StatefulBuilder(
-      builder: (context, setState) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+/// [БЕЗОПАСНОСТЬ] Запрашивает PIN-код управляющего или мастера заведения
+/// для раскрытия конфиденциальных финансовых сумм на кассе.
+Future<bool> showShiftPinDialog(BuildContext context) {
+  return ShiftPinDialog.show(context);
+}
 
-        Future<void> submitPin() async {
-          final pin = pinController.text.trim();
-          if (pin.isEmpty) return;
+// ─── 2. Модальный компонент с безопасным жизненным циклом контроллера ──────────
 
-          setState(() {
-            isChecking = true;
-            error = null;
-          });
+/// [UI-KIT] [БЕЗОПАСНОСТЬ] Диалог ввода защитного PIN-кода.
+/// Контроллер управляется строго в State.dispose() после полного размонтирования дерева.
+class ShiftPinDialog extends StatefulWidget {
+  const ShiftPinDialog({super.key});
 
-          final verification = await authRepo.verifyPin(pin);
-          if (!ctx.mounted) return;
+  /// Открывает диалог с гарантией безопасного закрытия
+  static Future<bool> show(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const ShiftPinDialog(),
+    );
+    return result ?? false;
+  }
 
-          if (verification.isValid) {
-            final nav = Navigator.of(ctx);
-            if (nav.canPop()) nav.pop(true);
-            return;
-          }
+  @override
+  State<ShiftPinDialog> createState() => _ShiftPinDialogState();
+}
 
-          setState(() {
-            error = verification.message ?? 'Неверный PIN-код';
-            isChecking = false;
-          });
-        }
+class _ShiftPinDialogState extends State<ShiftPinDialog> {
+  final _pinController = TextEditingController();
+  String? _error;
+  bool _isChecking = false;
 
-        return AppDialog(
-          title: 'Доступ администратора',
-          icon: PhosphorIconsRegular.lockKey,
-          width: 360,
-          actions: [
-            AppButton.secondary(
-              label: 'Отмена',
-              onPressed: () {
-                if (ctx.mounted) {
-                  final nav = Navigator.of(ctx);
+  @override
+  void dispose() {
+    _pinController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitPin() async {
+    final pin = _pinController.text.trim();
+    if (pin.isEmpty) return;
+
+    setState(() {
+      _isChecking = true;
+      _error = null;
+    });
+
+    try {
+      final authRepo = context.read<AuthRepository>();
+      final verification = await authRepo.verifyPin(pin);
+      if (!mounted) return;
+
+      if (verification.isValid) {
+        final nav = Navigator.of(context);
+        if (nav.canPop()) nav.pop(true);
+        return;
+      }
+
+      setState(() {
+        _error = verification.message ?? 'Неверный PIN-код';
+        _isChecking = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Ошибка проверки: $e';
+        _isChecking = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return AppDialogScaffold(
+      title: 'Доступ администратора',
+      subtitle: 'Подтверждение PIN-кода для раскрытия сумм',
+      icon: PhosphorIconsRegular.lockKey,
+      dialogSize: AppDialogSize.sm,
+      maxHeight: 330,
+      actions: [
+        AppButton.secondary(
+          label: 'Отмена',
+          onPressed: _isChecking
+              ? null
+              : () {
+                  final nav = Navigator.of(context);
                   if (nav.canPop()) nav.pop(false);
-                }
-              },
+                },
+        ),
+        AppButton.primary(
+          label: _isChecking ? 'Проверка...' : 'Подтвердить',
+          isLoading: _isChecking,
+          onPressed: _isChecking ? null : _submitPin,
+        ),
+      ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Введите PIN-код управляющего/владельца или мастер-PIN кассы:',
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                height: 1.4,
+              ),
             ),
-            AppButton.primary(
-              label: isChecking ? 'Проверка...' : 'Подтвердить',
-              onPressed: isChecking ? null : submitPin,
+            const SizedBox(height: 16),
+            AppTextField(
+              controller: _pinController,
+              obscureText: true,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(6),
+              ],
+              labelText: 'PIN-код (4-6 цифр)',
+              prefixIcon: const Icon(PhosphorIconsRegular.lock, size: 18),
+              errorText: _error,
+              onSubmitted: (_) => _isChecking ? null : _submitPin(),
             ),
           ],
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Введите PIN-код управляющего/владельца для доступа к суммам:',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                ),
-              ),
-              const SizedBox(height: 14),
-              AppTextField(
-                controller: pinController,
-                obscureText: true,
-                autofocus: true,
-                keyboardType: TextInputType.number,
-                labelText: 'PIN-код (4-6 цифр)',
-                prefixIcon: const Icon(PhosphorIconsRegular.lock, size: 18),
-                errorText: error,
-                onSubmitted: (_) => isChecking ? null : submitPin(),
-              ),
-            ],
-          ),
-        );
-      },
-    ),
-  );
-
-  pinController.dispose();
-  return result ?? false;
+        ),
+      ),
+    );
+  }
 }
