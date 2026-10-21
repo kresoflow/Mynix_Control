@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
@@ -45,7 +44,7 @@ class ShiftXReportTab extends StatelessWidget {
     if (error != null) {
       final isAuth = error!.contains('Сессия истекла') || error!.contains('authenticated');
       return Container(
-        margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+        margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.danger.withValues(alpha: 0.06),
@@ -84,40 +83,11 @@ class ShiftXReportTab extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        if (hideAmounts)
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.brandPrimary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(PhosphorIconsRegular.shieldCheck, size: 16, color: AppColors.brandPrimary),
-                    const SizedBox(width: 8),
-                    const Text('Режим скрытия данных', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-                InkWell(
-                  onTap: onUnlockPin,
-                  child: Text('Разблокировать (PIN)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.brandPrimary)),
-                ),
-              ],
-            ),
-          ),
-
-        _buildStatRow(context, 'Кассовый остаток на начало', openingCash, isDark),
-        const SizedBox(height: 10),
-
-        // Revenue Box
+        // ── 1. Единая карточка финансовых показателей ─────────────
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
             borderRadius: BorderRadius.circular(12),
@@ -125,55 +95,66 @@ class ShiftXReportTab extends StatelessWidget {
           ),
           child: Column(
             children: [
+              _buildIconStatRow(context, PhosphorIconsRegular.wallet, 'Кассовый остаток на начало', openingCash, isDark),
+              const Padding(padding: EdgeInsets.symmetric(vertical: 5), child: Divider(height: 1)),
               _buildIconStatRow(context, PhosphorIconsRegular.money, 'Выручка (Наличные)', cashSales, isDark),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               _buildIconStatRow(context, PhosphorIconsRegular.qrCode, 'Выручка (Переводы)', transferSales, isDark),
-              const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Divider(height: 1)),
+              const Padding(padding: EdgeInsets.symmetric(vertical: 5), child: Divider(height: 1)),
               _buildIconStatRow(context, PhosphorIconsRegular.chartLineUp, 'ИТОГО ВЫРУЧКА', totalRevenue, isDark, isBold: true),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // ── 2. Чеки и средний чек ──────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Всего чеков: $ordersCount шт.', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+              Text('Средний чек: ${hideAmounts ? '••••' : avgCheck.toCurrency(context)}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkText : AppColors.lightText)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // ── 3. Ожидается в кассе баннер ────────────────────────────
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: BoxDecoration(
+            color: AppColors.brandPrimary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(PhosphorIconsRegular.vault, size: 16, color: AppColors.brandPrimary),
+                  const SizedBox(width: 8),
+                  Text('Ожидается в кассе (Нал):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkText : AppColors.lightText)),
+                ],
+              ),
+              Text(
+                hideAmounts ? '•••• с' : expectedCash.toCurrency(context),
+                style: TextStyle(color: AppColors.brandPrimary, fontWeight: FontWeight.w900, fontSize: 16),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 10),
 
-        // Orders & Avg Check
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Всего чеков: $ordersCount шт.', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
-            Text('Средний чек: ${hideAmounts ? '••••' : avgCheck.toCurrency(context)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkText : AppColors.lightText)),
-          ],
-        ),
-        const SizedBox(height: 14),
-
-        // Expected Cash Banner
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: AppColors.brandPrimary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Ожидается в кассе (Нал):', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkText : AppColors.lightText)),
-              Text(
-                hideAmounts ? '•••• с' : expectedCash.toCurrency(context),
-                style: AppTextStyles.h2.copyWith(color: AppColors.brandPrimary, fontWeight: FontWeight.w900, fontSize: 18),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // ── Cash Operations Buttons ─────────────────────────────────
+        // ── 4. Кнопки кассовых операций ─────────────────────────────
         Row(
           children: [
             Expanded(
               child: AppButton.secondary(
                 label: 'Внесение',
                 icon: PhosphorIconsRegular.arrowDownLeft,
-                height: 38,
+                height: 36,
                 onPressed: () => _handleCashOp(context, CashOpType.deposit),
               ),
             ),
@@ -182,19 +163,11 @@ class ShiftXReportTab extends StatelessWidget {
               child: AppButton.secondary(
                 label: 'Инкассация / Расход',
                 icon: PhosphorIconsRegular.arrowUpRight,
-                height: 38,
+                height: 36,
                 onPressed: () => _handleCashOp(context, CashOpType.withdrawal),
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 12),
-
-        AppButton.secondary(
-          label: 'Закрыть окно',
-          isFullWidth: true,
-          height: 42,
-          onPressed: () => Navigator.of(context).pop(),
         ),
       ],
     );
@@ -213,16 +186,6 @@ class ShiftXReportTab extends StatelessWidget {
     if (appContext.mounted) showShiftHubModal(appContext);
   }
 
-  Widget _buildStatRow(BuildContext context, String label, double value, bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
-        Text(hideAmounts ? '••••' : value.toCurrency(context), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkText : AppColors.lightText)),
-      ],
-    );
-  }
-
   Widget _buildIconStatRow(BuildContext context, IconData icon, String label, double value, bool isDark, {bool isBold = false}) {
     final sub = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
     final text = isDark ? AppColors.darkText : AppColors.lightText;
@@ -238,7 +201,7 @@ class ShiftXReportTab extends StatelessWidget {
         ),
         Text(
           hideAmounts ? '••••' : value.toCurrency(context),
-          style: TextStyle(fontSize: isBold ? 14 : 12, fontWeight: isBold ? FontWeight.w900 : FontWeight.w700, color: isBold ? AppColors.brandPrimary : text),
+          style: TextStyle(fontSize: isBold ? 13 : 12, fontWeight: isBold ? FontWeight.w900 : FontWeight.w700, color: isBold ? AppColors.brandPrimary : text),
         ),
       ],
     );

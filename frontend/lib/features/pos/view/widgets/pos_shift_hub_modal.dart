@@ -24,7 +24,6 @@ void showShiftHubModal(BuildContext context, {int initialTab = 0}) {
 
 class PosShiftHubModal extends StatefulWidget {
   final int initialTab;
-
   const PosShiftHubModal({super.key, this.initialTab = 0});
 
   @override
@@ -105,83 +104,25 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
           expectedCash = (shift['current_cash_expected'] ?? shift['opening_cash'] as num?)?.toDouble() ?? 0.0;
           if (shift['opened_at'] != null) {
             final parsed = DateTime.tryParse(shift['opened_at'].toString());
-            if (parsed != null) {
-              openedAtStr = DateFormat('dd.MM, HH:mm').format(parsed.toLocal());
-            }
+            if (parsed != null) openedAtStr = DateFormat('dd.MM, HH:mm').format(parsed.toLocal());
           }
         }
 
         return AppDialogScaffold(
           title: 'Управление сменой',
           icon: PhosphorIconsRegular.vault,
-          maxWidth: 500,
-          maxHeight: 560,
+          maxWidth: 480,
+          maxHeight: 450,
           actions: const [],
           body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── Header Sub-info & Privacy Lock ────────────────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: isOpen ? AppColors.success : AppColors.danger,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          isOpen ? 'Смена активна ($openedAtStr)' : 'Смена закрыта',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          ),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        isUnlocked ? PhosphorIconsRegular.lockOpen : PhosphorIconsRegular.lockKey,
-                        size: 16,
-                        color: isUnlocked ? AppColors.success : AppColors.brandPrimary,
-                      ),
-                      tooltip: isUnlocked ? 'Скрыть суммы (Заблокировать)' : 'Разблокировать суммы (PIN)',
-                      onPressed: isUnlocked
-                          ? () => context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: false))
-                          : _handleUnlockPin,
-                    ),
-                  ],
-                ),
+                _buildStatusRow(isOpen, isUnlocked, openedAtStr, isDark),
+                const SizedBox(height: 8),
+                _buildTabsBar(isDark),
                 const SizedBox(height: 10),
-
-                // ── 3-Tab Switcher ───────────────────────────────────────────
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(child: _buildTabButton(0, 'X-Отчет', PhosphorIconsRegular.chartPie, isDark)),
-                      const SizedBox(width: 4),
-                      Expanded(child: _buildTabButton(1, 'Z-Отчет', PhosphorIconsRegular.lockKey, isDark)),
-                      const SizedBox(width: 4),
-                      Expanded(child: _buildTabButton(2, 'Журнал', PhosphorIconsRegular.archive, isDark)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // ── Active Tab Content (Responsive Flexible Height & IndexedStack) ──
                 Expanded(
                   child: IndexedStack(
                     index: _selectedTab,
@@ -216,6 +157,62 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
     );
   }
 
+  Widget _buildStatusRow(bool isOpen, bool isUnlocked, String openedAtStr, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(width: 8, height: 8, decoration: BoxDecoration(color: isOpen ? AppColors.success : AppColors.danger, shape: BoxShape.circle)),
+            const SizedBox(width: 6),
+            Text(isOpen ? 'Смена активна ($openedAtStr)' : 'Смена закрыта', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+          ],
+        ),
+        if (isOpen)
+          InkWell(
+            onTap: isUnlocked ? () => context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: false)) : _handleUnlockPin,
+            borderRadius: BorderRadius.circular(6),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: (isUnlocked ? AppColors.success : AppColors.brandPrimary).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: (isUnlocked ? AppColors.success : AppColors.brandPrimary).withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(isUnlocked ? PhosphorIconsRegular.lockOpen : PhosphorIconsRegular.lockKey, size: 12, color: isUnlocked ? AppColors.success : AppColors.brandPrimary),
+                  const SizedBox(width: 4),
+                  Text(isUnlocked ? 'Скрыть суммы' : 'Разблокировать (PIN)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: isUnlocked ? AppColors.success : AppColors.brandPrimary)),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTabsBar(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildTabButton(0, 'X-Отчет', PhosphorIconsRegular.chartPie, isDark)),
+          const SizedBox(width: 4),
+          Expanded(child: _buildTabButton(1, 'Z-Отчет', PhosphorIconsRegular.lockKey, isDark)),
+          const SizedBox(width: 4),
+          Expanded(child: _buildTabButton(2, 'Журнал', PhosphorIconsRegular.archive, isDark)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTabButton(int index, String label, IconData icon, bool isDark) {
     final isSelected = _selectedTab == index;
     final color = isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText);
@@ -224,7 +221,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
       borderRadius: BorderRadius.circular(8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.brandPrimary : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -233,8 +230,8 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: color),
-            const SizedBox(width: 5),
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 4),
             Text(label, style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500, color: color)),
           ],
         ),

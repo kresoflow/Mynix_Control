@@ -8,7 +8,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/network/api_client.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
@@ -17,8 +16,8 @@ import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
 import 'package:kreso_frontend/features/pos/models/cash_operation.dart';
 import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/shift_hub/shift_pin_dialog.dart';
+import 'cash_operation_form_fields.dart';
 
-/// Открывает модальное окно кассовых операций
 Future<bool?> showCashOperationDialog(
   BuildContext context, {
   CashOpType initialType = CashOpType.deposit,
@@ -86,6 +85,13 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
     _amountController.selection = TextSelection.fromPosition(TextPosition(offset: _amountController.text.length));
   }
 
+  Future<void> _handleUnlockPin() async {
+    final ok = await showShiftPinDialog(context);
+    if (ok && mounted) {
+      context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: true));
+    }
+  }
+
   Future<void> _handleSubmit(double currentCash, bool isFinancialsUnlocked) async {
     final amount = double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
     if (amount <= 0) {
@@ -143,133 +149,64 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
     return AppDialogScaffold(
       title: 'Кассовая операция',
       icon: _selectedType == CashOpType.deposit ? PhosphorIconsBold.arrowDownLeft : PhosphorIconsBold.arrowUpRight,
-      dialogSize: AppDialogSize.sm,
-      maxWidth: 520,
+      maxWidth: 480,
+      maxHeight: 495,
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AppSegmentedControl<CashOpType>(
-              selectedValue: _selectedType,
-              onValueChanged: _onTypeChanged,
-              size: AppSegmentedSize.lg,
-              items: const [
-                AppSegmentedItem(value: CashOpType.deposit, label: 'Внесение', icon: PhosphorIconsRegular.arrowDownLeft),
-                AppSegmentedItem(value: CashOpType.withdrawal, label: 'Расход / Инкассация', icon: PhosphorIconsRegular.arrowUpRight),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                borderRadius: AppRadii.inputRadius,
-                border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CashOperationTypeSwitcher(
+                selectedType: _selectedType,
+                onTypeChanged: _onTypeChanged,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Icon(PhosphorIconsRegular.vault, size: 16, color: AppColors.brandPrimary),
-                      const SizedBox(width: 8),
-                      Text('В кассе сейчас:', style: AppTextStyles.bodyMedium),
-                    ],
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isFinancialsUnlocked ? currentCash.toCurrency(context) : '••••',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.brandPrimary,
-                        ),
-                      ),
-                      if (!isFinancialsUnlocked) ...[
-                        const SizedBox(width: 8),
-                        InkWell(
-                          onTap: () async {
-                            final success = await showShiftPinDialog(context);
-                            if (success && context.mounted) {
-                              context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: true));
-                            }
-                          },
-                          child: Icon(PhosphorIconsRegular.lockKey, size: 16, color: AppColors.brandPrimary),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+              const SizedBox(height: 8),
+              CashOperationCurrentBanner(
+                currentCash: currentCash,
+                isFinancialsUnlocked: isFinancialsUnlocked,
+                onUnlockPin: _handleUnlockPin,
               ),
-            ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _amountController,
-              focusNode: _amountFocus,
-              labelText: 'Сумма операции',
-              hintText: '0.00',
-              prefixIcon: Icon(PhosphorIconsRegular.money, size: 18, color: AppColors.brandPrimary),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: _quickAmounts.map((q) => InkWell(
-                onTap: () => _addQuickAmount(q),
-                borderRadius: BorderRadius.circular(6),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                  ),
-                  child: Text('+${q.toInt()}', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
-                ),
-              ),).toList(),
-            ),
-            const SizedBox(height: 12),
-            Text('Категория', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: categories.map((cat) {
-                final isSel = _selectedCategory == cat;
-                return InkWell(
-                  onTap: () => setState(() => _selectedCategory = cat),
-                  borderRadius: BorderRadius.circular(6),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isSel ? AppColors.brandPrimary.withValues(alpha: 0.15) : (isDark ? AppColors.darkCard : AppColors.lightCard),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: isSel ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder), width: isSel ? 1.5 : 1),
-                    ),
-                    child: Text(cat, style: AppTextStyles.caption.copyWith(color: isSel ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText), fontWeight: isSel ? FontWeight.w700 : FontWeight.w500)),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 12),
-            AppTextField(
-              controller: _commentController,
-              labelText: 'Комментарий / Основание (опционально)',
-              hintText: 'Например: Закупка бумажных стаканчиков',
-              prefixIcon: Icon(PhosphorIconsRegular.note, size: 18, color: AppColors.darkSubtext),
-            ),
-            if (_errorMessage != null) ...[
               const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: AppColors.danger.withValues(alpha: 0.3))),
-                child: Text(_errorMessage!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+              AppTextField(
+                controller: _amountController,
+                focusNode: _amountFocus,
+                labelText: 'Сумма операции',
+                hintText: '0.00',
+                prefixIcon: Icon(PhosphorIconsRegular.money, size: 16, color: AppColors.brandPrimary),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
               ),
+              const SizedBox(height: 6),
+              CashOperationQuickAmounts(
+                quickAmounts: _quickAmounts,
+                onAddAmount: _addQuickAmount,
+              ),
+              const SizedBox(height: 10),
+              Text('Категория', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+              const SizedBox(height: 5),
+              CashOperationCategoryChips(
+                categories: categories,
+                selectedCategory: _selectedCategory,
+                onCategorySelected: (cat) => setState(() => _selectedCategory = cat),
+              ),
+              const SizedBox(height: 10),
+              AppTextField(
+                controller: _commentController,
+                labelText: 'Комментарий (опционально)',
+                hintText: 'Например: Закупка бумажных стаканчиков',
+                prefixIcon: Icon(PhosphorIconsRegular.note, size: 16, color: AppColors.darkSubtext),
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: AppColors.danger.withValues(alpha: 0.3))),
+                  child: Text(_errorMessage!, style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600)),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
       actions: [
