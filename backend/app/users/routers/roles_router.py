@@ -1,5 +1,5 @@
-from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -8,6 +8,7 @@ from app.database import get_session
 from app.dependencies import require_permission, require_any_permission, CurrentUser
 from app.users import services as svc
 from app.users.models import Tenant
+from app.users.permissions import Perm
 
 router = APIRouter(tags=["Roles & Tenant Settings"])
 
@@ -16,12 +17,16 @@ class TenantSettingsUpdate(BaseModel):
     use_kds: bool
     use_orders: bool
     enable_inventory_deduction: bool
+    blind_pos_enabled: Optional[bool] = None
+    pos_master_pin: Optional[str] = None
 
 
 class TenantSettingsRead(BaseModel):
     use_kds: bool
     use_orders: bool
     enable_inventory_deduction: bool
+    blind_pos_enabled: bool = True
+    pos_master_pin_set: bool = True
 
 
 @router.get(
@@ -61,7 +66,7 @@ async def list_permissions(
 @router.get(
     "/settings/",
     response_model=TenantSettingsRead,
-    dependencies=[Depends(require_permission("settings:manage"))],
+    dependencies=[Depends(require_permission(Perm.SETTINGS_MANAGE))],
 )
 async def get_tenant_settings(
     current_user: CurrentUser,
@@ -75,13 +80,15 @@ async def get_tenant_settings(
         use_kds=tenant.use_kds,
         use_orders=tenant.use_orders,
         enable_inventory_deduction=tenant.enable_inventory_deduction,
+        blind_pos_enabled=tenant.blind_pos_enabled,
+        pos_master_pin_set=bool(tenant.pos_master_pin),
     )
 
 
 @router.put(
     "/settings/",
     response_model=TenantSettingsRead,
-    dependencies=[Depends(require_permission("settings:manage"))],
+    dependencies=[Depends(require_permission(Perm.SETTINGS_MANAGE))],
 )
 async def update_tenant_settings(
     data: TenantSettingsUpdate,
@@ -93,14 +100,28 @@ async def update_tenant_settings(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
-
     tenant.use_kds = data.use_kds
     tenant.use_orders = data.use_orders
     tenant.enable_inventory_deduction = data.enable_inventory_deduction
+
+    if data.blind_pos_enabled is not None:
+        tenant.blind_pos_enabled = data.blind_pos_enabled
+
+    if data.pos_master_pin is not None:
+        pin = data.pos_master_pin.strip()
+        if not (pin.isdigit() and 4 <= len(pin) <= 6):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="PIN-код кассы должен состоять из 4-6 цифр",
+            )
+        tenant.pos_master_pin = pin
+
     await session.commit()
 
     return TenantSettingsRead(
         use_kds=tenant.use_kds,
         use_orders=tenant.use_orders,
         enable_inventory_deduction=tenant.enable_inventory_deduction,
+        blind_pos_enabled=tenant.blind_pos_enabled,
+        pos_master_pin_set=bool(tenant.pos_master_pin),
     )

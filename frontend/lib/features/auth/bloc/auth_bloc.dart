@@ -30,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       useKds: profile['use_kds'] as bool? ?? true,
       useOrders: profile['use_orders'] as bool? ?? true,
       enableInventoryDeduction: profile['enable_inventory_deduction'] as bool? ?? true,
+      blindPosEnabled: profile['blind_pos_enabled'] as bool? ?? true,
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -15,6 +16,7 @@ class AppTextField extends StatelessWidget {
   final bool isCompact;
   final bool obscureText;
   final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final VoidCallback? onTap;
@@ -34,6 +36,7 @@ class AppTextField extends StatelessWidget {
     this.isCompact = false,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
+    this.inputFormatters,
     this.onChanged,
     this.onSubmitted,
     this.onTap,
@@ -70,6 +73,7 @@ class AppTextField extends StatelessWidget {
             readOnly: readOnly,
             obscureText: obscureText,
             keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             onTap: onTap,

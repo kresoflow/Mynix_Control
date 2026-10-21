@@ -9,6 +9,7 @@ import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 
 import 'shift_hub/shift_x_report_tab.dart';
 import 'shift_hub/shift_z_close_tab.dart';
@@ -163,6 +164,8 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
   }
 
   Widget _buildStatusRow(bool isOpen, bool isUnlocked, String openedAtStr, bool isDark) {
+    final isBlindMode = context.watch<SettingsBloc?>()?.state.blindPosEnabled ?? true;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -175,7 +178,11 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
         ),
         if (isOpen)
           InkWell(
-            onTap: isUnlocked ? () => context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: false)) : _handleUnlockPin,
+            onTap: !isBlindMode
+                ? null
+                : (isUnlocked
+                    ? () => context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: false))
+                    : _handleUnlockPin),
             borderRadius: BorderRadius.circular(6),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -187,9 +194,22 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(isUnlocked ? PhosphorIconsRegular.lockOpen : PhosphorIconsRegular.lockKey, size: 12, color: isUnlocked ? AppColors.success : AppColors.brandPrimary),
+                  Icon(
+                    isUnlocked ? PhosphorIconsRegular.lockOpen : PhosphorIconsRegular.lockKey,
+                    size: 12,
+                    color: isUnlocked ? AppColors.success : AppColors.brandPrimary,
+                  ),
                   const SizedBox(width: 4),
-                  Text(isUnlocked ? 'Скрыть суммы' : 'Разблокировать (PIN)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: isUnlocked ? AppColors.success : AppColors.brandPrimary)),
+                  Text(
+                    !isBlindMode
+                        ? 'Суммы открыты'
+                        : (isUnlocked ? 'Скрыть суммы' : 'Разблокировать (PIN)'),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: isUnlocked ? AppColors.success : AppColors.brandPrimary,
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -139,6 +139,12 @@ async def verify_pin(
     rate_key = f"pin_verify_{current_user.tenant_id}_{current_user.id}"
     check_pin_rate_limit(rate_key)
 
+    # 0. Check tenant's pos_master_pin
+    tenant = await session.get(Tenant, current_user.tenant_id)
+    if tenant and tenant.pos_master_pin and tenant.pos_master_pin == data.pin_code:
+        reset_pin_attempts(rate_key)
+        return {"valid": True, "username": "Мастер-PIN кассы"}
+
     # 1. Check current logged-in user's pin_code
     if current_user.pin_code and current_user.pin_code == data.pin_code:
         reset_pin_attempts(rate_key)
@@ -187,6 +193,7 @@ async def me(
         use_kds=tenant.use_kds if tenant else True,
         use_orders=tenant.use_orders if tenant else True,
         enable_inventory_deduction=tenant.enable_inventory_deduction if tenant else True,
+        blind_pos_enabled=tenant.blind_pos_enabled if tenant else True,
     )
 
 
@@ -231,5 +238,6 @@ async def update_me(
         use_kds=tenant.use_kds if tenant else True,
         use_orders=tenant.use_orders if tenant else True,
         enable_inventory_deduction=tenant.enable_inventory_deduction if tenant else True,
+        blind_pos_enabled=tenant.blind_pos_enabled if tenant else True,
     )
 

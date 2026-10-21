@@ -161,6 +161,8 @@ class Tenant(SQLModel, table=True):
     use_kds: bool = Field(default=True, description="Если False, заказы сразу получают статус completed минуя кухню")
     use_orders: bool = Field(default=True, description="Показывать вкладку Заказы на кассе")
     enable_inventory_deduction: bool = Field(default=True, description="Если False, списание сырья со склада отключается")
+    blind_pos_enabled: bool = Field(default=True, description="Если True, финансовые остатки и выручка на кассе скрыты маской до ввода PIN")
+    pos_master_pin: Optional[str] = Field(default="1234", max_length=10, description="Мастер-PIN код кассы для раскрытия сумм")
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -214,6 +216,7 @@ class UserRead(SQLModel):
     use_kds: bool = True
     use_orders: bool = True
     enable_inventory_deduction: bool = True
+    blind_pos_enabled: bool = True
 
 
 class UserCreate(SQLModel):

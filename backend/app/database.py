@@ -127,6 +127,8 @@ async def auto_migrate_tenant_schemas() -> None:
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_kds BOOLEAN DEFAULT TRUE'))
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_orders BOOLEAN DEFAULT TRUE'))
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS enable_inventory_deduction BOOLEAN DEFAULT TRUE'))
+            await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS blind_pos_enabled BOOLEAN DEFAULT TRUE'))
+            await conn.execute(text("ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS pos_master_pin VARCHAR(10) DEFAULT '1234'"))
             await conn.execute(text("ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS currency VARCHAR(20) DEFAULT 'сом'"))
             await conn.execute(text("ALTER TABLE public.users ADD COLUMN IF NOT EXISTS pin_code VARCHAR(10) DEFAULT '1234'"))
             await conn.execute(text('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS phone VARCHAR(50)'))

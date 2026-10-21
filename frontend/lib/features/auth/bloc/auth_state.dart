@@ -22,6 +22,7 @@ class AuthAuthenticated extends AuthState {
   final bool useKds;
   final bool useOrders;
   final bool enableInventoryDeduction;
+  final bool blindPosEnabled;
 
   const AuthAuthenticated({
     required this.tenantId,
@@ -34,6 +35,7 @@ class AuthAuthenticated extends AuthState {
     this.useKds = true,
     this.useOrders = true,
     this.enableInventoryDeduction = true,
+    this.blindPosEnabled = true,
   });
 
   bool hasPermission(String permission) {
@@ -53,6 +55,7 @@ class AuthAuthenticated extends AuthState {
         useKds,
         useOrders,
         enableInventoryDeduction,
+        blindPosEnabled,
       ];
 }
 

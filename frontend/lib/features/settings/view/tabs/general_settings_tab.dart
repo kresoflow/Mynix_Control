@@ -5,8 +5,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'package:kreso_frontend/features/settings/view/widgets/dialogs/change_pos_pin_dialog.dart';
 import 'package:kreso_frontend/features/settings/view/widgets/settings_ui_components.dart';
 
 // ─── 1. Главная вкладка базовых параметров заведения ─────────────────────────
@@ -130,7 +132,48 @@ class GeneralSettingsTab extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // ── 3. Системные уведомления ─────────────────────────────────────
+            // ── 3. Безопасность кассы ─────────────────────────────────────────
+            SettingsSectionHeader(
+              title: 'Безопасность кассы',
+              isDark: isDark,
+              subtitle: 'Управление отображением финансовых данных и PIN-кодом кассы',
+            ),
+            const SizedBox(height: 12),
+            SettingsCard(
+              isDark: isDark,
+              children: [
+                SettingsRow(
+                  isDark: isDark,
+                  title: 'Скрывать суммы на кассе (Слепая касса)',
+                  subtitle: 'Маскирует остатки, выручку и смены •••• до ввода PIN-кода',
+                  trailing: AppSwitch(
+                    value: state.blindPosEnabled,
+                    onChanged: (val) {
+                      context.read<SettingsBloc>().add(
+                            UpdateStoreSettings(blindPosEnabled: val),
+                          );
+                    },
+                  ),
+                ),
+                SettingsDivider(isDark: isDark),
+                SettingsRow(
+                  isDark: isDark,
+                  title: 'Мастер-PIN кассы',
+                  subtitle: state.posMasterPinSet
+                      ? 'PIN-код заведения установлен (для быстрого раскрытия сумм)'
+                      : 'PIN-код не установлен',
+                  trailing: AppButton.secondary(
+                    label: 'Сменить PIN-код',
+                    icon: PhosphorIconsRegular.lockKey,
+                    size: AppButtonSize.sm,
+                    onPressed: () => ChangePosPinDialog.show(context, isDark: isDark),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // ── 4. Системные уведомления ─────────────────────────────────────
             SettingsSectionHeader(
               title: 'Системные настройки',
               isDark: isDark,

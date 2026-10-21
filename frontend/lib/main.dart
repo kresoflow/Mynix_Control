@@ -228,23 +228,33 @@ class _KresoAppState extends State<KresoApp> {
           BlocProvider.value(value: _posTabCubit),
           BlocProvider.value(value: _analyticsBloc),
         ],
-        child: BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
-            if (state is AuthAuthenticated) {
-              webSocketService.connect(state.tenantId);
-              context.read<MenuBloc>().add(LoadMenu());
-              context.read<ShiftBloc>().add(CheckCurrentShift());
-              context.read<CategoryBloc>().add(LoadCategories());
-              context.read<SettingsBloc>().add(const LoadSettings());
-              if (state.hasPermission('inventory:view')) {
-                context.read<IngredientBloc>().add(const LoadIngredients());
-                context.read<DocumentBloc>().add(const LoadDocuments());
-              }
-            } else if (state is AuthUnauthenticated) {
-              webSocketService.disconnect();
-              context.read<AnalyticsBloc>().add(ResetAnalytics());
-            }
-          },
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<AuthBloc, AuthState>(
+              listener: (context, state) {
+                if (state is AuthAuthenticated) {
+                  webSocketService.connect(state.tenantId);
+                  context.read<MenuBloc>().add(LoadMenu());
+                  context.read<ShiftBloc>().add(CheckCurrentShift(blindPosEnabled: state.blindPosEnabled));
+                  context.read<CategoryBloc>().add(LoadCategories());
+                  context.read<SettingsBloc>().add(const LoadSettings());
+                  if (state.hasPermission('inventory:view')) {
+                    context.read<IngredientBloc>().add(const LoadIngredients());
+                    context.read<DocumentBloc>().add(const LoadDocuments());
+                  }
+                } else if (state is AuthUnauthenticated) {
+                  webSocketService.disconnect();
+                  context.read<AnalyticsBloc>().add(ResetAnalytics());
+                }
+              },
+            ),
+            BlocListener<SettingsBloc, SettingsState>(
+              listenWhen: (prev, curr) => prev.blindPosEnabled != curr.blindPosEnabled,
+              listener: (context, state) {
+                context.read<ShiftBloc>().add(SetBlindPosMode(state.blindPosEnabled));
+              },
+            ),
+          ],
           child: BlocBuilder<SettingsBloc, SettingsState>(
             builder: (context, settingsState) {
               return BlocBuilder<ThemeBloc, ThemeState>(
