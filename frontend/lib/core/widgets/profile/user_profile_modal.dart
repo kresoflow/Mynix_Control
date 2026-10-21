@@ -214,9 +214,9 @@ class _UserProfileModalState extends State<UserProfileModal> {
           // ── 2. Editable Full Name ───────────────────────────────────
           AppTextField(
             controller: _nameController,
-            label: 'ФИО сотрудника',
+            labelText: 'ФИО сотрудника',
             hintText: 'Например, Иванов Сергей',
-            prefixIcon: PhosphorIconsRegular.user,
+            prefixIcon: const Icon(PhosphorIconsRegular.user, size: 18),
           ),
           const SizedBox(height: 14),
 
@@ -233,10 +233,10 @@ class _UserProfileModalState extends State<UserProfileModal> {
 
           AppTextField(
             controller: _pinController,
-            label: 'Личный PIN-код (4-6 цифр)',
+            labelText: 'Личный PIN-код (4-6 цифр)',
             hintText: 'Например, 1234',
             keyboardType: TextInputType.number,
-            prefixIcon: PhosphorIconsRegular.lockKey,
+            prefixIcon: const Icon(PhosphorIconsRegular.lockKey, size: 18),
           ),
           const SizedBox(height: 8),
 
@@ -253,10 +253,10 @@ class _UserProfileModalState extends State<UserProfileModal> {
           else
             AppTextField(
               controller: _passwordController,
-              label: 'Новый пароль',
+              labelText: 'Новый пароль',
               hintText: 'Минимум 6 символов',
               obscureText: true,
-              prefixIcon: PhosphorIconsRegular.key,
+              prefixIcon: const Icon(PhosphorIconsRegular.key, size: 18),
             ),
           const SizedBox(height: 8),
         ],

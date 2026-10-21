@@ -58,10 +58,10 @@ class _OpenShiftDialogState extends State<_OpenShiftDialog> {
         children: [
           AppTextField(
             controller: _controller,
-            label: 'Разменный фонд (с)',
+            labelText: 'Разменный фонд (с)',
             hintText: '0.00',
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            prefixIcon: PhosphorIconsRegular.money,
+            prefixIcon: const Icon(PhosphorIconsRegular.money, size: 18),
             autofocus: true,
           ),
         ],
