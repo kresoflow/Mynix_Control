@@ -1,14 +1,22 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Аналитика / Вкладка сводки дашборда (DashboardSummaryTab)
+// ДОМЕН: lib/features/analytics/view/tabs/dashboard_summary_tab.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/analytics/bloc/analytics_bloc.dart';
 import 'package:kreso_frontend/features/analytics/bloc/analytics_event.dart';
 import 'package:kreso_frontend/features/analytics/bloc/analytics_state.dart';
+import '../widgets/analytics_dashboard_skeleton.dart';
 import '../widgets/dashboard_kpi_grid.dart';
 import '../widgets/revenue_chart_card.dart';
 import '../widgets/category_pie_chart_card.dart';
 import '../widgets/xray_table_card.dart';
 
+// ── Вкладка сводки показателей дашборда ──────────────────────────────────────
 class DashboardSummaryTab extends StatelessWidget {
   final String selectedPeriod;
   final DateTime? startDate;
@@ -27,19 +35,41 @@ class DashboardSummaryTab extends StatelessWidget {
 
     return BlocBuilder<AnalyticsBloc, AnalyticsState>(
       builder: (context, state) {
-        if (state is AnalyticsLoading) {
-          return const Center(child: CircularProgressIndicator());
+        // 1. Первичная холодная загрузка: показываем скелетон-каркас вместо спиннера
+        if (state is AnalyticsLoading || state is AnalyticsInitial) {
+          return const AnalyticsDashboardSkeleton();
         }
 
-        if (state is AnalyticsError) {
+        // 2. Ошибка без сохранённых данных
+        if (state is AnalyticsError && state.previousMetrics == null) {
           return Center(
-            child: Text(
-              state.message,
-              style: const TextStyle(color: AppColors.danger),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  state.message,
+                  style: const TextStyle(color: AppColors.danger),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                AppSecondaryButton(
+                  label: 'Повторить попытку',
+                  onPressed: () {
+                    context.read<AnalyticsBloc>().add(
+                          LoadAnalytics(
+                            period: selectedPeriod,
+                            startDate: startDate,
+                            endDate: endDate,
+                          ),
+                        );
+                  },
+                ),
+              ],
             ),
           );
         }
 
+        // 3. Данные успешно загружены (или отображаются из кэша с фоновым обновлением)
         if (state is AnalyticsLoaded) {
           final metrics = state.metrics;
           final xray = state.xray;

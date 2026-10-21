@@ -34,6 +34,9 @@ import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'package:kreso_frontend/features/settings/repository/settings_repository.dart';
+import 'package:kreso_frontend/features/analytics/repository/analytics_repository.dart';
+import 'package:kreso_frontend/features/analytics/bloc/analytics_bloc.dart';
+import 'package:kreso_frontend/features/analytics/bloc/analytics_event.dart';
 import 'package:kreso_frontend/features/pos/services/pos_outbox_service.dart';
 import 'package:kreso_frontend/features/pos/services/pos_sync_service.dart';
 
@@ -109,6 +112,8 @@ class _KresoAppState extends State<KresoApp> {
   late final DocumentBloc _documentBloc;
   late final OrdersRepository _ordersHistoryRepository;
   late final OrdersBloc _ordersBloc;
+  late final AnalyticsRepository _analyticsRepository;
+  late final AnalyticsBloc _analyticsBloc;
   late final PosSettingsCubit _posSettingsCubit;
   late final PosTabCubit _posTabCubit;
   late final PosSyncService _posSyncService;
@@ -137,6 +142,8 @@ class _KresoAppState extends State<KresoApp> {
     DocumentBloc.globalIngredientBloc = _ingredientBloc;
     _ordersHistoryRepository = OrdersRepository(dio: apiClient.dio);
     _ordersBloc = OrdersBloc(repository: _ordersHistoryRepository);
+    _analyticsRepository = AnalyticsRepository(apiClient.dio);
+    _analyticsBloc = AnalyticsBloc(_analyticsRepository);
     _posSettingsCubit = PosSettingsCubit();
     _posTabCubit = PosTabCubit(_orderRepository);
     _appRouter = AppRouter(_authBloc);
@@ -171,6 +178,7 @@ class _KresoAppState extends State<KresoApp> {
     _documentBloc.close();
     DocumentBloc.globalIngredientBloc = null;
     _ordersBloc.close();
+    _analyticsBloc.close();
     _posSettingsCubit.close();
     _posTabCubit.close();
     webSocketService.dispose();
@@ -189,6 +197,7 @@ class _KresoAppState extends State<KresoApp> {
         RepositoryProvider.value(value: _inventoryRepository),
         RepositoryProvider.value(value: _ordersHistoryRepository),
         RepositoryProvider.value(value: _settingsRepository),
+        RepositoryProvider.value(value: _analyticsRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -205,6 +214,7 @@ class _KresoAppState extends State<KresoApp> {
           BlocProvider.value(value: _ordersBloc),
           BlocProvider.value(value: _posSettingsCubit),
           BlocProvider.value(value: _posTabCubit),
+          BlocProvider.value(value: _analyticsBloc),
         ],
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
@@ -220,6 +230,7 @@ class _KresoAppState extends State<KresoApp> {
               }
             } else if (state is AuthUnauthenticated) {
               webSocketService.disconnect();
+              context.read<AnalyticsBloc>().add(ResetAnalytics());
             }
           },
           child: BlocBuilder<SettingsBloc, SettingsState>(

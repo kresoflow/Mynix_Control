@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/analytics/bloc/analytics_bloc.dart';
 import 'package:kreso_frontend/features/analytics/bloc/analytics_event.dart';
+import 'package:kreso_frontend/features/analytics/bloc/analytics_state.dart';
 
 class AnalyticsFilterBar extends StatelessWidget {
   final String selectedPeriod;
@@ -25,8 +26,15 @@ class AnalyticsFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isRefreshing = context.select<AnalyticsBloc, bool>((bloc) {
+      final state = bloc.state;
+      return state is AnalyticsLoaded && state.isRefreshing;
+    });
 
-    return Container(
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
@@ -65,7 +73,7 @@ class AnalyticsFilterBar extends StatelessWidget {
                     const SizedBox(width: 8),
                     _buildCalendarButton(context, isDark),
                     const SizedBox(width: 8),
-                    _buildRefreshButton(context, isDark),
+                    _buildRefreshButton(context, isDark, isRefreshing),
                   ],
                 ),
               ],
@@ -85,7 +93,7 @@ class AnalyticsFilterBar extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  _buildRefreshButton(context, isDark),
+                  _buildRefreshButton(context, isDark, isRefreshing),
                 ],
               ),
               const SizedBox(height: 8),
@@ -105,6 +113,16 @@ class AnalyticsFilterBar extends StatelessWidget {
           );
         },
       ),
+    ),
+        if (isRefreshing)
+          SizedBox(
+            height: 2,
+            child: LinearProgressIndicator(
+              color: AppColors.brandPrimary,
+              backgroundColor: Colors.transparent,
+            ),
+          ),
+      ],
     );
   }
 
@@ -248,27 +266,38 @@ class AnalyticsFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildRefreshButton(BuildContext context, bool isDark) {
+  Widget _buildRefreshButton(BuildContext context, bool isDark, bool isRefreshing) {
     return SizedBox(
       width: 32,
       height: 32,
       child: IconButton(
         padding: EdgeInsets.zero,
-        icon: Icon(
-          PhosphorIconsRegular.arrowsClockwise,
-          size: 18,
-          color: isDark ? AppColors.darkText : AppColors.lightText,
-        ),
-        tooltip: 'Обновить',
-        onPressed: () {
-          context.read<AnalyticsBloc>().add(
-                LoadAnalytics(
-                  period: selectedPeriod,
-                  startDate: startDate,
-                  endDate: endDate,
+        icon: isRefreshing
+            ? SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.brandPrimary,
                 ),
-              );
-        },
+              )
+            : Icon(
+                PhosphorIconsRegular.arrowsClockwise,
+                size: 18,
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+              ),
+        tooltip: isRefreshing ? 'Обновление данных...' : 'Обновить',
+        onPressed: isRefreshing
+            ? null
+            : () {
+                context.read<AnalyticsBloc>().add(
+                      LoadAnalytics(
+                        period: selectedPeriod,
+                        startDate: startDate,
+                        endDate: endDate,
+                      ),
+                    );
+              },
       ),
     );
   }
