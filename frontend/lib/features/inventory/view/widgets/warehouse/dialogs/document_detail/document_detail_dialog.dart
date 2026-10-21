@@ -83,7 +83,7 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
         title: const Text('Удалить черновик?'),
         content: Text('Черновик накладной #${doc.id} будет безвозвратно удален.'),
         actions: [
-          AppButton.secondary(
+          AppGhostButton(
             label: 'Отмена',
             height: 36,
             onPressed: () => Navigator.pop(ctx, false),
@@ -157,7 +157,7 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
                         style: AppTextStyles.caption,
                       ),
                       const SizedBox(height: 24),
-                      AppButton.secondary(
+                      AppGhostButton(
                         label: 'Закрыть',
                         onPressed: () => Navigator.of(context).pop(),
                       ),

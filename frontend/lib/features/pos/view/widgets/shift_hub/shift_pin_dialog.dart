@@ -95,7 +95,7 @@ class _ShiftPinDialogState extends State<ShiftPinDialog> {
       dialogSize: AppDialogSize.sm,
       maxHeight: 330,
       actions: [
-        AppButton.secondary(
+        AppGhostButton(
           label: 'Отмена',
           onPressed: _isChecking
               ? null

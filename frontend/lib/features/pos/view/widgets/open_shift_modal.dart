@@ -5,8 +5,7 @@ import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'dart:ui';
 
 void showOpenShiftDialog(BuildContext context) {
@@ -34,18 +33,17 @@ class _OpenShiftDialogState extends State<_OpenShiftDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return AppDialog(
+    return AppCardDialog(
       title: 'Открытие смены',
+      subtitle: 'Внесите разменный фонд в кассу для начала смены',
       icon: PhosphorIconsRegular.wallet,
-      width: 400,
+      width: 420,
       actions: [
-        AppButton.secondary(
+        AppGhostButton(
           label: 'Отмена',
           onPressed: () => Navigator.of(context).pop(),
         ),
-        AppButton.primary(
+        AppPrimaryButton(
           label: 'Открыть смену',
           onPressed: () {
             final amount = double.tryParse(_controller.text.replaceAll(',', '.')) ?? 0.0;
@@ -54,29 +52,17 @@ class _OpenShiftDialogState extends State<_OpenShiftDialog> {
           },
         ),
       ],
-      content: Column(
+      body: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Внесите разменный фонд в кассу для начала смены:',
-            style: TextStyle(
-              fontSize: 13,
-              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
+          AppTextField(
             controller: _controller,
+            label: 'Разменный фонд (с)',
+            hintText: '0.00',
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            prefixIcon: PhosphorIconsRegular.money,
             autofocus: true,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            decoration: InputDecoration(
-              hintText: '0.00',
-              labelText: 'Разменный фонд (с)',
-              prefixIcon: const Icon(PhosphorIconsRegular.money),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
           ),
         ],
       ),

@@ -1,14 +1,19 @@
+// ==============================================================================
+// МОДУЛЬ: Профиль / Модальное окно профиля пользователя (User Profile Modal)
+// ДОМЕН: lib/core/widgets/profile/user_profile_modal.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
-import 'package:kreso_frontend/core/widgets/app_toast.dart';
-import 'package:kreso_frontend/features/auth/repository/auth_repository.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/core/utils/role_formatter.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_event.dart';
+import 'package:kreso_frontend/features/auth/repository/auth_repository.dart';
 
 void showUserProfileModal(BuildContext context) {
   showDialog(
@@ -17,6 +22,7 @@ void showUserProfileModal(BuildContext context) {
   );
 }
 
+/// [UI-KIT] Модальное окно просмотра и редактирования профиля (AppCardDialog)
 class UserProfileModal extends StatefulWidget {
   const UserProfileModal({super.key});
 
@@ -105,20 +111,21 @@ class _UserProfileModalState extends State<UserProfileModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
-      return AppDialog(
+      return AppCardDialog(
         title: 'Мой профиль',
+        subtitle: 'Управление личными данными и безопасностью',
         icon: PhosphorIconsRegular.userCircle,
         width: 440,
         actions: [
-          AppButton.secondary(
-            label: 'Закрыть',
+          AppGhostButton(
+            label: 'Отмена',
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
-        content: SizedBox(
-          height: 200,
+        body: const SizedBox(
+          height: 180,
           child: Center(
-            child: CircularProgressIndicator(color: AppColors.brandPrimary),
+            child: CircularProgressIndicator(),
           ),
         ),
       );
@@ -126,21 +133,23 @@ class _UserProfileModalState extends State<UserProfileModal> {
 
     final initial = _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'U';
 
-    return AppDialog(
+    return AppCardDialog(
       title: 'Мой профиль',
+      subtitle: 'Управление личными данными и безопасностью',
       icon: PhosphorIconsRegular.userCircle,
       width: 440,
       actions: [
-        AppButton.secondary(
-          label: 'Закрыть',
+        AppGhostButton(
+          label: 'Отмена',
           onPressed: () => Navigator.of(context).pop(),
         ),
-        AppButton.primary(
+        AppPrimaryButton(
           label: _isSaving ? 'Сохранение...' : 'Сохранить',
+          isLoading: _isSaving,
           onPressed: _isSaving ? null : _saveProfile,
         ),
       ],
-      content: Column(
+      body: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -149,7 +158,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadii.lg),
               border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
             ),
             child: Row(
@@ -159,7 +168,11 @@ class _UserProfileModalState extends State<UserProfileModal> {
                   backgroundColor: AppColors.brandPrimary.withValues(alpha: 0.15),
                   child: Text(
                     initial,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.brandPrimary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -169,13 +182,14 @@ class _UserProfileModalState extends State<UserProfileModal> {
                     children: [
                       Text(
                         '@$_username',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w700),
                       ),
+                      const SizedBox(height: 2),
                       if (_tenantName.isNotEmpty)
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(PhosphorIconsRegular.storefront, size: 12, color: AppColors.darkSubtext),
+                            Icon(PhosphorIconsRegular.storefront, size: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                             const SizedBox(width: 4),
                             Text(
                               _tenantName,
@@ -198,61 +212,53 @@ class _UserProfileModalState extends State<UserProfileModal> {
           const SizedBox(height: 16),
 
           // ── 2. Editable Full Name ───────────────────────────────────
-          TextField(
+          AppTextField(
             controller: _nameController,
-            decoration: InputDecoration(
-              labelText: 'ФИО сотрудника',
-              hintText: 'Например, Иванов Сергей',
-              prefixIcon: const Icon(PhosphorIconsRegular.user, size: 18),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            ),
+            label: 'ФИО сотрудника',
+            hintText: 'Например, Иванов Сергей',
+            prefixIcon: PhosphorIconsRegular.user,
           ),
           const SizedBox(height: 14),
 
           // ── 3. Security Section: PIN & Password ──────────────────────
           Text(
             'Безопасность и PIN-код',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            ),
           ),
           const SizedBox(height: 8),
 
-          TextField(
+          AppTextField(
             controller: _pinController,
-            maxLength: 6,
+            label: 'Личный PIN-код (4-6 цифр)',
+            hintText: 'Например, 1234',
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Личный PIN-код (4-6 цифр)',
-              hintText: 'Например, 1234',
-              counterText: '',
-              prefixIcon: const Icon(PhosphorIconsRegular.lockKey, size: 18),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            ),
+            prefixIcon: PhosphorIconsRegular.lockKey,
           ),
           const SizedBox(height: 8),
 
           if (!_showPasswordInput)
             Align(
               alignment: Alignment.centerLeft,
-              child: TextButton.icon(
+              child: AppGhostButton(
+                label: 'Сменить пароль входа',
+                icon: PhosphorIconsRegular.key,
+                size: AppButtonSize.sm,
                 onPressed: () => setState(() => _showPasswordInput = true),
-                icon: const Icon(PhosphorIconsRegular.key, size: 16),
-                label: const Text('Сменить пароль входа', style: TextStyle(fontSize: 12)),
               ),
             )
           else
-            TextField(
+            AppTextField(
               controller: _passwordController,
+              label: 'Новый пароль',
+              hintText: 'Минимум 6 символов',
               obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Новый пароль',
-                hintText: 'Минимум 6 символов',
-                prefixIcon: const Icon(PhosphorIconsRegular.key, size: 18),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              ),
+              prefixIcon: PhosphorIconsRegular.key,
             ),
+          const SizedBox(height: 8),
         ],
       ),
     );

@@ -94,7 +94,7 @@ class _ChangePosPinDialogState extends State<ChangePosPinDialog> {
       dialogSize: AppDialogSize.sm,
       maxHeight: 400,
       actions: [
-        AppButton.secondary(
+        AppGhostButton(
           label: 'Отмена',
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
         ),
