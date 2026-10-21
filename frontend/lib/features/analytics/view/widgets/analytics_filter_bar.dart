@@ -273,7 +273,7 @@ class AnalyticsFilterBar extends StatelessWidget {
       child: IconButton(
         padding: EdgeInsets.zero,
         icon: isRefreshing
-            ? const SizedBox(
+            ? SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandPrimary),

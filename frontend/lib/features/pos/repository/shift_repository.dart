@@ -27,7 +27,7 @@ class ShiftRepository {
     try {
       final response = await _dio.get('/shifts/current');
       if (response.data['shift'] != null) {
-        return response.data['shift'] as Map<String, dynamic>;
+        return Map<String, dynamic>.from(response.data['shift'] as Map);
       }
       return null;
     } catch (e) {
@@ -45,7 +45,7 @@ class ShiftRepository {
         '/shifts/open',
         data: {'opening_cash': openingCash},
       );
-      return response.data as Map<String, dynamic>;
+      return Map<String, dynamic>.from(response.data as Map);
     } catch (e) {
       throw Exception(_formatError(e, 'Не удалось открыть смену'));
     }
@@ -58,7 +58,7 @@ class ShiftRepository {
         '/shifts/close',
         data: {'closing_cash_actual': closingCashActual},
       );
-      return response.data as Map<String, dynamic>;
+      return Map<String, dynamic>.from(response.data as Map);
     } catch (e) {
       throw Exception(_formatError(e, 'Не удалось закрыть смену'));
     }
@@ -68,7 +68,7 @@ class ShiftRepository {
   Future<Map<String, dynamic>> getXReport() async {
     try {
       final response = await _dio.get('/shifts/x-report');
-      return response.data as Map<String, dynamic>;
+      return Map<String, dynamic>.from(response.data as Map);
     } catch (e) {
       throw Exception(_formatError(e, 'Не удалось загрузить X-отчет'));
     }
@@ -81,7 +81,7 @@ class ShiftRepository {
         '/cash/expense',
         data: {'amount': amount, 'description': description},
       );
-      return response.data as Map<String, dynamic>;
+      return Map<String, dynamic>.from(response.data as Map);
     } catch (e) {
       throw Exception(_formatError(e, 'Не удалось записать расход наличных'));
     }
@@ -95,7 +95,7 @@ class ShiftRepository {
         queryParameters: {'limit': limit, 'offset': offset},
       );
       final list = response.data['history'] as List<dynamic>? ?? [];
-      return list.map((e) => e as Map<String, dynamic>).toList();
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     } catch (e) {
       throw Exception(_formatError(e, 'Не удалось загрузить историю смен'));
     }
@@ -122,7 +122,7 @@ class ShiftRepository {
           if (shiftId != null) 'shift_id': shiftId,
         },
       );
-      return response.data as Map<String, dynamic>;
+      return Map<String, dynamic>.from(response.data as Map);
     } catch (e) {
       throw Exception(_formatError(e, 'Не удалось провести операцию по кассе'));
     }
@@ -144,7 +144,7 @@ class ShiftRepository {
         },
       );
       final list = response.data as List<dynamic>? ?? [];
-      return list.map((e) => e as Map<String, dynamic>).toList();
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     } catch (e) {
       throw Exception(_formatError(e, 'Не удалось загрузить операции по кассе'));
     }
@@ -159,7 +159,7 @@ class ShiftRepository {
           if (shiftId != null) 'shift_id': shiftId,
         },
       );
-      return response.data as Map<String, dynamic>;
+      return Map<String, dynamic>.from(response.data as Map);
     } catch (e) {
       throw Exception(_formatError(e, 'Не удалось загрузить сводку по кассе'));
     }

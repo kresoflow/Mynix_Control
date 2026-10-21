@@ -10,12 +10,14 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/analytics/view/widgets/dialogs/shift_history_details_dialog.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_event.dart';
 import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
 
 class ShiftHistoryTab extends StatefulWidget {
-  const ShiftHistoryTab({super.key});
+  final bool isActive;
+  const ShiftHistoryTab({super.key, this.isActive = true});
 
   @override
   State<ShiftHistoryTab> createState() => _ShiftHistoryTabState();
@@ -30,6 +32,14 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadHistory());
+  }
+
+  @override
+  void didUpdateWidget(ShiftHistoryTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive && _history.isEmpty && !_isLoading) {
+      _loadHistory();
+    }
   }
 
   Future<void> _loadHistory() async {
@@ -154,7 +164,6 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
     final cashRev = (item['cash_sales'] as num?)?.toDouble() ?? 0.0;
     final transferRev = (item['transfer_sales'] as num?)?.toDouble() ?? 0.0;
     final ordersCount = item['orders_count'] ?? 0;
-    final itemsSold = item['items_sold_count'] ?? 0;
     final diff = (item['discrepancy'] as num?)?.toDouble();
     final employee = item['opened_by_name']?.toString() ?? 'Кассир';
 
@@ -164,69 +173,75 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
       if (p != null) openDate = DateFormat('dd.MM HH:mm').format(p.toLocal());
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isOpen ? AppColors.brandPrimary.withValues(alpha: 0.5) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+    return InkWell(
+      onTap: () => ShiftHistoryDetailsDialog.show(context, item),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : AppColors.lightCard,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isOpen ? AppColors.brandPrimary.withValues(alpha: 0.5) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: isOpen ? AppColors.success.withValues(alpha: 0.15) : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '#$shiftId',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      isOpen ? 'Активна' : 'Закрыта',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText)),
-                    ),
-                    const SizedBox(width: 6),
-                    Text('$openDate • $employee', style: TextStyle(fontSize: 10, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  'Выручка: ${totalRev.toCurrency(context)} (Нал: ${cashRev.toCurrency(context)}, Б/н: ${transferRev.toCurrency(context)}) • $ordersCount чк. / $itemsSold тов.',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 6),
-          if (!isOpen && diff != null)
+        child: Row(
+          children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
-                color: diff == 0 ? AppColors.success.withValues(alpha: 0.1) : (diff < 0 ? AppColors.danger.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1)),
-                borderRadius: BorderRadius.circular(6),
+                color: isOpen ? AppColors.success.withValues(alpha: 0.15) : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
+                borderRadius: BorderRadius.circular(8),
               ),
+              alignment: Alignment.center,
               child: Text(
-                diff == 0 ? 'Точно' : (diff < 0 ? diff.toCurrency(context) : '+${diff.toCurrency(context)}'),
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning)),
+                '#$shiftId',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText)),
               ),
             ),
-        ],
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        isOpen ? 'Активна' : 'Закрыта',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText)),
+                      ),
+                      const SizedBox(width: 6),
+                      Text('$openDate • $employee', style: TextStyle(fontSize: 10, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Выручка: ${totalRev.toCurrency(context)} (Нал: ${cashRev.toCurrency(context)}, Б/н: ${transferRev.toCurrency(context)}) • $ordersCount чк.',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            if (!isOpen && diff != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: diff == 0 ? AppColors.success.withValues(alpha: 0.1) : (diff < 0 ? AppColors.danger.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1)),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  diff == 0 ? 'Точно' : (diff < 0 ? diff.toCurrency(context) : '+${diff.toCurrency(context)}'),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning)),
+                ),
+              ),
+            const SizedBox(width: 2),
+            Icon(PhosphorIconsRegular.caretRight, size: 14, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+          ],
+        ),
       ),
     );
   }
