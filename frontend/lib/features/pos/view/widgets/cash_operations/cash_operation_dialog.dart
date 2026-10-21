@@ -16,6 +16,7 @@ import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
 import 'package:kreso_frontend/features/pos/models/cash_operation.dart';
 import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/shift_hub/shift_pin_dialog.dart';
 
 /// Открывает модальное окно кассовых операций
 Future<bool?> showCashOperationDialog(
@@ -85,14 +86,15 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
     _amountController.selection = TextSelection.fromPosition(TextPosition(offset: _amountController.text.length));
   }
 
-  Future<void> _handleSubmit(double currentCash) async {
+  Future<void> _handleSubmit(double currentCash, bool isFinancialsUnlocked) async {
     final amount = double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0.0;
     if (amount <= 0) {
       setState(() => _errorMessage = 'Введите корректную сумму больше нуля');
       return;
     }
     if (_selectedType == CashOpType.withdrawal && amount > currentCash) {
-      setState(() => _errorMessage = 'Недостаточно средств в кассе (остаток: ${currentCash.toCurrency(context)})');
+      final hint = isFinancialsUnlocked ? ' (остаток: ${currentCash.toCurrency(context)})' : '';
+      setState(() => _errorMessage = 'Недостаточно средств в кассе$hint');
       return;
     }
 
@@ -130,9 +132,11 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final shiftState = context.watch<ShiftBloc>().state;
     double currentCash = 0.0;
+    bool isFinancialsUnlocked = false;
     if (shiftState is ShiftOpen) {
       final shift = shiftState.shiftDetails;
       currentCash = (shift['current_cash_expected'] ?? shift['opening_cash'] as num?)?.toDouble() ?? 0.0;
+      isFinancialsUnlocked = shiftState.isFinancialsUnlocked;
     }
     final categories = _selectedType == CashOpType.deposit ? _depCats : _withCats;
 
@@ -166,12 +170,37 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(children: [
-                    Icon(PhosphorIconsRegular.vault, size: 16, color: AppColors.brandPrimary),
-                    const SizedBox(width: 8),
-                    Text('В кассе сейчас:', style: AppTextStyles.bodyMedium),
-                  ],),
-                  Text(currentCash.toCurrency(context), style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w800, color: AppColors.brandPrimary)),
+                  Row(
+                    children: [
+                      Icon(PhosphorIconsRegular.vault, size: 16, color: AppColors.brandPrimary),
+                      const SizedBox(width: 8),
+                      Text('В кассе сейчас:', style: AppTextStyles.bodyMedium),
+                    ],
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isFinancialsUnlocked ? currentCash.toCurrency(context) : '••••',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.brandPrimary,
+                        ),
+                      ),
+                      if (!isFinancialsUnlocked) ...[
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: () async {
+                            final success = await showShiftPinDialog(context);
+                            if (success && context.mounted) {
+                              context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: true));
+                            }
+                          },
+                          child: Icon(PhosphorIconsRegular.lockKey, size: 16, color: AppColors.brandPrimary),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -249,7 +278,7 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
           label: _selectedType == CashOpType.deposit ? 'Внести в кассу' : 'Списать / Инкассировать',
           icon: _selectedType == CashOpType.deposit ? PhosphorIconsBold.arrowDownLeft : PhosphorIconsBold.arrowUpRight,
           isLoading: _isLoading,
-          onPressed: _isLoading ? null : () => _handleSubmit(currentCash),
+          onPressed: _isLoading ? null : () => _handleSubmit(currentCash, isFinancialsUnlocked),
         ),
       ],
     );

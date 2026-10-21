@@ -6,6 +6,7 @@ import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/pos/models/cash_operation.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/cash_operations/cash_operation_dialog.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
 
 class ShiftXReportTab extends StatelessWidget {
   final Map<String, dynamic>? report;
@@ -145,15 +146,7 @@ class ShiftXReportTab extends StatelessWidget {
                 label: 'Внесение',
                 icon: PhosphorIconsRegular.arrowDownLeft,
                 height: 38,
-                onPressed: () async {
-                  final res = await showCashOperationDialog(
-                    context,
-                    initialType: CashOpType.deposit,
-                  );
-                  if (res == true && onRefresh != null) {
-                    onRefresh!();
-                  }
-                },
+                onPressed: () => _handleCashOp(context, CashOpType.deposit),
               ),
             ),
             const SizedBox(width: 8),
@@ -162,15 +155,7 @@ class ShiftXReportTab extends StatelessWidget {
                 label: 'Инкассация / Расход',
                 icon: PhosphorIconsRegular.arrowUpRight,
                 height: 38,
-                onPressed: () async {
-                  final res = await showCashOperationDialog(
-                    context,
-                    initialType: CashOpType.withdrawal,
-                  );
-                  if (res == true && onRefresh != null) {
-                    onRefresh!();
-                  }
-                },
+                onPressed: () => _handleCashOp(context, CashOpType.withdrawal),
               ),
             ),
           ],
@@ -185,6 +170,28 @@ class ShiftXReportTab extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _handleCashOp(BuildContext context, CashOpType type) async {
+    // Если запрошена инкассация/расход при скрытых суммах — сначала запрашиваем PIN
+    if (type == CashOpType.withdrawal && hideAmounts) {
+      onUnlockPin();
+      return;
+    }
+
+    final rootNav = Navigator.of(context, rootNavigator: true);
+    final appContext = rootNav.context;
+    rootNav.pop(); // Закрываем модалку смены, устраняя эффект "модалка в модалке"
+    final res = await showCashOperationDialog(
+      appContext,
+      initialType: type,
+    );
+    if (res == true && onRefresh != null) {
+      onRefresh!();
+    }
+    if (appContext.mounted) {
+      showShiftHubModal(appContext);
+    }
   }
 
   Widget _buildStatRow(BuildContext context, String label, double value, bool isDark) {
