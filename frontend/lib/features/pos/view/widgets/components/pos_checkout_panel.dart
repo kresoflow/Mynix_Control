@@ -8,8 +8,6 @@ import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
-import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 import '../table_picker_modal.dart';
 import 'pos_checkout_panel_payment_methods.dart';
 import 'pos_checkout_panel_action_button.dart';

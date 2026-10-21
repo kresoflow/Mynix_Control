@@ -17,12 +17,17 @@ class ApiClient {
   }
 
   final Dio dio;
+  VoidCallback? onUnauthorized;
+  bool _isHandling401 = false;
 
-  ApiClient() : dio = Dio(BaseOptions(
-    baseUrl: _baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 15),
-  )) {
+  ApiClient()
+      : dio = Dio(
+          BaseOptions(
+            baseUrl: _baseUrl,
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 15),
+          ),
+        ) {
     dio.addSentry();
     dio.interceptors.add(
       InterceptorsWrapper(
@@ -77,6 +82,13 @@ class ApiClient {
           if (e.response?.statusCode == 401) {
             final prefs = await SharedPreferences.getInstance();
             await prefs.remove('access_token');
+            if (!_isHandling401) {
+              _isHandling401 = true;
+              onUnauthorized?.call();
+              Future.delayed(const Duration(seconds: 2), () {
+                _isHandling401 = false;
+              });
+            }
           }
           
           return handler.next(formattedException);
@@ -96,10 +108,16 @@ class ApiClient {
       case DioExceptionType.badResponse:
         final code = e.response?.statusCode;
         final data = e.response?.data;
-        if (data is Map && data['detail'] != null) {
-          return data['detail'].toString();
+        if (code == 401) {
+          return 'Сессия истекла. Пожалуйста, выполните вход заново.';
         }
-        if (code == 401) return 'Сессия истекла. Требуется повторный вход в систему.';
+        if (data is Map && data['detail'] != null) {
+          final detail = data['detail'].toString();
+          if (detail == 'Not authenticated') {
+            return 'Сессия истекла. Пожалуйста, выполните вход заново.';
+          }
+          return detail;
+        }
         if (code == 403) return 'Отказано в доступе (недостаточно прав PBAC).';
         if (code == 404) return 'Запрошенные данные не найдены на сервере.';
         if (code != null && code >= 500) return 'Внутренняя ошибка сервера ($code).';

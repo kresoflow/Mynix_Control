@@ -5,6 +5,22 @@ class ShiftRepository {
 
   ShiftRepository(this._dio);
 
+  String _formatError(dynamic e, String fallback) {
+    if (e is DioException) {
+      if (e.response?.statusCode == 401) {
+        return 'Сессия истекла. Пожалуйста, выполните вход заново.';
+      }
+      final data = e.response?.data;
+      if (data is Map && data['detail'] != null) {
+        return data['detail'].toString();
+      }
+      if (e.message != null && e.message!.isNotEmpty) {
+        return e.message!;
+      }
+    }
+    return '$fallback: $e';
+  }
+
   /// Fetch the current open shift
   /// Returns a Map with shift details if open, or null if no open shift
   Future<Map<String, dynamic>?> getCurrentShift() async {
@@ -18,7 +34,7 @@ class ShiftRepository {
       if (e is DioException && e.response?.statusCode == 404) {
         return null;
       }
-      throw Exception('Failed to check current shift: $e');
+      throw Exception(_formatError(e, 'Не удалось проверить текущую смену'));
     }
   }
 
@@ -31,7 +47,7 @@ class ShiftRepository {
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      throw Exception('Failed to open shift: $e');
+      throw Exception(_formatError(e, 'Не удалось открыть смену'));
     }
   }
 
@@ -44,7 +60,7 @@ class ShiftRepository {
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      throw Exception('Failed to close shift: $e');
+      throw Exception(_formatError(e, 'Не удалось закрыть смену'));
     }
   }
 
@@ -54,7 +70,7 @@ class ShiftRepository {
       final response = await _dio.get('/shifts/x-report');
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      throw Exception('Failed to load X-Report: $e');
+      throw Exception(_formatError(e, 'Не удалось загрузить X-отчет'));
     }
   }
 
@@ -67,7 +83,7 @@ class ShiftRepository {
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      throw Exception('Failed to record cash expense: $e');
+      throw Exception(_formatError(e, 'Не удалось записать расход наличных'));
     }
   }
 
@@ -81,7 +97,7 @@ class ShiftRepository {
       final list = response.data['history'] as List<dynamic>? ?? [];
       return list.map((e) => e as Map<String, dynamic>).toList();
     } catch (e) {
-      throw Exception('Failed to load shifts history: $e');
+      throw Exception(_formatError(e, 'Не удалось загрузить историю смен'));
     }
   }
 
@@ -108,11 +124,7 @@ class ShiftRepository {
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        final detail = e.response?.data['detail'];
-        if (detail != null) throw Exception(detail.toString());
-      }
-      throw Exception('Не удалось провести операцию по кассе: $e');
+      throw Exception(_formatError(e, 'Не удалось провести операцию по кассе'));
     }
   }
 
@@ -134,7 +146,7 @@ class ShiftRepository {
       final list = response.data as List<dynamic>? ?? [];
       return list.map((e) => e as Map<String, dynamic>).toList();
     } catch (e) {
-      throw Exception('Failed to fetch cash operations: $e');
+      throw Exception(_formatError(e, 'Не удалось загрузить операции по кассе'));
     }
   }
 
@@ -149,8 +161,7 @@ class ShiftRepository {
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
-      throw Exception('Failed to fetch cash operations summary: $e');
+      throw Exception(_formatError(e, 'Не удалось загрузить сводку по кассе'));
     }
   }
 }
-

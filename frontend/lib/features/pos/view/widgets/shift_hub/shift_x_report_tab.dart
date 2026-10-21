@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_event.dart';
 import 'package:kreso_frontend/features/pos/models/cash_operation.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/cash_operations/cash_operation_dialog.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/pos_shift_hub_modal.dart';
@@ -40,9 +43,35 @@ class ShiftXReportTab extends StatelessWidget {
     }
 
     if (error != null) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Text('Ошибка загрузки: $error', style: const TextStyle(color: AppColors.danger)),
+      final isAuth = error!.contains('Сессия истекла') || error!.contains('authenticated');
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.danger.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.danger.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(PhosphorIconsRegular.warningCircle, size: 28, color: AppColors.danger),
+            const SizedBox(height: 8),
+            Text(error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: AppColors.danger, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            if (isAuth)
+              AppPrimaryButton(
+                label: 'Войти заново',
+                icon: PhosphorIconsRegular.signIn,
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop();
+                  context.read<AuthBloc>().add(LoggedOut());
+                },
+              )
+            else if (onRefresh != null)
+              AppSecondaryButton(label: 'Повторить попытку', icon: PhosphorIconsRegular.arrowClockwise, onPressed: onRefresh),
+          ],
+        ),
       );
     }
 
@@ -99,10 +128,7 @@ class ShiftXReportTab extends StatelessWidget {
               _buildIconStatRow(context, PhosphorIconsRegular.money, 'Выручка (Наличные)', cashSales, isDark),
               const SizedBox(height: 6),
               _buildIconStatRow(context, PhosphorIconsRegular.qrCode, 'Выручка (Переводы)', transferSales, isDark),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 6),
-                child: Divider(height: 1),
-              ),
+              const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Divider(height: 1)),
               _buildIconStatRow(context, PhosphorIconsRegular.chartLineUp, 'ИТОГО ВЫРУЧКА', totalRevenue, isDark, isBold: true),
             ],
           ),
@@ -138,6 +164,8 @@ class ShiftXReportTab extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+
         // ── Cash Operations Buttons ─────────────────────────────────
         Row(
           children: [
@@ -173,25 +201,16 @@ class ShiftXReportTab extends StatelessWidget {
   }
 
   Future<void> _handleCashOp(BuildContext context, CashOpType type) async {
-    // Если запрошена инкассация/расход при скрытых суммах — сначала запрашиваем PIN
     if (type == CashOpType.withdrawal && hideAmounts) {
       onUnlockPin();
       return;
     }
-
     final rootNav = Navigator.of(context, rootNavigator: true);
     final appContext = rootNav.context;
-    rootNav.pop(); // Закрываем модалку смены, устраняя эффект "модалка в модалке"
-    final res = await showCashOperationDialog(
-      appContext,
-      initialType: type,
-    );
-    if (res == true && onRefresh != null) {
-      onRefresh!();
-    }
-    if (appContext.mounted) {
-      showShiftHubModal(appContext);
-    }
+    rootNav.pop();
+    final res = await showCashOperationDialog(appContext, initialType: type);
+    if (res == true && onRefresh != null) onRefresh!();
+    if (appContext.mounted) showShiftHubModal(appContext);
   }
 
   Widget _buildStatRow(BuildContext context, String label, double value, bool isDark) {
@@ -205,30 +224,21 @@ class ShiftXReportTab extends StatelessWidget {
   }
 
   Widget _buildIconStatRow(BuildContext context, IconData icon, String label, double value, bool isDark, {bool isBold = false}) {
+    final sub = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
+    final text = isDark ? AppColors.darkText : AppColors.lightText;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
-            Icon(icon, size: 14, color: isBold ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+            Icon(icon, size: 14, color: isBold ? AppColors.brandPrimary : sub),
             const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isBold ? FontWeight.w800 : FontWeight.w500,
-                color: isBold ? (isDark ? AppColors.darkText : AppColors.lightText) : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              ),
-            ),
+            Text(label, style: TextStyle(fontSize: 12, fontWeight: isBold ? FontWeight.w800 : FontWeight.w500, color: isBold ? text : sub)),
           ],
         ),
         Text(
           hideAmounts ? '••••' : value.toCurrency(context),
-          style: TextStyle(
-            fontSize: isBold ? 14 : 12,
-            fontWeight: isBold ? FontWeight.w900 : FontWeight.w700,
-            color: isBold ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
-          ),
+          style: TextStyle(fontSize: isBold ? 14 : 12, fontWeight: isBold ? FontWeight.w900 : FontWeight.w700, color: isBold ? AppColors.brandPrimary : text),
         ),
       ],
     );

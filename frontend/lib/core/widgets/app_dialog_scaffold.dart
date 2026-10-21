@@ -177,7 +177,8 @@ class AppDialogScaffold extends StatelessWidget {
             ),
 
             // ─── 3. Подвал с действиями ───
-            Container(
+            if (actions.isNotEmpty || bottomSummary != null)
+              Container(
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16 : 24,
                 vertical: 14,

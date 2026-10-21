@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog_scaffold.dart';
 import 'package:kreso_frontend/core/network/api_client.dart';
 import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
@@ -70,8 +70,12 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
       }
     } catch (e) {
       if (mounted) {
+        String msg = e.toString().replaceFirst('Exception: ', '');
+        if (msg.contains('Not authenticated') || msg.contains('401')) {
+          msg = 'Сессия истекла. Пожалуйста, выполните вход заново.';
+        }
         setState(() {
-          _reportError = e.toString();
+          _reportError = msg;
           _isLoadingReport = false;
         });
       }
@@ -107,109 +111,105 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
           }
         }
 
-        return AppDialog(
+        return AppDialogScaffold(
           title: 'Управление сменой',
           icon: PhosphorIconsRegular.vault,
-          width: 500,
+          maxWidth: 500,
+          maxHeight: 560,
           actions: const [],
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Header Sub-info & Privacy Lock ────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Header Sub-info & Privacy Lock ────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: isOpen ? AppColors.success : AppColors.danger,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          isOpen ? 'Смена активна ($openedAtStr)' : 'Смена закрыта',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        isUnlocked ? PhosphorIconsRegular.lockOpen : PhosphorIconsRegular.lockKey,
+                        size: 16,
+                        color: isUnlocked ? AppColors.success : AppColors.brandPrimary,
+                      ),
+                      tooltip: isUnlocked ? 'Скрыть суммы (Заблокировать)' : 'Разблокировать суммы (PIN)',
+                      onPressed: isUnlocked
+                          ? () => context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: false))
+                          : _handleUnlockPin,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // ── 3-Tab Switcher ───────────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                  ),
+                  child: Row(
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: isOpen ? AppColors.success : AppColors.danger,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        isOpen ? 'Смена активна ($openedAtStr)' : 'Смена закрыта',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                        ),
-                      ),
+                      Expanded(child: _buildTabButton(0, 'X-Отчет', PhosphorIconsRegular.chartPie, isDark)),
+                      const SizedBox(width: 4),
+                      Expanded(child: _buildTabButton(1, 'Z-Отчет', PhosphorIconsRegular.lockKey, isDark)),
+                      const SizedBox(width: 4),
+                      Expanded(child: _buildTabButton(2, 'Журнал', PhosphorIconsRegular.archive, isDark)),
                     ],
                   ),
-                  IconButton(
-                    icon: Icon(
-                      isUnlocked ? PhosphorIconsRegular.lockOpen : PhosphorIconsRegular.lockKey,
-                      size: 16,
-                      color: isUnlocked ? AppColors.success : AppColors.brandPrimary,
-                    ),
-                    tooltip: isUnlocked ? 'Скрыть суммы (Заблокировать)' : 'Разблокировать суммы (PIN)',
-                    onPressed: isUnlocked
-                        ? () => context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: false))
-                        : _handleUnlockPin,
+                ),
+                const SizedBox(height: 14),
+
+                // ── Active Tab Content (Responsive Flexible Height & IndexedStack) ──
+                Expanded(
+                  child: IndexedStack(
+                    index: _selectedTab,
+                    children: [
+                      SingleChildScrollView(
+                        child: ShiftXReportTab(
+                          report: _report,
+                          isLoading: _isLoadingReport,
+                          error: _reportError,
+                          hideAmounts: !isUnlocked,
+                          expectedCash: expectedCash,
+                          onUnlockPin: _handleUnlockPin,
+                          onRefresh: _loadReport,
+                        ),
+                      ),
+                      SingleChildScrollView(
+                        child: ShiftZCloseTab(
+                          expectedCash: expectedCash,
+                          onUnlockPin: _handleUnlockPin,
+                          isPinUnlocked: isUnlocked,
+                        ),
+                      ),
+                      const ShiftHistoryTab(),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // ── 3-Tab Switcher ───────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildTabButton(0, 'X-Отчет', PhosphorIconsRegular.chartPie, isDark),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: _buildTabButton(1, 'Z-Отчет', PhosphorIconsRegular.lockKey, isDark),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: _buildTabButton(2, 'Журнал', PhosphorIconsRegular.archive, isDark),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // ── Active Tab Content (Стабильная высота и сохранение состояния) ──
-              SizedBox(
-                height: 500,
-                child: IndexedStack(
-                  index: _selectedTab,
-                  children: [
-                    SingleChildScrollView(
-                      child: ShiftXReportTab(
-                        report: _report,
-                        isLoading: _isLoadingReport,
-                        error: _reportError,
-                        hideAmounts: !isUnlocked,
-                        expectedCash: expectedCash,
-                        onUnlockPin: _handleUnlockPin,
-                        onRefresh: _loadReport,
-                      ),
-                    ),
-                    SingleChildScrollView(
-                      child: ShiftZCloseTab(
-                        expectedCash: expectedCash,
-                        onUnlockPin: _handleUnlockPin,
-                        isPinUnlocked: isUnlocked,
-                      ),
-                    ),
-                    const ShiftHistoryTab(),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -218,6 +218,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
 
   Widget _buildTabButton(int index, String label, IconData icon, bool isDark) {
     final isSelected = _selectedTab == index;
+    final color = isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText);
     return InkWell(
       onTap: () => setState(() => _selectedTab = index),
       borderRadius: BorderRadius.circular(8),
@@ -232,16 +233,9 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14, color: isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText)),
+            Icon(icon, size: 14, color: color),
             const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText),
-              ),
-            ),
+            Text(label, style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500, color: color)),
           ],
         ),
       ),

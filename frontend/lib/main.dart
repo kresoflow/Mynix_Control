@@ -148,6 +148,12 @@ class _KresoAppState extends State<KresoApp> {
     _posTabCubit = PosTabCubit(_orderRepository);
     _appRouter = AppRouter(_authBloc);
 
+    apiClient.onUnauthorized = () {
+      if (mounted) {
+        _authBloc.add(LoggedOut());
+      }
+    };
+
     // Automatically sync tenant feature flags and load shift status on login/startup
     _authBloc.stream.listen((authState) {
       if (authState is AuthAuthenticated) {
@@ -165,6 +171,7 @@ class _KresoAppState extends State<KresoApp> {
 
   @override
   void dispose() {
+    apiClient.onUnauthorized = null;
     _posSyncService.stop();
     _authBloc.close();
     _themeBloc.close();

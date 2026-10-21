@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
-import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
-import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
 
 class PosCheckoutPanelActionButton extends StatelessWidget {
   final bool isEmpty;

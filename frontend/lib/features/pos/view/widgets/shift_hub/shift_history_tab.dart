@@ -9,6 +9,9 @@ import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:kreso_frontend/features/auth/bloc/auth_event.dart';
 import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
 
 class ShiftHistoryTab extends StatefulWidget {
@@ -50,8 +53,12 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab>
       }
     } catch (e) {
       if (mounted) {
+        String msg = e.toString().replaceFirst('Exception: ', '');
+        if (msg.contains('Not authenticated') || msg.contains('401')) {
+          msg = 'Сессия истекла. Пожалуйста, выполните вход заново.';
+        }
         setState(() {
-          _error = e.toString();
+          _error = msg;
           _isLoading = false;
         });
       }
@@ -64,27 +71,42 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(color: AppColors.brandPrimary),
-      );
+      return Center(child: CircularProgressIndicator(color: AppColors.brandPrimary));
     }
 
     if (_error != null) {
+      final isAuth = _error!.contains('Сессия истекла') || _error!.contains('authenticated');
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Ошибка: $_error',
-              style: const TextStyle(color: AppColors.danger, fontSize: 12),
-            ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: _loadHistory,
-              icon: const Icon(PhosphorIconsRegular.arrowClockwise, size: 14),
-              label: const Text('Повторить'),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(PhosphorIconsRegular.warningCircle, size: 28, color: AppColors.danger),
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              if (isAuth)
+                AppPrimaryButton(
+                  label: 'Войти заново',
+                  icon: PhosphorIconsRegular.signIn,
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    context.read<AuthBloc>().add(LoggedOut());
+                  },
+                )
+              else
+                AppSecondaryButton(
+                  label: 'Повторить попытку',
+                  icon: PhosphorIconsRegular.arrowClockwise,
+                  onPressed: _loadHistory,
+                ),
+            ],
+          ),
         ),
       );
     }
@@ -94,19 +116,9 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              PhosphorIconsRegular.archive,
-              size: 36,
-              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-            ),
+            Icon(PhosphorIconsRegular.archive, size: 36, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
             const SizedBox(height: 8),
-            Text(
-              'История смен пуста',
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
-            ),
+            Text('История смен пуста', style: TextStyle(fontSize: 13, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
           ],
         ),
       );
@@ -158,9 +170,7 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab>
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
-                    color: isOpen
-                        ? AppColors.success
-                        : (isDark ? AppColors.darkText : AppColors.lightText),
+                    color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText),
                   ),
                 ),
               ),
@@ -176,28 +186,20 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab>
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: isOpen
-                                ? AppColors.success
-                                : (isDark ? AppColors.darkText : AppColors.lightText),
+                            color: isOpen ? AppColors.success : (isDark ? AppColors.darkText : AppColors.lightText),
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
                           '($dateStr)',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          ),
+                          style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Выручка: ${totalRev.toCurrency(context)} • ${item['orders_count'] ?? 0} чеков',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                      ),
+                      style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                     ),
                   ],
                 ),
@@ -214,17 +216,11 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab>
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    diff == 0
-                        ? 'Точно'
-                        : (diff < 0
-                            ? diff.toCurrency(context)
-                            : '+${diff.toCurrency(context)}'),
+                    diff == 0 ? 'Точно' : (diff < 0 ? diff.toCurrency(context) : '+${diff.toCurrency(context)}'),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: diff == 0
-                          ? AppColors.success
-                          : (diff < 0 ? AppColors.danger : AppColors.warning),
+                      color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
                     ),
                   ),
                 ),
