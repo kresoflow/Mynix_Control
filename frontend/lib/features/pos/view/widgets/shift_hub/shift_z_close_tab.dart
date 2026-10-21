@@ -10,7 +10,7 @@ import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
 
 class ShiftZCloseTab extends StatefulWidget {
   final double expectedCash;
-  final VoidCallback onUnlockPin;
+  final Future<bool> Function() onUnlockPin;
   final bool isPinUnlocked;
 
   const ShiftZCloseTab({
@@ -39,9 +39,27 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
   }
 
   @override
+  void didUpdateWidget(covariant ShiftZCloseTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isPinUnlocked && !widget.isPinUnlocked) {
+      setState(() => _showDiscrepancyHint = false);
+    }
+  }
+
+  @override
   void dispose() {
     _cashController.dispose();
     super.dispose();
+  }
+
+  Future<void> _toggleDiscrepancyHint() async {
+    if (!widget.isPinUnlocked) {
+      final unlocked = await widget.onUnlockPin();
+      if (!unlocked || !mounted) return;
+      setState(() => _showDiscrepancyHint = true);
+    } else {
+      setState(() => _showDiscrepancyHint = !_showDiscrepancyHint);
+    }
   }
 
   @override
@@ -78,39 +96,51 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
 
         // Blind count hint toggle
         InkWell(
-          onTap: () {
-            if (!widget.isPinUnlocked && !_showDiscrepancyHint) {
-              widget.onUnlockPin();
-            }
-            setState(() => _showDiscrepancyHint = !_showDiscrepancyHint);
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    _showDiscrepancyHint ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash,
-                    size: 14,
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  ),
-                  const SizedBox(width: 6),
+          onTap: _toggleDiscrepancyHint,
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      _showDiscrepancyHint
+                          ? PhosphorIconsRegular.eye
+                          : (widget.isPinUnlocked ? PhosphorIconsRegular.eyeSlash : PhosphorIconsRegular.lockKey),
+                      size: 14,
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _showDiscrepancyHint
+                          ? 'Скрыть подсказку'
+                          : (widget.isPinUnlocked ? 'Показать ожидаемую сумму' : 'Показать ожидаемую сумму (PIN)'),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_showDiscrepancyHint)
                   Text(
-                    _showDiscrepancyHint ? 'Скрыть подсказку' : 'Показать ожидаемую сумму',
+                    widget.expectedCash.toCurrency(context),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
+                  )
+                else if (!widget.isPinUnlocked)
+                  Text(
+                    '••••',
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
                       color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                     ),
                   ),
-                ],
-              ),
-              if (_showDiscrepancyHint)
-                Text(
-                  widget.expectedCash.toCurrency(context),
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.brandPrimary),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -171,10 +201,13 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
 
     // Guard 1: Zero cash entered while positive expected cash
     if (_actualCash <= 0 && widget.expectedCash > 0) {
+      final message = widget.isPinUnlocked
+          ? 'Вы указали 0.00 $symbol наличных, хотя в кассе ожидается ${widget.expectedCash.toCurrency(context)}.\n\nЭто зафиксирует полную недостачу в кассе.\nВы действительно пересчитали ящик и там 0.00?'
+          : 'Вы указали 0.00 $symbol наличных при наличии операций в кассе.\n\nЭто зафиксирует полную недостачу в кассе.\nВы действительно пересчитали ящик и там 0.00?';
       final confirmed = await AppConfirmDialog.show(
         context: context,
         title: 'Касса пуста?',
-        message: 'Вы указали 0.00 $symbol наличных, хотя в кассе ожидается ${widget.expectedCash.toCurrency(context)}.\n\nЭто зафиксирует полную недостачу в кассе.\nВы действительно пересчитали ящик и там 0.00?',
+        message: message,
         confirmLabel: 'Да, в кассе пусто',
         confirmIcon: PhosphorIconsRegular.lockKey,
         cancelLabel: 'Пересчитать',
@@ -188,10 +221,13 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
       final diffText = diff < 0
           ? 'недостача ${diff.abs().toCurrency(context)}'
           : 'излишек ${diff.toCurrency(context)}';
+      final message = widget.isPinUnlocked
+          ? 'Фактический остаток не сходится с кассой:\n$diffText.\n\nЗафиксировать закрытие смены с данным расхождением?'
+          : 'Фактический остаток не сходится с расчетными данными кассы.\n\nЗафиксировать закрытие смены с фактическим расхождением?';
       final confirmed = await AppConfirmDialog.show(
         context: context,
         title: 'Подтвердите расхождение',
-        message: 'Фактический остаток не сходится с кассой:\n$diffText.\n\nЗафиксировать закрытие смены с данным расхождением?',
+        message: message,
         confirmLabel: 'Закрыть с расхождением',
         confirmIcon: PhosphorIconsRegular.check,
         cancelLabel: 'Перепроверить',

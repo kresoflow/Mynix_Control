@@ -82,11 +82,13 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
     }
   }
 
-  Future<void> _handleUnlockPin() async {
+  Future<bool> _handleUnlockPin() async {
     final success = await showShiftPinDialog(context);
     if (success && mounted) {
       context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: true));
+      return true;
     }
+    return false;
   }
 
   @override
