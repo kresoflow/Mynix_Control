@@ -5,7 +5,6 @@ import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/app_nav_tile.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_state.dart';
-import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 
 class AppNavRail extends StatelessWidget {
   final bool isOpen;

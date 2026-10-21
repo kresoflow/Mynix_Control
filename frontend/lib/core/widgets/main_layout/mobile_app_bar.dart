@@ -43,10 +43,16 @@ class MobileAppBar extends StatelessWidget implements PreferredSizeWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: Row(
           children: [
-            Image.memory(
-              AppLogoData.bytes,
+            SizedBox(
+              width: 26,
               height: 26,
-              fit: BoxFit.contain,
+              child: Image.memory(
+                AppLogoData.bytes,
+                width: 26,
+                height: 26,
+                fit: BoxFit.contain,
+                gaplessPlayback: true,
+              ),
             ),
             const SizedBox(width: 8),
             Text(

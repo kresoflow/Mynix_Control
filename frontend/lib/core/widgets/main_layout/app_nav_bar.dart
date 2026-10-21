@@ -53,66 +53,79 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
           border: Border(bottom: BorderSide(color: borderColor, width: 1)),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        child: Row(
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            // 1. Бренд и кнопка бокового меню
-            IconButton(
-              icon: const Icon(PhosphorIconsRegular.list, size: 20),
-              tooltip: 'Меню навигации',
-              onPressed: onToggleSidebar,
+            // 1. Полноразмерный ряд: Бренд слева, Индикаторы и профиль справа
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Левая часть: Меню навигации и логотип бренда
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(PhosphorIconsRegular.list, size: 20),
+                      tooltip: 'Меню навигации',
+                      onPressed: onToggleSidebar,
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: Image.memory(
+                        AppLogoData.bytes,
+                        width: 28,
+                        height: 28,
+                        fit: BoxFit.contain,
+                        gaplessPlayback: true,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Kreso Flow',
+                      style: AppTextStyles.h3.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Правая часть: Операционный блок, статус сети и профиль
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (showOperationalBadges) ...[
+                      const PosOperationalBadges(size: 38),
+                      const SizedBox(width: 14),
+                      Container(
+                        width: 1,
+                        height: 22,
+                        color: borderColor,
+                      ),
+                      const SizedBox(width: 14),
+                    ],
+                    const SyncStatusBadge(),
+                    const SizedBox(width: 12),
+                    AppBarProfileMenu(onShiftTap: onCashTap),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Image.memory(
-              AppLogoData.bytes,
-              height: 28,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'Kreso Flow',
-              style: AppTextStyles.h3.copyWith(
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.5,
-              ),
-            ),
 
-            const Spacer(),
-
-            // 2. Центр: переключатель режимов POS (Касса / Заказы / Кухня)
-            if (isPosRoute) ...[
-              _buildPosSegmentedControl(context),
-              const Spacer(),
-            ],
-
-            // 3. Операционный блок зала (Столики и Входящие заказы)
-            if (showOperationalBadges) ...[
-              const PosOperationalBadges(size: 38),
-              const SizedBox(width: 14),
-              Container(
-                width: 1,
-                height: 22,
-                color: borderColor,
-              ),
-              const SizedBox(width: 14),
-            ],
-
-            // 4. Сетевой статус синхронизации (Calm Tech)
-            const SyncStatusBadge(),
-            const SizedBox(width: 12),
-
-            // 5. Профиль, статус смены и тема
-            AppBarProfileMenu(onShiftTap: onCashTap),
+            // 2. Истинный центр экрана: Переключатель режимов POS (Касса / Заказы)
+            // [ИНВАРИАНТ] Расположен в центре экрана через Stack(alignment: Alignment.center),
+            // благодаря чему его положение математически зафиксировано ровно по центру (50%)
+            // и на 100% независимо от ширины левой или правой стороны шапки.
+            if (isPosRoute)
+              const _PosTabSegmentedControl(),
           ],
         ),
       ),
     );
   }
 
-  // ── Центр: Сегментированный переключатель вкладок POS ──────────────────────
-
-  Widget _buildPosSegmentedControl(BuildContext context) {
-    return const _PosTabSegmentedControl();
-  }
 }
 
 // ── Изолированный виджет переключателя POS-вкладок ───────────────────────────
