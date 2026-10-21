@@ -1,8 +1,14 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Справочник / Представление таблицы сырья (Ingredient Table View)
+// ДОМЕН: lib/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
@@ -11,6 +17,7 @@ import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ing
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 
+/// [UI-KIT] Табличный список позиций сырья с единым стилем контейнера и радиусов
 class IngredientTableView extends StatelessWidget {
   final List<Ingredient> ingredients;
   final int? selectedCategoryId;
@@ -41,6 +48,7 @@ class IngredientTableView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final catState = context.watch<CategoryBloc>().state;
     List<MenuCategory> allCategories = [];
     if (catState is CategoryLoaded) {
@@ -59,81 +67,51 @@ class IngredientTableView extends StatelessWidget {
     final currency = context.watch<SettingsBloc>().state.currency;
 
     if (filteredIngredients.isEmpty) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              PhosphorIconsRegular.cookingPot,
-              size: 48,
-              color: (isDark ? AppColors.darkSubtext : AppColors.lightSubtext).withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'В этой категории пока нет сырья',
-              style: AppTextStyles.h3.copyWith(
-                color: isDark ? AppColors.darkText : AppColors.lightText,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Используйте «Добавить» или «Массово» на верхней панели',
-              style: AppTextStyles.caption.copyWith(
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 48),
+        child: AppEmptyState(
+          icon: PhosphorIconsRegular.cookingPot,
+          title: 'В этой категории пока нет сырья',
+          description: 'Используйте «Добавить» или «Массово» на верхней панели',
+          size: AppEmptyStateSize.md,
         ),
       );
     }
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: ListView.builder(
-          padding: EdgeInsets.zero,
-          itemCount: filteredIngredients.length,
-          itemBuilder: (context, index) {
-            final item = filteredIngredients[index];
-
-            String? iconStr;
-            if (catState is CategoryLoaded) {
-              final cat = catState.categories.where((c) => c.id == item.categoryId).firstOrNull;
-              iconStr = cat?.getInheritedIcon(catState.categories);
-            }
-
-            return IngredientItemRow(
-              item: item,
-              categoryIcon: iconStr,
-              currency: currency,
-              isManageMode: isManageMode,
-              isSelected: selectedIngredients.contains(item.id),
-              onSelect: (val) => onToggleSelect(item.id, val == true),
-              onEdit: () => showAddIngredientDialog(context, itemToEdit: item),
-              onDelete: () => _confirmDeleteIngredient(context, item),
-            );
-          },
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 0.8,
         ),
       ),
-    );
-  }
+      clipBehavior: Clip.antiAlias,
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        itemCount: filteredIngredients.length,
+        itemBuilder: (context, index) {
+          final item = filteredIngredients[index];
 
-  void _confirmDeleteIngredient(BuildContext context, Ingredient item) {
-    CatalogDeletionDialogs.confirmDeleteIngredient(context, item);
+          String? iconStr;
+          if (catState is CategoryLoaded) {
+            final cat = catState.categories.where((c) => c.id == item.categoryId).firstOrNull;
+            iconStr = cat?.getInheritedIcon(catState.categories);
+          }
+
+          return IngredientItemRow(
+            item: item,
+            categoryIcon: iconStr,
+            currency: currency,
+            isManageMode: isManageMode,
+            isSelected: selectedIngredients.contains(item.id),
+            onSelect: (val) => onToggleSelect(item.id, val == true),
+            onEdit: () => showAddIngredientDialog(context, itemToEdit: item),
+            onDelete: () => CatalogDeletionDialogs.confirmDeleteIngredient(context, item),
+          );
+        },
+      ),
+    );
   }
 }

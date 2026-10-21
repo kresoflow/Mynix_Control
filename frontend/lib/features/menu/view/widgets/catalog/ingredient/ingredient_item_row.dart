@@ -1,14 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/utils/icon_helper.dart';
-import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
-import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:kreso_frontend/core/utils/unit_formatter.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
+// ==============================================================================
+// МОДУЛЬ: Справочник / Строка таблицы сырья (Ingredient Item Row)
+// ДОМЕН: lib/features/menu/view/widgets/catalog/ingredient/ingredient_item_row.dart
+// ==============================================================================
 
-class IngredientItemRow extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_motion.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/utils/icon_helper.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
+import 'ingredient_row_actions.dart';
+
+/// [UI-KIT] Интерактивная строка сырья в каталоге на базе дизайн-системы Kreso Flow
+class IngredientItemRow extends StatefulWidget {
   final Ingredient item;
   final String? categoryIcon;
   final String currency;
@@ -33,12 +39,20 @@ class IngredientItemRow extends StatelessWidget {
   });
 
   @override
+  State<IngredientItemRow> createState() => _IngredientItemRowState();
+}
+
+class _IngredientItemRowState extends State<IngredientItemRow> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final item = widget.item;
     final isLowStock = item.isLowStock;
     final isCritical = item.currentStock <= 0;
 
-    // Индикатор остатка
+    // ── Цветовая индикация остатка ──
     Color stockColor = AppColors.success;
     if (isCritical) {
       stockColor = AppColors.danger;
@@ -46,73 +60,89 @@ class IngredientItemRow extends StatelessWidget {
       stockColor = AppColors.warning;
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isSelected 
-            ? AppColors.brandPrimary.withValues(alpha: 0.1) 
-            : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    Color bg;
+    if (widget.isSelected) {
+      bg = AppColors.brandPrimary.withValues(alpha: isDark ? 0.16 : 0.10);
+    } else if (_isHovered) {
+      bg = isDark ? AppColors.darkCardHover : AppColors.lightBg;
+    } else {
+      bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
+    }
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: widget.isManageMode ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: AnimatedContainer(
+        duration: AppMotion.fast,
+        curve: AppMotion.standardCurve,
+        decoration: BoxDecoration(
+          color: bg,
+          border: Border(
+            bottom: BorderSide(
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              width: 0.8,
+            ),
           ),
         ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isManageMode
-              ? () => onSelect?.call(!isSelected)
-              : () {
-                  // Открыть детали (future feature)
-                },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Управление: Чекбокс ИЛИ Иконка категории
-                if (isManageMode)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16.0),
-                    child: Checkbox(
-                      value: isSelected,
-                      onChanged: onSelect,
-                      activeColor: AppColors.brandPrimary,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.isManageMode ? () => widget.onSelect?.call(!widget.isSelected) : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 1. Управление: AppCheckbox ИЛИ Иконка категории
+                  if (widget.isManageMode)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 14.0),
+                      child: AppCheckbox(
+                        value: widget.isSelected,
+                        size: AppCheckboxSize.md,
+                        onChanged: (val) => widget.onSelect?.call(val),
+                      ),
+                    )
+                  else if (widget.categoryIcon != null &&
+                      widget.categoryIcon!.isNotEmpty &&
+                      (IconHelper.getIcon(widget.categoryIcon) != null || widget.categoryIcon!.startsWith('svg:')))
+                    Container(
+                      margin: const EdgeInsets.only(right: 14.0),
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: (isLowStock ? AppColors.danger : AppColors.brandPrimary).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppRadii.md),
+                        border: Border.all(
+                          color: (isLowStock ? AppColors.danger : AppColors.brandPrimary).withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: IconHelper.buildIcon(
+                        widget.categoryIcon,
+                        color: isLowStock ? AppColors.danger : AppColors.brandPrimary,
+                        size: 20,
+                      ),
                     ),
-                  )
-                else if (categoryIcon != null && categoryIcon!.isNotEmpty && (IconHelper.getIcon(categoryIcon) != null || categoryIcon!.startsWith('svg:')))
-                  Container(
-                    margin: const EdgeInsets.only(right: 16.0),
-                    width: 38,
-                    height: 38,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: (isLowStock ? AppColors.danger : AppColors.brandPrimary).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: IconHelper.buildIcon(
-                      categoryIcon,
-                      color: isLowStock ? AppColors.danger : AppColors.brandPrimary,
-                      size: 22,
-                    ),
-                  ),
 
-                // Название
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                  // 2. Название, код и статус
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               margin: const EdgeInsets.only(right: 8),
                               decoration: BoxDecoration(
-                                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-                                borderRadius: BorderRadius.circular(4),
+                                color: isDark ? AppColors.darkCard : AppColors.lightBg,
+                                borderRadius: BorderRadius.circular(AppRadii.xs),
                                 border: Border.all(
-                                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+                                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                                 ),
                               ),
                               child: Text(
@@ -129,8 +159,8 @@ class IngredientItemRow extends StatelessWidget {
                               child: Text(
                                 item.name,
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
                                   decoration: item.isArchived ? TextDecoration.lineThrough : null,
                                   color: item.isArchived
                                       ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)
@@ -138,156 +168,114 @@ class IngredientItemRow extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          if (item.isArchived)
-                            _buildTag('В архиве', isDark ? AppColors.darkSubtext : AppColors.lightSubtext, isDark ? AppColors.darkCard : AppColors.lightCard)
-                          else if (item.categoryId == null)
-                            _buildTag('Без категории', AppColors.warning, AppColors.warning.withValues(alpha: 0.15)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.categoryName ?? 'Без категории',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Остаток и Алерт
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(width: 8, height: 8, decoration: BoxDecoration(color: stockColor, shape: BoxShape.circle)),
-                          const SizedBox(width: 8),
-                          Text(UnitFormatter.formatAmount(item.currentStock, item.unit), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: stockColor)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Text('Алерт: ${UnitFormatter.formatAmount(item.minStockAlert, item.unit)}', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Финансы и действия
-                Expanded(
-                  flex: 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text('${item.costPerUnit.toStringAsFixed(2)} $currency', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: isDark ? AppColors.darkText : AppColors.lightText)),
-                          const SizedBox(height: 2),
-                          Text('за 1 ${UnitFormatter.format(item.unit)}', style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
-                        ],
-                      ),
-                      if (!isManageMode) ...[
-                        if (item.isArchived) ...[
-                          const SizedBox(width: 8),
-                          Tooltip(
-                            message: 'Восстановить из архива',
-                            child: InkWell(
-                              onTap: () {
-                                if (onRestore != null) {
-                                  onRestore!();
-                                } else {
-                                  context.read<IngredientBloc>().add(RestoreIngredient(item.id));
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(6),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: AppColors.brandPrimary.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 14, color: AppColors.brandPrimary),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Восстановить',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.brandPrimary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            if (item.isArchived) ...[
+                              const SizedBox(width: 8),
+                              const AppStatusBadge(
+                                label: 'В архиве',
+                                variant: AppBadgeVariant.neutral,
+                                height: 20,
                               ),
-                            ),
+                            ] else if (item.categoryId == null) ...[
+                              const SizedBox(width: 8),
+                              const AppStatusBadge(
+                                label: 'Без категории',
+                                variant: AppBadgeVariant.warning,
+                                height: 20,
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          item.categoryName ?? 'Без категории',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                           ),
-                        ],
-                        const SizedBox(width: 8),
-                        PopupMenuButton<String>(
-                          icon: Icon(PhosphorIconsRegular.dotsThreeVertical, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                          onSelected: (val) {
-                            if (val == 'edit') onEdit();
-                            if (val == 'delete') onDelete();
-                            if (val == 'restore') {
-                              if (onRestore != null) {
-                                onRestore!();
-                              } else {
-                                context.read<IngredientBloc>().add(RestoreIngredient(item.id));
-                              }
-                            }
-                          },
-                          itemBuilder: (ctx) => item.isArchived
-                              ? [
-                                  _menuItem('restore', PhosphorIconsRegular.arrowCounterClockwise, 'Восстановить'),
-                                  _menuItem('delete', PhosphorIconsRegular.trash, 'Удалить навсегда', color: AppColors.danger),
-                                ]
-                              : [
-                                  _menuItem('edit', PhosphorIconsRegular.pencilSimple, 'Редактировать'),
-                                  _menuItem('delete', PhosphorIconsRegular.archive, 'Архивировать', color: AppColors.danger),
-                                ],
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
+
+                  // 3. Остаток и алерт
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(color: stockColor, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              UnitFormatter.formatAmount(item.currentStock, item.unit),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: stockColor),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0),
+                          child: Text(
+                            'Алерт: ${UnitFormatter.formatAmount(item.minStockAlert, item.unit)}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 4. Финансы и действия
+                  Expanded(
+                    flex: 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${item.costPerUnit.toStringAsFixed(2)} ${widget.currency}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.darkText : AppColors.lightText,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'за 1 ${UnitFormatter.format(item.unit)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (!widget.isManageMode)
+                          IngredientRowActions(
+                            item: item,
+                            onEdit: widget.onEdit,
+                            onDelete: widget.onDelete,
+                            onRestore: widget.onRestore,
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTag(String label, Color textColor, Color bgColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      margin: const EdgeInsets.only(left: 8),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(4)),
-      child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: textColor)),
-    );
-  }
-
-  PopupMenuItem<String> _menuItem(String value, IconData icon, String label, {Color? color}) {
-    return PopupMenuItem(
-      value: value,
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 8),
-          Text(label, style: color != null ? TextStyle(color: color) : null),
-        ],
       ),
     );
   }
