@@ -30,6 +30,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   int _selectedIndex = 0;
+  final Set<int> _activatedTabs = {0};
 
   final List<_SettingsCategory> _categories = const [
     _SettingsCategory(PhosphorIconsRegular.slidersHorizontal, 'Основные'),
@@ -38,6 +39,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _SettingsCategory(PhosphorIconsRegular.hardDrives, 'Система'),
     _SettingsCategory(PhosphorIconsRegular.paintBrushBroad, 'UI Kit & Дизайн'),
   ];
+
+  void _onCategorySelected(int index) {
+    if (_selectedIndex == index) return;
+    setState(() {
+      _selectedIndex = index;
+      _activatedTabs.add(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: AppSegmentedControl<int>(
                       selectedValue: _selectedIndex,
                       size: AppSegmentedSize.sm,
-                      onValueChanged: (idx) => setState(() => _selectedIndex = idx),
+                      onValueChanged: _onCategorySelected,
                       items: List.generate(_categories.length, (index) {
                         final cat = _categories[index];
                         return AppSegmentedItem<int>(
@@ -117,11 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             icon: category.icon,
                             isSelected: isSelected,
                             size: AppNavTileSize.lg,
-                            onTap: () {
-                              setState(() {
-                                _selectedIndex = index;
-                              });
-                            },
+                            onTap: () => _onCategorySelected(index),
                           );
                         },
                       ),
@@ -148,11 +153,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: IndexedStack(
           index: _selectedIndex,
           children: [
-            GeneralSettingsTab(isDark: isDark),
-            AppearanceSettingsTab(isDark: isDark),
-            PersonnelSettingsTab(isDark: isDark),
-            SystemSettingsTab(isDark: isDark),
-            const UiKitShowcaseScreen(),
+            _activatedTabs.contains(0)
+                ? GeneralSettingsTab(isDark: isDark)
+                : const SizedBox.shrink(),
+            _activatedTabs.contains(1)
+                ? AppearanceSettingsTab(isDark: isDark)
+                : const SizedBox.shrink(),
+            _activatedTabs.contains(2)
+                ? PersonnelSettingsTab(isDark: isDark)
+                : const SizedBox.shrink(),
+            _activatedTabs.contains(3)
+                ? SystemSettingsTab(isDark: isDark)
+                : const SizedBox.shrink(),
+            _activatedTabs.contains(4)
+                ? const UiKitShowcaseScreen()
+                : const SizedBox.shrink(),
           ],
         ),
       ),
