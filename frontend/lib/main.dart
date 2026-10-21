@@ -149,10 +149,14 @@ class _KresoAppState extends State<KresoApp> {
     _appRouter = AppRouter(_authBloc);
 
     apiClient.onUnauthorized = () {
-      if (mounted) {
-        rootNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final nav = rootNavigatorKey.currentState;
+        if (nav != null && nav.canPop()) {
+          nav.popUntil((route) => route.isFirst);
+        }
         _authBloc.add(LoggedOut());
-      }
+      });
     };
 
     // Automatically sync tenant feature flags and load shift status on login/startup

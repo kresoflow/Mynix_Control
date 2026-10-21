@@ -173,6 +173,47 @@ async def test_pin_bruteforce_protection(async_client: AsyncClient, db_session):
 
 
 @pytest.mark.asyncio
+async def test_verify_pin_flow_and_bruteforce(async_client: AsyncClient, db_session):
+    from app.users.routers.auth_router import _pin_failed_attempts, _pin_locked_keys
+    _pin_failed_attempts.clear()
+    _pin_locked_keys.clear()
+
+    tenant = Tenant(name="Verify PIN Tenant", schema_name="public", is_active=True)
+    db_session.add(tenant)
+    await db_session.commit()
+    await db_session.refresh(tenant)
+
+    user = User(tenant_id=tenant.id, username="verify_pin_user", full_name="Verifier", hashed_password="h", pin_code="4321", is_active=True)
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    token = user_svc.create_access_token(user_id=user.id, tenant_id=tenant.id, permissions=["pos:cash_operations"])
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Correct PIN -> 200 {"valid": True}
+    ok_resp = await async_client.post("/api/v1/auth/verify-pin", json={"pin_code": "4321"}, headers=headers)
+    assert ok_resp.status_code == 200
+    assert ok_resp.json()["valid"] is True
+
+    # 2. Wrong PIN -> 200 {"valid": False, "detail": "...4"} (NOT 401!)
+    wrong_resp = await async_client.post("/api/v1/auth/verify-pin", json={"pin_code": "9999"}, headers=headers)
+    assert wrong_resp.status_code == 200
+    assert wrong_resp.json()["valid"] is False
+    assert "Осталось попыток: 4" in wrong_resp.json()["detail"]
+
+    # 3. 3 more wrong attempts -> status 200 with decreasing remaining attempts
+    for _ in range(3):
+        r = await async_client.post("/api/v1/auth/verify-pin", json={"pin_code": "9999"}, headers=headers)
+        assert r.status_code == 200
+        assert r.json()["valid"] is False
+
+    # 5th attempt -> 429 Too Many Requests
+    lockout_resp = await async_client.post("/api/v1/auth/verify-pin", json={"pin_code": "9999"}, headers=headers)
+    assert lockout_resp.status_code == 429
+
+
+@pytest.mark.asyncio
 async def test_analytics_date_guards(async_client: AsyncClient, db_session):
     tenant = Tenant(name="Analytics Guard Cafe", schema_name="public", is_active=True)
     db_session.add(tenant)

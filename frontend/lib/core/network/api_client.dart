@@ -80,14 +80,20 @@ class ApiClient {
           }
           
           if (e.response?.statusCode == 401) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.remove('access_token');
-            if (!_isHandling401) {
-              _isHandling401 = true;
-              onUnauthorized?.call();
-              Future.delayed(const Duration(seconds: 2), () {
-                _isHandling401 = false;
-              });
+            final path = e.requestOptions.path;
+            final isAuthCheckEndpoint = path.contains('/auth/login') ||
+                path.contains('/auth/pin') ||
+                path.contains('/auth/verify-pin');
+            if (!isAuthCheckEndpoint) {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('access_token');
+              if (!_isHandling401) {
+                _isHandling401 = true;
+                onUnauthorized?.call();
+                Future.delayed(const Duration(seconds: 2), () {
+                  _isHandling401 = false;
+                });
+              }
             }
           }
           
@@ -109,6 +115,12 @@ class ApiClient {
         final code = e.response?.statusCode;
         final data = e.response?.data;
         if (code == 401) {
+          if (data is Map && data['detail'] != null && data['detail'].toString().isNotEmpty) {
+            final detail = data['detail'].toString();
+            if (detail != 'Not authenticated') {
+              return detail;
+            }
+          }
           return 'Сессия истекла. Пожалуйста, выполните вход заново.';
         }
         if (data is Map && data['detail'] != null) {

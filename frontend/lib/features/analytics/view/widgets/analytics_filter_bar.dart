@@ -273,13 +273,10 @@ class AnalyticsFilterBar extends StatelessWidget {
       child: IconButton(
         padding: EdgeInsets.zero,
         icon: isRefreshing
-            ? SizedBox(
+            ? const SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.brandPrimary,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.brandPrimary),
               )
             : Icon(
                 PhosphorIconsRegular.arrowsClockwise,
@@ -289,15 +286,9 @@ class AnalyticsFilterBar extends StatelessWidget {
         tooltip: isRefreshing ? 'Обновление данных...' : 'Обновить',
         onPressed: isRefreshing
             ? null
-            : () {
-                context.read<AnalyticsBloc>().add(
-                      LoadAnalytics(
-                        period: selectedPeriod,
-                        startDate: startDate,
-                        endDate: endDate,
-                      ),
-                    );
-              },
+            : () => context.read<AnalyticsBloc>().add(
+                  LoadAnalytics(period: selectedPeriod, startDate: startDate, endDate: endDate),
+                ),
       ),
     );
   }

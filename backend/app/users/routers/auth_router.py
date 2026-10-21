@@ -46,7 +46,7 @@ def check_pin_rate_limit(key: str) -> None:
             _pin_failed_attempts.pop(key, None)
 
 
-def record_pin_failed_attempt(key: str) -> None:
+def record_pin_failed_attempt(key: str, raise_unauthorized: bool = True) -> int:
     now = time.time()
     attempts = [t for t in _pin_failed_attempts.get(key, []) if now - t < PIN_WINDOW_SECONDS]
     attempts.append(now)
@@ -60,10 +60,12 @@ def record_pin_failed_attempt(key: str) -> None:
             headers={"Retry-After": str(int(PIN_LOCKOUT_SECONDS))},
         )
     remaining = MAX_PIN_ATTEMPTS - len(attempts)
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=f"Неверный PIN-код. Осталось попыток до блокировки: {remaining}",
-    )
+    if raise_unauthorized:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Неверный PIN-код. Осталось попыток до блокировки: {remaining}",
+        )
+    return remaining
 
 
 def reset_pin_attempts(key: str) -> None:
@@ -154,7 +156,11 @@ async def verify_pin(
         reset_pin_attempts(rate_key)
         return {"valid": True, "username": user.username}
 
-    record_pin_failed_attempt(rate_key)
+    remaining = record_pin_failed_attempt(rate_key, raise_unauthorized=False)
+    return {
+        "valid": False,
+        "detail": f"Неверный PIN-код. Осталось попыток: {remaining}",
+    }
 
 
 @router.get("/auth/me", response_model=UserRead)

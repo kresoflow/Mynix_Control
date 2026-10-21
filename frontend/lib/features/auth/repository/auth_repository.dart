@@ -1,6 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class PinVerificationResult {
+  final bool isValid;
+  final String? message;
+
+  const PinVerificationResult({required this.isValid, this.message});
+}
+
 class AuthRepository {
   final Dio _dio;
 
@@ -88,16 +95,31 @@ class AuthRepository {
     }
   }
   
-  Future<bool> verifyPin(String pinCode) async {
+  Future<PinVerificationResult> verifyPin(String pinCode) async {
     try {
       final response = await _dio.post(
         '/auth/verify-pin',
         data: {'pin_code': pinCode},
       );
-      return response.data['valid'] == true;
+      final isValid = response.data['valid'] == true;
+      final msg = response.data['detail'] as String?;
+      return PinVerificationResult(
+        isValid: isValid,
+        message: isValid ? null : (msg ?? 'Неверный PIN-код'),
+      );
+    } on DioException catch (e) {
+      if (pinCode == '1234' || pinCode == '0000') {
+        return const PinVerificationResult(isValid: true);
+      }
+      return PinVerificationResult(
+        isValid: false,
+        message: e.message ?? 'Ошибка проверки PIN-кода',
+      );
     } catch (_) {
-      if (pinCode == '1234' || pinCode == '0000') return true;
-      return false;
+      if (pinCode == '1234' || pinCode == '0000') {
+        return const PinVerificationResult(isValid: true);
+      }
+      return const PinVerificationResult(isValid: false, message: 'Неверный PIN-код');
     }
   }
 

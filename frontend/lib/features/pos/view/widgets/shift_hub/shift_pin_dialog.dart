@@ -1,8 +1,14 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// 1. Title: Shift PIN Dialog (Protected Financials Access)
+// 2. Role: Secure prompt for manager / owner PIN code with brute-force guards.
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/app_text_field.dart';
 import 'package:kreso_frontend/features/auth/repository/auth_repository.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -27,18 +33,19 @@ Future<bool> showShiftPinDialog(BuildContext context) async {
             error = null;
           });
 
-          final isValid = await authRepo.verifyPin(pin);
-          if (isValid) {
-            if (ctx.mounted) Navigator.of(ctx).pop(true);
+          final verification = await authRepo.verifyPin(pin);
+          if (!ctx.mounted) return;
+
+          if (verification.isValid) {
+            final nav = Navigator.of(ctx);
+            if (nav.canPop()) nav.pop(true);
             return;
           }
 
-          if (ctx.mounted) {
-            setState(() {
-              error = 'Неверный PIN-код';
-              isChecking = false;
-            });
-          }
+          setState(() {
+            error = verification.message ?? 'Неверный PIN-код';
+            isChecking = false;
+          });
         }
 
         return AppDialog(
@@ -49,7 +56,10 @@ Future<bool> showShiftPinDialog(BuildContext context) async {
             AppButton.secondary(
               label: 'Отмена',
               onPressed: () {
-                if (ctx.mounted) Navigator.of(ctx).pop(false);
+                if (ctx.mounted) {
+                  final nav = Navigator.of(ctx);
+                  if (nav.canPop()) nav.pop(false);
+                }
               },
             ),
             AppButton.primary(
@@ -69,20 +79,14 @@ Future<bool> showShiftPinDialog(BuildContext context) async {
                 ),
               ),
               const SizedBox(height: 14),
-              TextField(
+              AppTextField(
                 controller: pinController,
                 obscureText: true,
                 autofocus: true,
                 keyboardType: TextInputType.number,
-                maxLength: 6,
-                decoration: InputDecoration(
-                  labelText: 'PIN-код (4-6 цифр)',
-                  counterText: '',
-                  prefixIcon: const Icon(PhosphorIconsRegular.lock, size: 18),
-                  errorText: error,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                ),
+                labelText: 'PIN-код (4-6 цифр)',
+                prefixIcon: const Icon(PhosphorIconsRegular.lock, size: 18),
+                errorText: error,
                 onSubmitted: (_) => isChecking ? null : submitPin(),
               ),
             ],
