@@ -40,11 +40,11 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
           // Search Sizes Showcase
           Text('Шкала размеров поиска (AppSearchFieldSize):', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Wrap(
+          const Wrap(
             spacing: 12,
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
-            children: const [
+            children: [
               AppSearchField(
                 size: AppSearchFieldSize.sm,
                 width: 210,
@@ -92,7 +92,7 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
             spacing: 12,
             children: [
               AppPrimaryButton(
-                label: 'Открыть тестовый диалог',
+                label: 'Документ (AppDialogScaffold)',
                 icon: PhosphorIconsRegular.browsers,
                 size: AppButtonSize.md,
                 onPressed: () {
@@ -105,12 +105,46 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
                       body: const Padding(
                         padding: EdgeInsets.all(20),
                         child: Text(
-                          'Это диалоговое окно использует золотой стандарт AppDialogScaffold v2, скругления AppRadii.dialog, кнопки UI Kit и адаптивные размеры.',
+                          'Это диалоговое окно использует стандарт AppDialogScaffold v2, скругления AppRadii.dialog, кнопки UI Kit и адаптивные размеры.',
                         ),
                       ),
                       actions: [
                         AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
                         AppPrimaryButton(label: 'Подтвердить', onPressed: () => Navigator.pop(ctx)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              AppSecondaryButton(
+                label: 'Компактная форма (AppDialog)',
+                icon: PhosphorIconsRegular.user,
+                size: AppButtonSize.md,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AppDialog(
+                      title: 'Редактировать сотрудника',
+                      subtitle: 'Компактный эталон формы ввода (Wrap-content)',
+                      icon: PhosphorIconsRegular.user,
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextFormField(
+                            initialValue: 'Сомон Сомонов',
+                            decoration: const InputDecoration(labelText: 'ФИО сотрудника', border: OutlineInputBorder()),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            initialValue: 'somon_cashier',
+                            decoration: const InputDecoration(labelText: 'Логин', border: OutlineInputBorder()),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+                        AppPrimaryButton(label: 'Сохранить', onPressed: () => Navigator.pop(ctx)),
                       ],
                     ),
                   );

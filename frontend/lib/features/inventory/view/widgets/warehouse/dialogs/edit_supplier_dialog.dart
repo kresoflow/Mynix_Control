@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Диалог редактирования поставщика.
-/// Возвращает Map<String, dynamic> с полями name, contact_info, is_active.
+/// Возвращает Map с полями name, contact_info, is_active.
 class EditSupplierDialog extends StatefulWidget {
   final Supplier supplier;
 
@@ -48,160 +49,133 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-      child: Container(
-        width: 460,
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header
-            Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.brandGradient,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(PhosphorIconsRegular.pencilSimple, color: Colors.white, size: 18),
+    return AppDialog(
+      title: 'Редактировать поставщика',
+      icon: PhosphorIconsRegular.pencilSimple,
+      width: 460,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Name field
+          TextField(
+            controller: _nameCtrl,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: 'Название поставщика *',
+              prefixIcon: Icon(
+                PhosphorIconsRegular.storefront,
+                color: AppColors.brandPrimary,
+                size: 18,
+              ),
+              filled: true,
+              fillColor: isDark ? AppColors.darkCard : AppColors.lightBg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),
-                const SizedBox(width: 12),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Contact info field
+          TextField(
+            controller: _contactCtrl,
+            maxLines: 2,
+            decoration: InputDecoration(
+              labelText: 'Контакты (телефон, адрес, примечания)',
+              alignLabelWithHint: true,
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Icon(
+                  PhosphorIconsRegular.phone,
+                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  size: 18,
+                ),
+              ),
+              filled: true,
+              fillColor: isDark ? AppColors.darkCard : AppColors.lightBg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Active toggle
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkCard : AppColors.lightBg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _isActive ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.xCircle,
+                  color: _isActive ? AppColors.success : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
                 Text(
-                  'Редактировать поставщика',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
+                  'Статус активности',
+                  style: TextStyle(color: isDark ? AppColors.darkText : AppColors.lightText),
                 ),
                 const Spacer(),
-                IconButton(
-                  icon: Icon(PhosphorIconsRegular.x,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, size: 18),
-                  onPressed: () => Navigator.pop(context),
+                Switch(
+                  value: _isActive,
+                  onChanged: (val) => setState(() => _isActive = val),
+                  activeThumbColor: AppColors.brandPrimary,
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Name field
-            TextField(
-              controller: _nameCtrl,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Название поставщика *',
-                prefixIcon: Icon(PhosphorIconsRegular.storefront,
-                    color: AppColors.brandPrimary, size: 18),
-                filled: true,
-                fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
-                ),
-              ),
-              onSubmitted: (_) => _submit(),
-            ),
-            const SizedBox(height: 12),
-
-            // Contact field
-            TextField(
-              controller: _contactCtrl,
-              decoration: InputDecoration(
-                labelText: 'Контактные данные',
-                prefixIcon: Icon(PhosphorIconsRegular.phone,
-                    color: AppColors.brandPrimary, size: 18),
-                filled: true,
-                fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Active toggle
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              ),
-              child: Row(
-                children: [
-                  Icon(PhosphorIconsRegular.toggleLeft,
-                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, size: 18),
-                  const SizedBox(width: 10),
-                  Text('Статус поставщика',
-                      style: TextStyle(color: isDark ? AppColors.darkText : AppColors.lightText)),
-                  const Spacer(),
-                  Switch(
-                    value: _isActive,
-                    onChanged: (val) => setState(() => _isActive = val),
-                    activeThumbColor: AppColors.brandPrimary,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _isActive ? 'Активен' : 'Неактивен',
-                    style: TextStyle(
-                      color: _isActive ? AppColors.success : Colors.grey,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Actions
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      foregroundColor: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    ),
-                    child: const Text('Отмена'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton.icon(
-                    onPressed: _submit,
-                    icon: const Icon(PhosphorIconsRegular.floppyDisk, size: 16),
-                    label: const Text('Сохранить'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.brandPrimary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
+                const SizedBox(width: 4),
+                Text(
+                  _isActive ? 'Активен' : 'Неактивен',
+                  style: TextStyle(
+                    color: _isActive ? AppColors.success : Colors.grey,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+      actions: [
+        AppGhostButton(
+          label: 'Отмена',
+          onPressed: () => Navigator.pop(context),
+        ),
+        AppPrimaryButton(
+          label: 'Сохранить',
+          icon: PhosphorIconsRegular.floppyDisk,
+          onPressed: _submit,
+        ),
+      ],
     );
   }
 }

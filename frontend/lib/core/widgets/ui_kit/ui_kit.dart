@@ -6,6 +6,7 @@ export 'app_nav_tile.dart';
 export 'app_segmented_control.dart';
 export 'app_filter_chip.dart';
 export '../app_button.dart';
+export '../app_dialog.dart';
 export '../app_dialog_scaffold.dart';
 export '../app_card.dart';
 export '../app_text_field.dart';
