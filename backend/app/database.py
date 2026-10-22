@@ -124,7 +124,8 @@ async def auto_migrate_tenant_schemas() -> None:
     try:
         async with async_engine.begin() as conn:
             # Ensure public schema columns are up to date
-            await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_kds BOOLEAN DEFAULT TRUE'))
+            await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_kds BOOLEAN DEFAULT FALSE'))
+            await conn.execute(text('UPDATE public.tenants SET use_kds = FALSE WHERE use_kds = TRUE'))
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS use_orders BOOLEAN DEFAULT TRUE'))
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS enable_inventory_deduction BOOLEAN DEFAULT TRUE'))
             await conn.execute(text('ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS blind_pos_enabled BOOLEAN DEFAULT TRUE'))

@@ -64,7 +64,7 @@ async def create_order(
 ) -> Order:
     """Create an order in DB. Defers stock deduction and payments for hall orders."""
     tenant = (await session.execute(select(Tenant).where(Tenant.id == tenant_id))).scalar_one_or_none()
-    use_kds = tenant.use_kds if tenant else True
+    use_kds = False  # KDS module is removed from system; counter orders finalize immediately
     enable_inventory = tenant.enable_inventory_deduction if tenant else True
 
     if data.client_uuid:

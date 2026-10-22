@@ -114,7 +114,7 @@ ThemeData getLightTheme() {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: AppColors.lightBorder),
+        side: BorderSide.none,
       ),
       titleTextStyle: AppTextStyles.h2.copyWith(color: AppColors.lightText),
       contentTextStyle: AppTextStyles.body.copyWith(color: AppColors.lightSubtext),

@@ -37,15 +37,8 @@ class DocumentDetailFooter extends StatelessWidget {
         ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          AppButton.ghost(
-            label: 'Закрыть',
-            icon: PhosphorIconsRegular.x,
-            height: 38,
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          const Spacer(),
-
           // Меню других форматов экспорта
           PopupMenuButton<String>(
             tooltip: 'Другие форматы экспорта',

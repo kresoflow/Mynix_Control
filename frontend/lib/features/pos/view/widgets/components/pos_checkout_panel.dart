@@ -8,6 +8,7 @@ import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import '../table_picker_modal.dart';
 import 'pos_checkout_panel_payment_methods.dart';
 import 'pos_checkout_panel_action_button.dart';
@@ -117,6 +118,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
             final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
             context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
             context.read<ShiftBloc>().add(CheckCurrentShift());
+            context.read<PosTabCubit>().refreshCounts();
 
             if (state.lastSubmittedSource == 'dine_in' || state.lastSubmittedSource == 'hall') {
               AppToast.showSuccess(

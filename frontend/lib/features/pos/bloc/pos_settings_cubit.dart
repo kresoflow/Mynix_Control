@@ -4,23 +4,40 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PosSettingsState {
   final bool enableRainbowColors;
   final int cartWidthPercentage; // 20 to 50
-  final double cardSize; // 150.0 to 300.0
+  final int columnsCount; // 3 to 6
 
   const PosSettingsState({
     required this.enableRainbowColors,
     required this.cartWidthPercentage,
-    required this.cardSize,
+    required this.columnsCount,
   });
+
+  /// Совместимость со старым свойством cardSize
+  double get cardSize => switch (columnsCount) {
+    3 => 270.0,
+    4 => 220.0,
+    5 => 175.0,
+    6 => 145.0,
+    _ => 220.0,
+  };
+
+  static int cardSizeToColumns(double size) {
+    if (size >= 250) return 3;
+    if (size >= 200) return 4;
+    if (size >= 160) return 5;
+    return 6;
+  }
 
   PosSettingsState copyWith({
     bool? enableRainbowColors,
     int? cartWidthPercentage,
+    int? columnsCount,
     double? cardSize,
   }) {
     return PosSettingsState(
       enableRainbowColors: enableRainbowColors ?? this.enableRainbowColors,
       cartWidthPercentage: cartWidthPercentage ?? this.cartWidthPercentage,
-      cardSize: cardSize ?? this.cardSize,
+      columnsCount: columnsCount ?? (cardSize != null ? cardSizeToColumns(cardSize) : this.columnsCount),
     );
   }
 }
@@ -28,13 +45,14 @@ class PosSettingsState {
 class PosSettingsCubit extends Cubit<PosSettingsState> {
   static const _kRainbowColorsKey = 'pos_rainbow_colors';
   static const _kCartWidthKey = 'pos_cart_width';
+  static const _kColumnsCountKey = 'pos_columns_count';
   static const _kCardSizeKey = 'pos_card_size';
 
   PosSettingsCubit() : super(const PosSettingsState(
     enableRainbowColors: true,
     cartWidthPercentage: 30, // Default 30%
-    cardSize: 220.0, // Default 220px
-  )) {
+    columnsCount: 4, // Default 4 колонки
+  ),) {
     _loadSettings();
   }
 
@@ -43,13 +61,22 @@ class PosSettingsCubit extends Cubit<PosSettingsState> {
       final prefs = await SharedPreferences.getInstance();
       final enabled = prefs.getBool(_kRainbowColorsKey) ?? true;
       final cartWidth = prefs.getInt(_kCartWidthKey) ?? 30;
-      final cardSize = prefs.getDouble(_kCardSizeKey) ?? 220.0;
+      
+      int columns = prefs.getInt(_kColumnsCountKey) ?? 0;
+      if (columns < 3 || columns > 6) {
+        final oldCardSize = prefs.getDouble(_kCardSizeKey);
+        if (oldCardSize != null) {
+          columns = PosSettingsState.cardSizeToColumns(oldCardSize);
+        } else {
+          columns = 4;
+        }
+      }
       
       emit(PosSettingsState(
         enableRainbowColors: enabled,
         cartWidthPercentage: cartWidth,
-        cardSize: cardSize,
-      ));
+        columnsCount: columns,
+      ),);
     } catch (_) {}
   }
 
@@ -71,12 +98,17 @@ class PosSettingsCubit extends Cubit<PosSettingsState> {
     } catch (_) {}
   }
 
-  Future<void> updateCardSize(double size) async {
-    if (size < 120.0 || size > 350.0) return;
-    emit(state.copyWith(cardSize: size));
+  Future<void> updateColumnsCount(int count) async {
+    if (count < 3 || count > 6) return;
+    emit(state.copyWith(columnsCount: count));
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble(_kCardSizeKey, size);
+      await prefs.setInt(_kColumnsCountKey, count);
     } catch (_) {}
+  }
+
+  Future<void> updateCardSize(double size) async {
+    final count = PosSettingsState.cardSizeToColumns(size);
+    await updateColumnsCount(count);
   }
 }

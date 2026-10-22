@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/table_picker_modal.dart';
 
 class PosTableChip extends StatelessWidget {
@@ -21,42 +22,81 @@ class PosTableChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary = AppColors.brandPrimary;
     final table = cartState.tableNumber;
+    final activeCount = context.watch<PosTabCubit>().state.activeTablesCount;
+    final hasActiveTables = activeCount > 0;
 
     if (table == null || table.isEmpty) {
-      return InkWell(
-        onTap: () {
-          TablePickerModal.show(
-            context,
-            currentTable: null,
-            onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
-          );
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 34,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: border),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(PhosphorIconsRegular.chair, size: 15, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  'Столик',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+      return Tooltip(
+        message: hasActiveTables
+            ? 'Активных счетов в зале: $activeCount. Нажмите для выбора стола.'
+            : 'Выбрать столик для заказа',
+        child: InkWell(
+          onTap: () {
+            TablePickerModal.show(
+              context,
+              currentTable: null,
+              onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
+            );
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            height: 34,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: hasActiveTables
+                  ? primary.withValues(alpha: isDark ? 0.12 : 0.08)
+                  : (isDark ? AppColors.darkCard : AppColors.lightCard),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: hasActiveTables
+                    ? primary.withValues(alpha: isDark ? 0.45 : 0.5)
+                    : border,
+                width: hasActiveTables ? 1.2 : 1.0,
               ),
-            ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  hasActiveTables ? PhosphorIconsBold.chair : PhosphorIconsRegular.chair,
+                  size: 15,
+                  color: hasActiveTables ? primary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    'Столик',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: hasActiveTables ? FontWeight.w700 : FontWeight.w600,
+                      color: hasActiveTables
+                          ? (isDark ? AppColors.darkText : primary)
+                          : (isDark ? AppColors.darkText : AppColors.lightText),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (hasActiveTables) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$activeCount',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.1,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       );

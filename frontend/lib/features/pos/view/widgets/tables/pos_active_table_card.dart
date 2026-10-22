@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
@@ -9,6 +9,7 @@ class PosActiveTableCard extends StatelessWidget {
   final VoidCallback onSplit;
   final VoidCallback onSettle;
   final VoidCallback? onMarkServed;
+  final VoidCallback? onCancel;
   final bool isDark;
 
   const PosActiveTableCard({
@@ -18,6 +19,7 @@ class PosActiveTableCard extends StatelessWidget {
     required this.onSplit,
     required this.onSettle,
     this.onMarkServed,
+    this.onCancel,
     required this.isDark,
   });
 
@@ -156,6 +158,29 @@ class PosActiveTableCard extends StatelessWidget {
                     ),
                   ),
                 ),
+              if (onCancel != null) ...[
+                const SizedBox(width: 5),
+                Tooltip(
+                  message: 'Отменить заказ',
+                  child: InkWell(
+                    onTap: onCancel,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.all(4.5),
+                      decoration: BoxDecoration(
+                        color: AppColors.danger.withValues(alpha: isDark ? 0.16 : 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.danger.withValues(alpha: 0.35)),
+                      ),
+                      child: const Icon(
+                        PhosphorIconsRegular.trash,
+                        size: 14,
+                        color: AppColors.danger,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 10),
@@ -187,10 +212,10 @@ class PosActiveTableCard extends StatelessWidget {
                         const SizedBox(height: 8),
                       ],
                       if (dozakazItems.isNotEmpty) ...[
-                        Row(
+                        const Row(
                           children: [
                             Icon(PhosphorIconsBold.sparkle, size: 12, color: AppColors.warning),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4),
                             Text(
                               'К готовке (новый дозаказ):',
                               style: TextStyle(
@@ -252,8 +277,8 @@ class PosActiveTableCard extends StatelessWidget {
                 flex: 3,
                 child: OutlinedButton.icon(
                   onPressed: onSplit,
-                  icon: Icon(PhosphorIconsBold.scissors, size: 12, color: AppColors.warning),
-                  label: Text('Сплит', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.warning)),
+                  icon: const Icon(PhosphorIconsBold.scissors, size: 12, color: AppColors.warning),
+                  label: const Text('Сплит', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.warning)),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     foregroundColor: AppColors.warning,

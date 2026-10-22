@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/color_picker/color_picker_utils.dart';
@@ -42,8 +42,8 @@ class PosMenuGridView extends StatelessWidget {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
             )
-          : SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: posSettings.cardSize,
+          : SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: posSettings.columnsCount,
               childAspectRatio: 0.85,
               crossAxisSpacing: 20,
               mainAxisSpacing: 20,

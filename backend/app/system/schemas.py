@@ -26,7 +26,7 @@ class TenantCreateRequest(BaseModel):
     owner_pin_code: str = "1234"
     owner_phone: Optional[str] = None
     owner_email: Optional[str] = None
-    use_kds: bool = True
+    use_kds: bool = False
     use_orders: bool = True
     enable_inventory_deduction: bool = True
 

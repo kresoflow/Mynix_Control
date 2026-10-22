@@ -6,7 +6,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
-import 'dart:ui';
 
 void showOpenShiftDialog(BuildContext context) {
   showDialog(
@@ -110,25 +109,14 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 500;
     
-    return Stack(
-      children: [
-        // Background blur
-        Positioned.fill(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: Material(
+            color: Colors.transparent,
             child: Container(
-              color: isDark ? Colors.black.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.5),
-            ),
-          ),
-        ),
-        Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
                   width: isMobile ? screenWidth - 32 : 420,
                   padding: EdgeInsets.all(isMobile ? 24 : 40),
                   decoration: BoxDecoration(
@@ -144,7 +132,7 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
                         color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
-                      )
+                      ),
                     ],
                     border: Border.all(
                       color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -227,8 +215,6 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
             ),
           ),
         ),
-      ),
-    ],
-  );
+      );
   }
 }

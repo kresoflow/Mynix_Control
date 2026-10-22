@@ -1,7 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
+import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
 import 'tables/pos_active_tables_dialog.dart';
 
 class TablePickerModal extends StatefulWidget {
@@ -39,6 +43,7 @@ class _TablePickerModalState extends State<TablePickerModal> {
     'Стол 5', 'Стол 6', 'Стол 7', 'Стол 8',
     'VIP',  'Стойка',
   ];
+  Set<String> _occupiedTables = {};
 
   @override
   void initState() {
@@ -46,6 +51,18 @@ class _TablePickerModalState extends State<TablePickerModal> {
     if (widget.currentTable != null && !_presetTables.contains(widget.currentTable)) {
       _customController.text = widget.currentTable!;
     }
+    _loadOccupiedTables();
+  }
+
+  Future<void> _loadOccupiedTables() async {
+    try {
+      final tables = await OrderRepository(apiClient.dio).fetchActiveTables();
+      if (mounted) {
+        setState(() {
+          _occupiedTables = tables.map((t) => t['table_number']?.toString() ?? '').toSet();
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -59,6 +76,7 @@ class _TablePickerModalState extends State<TablePickerModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final activeCount = context.watch<PosTabCubit>().state.activeTablesCount;
 
     return Dialog(
       backgroundColor: bg,
@@ -86,7 +104,29 @@ class _TablePickerModalState extends State<TablePickerModal> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Выбор столика', style: AppTextStyles.h3),
+                      Row(
+                        children: [
+                          Text('Выбор столика', style: AppTextStyles.h3),
+                          if (activeCount > 0) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.brandPrimary.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '$activeCount в зале',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.brandPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                       Text(
                         'Укажите стол для подачи заказа',
                         style: TextStyle(
@@ -126,6 +166,7 @@ class _TablePickerModalState extends State<TablePickerModal> {
               itemBuilder: (context, index) {
                 final table = _presetTables[index];
                 final isSelected = widget.currentTable == table;
+                final isOccupied = _occupiedTables.contains(table);
                 return InkWell(
                   onTap: () {
                     widget.onSelect(table);
@@ -137,20 +178,47 @@ class _TablePickerModalState extends State<TablePickerModal> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.brandPrimary.withValues(alpha: 0.18)
-                          : (isDark ? AppColors.darkCard : AppColors.lightCard),
+                          : isOccupied
+                              ? AppColors.warning.withValues(alpha: isDark ? 0.15 : 0.1)
+                              : (isDark ? AppColors.darkCard : AppColors.lightCard),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: isSelected ? AppColors.brandPrimary : border,
-                        width: isSelected ? 1.5 : 1,
+                        color: isSelected
+                            ? AppColors.brandPrimary
+                            : isOccupied
+                                ? AppColors.warning.withValues(alpha: 0.6)
+                                : border,
+                        width: (isSelected || isOccupied) ? 1.5 : 1,
                       ),
                     ),
-                    child: Text(
-                      table,
-                      style: TextStyle(
-                        color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkText : AppColors.lightText),
-                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                        fontSize: 13,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          table,
+                          style: TextStyle(
+                            color: isSelected
+                                ? AppColors.brandPrimary
+                                : isOccupied
+                                    ? AppColors.warning
+                                    : (isDark ? AppColors.darkText : AppColors.lightText),
+                            fontWeight: (isSelected || isOccupied) ? FontWeight.w800 : FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                        if (isOccupied && !isSelected) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: AppColors.warning,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 );
@@ -197,7 +265,12 @@ class _TablePickerModalState extends State<TablePickerModal> {
                   PosActiveTablesDialog.show(context);
                 },
                 icon: const Icon(PhosphorIconsBold.chair, size: 14),
-                label: const Text('Открыть табло занятых столиков', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                label: Text(
+                  activeCount > 0
+                      ? 'Открыть табло занятых столиков ($activeCount)'
+                      : 'Открыть табло занятых столиков',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
               ),
             ),
           ],

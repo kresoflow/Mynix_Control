@@ -158,7 +158,7 @@ class Tenant(SQLModel, table=True):
     )
     
     # Settings
-    use_kds: bool = Field(default=True, description="Если False, заказы сразу получают статус completed минуя кухню")
+    use_kds: bool = Field(default=False, description="Если False, заказы сразу получают статус completed минуя кухню")
     use_orders: bool = Field(default=True, description="Показывать вкладку Заказы на кассе")
     enable_inventory_deduction: bool = Field(default=True, description="Если False, списание сырья со склада отключается")
     blind_pos_enabled: bool = Field(default=True, description="Если True, финансовые остатки и выручка на кассе скрыты маской до ввода PIN")
@@ -213,7 +213,7 @@ class UserRead(SQLModel):
     permissions: List[str] = []  # permission codes
     tenant_name: Optional[str] = None
     tenant_address: Optional[str] = None
-    use_kds: bool = True
+    use_kds: bool = False
     use_orders: bool = True
     enable_inventory_deduction: bool = True
     blind_pos_enabled: bool = True

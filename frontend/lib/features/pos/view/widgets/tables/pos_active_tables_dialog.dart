@@ -9,6 +9,9 @@ import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
+import 'package:kreso_frontend/features/orders/models/pos_order.dart';
+import 'package:kreso_frontend/features/orders/view/widgets/cancel_order_dialog.dart';
+import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
 import 'table_order_payment_modal.dart';
@@ -87,7 +90,8 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
             final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
             final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
             context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
-            context.read<ShiftBloc>().add(CheckCurrentShift());
+            context.read<ShiftBloc>().add(const CheckCurrentShift());
+            context.read<PosTabCubit>().refreshCounts();
             _loadActiveTables(silent: true);
           }
         } catch (e) {
@@ -95,6 +99,41 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
         }
       },
     );
+  }
+
+  Future<void> _handleCancel(Map<String, dynamic> table) async {
+    final orderId = table['order_id'] as int? ?? table['id'] as int;
+    final orderNumber = table['order_number'] as int? ?? orderId;
+    final tableNum = table['table_number']?.toString() ?? 'Стол';
+
+    final order = PosOrder(
+      id: orderId,
+      orderNumber: orderNumber,
+      status: 'pending',
+      paymentMethod: 'cash',
+      total: (table['total'] as num?)?.toDouble() ?? 0.0,
+      createdAt: DateTime.now(),
+      items: const [],
+    );
+
+    final reason = await CancelOrderDialog.show(context, order: order);
+    if (reason != null && mounted) {
+      try {
+        await _orderRepo.cancelOrder(orderId);
+        if (mounted) {
+          AppToast.showSuccess(context, 'Заказ на $tableNum отменен');
+          final now = DateTime.now();
+          final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
+          final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
+          context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
+          context.read<ShiftBloc>().add(const CheckCurrentShift());
+          context.read<PosTabCubit>().refreshCounts();
+          _loadActiveTables(silent: true);
+        }
+      } catch (e) {
+        if (mounted) AppToast.showError(context, 'Ошибка отмены', subtitle: e.toString());
+      }
+    }
   }
 
   Future<void> _handleMarkServed(Map<String, dynamic> table) async {
@@ -244,6 +283,7 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
                               ),
                               onSettle: () => _handleSettle(table),
                               onMarkServed: () => _handleMarkServed(table),
+                              onCancel: () => _handleCancel(table),
                               isDark: isDark,
                             );
                           },

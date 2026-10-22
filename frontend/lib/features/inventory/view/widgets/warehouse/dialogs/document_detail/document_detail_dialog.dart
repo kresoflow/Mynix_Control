@@ -112,91 +112,90 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      shape: const RoundedRectangleBorder(side: BorderSide.none),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Center(
-        child: Container(
-          width: 700,
-          constraints: const BoxConstraints(maxWidth: 720, maxHeight: 820),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.6 : 0.15),
-                blurRadius: 32,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: FutureBuilder<InventoryDocument>(
-            future: _documentFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 300,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
+      child: Container(
+        width: 700,
+        constraints: const BoxConstraints(maxWidth: 720, maxHeight: 820),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.6 : 0.15),
+              blurRadius: 32,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: FutureBuilder<InventoryDocument>(
+          future: _documentFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(
+                height: 300,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
 
-              if (snapshot.hasError || !snapshot.hasData) {
-                return Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(PhosphorIconsRegular.warningCircle, color: AppColors.danger, size: 48),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Не удалось загрузить документ',
-                        style: AppTextStyles.h3.copyWith(color: AppColors.danger),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        snapshot.error?.toString() ?? 'Неизвестная ошибка',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.caption,
-                      ),
-                      const SizedBox(height: 24),
-                      AppGhostButton(
-                        label: 'Закрыть',
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
-                );
-              }
+            if (snapshot.hasError || !snapshot.hasData) {
+              return Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(PhosphorIconsRegular.warningCircle, color: AppColors.danger, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Не удалось загрузить документ',
+                      style: AppTextStyles.h3.copyWith(color: AppColors.danger),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      snapshot.error?.toString() ?? 'Неизвестная ошибка',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.caption,
+                    ),
+                    const SizedBox(height: 24),
+                    AppGhostButton(
+                      label: 'Закрыть',
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-              final doc = snapshot.data!;
+            final doc = snapshot.data!;
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DocumentDetailHeader(
-                    doc: doc,
-                    onDeleteDraft: () => _deleteDraft(doc),
-                  ),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          DocumentDetailPaymentInfo(doc: doc),
-                          DocumentDetailItemsTable(doc: doc),
-                        ],
-                      ),
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DocumentDetailHeader(
+                  doc: doc,
+                  onDeleteDraft: () => _deleteDraft(doc),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DocumentDetailPaymentInfo(doc: doc),
+                        DocumentDetailItemsTable(doc: doc),
+                      ],
                     ),
                   ),
-                  DocumentDetailFooter(
-                    doc: doc,
-                    currency: currency,
-                    onSnack: _showSnack,
-                    onCompleteDraft: () => _completeDraft(doc),
-                    onEditDraft: () => _editDraft(doc),
-                  ),
-                ],
-              );
-            },
-          ),
+                ),
+                DocumentDetailFooter(
+                  doc: doc,
+                  currency: currency,
+                  onSnack: _showSnack,
+                  onCompleteDraft: () => _completeDraft(doc),
+                  onEditDraft: () => _editDraft(doc),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

@@ -226,4 +226,16 @@ class OrderRepository {
 
     await PosOutboxService.saveOrder(offlinePayload);
   }
+
+  /// Cancels an order and releases table/stock
+  Future<void> cancelOrder(int orderId) async {
+    try {
+      await _dio.patch(
+        '/orders/$orderId/status',
+        queryParameters: {'new_status': 'cancelled'},
+      );
+    } catch (e) {
+      throw Exception('Не удалось отменить заказ: $e');
+    }
+  }
 }

@@ -4,7 +4,6 @@ import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'dart:ui';
 
 class PosSettingsModal extends StatelessWidget {
   const PosSettingsModal({super.key});
@@ -18,15 +17,28 @@ class PosSettingsModal extends StatelessWidget {
     );
   }
 
+  String _getCardSizeLabel(int columns) {
+    switch (columns) {
+      case 3:
+        return 'Крупный (3)';
+      case 4:
+        return 'Стандарт (4)';
+      case 5:
+        return 'Средний (5)';
+      case 6:
+        return 'Компактный (6)';
+      default:
+        return '$columns кол.';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: Container(
-        padding: const EdgeInsets.all(32),
+    return Container(
+      padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -71,29 +83,41 @@ class PosSettingsModal extends StatelessWidget {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Card Size Slider ──
-                      Text(
-                        'Размер карточек',
-                        style: AppTextStyles.h3,
+                      // ── Card Size / Columns Slider ──
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Размер карточек',
+                            style: AppTextStyles.h3,
+                          ),
+                          Text(
+                            _getCardSizeLabel(state.columnsCount),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.brandPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(PhosphorIconsRegular.squaresFour, size: 20, color: AppColors.darkSubtext),
+                          Icon(PhosphorIconsRegular.squaresFour, size: 16, color: AppColors.darkSubtext),
                           Expanded(
                             child: Slider(
-                              value: state.cardSize,
-                              min: 150.0,
-                              max: 300.0,
-                              divisions: 15,
-                              label: state.cardSize.round().toString(),
+                              value: (9 - state.columnsCount).clamp(3, 6).toDouble(),
+                              min: 3.0,
+                              max: 6.0,
+                              divisions: 3,
+                              label: _getCardSizeLabel(state.columnsCount),
                               activeColor: AppColors.brandPrimary,
                               onChanged: (val) {
-                                context.read<PosSettingsCubit>().updateCardSize(val);
+                                context.read<PosSettingsCubit>().updateColumnsCount(9 - val.round());
                               },
                             ),
                           ),
-                          Icon(PhosphorIconsRegular.squaresFour, size: 32, color: AppColors.darkSubtext),
+                          Icon(PhosphorIconsRegular.squaresFour, size: 28, color: AppColors.darkSubtext),
                         ],
                       ),
                       const SizedBox(height: 32),
@@ -171,7 +195,6 @@ class PosSettingsModal extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

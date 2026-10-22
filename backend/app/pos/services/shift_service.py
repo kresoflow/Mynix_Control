@@ -80,7 +80,7 @@ async def close_shift(
     if not shift:
         raise ValueError("Cannot close shift: no open shift found.")
 
-    # Poka-yoke: Check for unfinalized orders or active tables
+    # Poka-yoke: Check for unfinalized orders or active tables (truly unpaid/in preparation)
     active_stmt = select(func.count(Order.id)).where(
         Order.shift_id == shift.id,
         Order.status.in_([
