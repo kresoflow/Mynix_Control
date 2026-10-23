@@ -2,16 +2,25 @@
 // МОДУЛЬ: POS / Модальное окно расчета столика (TableOrderPaymentModal)
 // ДОМЕН: lib/features/pos/view/widgets/tables/table_order_payment_modal.dart
 // ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Модальное окно выбора способа оплаты и закрытия столика:
+// 1. Отображает итоговую сумму заказа и номер столика.
+// 2. Предоставляет выбор метода оплаты (Наличные, Безналичный перевод / QR).
+// 3. Использует официальный эталон AppDialog и компоненты AppButton.
+//
+// ==============================================================================
 
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 
-// ── Модальное окно выбора способа оплаты и закрытия столика ──────────────────
+// ── 1. Модальное окно выбора способа оплаты и закрытия столика ───────────────
 
 class TableOrderPaymentModal extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -40,7 +49,7 @@ class TableOrderPaymentModal extends StatefulWidget {
 }
 
 class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
-  String _selectedMethod = 'cash'; // 'cash', 'card', 'transfer'
+  String _selectedMethod = 'cash'; // 'cash', 'transfer'
   String _transferProvider = 'dc'; // 'dc', 'alif', 'spitamen', 'other'
   bool _isLoading = false;
 
@@ -77,12 +86,12 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Total Card
+          // ── Карточка итогов ───────────────────────────────────────────────
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: AppRadii.cardRadius,
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
@@ -130,7 +139,7 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          AppSpacing.vMd,
           Text(
             'Способ оплаты',
             style: TextStyle(
@@ -139,13 +148,14 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
               color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
             ),
           ),
-          const SizedBox(height: 8),
-          // Method Options
+          AppSpacing.vSm,
+
+          // ── Варианты оплаты ───────────────────────────────────────────────
           _buildMethodTile('cash', 'Наличные', PhosphorIconsBold.money, isDark),
-          const SizedBox(height: 8),
+          AppSpacing.vSm,
           _buildMethodTile('transfer', 'Безналичный перевод (QR)', PhosphorIconsBold.qrCode, isDark),
           if (_selectedMethod == 'transfer') ...[
-            const SizedBox(height: 10),
+            AppSpacing.vSm,
             _buildTransferProviders(isDark),
           ],
         ],
@@ -155,7 +165,6 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
           label: 'Отмена',
           onPressed: _isLoading ? null : () => Navigator.pop(context),
         ),
-        const SizedBox(width: 10),
         AppPrimaryButton(
           label: 'Подтвердить оплату',
           isLoading: _isLoading,
@@ -169,7 +178,7 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
     final isSelected = _selectedMethod == method;
     return InkWell(
       onTap: () => setState(() => _selectedMethod = method),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: AppRadii.radiusLg,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -177,7 +186,7 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
           color: isSelected
               ? AppColors.brandPrimary.withValues(alpha: 0.12)
               : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadii.radiusLg,
           border: Border.all(
             color: isSelected
                 ? AppColors.brandPrimary
@@ -194,7 +203,7 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
                   ? AppColors.brandPrimary
                   : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
             ),
-            const SizedBox(width: 12),
+            AppSpacing.hSm,
             Expanded(
               child: Text(
                 title,
@@ -206,7 +215,7 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
               ),
             ),
             if (isSelected)
-              Icon(PhosphorIconsBold.checkCircle, size: 18, color: AppColors.brandPrimary),
+              const Icon(PhosphorIconsBold.checkCircle, size: 18, color: AppColors.brandPrimary),
           ],
         ),
       ),
@@ -218,7 +227,7 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.radiusMd,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -229,13 +238,13 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
           return Expanded(
             child: InkWell(
               onTap: () => setState(() => _transferProvider = p.id),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadii.radiusSm,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isSelected ? AppColors.brandPrimary : AppColors.transparent,
+                  borderRadius: AppRadii.radiusSm,
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -244,7 +253,7 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     color: isSelected
-                        ? Colors.black
+                        ? AppColors.pureBlack
                         : (isDark ? AppColors.darkText : AppColors.lightText),
                   ),
                 ),

@@ -1,25 +1,41 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Табло активных столиков (PosActiveTablesDialog)
+// ДОМЕН: lib/features/pos/view/widgets/tables/pos_active_tables_dialog.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Диалоговое окно мониторинга всех активных столиков зала:
+// 1. Отображает сводную информацию: количество открытых столов и общую сумму.
+// 2. Рендерит адаптивную сетку карточек PosActiveTableCard.
+// 3. Поддерживает быстрый дозаказ, расчет, подачу в зал и отмену заказа со столика.
+//
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
-import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
-import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_empty_state.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/orders/models/pos_order.dart';
 import 'package:kreso_frontend/features/orders/view/widgets/cancel_order_dialog.dart';
+import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
-import 'table_order_payment_modal.dart';
+import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
 import 'pos_active_table_card.dart';
 import 'split_bill_dialog.dart';
+import 'table_order_payment_modal.dart';
+
+// ── 1. Табло активных столиков ────────────────────────────────────────────────
 
 class PosActiveTablesDialog extends StatefulWidget {
-
   const PosActiveTablesDialog({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -159,14 +175,14 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
 
     return Dialog(
       backgroundColor: bg,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
       child: Container(
         width: 860,
         height: 640,
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Header
+            // ── Шапка табло ─────────────────────────────────────────────────
             Row(
               children: [
                 Container(
@@ -175,9 +191,9 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
                     color: AppColors.brandPrimary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(PhosphorIconsBold.chair, color: AppColors.brandPrimary, size: 22),
+                  child: const Icon(PhosphorIconsBold.chair, color: AppColors.brandPrimary, size: 22),
                 ),
-                const SizedBox(width: 12),
+                AppSpacing.hSm,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,16 +201,16 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
                       Row(
                         children: [
                           Text('Активные столики зала', style: AppTextStyles.h3),
-                          const SizedBox(width: 8),
+                          AppSpacing.hSm,
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: AppRadii.radiusMd,
                             ),
                             child: Text(
                               '${_tables.length} открыто',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.brandPrimary,
@@ -225,42 +241,21 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            AppSpacing.vSm,
             Divider(color: border, height: 1),
-            const SizedBox(height: 16),
+            AppSpacing.vSm,
 
-            // Content
+            // ── Контент ─────────────────────────────────────────────────────
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _tables.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                PhosphorIconsRegular.chair,
-                                size: 54,
-                                color: isDark ? Colors.white24 : Colors.black26,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Все столики свободны',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Нет открытых счетов и заказов в зале',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                ),
-                              ),
-                            ],
+                      ? const Center(
+                          child: AppEmptyState(
+                            icon: PhosphorIconsRegular.chair,
+                            title: 'Все столики свободны',
+                            description: 'Нет открытых счетов и заказов в зале',
+                            size: AppEmptyStateSize.lg,
                           ),
                         )
                       : GridView.builder(
@@ -295,4 +290,3 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
     );
   }
 }
-

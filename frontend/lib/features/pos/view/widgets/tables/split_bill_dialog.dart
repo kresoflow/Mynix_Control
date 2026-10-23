@@ -1,16 +1,32 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Разделение счета (SplitBillDialog)
+// ДОМЕН: lib/features/pos/view/widgets/tables/split_bill_dialog.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Диалог разделения позиций заказа по гостям:
+// 1. Позволяет интерактивно перемещать блюда между чеками Гостя 1 и Гостя 2.
+// 2. Рассчитывает подытоги чеков раздельно и позволяет закрывать их независимо.
+// 3. Использует дизайн-токены AppRadii, AppColors, AppSpacing и кнопки AppButton.
+//
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_toast.dart';
-import 'package:kreso_frontend/core/network/api_client.dart';
-import 'package:kreso_frontend/core/utils/currency_formatter.dart';
-import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
 import 'package:kreso_frontend/features/orders/bloc/orders_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
+import 'package:kreso_frontend/features/pos/repository/order_repository.dart';
+import 'split_bill_guest_column.dart';
 import 'table_order_payment_modal.dart';
+
+// ── 1. Диалог разделения счета ────────────────────────────────────────────────
 
 class SplitBillDialog extends StatefulWidget {
   final Map<String, dynamic> tableData;
@@ -22,7 +38,11 @@ class SplitBillDialog extends StatefulWidget {
     required this.onUpdated,
   });
 
-  static Future<void> show(BuildContext context, {required Map<String, dynamic> tableData, required VoidCallback onUpdated}) {
+  static Future<void> show(
+    BuildContext context, {
+    required Map<String, dynamic> tableData,
+    required VoidCallback onUpdated,
+  }) {
     return showDialog(
       context: context,
       barrierDismissible: true,
@@ -106,7 +126,7 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
             final start = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
             final end = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
             context.read<OrdersBloc>().add(LoadOrders(startDate: start, endDate: end));
-            context.read<ShiftBloc>().add(CheckCurrentShift());
+            context.read<ShiftBloc>().add(const CheckCurrentShift());
 
             setState(() {
               _isProcessing = false;
@@ -143,7 +163,7 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
 
     return Dialog(
       backgroundColor: bg,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
       child: Container(
         width: 820,
         height: 620,
@@ -151,7 +171,7 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header
+            // ── Шапка диалога ───────────────────────────────────────────────
             Row(
               children: [
                 Container(
@@ -160,9 +180,9 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
                     color: AppColors.brandPrimary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(PhosphorIconsBold.scissors, color: AppColors.brandPrimary, size: 20),
+                  child: const Icon(PhosphorIconsBold.scissors, color: AppColors.brandPrimary, size: 20),
                 ),
-                const SizedBox(width: 12),
+                AppSpacing.hSm,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,119 +190,60 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
                       Text('Разделение счета — $tableNumber', style: AppTextStyles.h3),
                       Text(
                         'Нажмите на стрелку у позиции, чтобы перенести ее в другой чек',
-                        style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, fontSize: 12),
+                        style: TextStyle(
+                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(PhosphorIconsRegular.x, size: 20)),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(PhosphorIconsRegular.x, size: 20),
+                ),
               ],
             ),
-            const SizedBox(height: 14),
+            AppSpacing.vSm,
             Divider(color: border, height: 1),
-            const SizedBox(height: 14),
+            AppSpacing.vSm,
 
-            // 2 Columns: Guest 1 & Guest 2
+            // ── Колонки: Гость 1 и Гость 2 ──────────────────────────────────
             Expanded(
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildGuestColumn(1, _guest1Items, total1, border, isDark, onMove: (it) => _moveItem(it, _guest1Items, _guest2Items), isLeft: true),
+                    child: PosSplitBillGuestColumn(
+                      index: 1,
+                      items: _guest1Items,
+                      total: total1,
+                      border: border,
+                      isDark: isDark,
+                      isProcessing: _isProcessing,
+                      onMove: (it) => _moveItem(it, _guest1Items, _guest2Items),
+                      onPay: () => _payGuestBill(1, _guest1Items),
+                      isLeft: true,
+                    ),
                   ),
-                  const SizedBox(width: 16),
+                  AppSpacing.hMd,
                   Expanded(
-                    child: _buildGuestColumn(2, _guest2Items, total2, border, isDark, onMove: (it) => _moveItem(it, _guest2Items, _guest1Items), isLeft: false),
+                    child: PosSplitBillGuestColumn(
+                      index: 2,
+                      items: _guest2Items,
+                      total: total2,
+                      border: border,
+                      isDark: isDark,
+                      isProcessing: _isProcessing,
+                      onMove: (it) => _moveItem(it, _guest2Items, _guest1Items),
+                      onPay: () => _payGuestBill(2, _guest2Items),
+                      isLeft: false,
+                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildGuestColumn(int index, List<Map<String, dynamic>> items, double total, Color border, bool isDark, {required ValueChanged<Map<String, dynamic>> onMove, required bool isLeft}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: border),
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(PhosphorIconsBold.user, size: 16, color: isDark ? AppColors.darkText : AppColors.lightText),
-                  const SizedBox(width: 6),
-                  Text('Гость $index (Чек #$index)', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5)),
-                ],
-              ),
-              Text(total.toCurrency(context), style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.brandPrimary, fontSize: 15)),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Divider(color: border, height: 1),
-          const SizedBox(height: 8),
-          Expanded(
-            child: items.isEmpty
-                ? Center(
-                    child: Text('Чек пуст', style: TextStyle(color: isDark ? Colors.white24 : Colors.black26, fontSize: 13)),
-                  )
-                : ListView.separated(
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 6),
-                    itemBuilder: (context, i) {
-                      final it = items[i];
-                      final name = it['menu_item_name'] ?? '';
-                      final qty = it['quantity'] ?? 1;
-                      final price = (it['unit_price'] as num?)?.toDouble() ?? 0.0;
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: Text('$name × $qty', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ),
-                          Text((price * qty).toCurrency(context), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                          const SizedBox(width: 6),
-                          InkWell(
-                            onTap: () => onMove(it),
-                            borderRadius: BorderRadius.circular(6),
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(color: AppColors.brandPrimary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                              child: Icon(isLeft ? PhosphorIconsBold.arrowRight : PhosphorIconsBold.arrowLeft, size: 14, color: AppColors.brandPrimary),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton.icon(
-            onPressed: items.isEmpty || _isProcessing ? null : () => _payGuestBill(index, items),
-            icon: const Icon(PhosphorIconsBold.creditCard, size: 15),
-            label: Text(
-              items.isEmpty
-                  ? 'Чек оплачен или пуст'
-                  : 'Оплатить Чек $index (${total.toCurrency(context)})',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brandPrimary,
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
-          ),
-        ],
       ),
     );
   }
