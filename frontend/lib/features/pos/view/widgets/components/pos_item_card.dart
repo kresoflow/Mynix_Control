@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
@@ -107,18 +109,12 @@ class _PosItemCardState extends State<PosItemCard> {
             padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12, vertical: isMobile ? 8 : 12),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
+              borderRadius: AppRadii.cardRadius,
               border: Border.all(
                 color: accentColor.withValues(alpha: _isHovered ? 0.3 : 0.05),
                 width: 1.5,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: _isHovered ? 0.15 : 0.05),
-                  blurRadius: _isHovered ? 24 : 12,
-                  offset: Offset(0, _isHovered ? 8 : 4),
-                ),
-              ],
+              boxShadow: _isHovered ? AppShadows.buttonGlow(accentColor) : null,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -212,7 +208,7 @@ class _PosItemCardState extends State<PosItemCard> {
                     padding: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 12, vertical: isMobile ? 4 : 6),
                     decoration: BoxDecoration(
                       color: accentColor.withValues(alpha: _isHovered ? 0.9 : 0.1),
-                      borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
+                      borderRadius: AppRadii.radiusSm,
                     ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -232,7 +228,7 @@ class _PosItemCardState extends State<PosItemCard> {
                         style: GoogleFonts.jetBrainsMono(
                           fontSize: isMobile ? 12 : 14,
                           fontWeight: FontWeight.w800,
-                          color: _isHovered ? Colors.white : accentColor,
+                          color: _isHovered ? AppColors.white : accentColor,
                         ),
                         maxLines: 1,
                       ),

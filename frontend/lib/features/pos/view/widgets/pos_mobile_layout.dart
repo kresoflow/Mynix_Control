@@ -1,12 +1,28 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: POS / Мобильная раскладка кассы (PosMobileLayout)
+// ДОМЕН: lib/features/pos/view/widgets/pos_mobile_layout.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Адаптивная мобильная раскладка POS:
+// 1. Отображает сетку меню на весь экран.
+// 2. Плавающая кнопка корзины (Glassmorphism FAB) с бейджем количества и суммой.
+// 3. Открывает корзину PosCart в модальной шторке снизу.
+//
+// ==============================================================================
+
+import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kreso_frontend/features/pos/view/widgets/pos_menu_grid.dart';
-import 'package:kreso_frontend/features/pos/view/widgets/pos_cart.dart';
-import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
-import 'dart:ui';
+import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/pos_cart.dart';
+import 'package:kreso_frontend/features/pos/view/widgets/pos_menu_grid.dart';
+
+// ── 1. Мобильная раскладка POS ────────────────────────────────────────────────
 
 class PosMobileLayout extends StatelessWidget {
   const PosMobileLayout({super.key});
@@ -28,15 +44,15 @@ class PosMobileLayout extends StatelessWidget {
               bottom: 16,
               child: SafeArea(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: AppRadii.cardRadius,
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: ElevatedButton(
-                      onPressed: () {
+                    child: InkWell(
+                      onTap: () {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
+                          backgroundColor: AppColors.transparent,
                           builder: (context) => BlocListener<CartBloc, CartState>(
                             listenWhen: (previous, current) => !previous.submitSuccess && current.submitSuccess,
                             listener: (context, state) {
@@ -49,13 +65,7 @@ class PosMobileLayout extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.95),
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    blurRadius: 40,
-                                    offset: const Offset(0, -10),
-                                  )
-                                ],
+                                boxShadow: AppShadows.dialog,
                               ),
                               child: const ClipRRect(
                                 borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -65,33 +75,34 @@ class PosMobileLayout extends StatelessWidget {
                           ),
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.brandPrimary.withValues(alpha: 0.9),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                        elevation: 0, // Glassmorphism relies on blur, not hard shadows
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(16),
+                      borderRadius: AppRadii.cardRadius,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+                        decoration: BoxDecoration(
+                          color: AppColors.brandPrimary.withValues(alpha: 0.92),
+                          borderRadius: AppRadii.cardRadius,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: AppColors.white.withValues(alpha: 0.25),
+                                borderRadius: AppRadii.cardRadius,
+                              ),
+                              child: Text(
+                                '$itemCount',
+                                style: AppTextStyles.h3.copyWith(color: AppColors.white, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                            child: Text(
-                              '$itemCount',
-                              style: AppTextStyles.h3.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                            Text('Корзина', style: AppTextStyles.h3.copyWith(color: AppColors.white, fontWeight: FontWeight.w600)),
+                            Text(
+                              state.total.toCurrency(context),
+                              style: AppTextStyles.h3.copyWith(color: AppColors.white, fontWeight: FontWeight.bold),
                             ),
-                          ),
-                          Text('Корзина', style: AppTextStyles.h3.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
-                          Text(
-                            state.total.toCurrency(context),
-                            style: AppTextStyles.h3.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

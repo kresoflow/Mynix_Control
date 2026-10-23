@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
@@ -48,7 +49,7 @@ class PosCartHeader extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                       decoration: BoxDecoration(
                         color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(100),
+                        borderRadius: AppRadii.radiusPill,
                       ),
                       child: Text(
                         '${state.items.length} поз.',
@@ -115,14 +116,14 @@ class PosCartHeader extends StatelessWidget {
     return PopupMenuButton<String>(
       tooltip: 'Отложенные чеки',
       offset: const Offset(0, 40),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: AppRadii.radiusLg),
       color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       elevation: 8,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: AppColors.brandSecondary.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadii.radiusSm,
           border: Border.all(color: AppColors.brandSecondary.withValues(alpha: 0.3)),
         ),
         child: Row(

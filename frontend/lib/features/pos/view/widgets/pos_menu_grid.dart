@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_nav_cubit.dart';
@@ -69,13 +71,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
               Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+                  boxShadow: AppShadows.light,
                 ),
                 child: PosBreadcrumbBar(
                   history: navigationHistory,
@@ -111,12 +107,12 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                                   style: AppTextStyles.h3.copyWith(color: AppColors.danger),
                                 ),
                                 const SizedBox(height: 12),
-                                ElevatedButton(
+                                AppPrimaryButton(
+                                  label: 'Повторить попытку',
                                   onPressed: () {
                                     context.read<MenuBloc>().add(LoadMenu());
                                     context.read<CategoryBloc>().add(LoadCategories());
                                   },
-                                  child: const Text('Повторить попытку'),
                                 ),
                               ],
                             ),

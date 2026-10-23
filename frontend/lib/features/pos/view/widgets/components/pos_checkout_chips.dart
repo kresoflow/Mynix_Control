@@ -1,10 +1,26 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Чипы панели чекаута (PosCheckoutChips)
+// ДОМЕН: lib/features/pos/view/widgets/components/pos_checkout_chips.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Индикатор выбора столика на панели чекаута:
+// 1. Отображает активный столик или кнопку быстрого выбора столика.
+// 2. Индицирует счетчик активных счетов в зале.
+// 3. Использует официальные дизайн-токены (AppRadii, AppColors, AppSpacing).
+//
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/table_picker_modal.dart';
+
+// ── 1. Чип выбора столика ────────────────────────────────────────────────────
 
 class PosTableChip extends StatelessWidget {
   final CartState cartState;
@@ -38,7 +54,7 @@ class PosTableChip extends StatelessWidget {
               onSelect: (t) => context.read<CartBloc>().add(SetTableNumber(t)),
             );
           },
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadii.radiusSm,
           child: Container(
             height: 34,
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -46,7 +62,7 @@ class PosTableChip extends StatelessWidget {
               color: hasActiveTables
                   ? primary.withValues(alpha: isDark ? 0.12 : 0.08)
                   : (isDark ? AppColors.darkCard : AppColors.lightCard),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadii.radiusSm,
               border: Border.all(
                 color: hasActiveTables
                     ? primary.withValues(alpha: isDark ? 0.45 : 0.5)
@@ -82,14 +98,14 @@ class PosTableChip extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                     decoration: BoxDecoration(
                       color: primary,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppRadii.radiusMd,
                     ),
                     child: Text(
                       '$activeCount',
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        color: AppColors.white,
                         height: 1.1,
                       ),
                     ),
@@ -107,7 +123,7 @@ class PosTableChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
         color: primary.withValues(alpha: isDark ? 0.16 : 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadii.radiusSm,
         border: Border.all(color: primary.withValues(alpha: isDark ? 0.5 : 0.6), width: 1.2),
       ),
       child: Row(
@@ -138,7 +154,7 @@ class PosTableChip extends StatelessWidget {
           const SizedBox(width: 6),
           InkWell(
             onTap: () => context.read<CartBloc>().add(const SetTableNumber(null)),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadii.radiusMd,
             child: Padding(
               padding: const EdgeInsets.all(2),
               child: Icon(PhosphorIconsRegular.x, size: 13, color: primary),

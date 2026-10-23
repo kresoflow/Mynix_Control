@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'tables/pos_active_tables_dialog.dart';
 
@@ -52,11 +53,11 @@ class PosOperationalBadges extends StatelessWidget {
             context.read<PosTabCubit>().refreshCounts();
           }
         }),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.radiusMd,
         child: Badge(
           isLabelVisible: hasTables,
           backgroundColor: primary,
-          textColor: Colors.white,
+          textColor: AppColors.white,
           label: Text(
             '$count',
             style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
@@ -68,7 +69,7 @@ class PosOperationalBadges extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: bg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.radiusMd,
               border: Border.all(color: borderColor, width: 1.2),
             ),
             child: Icon(

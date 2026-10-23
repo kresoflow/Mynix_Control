@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -82,8 +83,8 @@ class _PosCartItemTileState extends State<PosCartItemTile> {
         decoration: BoxDecoration(
           color: _hovered
               ? (isDark ? AppColors.darkCardHover : AppColors.lightBg)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+              : AppColors.transparent,
+          borderRadius: AppRadii.radiusSm,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -187,7 +188,7 @@ class _QtyControl extends StatelessWidget {
     return Container(
       height: 28,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadii.radiusXs,
         border: Border.all(color: borderColor),
       ),
       child: Row(
@@ -236,7 +237,7 @@ class _QtyBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: AppRadii.radiusXs,
       child: SizedBox(
         width: 24,
         height: 28,

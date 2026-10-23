@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -45,12 +46,12 @@ class DialogVariationsList extends StatelessWidget {
               padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
               child: InkWell(
                 onTap: () => onSelectVariation(index),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadii.radiusLg,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadii.radiusLg,
                     border: Border.all(
                       color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     ),

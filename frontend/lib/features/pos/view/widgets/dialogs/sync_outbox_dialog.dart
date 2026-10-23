@@ -91,7 +91,7 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                    borderRadius: BorderRadius.circular(AppRadii.lg),
+                    borderRadius: AppRadii.radiusLg,
                     border: Border.all(
                       color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     ),
@@ -119,7 +119,7 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                    borderRadius: BorderRadius.circular(AppRadii.lg),
+                    borderRadius: AppRadii.radiusLg,
                     border: Border.all(
                       color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     ),
@@ -165,7 +165,7 @@ class _SyncOutboxDialogState extends State<SyncOutboxDialog> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppRadii.md),
+                borderRadius: AppRadii.radiusMd,
               ),
               child: Text(
                 _syncStatusMessage!,

@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
@@ -60,20 +62,12 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
             padding: EdgeInsets.all(isMobile ? 12 : 20),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(isMobile ? 16 : 20),
+              borderRadius: AppRadii.cardRadius,
               border: Border.all(
                 color: borderColor,
                 width: 1.2,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.2)
-                      : Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.04),
-                  blurRadius: _isHovered ? 16 : 8,
-                  offset: Offset(0, _isHovered ? 6 : 2),
-                ),
-              ],
+              boxShadow: _isHovered ? AppShadows.hoverCard : AppShadows.card,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

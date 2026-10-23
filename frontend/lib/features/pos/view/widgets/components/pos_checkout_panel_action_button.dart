@@ -1,7 +1,23 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Кнопка действия чекаута (PosCheckoutPanelActionButton)
+// ДОМЕН: lib/features/pos/view/widgets/components/pos_checkout_panel_action_button.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Главная кнопка оформления и отправки заказа:
+// 1. При отсутствии выбранного столика: полноразмерная кнопка оплаты.
+// 2. При выбранном столике: сдвоенная кнопка «В стол (без оплаты)» + «Оплатить».
+// 3. Использует официальные дизайн-токены (AppRadii, AppColors, AppShadows).
+//
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
+
+// ── 1. Кнопка действия панели чекаута POS ─────────────────────────────────────
 
 class PosCheckoutPanelActionButton extends StatelessWidget {
   final bool isEmpty;
@@ -66,19 +82,19 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasTable = tableNumber != null && tableNumber!.trim().isNotEmpty;
 
-    // 1. Counter Mode (No table selected): Solid full-width "Оплатить"
+    // 1. Режим стойки (без стола): сплошная кнопка оплаты
     if (!hasTable) {
       return _buildCheckoutButton(context, isFullWidth: true);
     }
 
-    // 2. Table Selected Mode: Dual Action ("В стол" + "Оплатить")
+    // 2. Режим столика: сдвоенная кнопка («В стол» + «Оплатить»)
     return Row(
       children: [
         Expanded(
           flex: 5,
           child: _buildSendToBoothButton(context),
         ),
-        const SizedBox(width: 8),
+        AppSpacing.hSm,
         Expanded(
           flex: 5,
           child: _buildCheckoutButton(context, isFullWidth: false, hasTable: true),
@@ -119,7 +135,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
       context: context,
       onTap: onCheckout,
       color: AppColors.brandPrimary,
-      textColor: Colors.white,
+      textColor: AppColors.white,
       icon: _getButtonIcon(),
       label: _getButtonLabel(isTableSelected: hasTable),
       isSubmitting: isThisSubmitting,
@@ -140,26 +156,30 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
     required bool isDisabled,
     required bool isPrimary,
   }) {
-    final disabledBg = isPrimary ? (isDark ? Colors.white10 : Colors.black12) : Colors.transparent;
-    final disabledBorder = isDark ? Colors.white12 : Colors.black12;
-    final disabledFg = isDark ? Colors.white24 : Colors.black26;
+    final disabledBg = isPrimary
+        ? (isDark ? AppColors.white.withValues(alpha: 0.1) : AppColors.pureBlack.withValues(alpha: 0.12))
+        : AppColors.transparent;
+    final disabledBorder = isDark ? AppColors.white.withValues(alpha: 0.12) : AppColors.pureBlack.withValues(alpha: 0.12);
+    final disabledFg = isDark
+        ? AppColors.darkSubtext.withValues(alpha: 0.5)
+        : AppColors.lightSubtext.withValues(alpha: 0.5);
     final showDisabled = isDisabled && !isSubmitting;
 
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: InkWell(
         onTap: isDisabled ? null : onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadii.radiusLg,
         child: Container(
           height: 48,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: showDisabled ? disabledBg : color,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadii.radiusLg,
             border: Border.all(
               color: showDisabled
                   ? disabledBorder
-                  : (borderColor ?? Colors.transparent),
+                  : (borderColor ?? AppColors.transparent),
               width: 1.2,
             ),
             boxShadow: (showDisabled || !isPrimary) ? null : AppShadows.buttonGlow(AppColors.brandPrimary),
@@ -171,7 +191,7 @@ class PosCheckoutPanelActionButton extends StatelessWidget {
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: isPrimary ? Colors.white : (isDark ? AppColors.darkText : AppColors.brandPrimary),
+                      color: isPrimary ? AppColors.white : (isDark ? AppColors.darkText : AppColors.brandPrimary),
                     ),
                   )
                 : Row(

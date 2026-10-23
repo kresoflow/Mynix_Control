@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import '../../services/pos_outbox_service.dart';
 import 'dialogs/sync_outbox_dialog.dart';
@@ -40,7 +41,7 @@ class SyncStatusBadge extends StatelessWidget {
         return Tooltip(
           message: tooltipMsg,
           child: InkWell(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadii.radiusMd,
             onTap: () {
               showDialog(
                 context: context,
@@ -53,7 +54,7 @@ class SyncStatusBadge extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: hasPending ? 10 : 9),
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.radiusMd,
                 border: Border.all(color: borderColor, width: 1.2),
               ),
               child: Row(

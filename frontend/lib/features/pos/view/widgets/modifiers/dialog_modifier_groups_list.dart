@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 
@@ -47,7 +48,7 @@ class DialogModifierGroupsList extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.danger.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: AppRadii.radiusXs,
                       ),
                       child: Text(
                         'Обязательно',
@@ -60,7 +61,7 @@ class DialogModifierGroupsList extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadii.radiusLg,
                   border: Border.all(
                     color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   ),
@@ -75,7 +76,7 @@ class DialogModifierGroupsList extends StatelessWidget {
                       children: [
                         CheckboxListTile(
                           activeColor: AppColors.brandPrimary,
-                          checkColor: Colors.black,
+                          checkColor: AppColors.pureBlack,
                           title: Text(
                             mod['name'],
                             style: AppTextStyles.body.copyWith(

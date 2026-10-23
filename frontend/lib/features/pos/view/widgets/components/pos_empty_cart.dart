@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -19,7 +20,7 @@ class PosEmptyCart extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: isDark 
-                    ? Colors.white.withValues(alpha: 0.05) 
+                    ? AppColors.white.withValues(alpha: 0.05) 
                     : AppColors.brandPrimary.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
@@ -27,7 +28,7 @@ class PosEmptyCart extends StatelessWidget {
                 PhosphorIconsRegular.shoppingCart,
                 size: 64,
                 color: isDark 
-                    ? Colors.white.withValues(alpha: 0.2) 
+                    ? AppColors.white.withValues(alpha: 0.2) 
                     : AppColors.brandPrimary.withValues(alpha: 0.4),
               ),
             ),

@@ -1,5 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -61,17 +63,12 @@ class DialogMiniCartView extends StatelessWidget {
             ),
             const Spacer(),
             if (totalItems > 0)
-              TextButton.icon(
+              AppGhostButton(
                 onPressed: onClearCart,
-                icon: const Icon(PhosphorIconsRegular.trash, size: 18, color: AppColors.danger),
-                label: Text(
-                  'Очистить всё',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.danger),
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  minimumSize: Size.zero,
-                ),
+                icon: PhosphorIconsRegular.trash,
+                label: 'Очистить всё',
+                customColor: AppColors.danger,
+                size: AppButtonSize.xs,
               ),
           ],
         ),
@@ -116,7 +113,7 @@ class DialogMiniCartView extends StatelessWidget {
                         color: isDark
                             ? AppColors.darkCard
                             : AppColors.brandPrimary.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
+                        borderRadius: AppRadii.radiusSm,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,

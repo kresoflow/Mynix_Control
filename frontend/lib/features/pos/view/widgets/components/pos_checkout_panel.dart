@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
@@ -99,13 +100,7 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
       decoration: BoxDecoration(
         color: bg,
         border: Border(top: BorderSide(color: border, width: 1.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            offset: const Offset(0, -6),
-            blurRadius: 12,
-          ),
-        ],
+        boxShadow: AppShadows.light,
       ),
       child: BlocConsumer<CartBloc, CartState>(
         listenWhen: (previous, current) =>
