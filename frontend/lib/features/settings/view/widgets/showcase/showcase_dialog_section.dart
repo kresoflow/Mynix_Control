@@ -92,32 +92,7 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
             spacing: 12,
             children: [
               AppPrimaryButton(
-                label: 'Документ (AppDialogScaffold)',
-                icon: PhosphorIconsRegular.browsers,
-                size: AppButtonSize.md,
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => AppDialogScaffold(
-                      title: 'Стандартный диалог Kreso Flow (v2)',
-                      icon: PhosphorIconsRegular.sparkle,
-                      dialogSize: AppDialogSize.sm,
-                      body: const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text(
-                          'Это диалоговое окно использует стандарт AppDialogScaffold v2, скругления AppRadii.dialog, кнопки UI Kit и адаптивные размеры.',
-                        ),
-                      ),
-                      actions: [
-                        AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
-                        AppPrimaryButton(label: 'Подтвердить', onPressed: () => Navigator.pop(ctx)),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              AppSecondaryButton(
-                label: 'Компактная форма (AppDialog)',
+                label: 'Компактная форма (AppDialog — Tier 1)',
                 icon: PhosphorIconsRegular.user,
                 size: AppButtonSize.md,
                 onPressed: () {
@@ -125,8 +100,9 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
                     context: context,
                     builder: (ctx) => AppDialog(
                       title: 'Редактировать сотрудника',
-                      subtitle: 'Компактный эталон формы ввода (Wrap-content)',
+                      subtitle: 'Компактный эталон формы ввода (Wrap-content, 460 px)',
                       icon: PhosphorIconsRegular.user,
+                      width: 460,
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -145,6 +121,36 @@ class _ShowcaseDialogSectionState extends State<ShowcaseDialogSection> {
                       actions: [
                         AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
                         AppPrimaryButton(label: 'Сохранить', onPressed: () => Navigator.pop(ctx)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              AppSecondaryButton(
+                label: 'Складской документ (AppDialogScaffold — Tier 2)',
+                icon: PhosphorIconsRegular.browsers,
+                size: AppButtonSize.md,
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AppDialogScaffold(
+                      title: 'Приходная накладная №ПР-0042',
+                      subtitle: 'Поставщик: ОсОО «Берекет Трейд» • 14 позиций',
+                      icon: PhosphorIconsRegular.truck,
+                      dialogSize: AppDialogSize.lg,
+                      body: const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text(
+                          'Документный каркас Tier 2 предназначен для работы со сложными спецификациями, таблицами товаров и расчётом итогов.',
+                        ),
+                      ),
+                      bottomSummary: const Text(
+                        'ИТОГО К ОПЛАТЕ: 42 850.00 с',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      actions: [
+                        AppGhostButton(label: 'Отмена', onPressed: () => Navigator.pop(ctx)),
+                        AppPrimaryButton(label: 'Провести накладную', onPressed: () => Navigator.pop(ctx)),
                       ],
                     ),
                   );

@@ -74,14 +74,14 @@ class _ShowcaseFormsSectionState extends State<ShowcaseFormsSection> {
 
   void _openDemoDialog(BuildContext context, AppDialogSize size) {
     final title = switch (size) {
-      AppDialogSize.sm => 'Новое блюдо (SM: 440 px)',
+      AppDialogSize.sm => 'Карточка CRM (MD: 720 px)',
       AppDialogSize.md => 'Карточка CRM / Смена (MD: 720 px)',
       AppDialogSize.lg => 'Приходная накладная (LG: 1080 px)',
     };
     final subtitle = switch (size) {
-      AppDialogSize.sm => 'Быстрая форма создания объекта',
-      AppDialogSize.md => 'Детализация смены и гостя',
-      AppDialogSize.lg => 'Поставщик: ООО "Кофейный Дом"',
+      AppDialogSize.sm => 'Детализация смены и спецификация',
+      AppDialogSize.md => 'Детализация смены и спецификация',
+      AppDialogSize.lg => 'Поставщик: ОсОО "Кофейный Дом"',
     };
 
     showDialog(
@@ -93,20 +93,11 @@ class _ShowcaseFormsSectionState extends State<ShowcaseFormsSection> {
         dialogSize: size,
         body: Padding(
           padding: const EdgeInsets.all(20),
-          child: size == AppDialogSize.sm
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('Компактный размер для форм ввода, категорий и подтверждений.', style: AppTextStyles.bodyMedium),
-                    const SizedBox(height: 16),
-                    Text('Вход разменного фонда / наименование блюда без расползания на весь экран.', style: AppTextStyles.caption),
-                  ],
-                )
-              : AppSpecificationTable(
-                  items: _specItems,
-                  onQuantityChanged: _handleQuantityChange,
-                  onDeleteRow: _handleDeleteRow,
-                ),
+          child: AppSpecificationTable(
+            items: _specItems,
+            onQuantityChanged: _handleQuantityChange,
+            onDeleteRow: _handleDeleteRow,
+          ),
         ),
         bottomSummary: Text(
           'ИТОГО: 540.00 ₽',
@@ -210,19 +201,13 @@ class _ShowcaseFormsSectionState extends State<ShowcaseFormsSection> {
                   runSpacing: 8,
                   children: [
                     AppButton.secondary(
-                      label: 'SM (440 px)',
-                      icon: PhosphorIconsRegular.cards,
-                      size: AppButtonSize.md,
-                      onPressed: () => _openDemoDialog(context, AppDialogSize.sm),
-                    ),
-                    AppButton.secondary(
-                      label: 'MD (720 px)',
+                      label: 'MD (720 px) — Карточка CRM',
                       icon: PhosphorIconsRegular.browser,
                       size: AppButtonSize.md,
                       onPressed: () => _openDemoDialog(context, AppDialogSize.md),
                     ),
                     AppPrimaryButton(
-                      label: 'LG (1080 px)',
+                      label: 'LG (1080 px) — Накладная',
                       icon: PhosphorIconsRegular.arrowSquareOut,
                       size: AppButtonSize.md,
                       onPressed: () => _openDemoDialog(context, AppDialogSize.lg),

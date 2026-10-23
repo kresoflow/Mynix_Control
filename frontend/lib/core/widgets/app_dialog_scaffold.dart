@@ -16,7 +16,9 @@ import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 /// Стандартные размеры диалоговых окон
 enum AppDialogSize {
-  /// Компактный для простых форм и подтверждений (440 px)
+  /// [ДЕПРЕКЕЙТЕД] Для компактных форм до 480 px используйте AppDialog (Tier 1).
+  /// AppDialogScaffold предназначен для средних (md: 720 px) и широких (lg: 1080 px) документов.
+  @Deprecated('Для компактных форм до 480 px используйте AppDialog из ui_kit.dart')
   sm,
 
   /// Средний для карточек клиентов CRM и настроек (720 px)

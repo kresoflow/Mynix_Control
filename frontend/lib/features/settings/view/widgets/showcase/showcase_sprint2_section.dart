@@ -48,12 +48,12 @@ class _ShowcaseSprint2SectionState extends State<ShowcaseSprint2Section> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '9. Новые базовые компоненты (Approval Gate: Спринт 2)',
+                      '9. Интерактивные компоненты (EmptyState, Stepper, ConfirmDialog)',
                       style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'AppEmptyState, AppQuantityStepper и AppConfirmDialog для визуальной приёмки.',
+                      'Компоненты ввода количества, пустых состояний и диалогов подтверждения.',
                       style: AppTextStyles.caption.copyWith(
                         color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       ),
@@ -62,8 +62,8 @@ class _ShowcaseSprint2SectionState extends State<ShowcaseSprint2Section> {
                 ),
               ),
               const AppStatusBadge(
-                label: 'На согласовании',
-                variant: AppBadgeVariant.warning,
+                label: 'УТВЕРЖДЕНО',
+                variant: AppBadgeVariant.success,
                 hasDot: true,
               ),
             ],

@@ -14,7 +14,6 @@ import 'widgets/showcase/showcase_motion_section.dart';
 import 'widgets/showcase/showcase_sprint2_section.dart';
 import 'widgets/showcase/showcase_sprint3_section.dart';
 import 'widgets/showcase/showcase_forms_section.dart';
-import 'widgets/showcase/showcase_legacy_archive_section.dart';
 
 class UiKitShowcaseScreen extends StatefulWidget {
   const UiKitShowcaseScreen({super.key});
@@ -99,20 +98,16 @@ class _UiKitShowcaseScreenState extends State<UiKitShowcaseScreen> {
             ShowcaseMotionSection(isDark: isDark),
             const SizedBox(height: 20),
 
-            // 9. Sprint 2 Candidates (Approval Gate: EmptyState, Stepper, ConfirmDialog)
+            // 9. Интерактивные компоненты (EmptyState, Stepper, ConfirmDialog)
             ShowcaseSprint2Section(isDark: isDark),
             const SizedBox(height: 20),
 
-            // 10. Sprint 3 Candidates (Approval Gate: KpiCard, DataTable, DocumentFooter)
+            // 10. Данные и аналитика (KpiCard, DataTable, DocumentFooter)
             ShowcaseSprint3Section(isDark: isDark),
             const SizedBox(height: 20),
 
             // 11. Формы и Спецификации (Switch, Checkbox, Dropdown, Accordion, SpecificationTable)
             const ShowcaseFormsSection(),
-            const SizedBox(height: 20),
-
-            // 12. Архив компонентов (Legacy Sandbox)
-            ShowcaseLegacyArchiveSection(isDark: isDark),
           ],
         ),
       ),

@@ -53,12 +53,12 @@ class _ShowcaseSprint3SectionState extends State<ShowcaseSprint3Section> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '10. Продвинутые данные и документы (Approval Gate: Спринт 3)',
+                      '10. Данные, аналитика и документы (KpiCard, DataTable, DocumentFooter)',
                       style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'AppKpiCard, AppDataTable и AppDocumentFooter для согласования стандартов.',
+                      'Компоненты аналитических карточек, таблиц документов и панели действий.',
                       style: AppTextStyles.caption.copyWith(
                         color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                       ),
@@ -67,8 +67,8 @@ class _ShowcaseSprint3SectionState extends State<ShowcaseSprint3Section> {
                 ),
               ),
               const AppStatusBadge(
-                label: 'На согласовании',
-                variant: AppBadgeVariant.warning,
+                label: 'УТВЕРЖДЕНО',
+                variant: AppBadgeVariant.success,
                 hasDot: true,
               ),
             ],
