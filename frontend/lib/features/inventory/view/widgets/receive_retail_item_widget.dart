@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -99,7 +101,7 @@ class _ReceiveRetailItemWidgetState extends State<ReceiveRetailItemWidget> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadii.radiusLg,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -116,7 +118,7 @@ class _ReceiveRetailItemWidgetState extends State<ReceiveRetailItemWidget> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 4),
+                AppSpacing.vXxs,
                 Text(
                   'На складе: ${UnitFormatter.formatAmount(widget.product.currentStock, widget.product.unit)}',
                   style: AppTextStyles.caption.copyWith(
@@ -134,7 +136,7 @@ class _ReceiveRetailItemWidgetState extends State<ReceiveRetailItemWidget> {
                 icon: const Icon(PhosphorIconsRegular.minusCircle),
                 color: widget.quantity > 0
                     ? AppColors.brandPrimary
-                    : Colors.grey,
+                    : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                 onPressed: widget.quantity > 0 ? _decrement : null,
               ),
               SizedBox(
@@ -148,7 +150,7 @@ class _ReceiveRetailItemWidgetState extends State<ReceiveRetailItemWidget> {
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(vertical: 8),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadii.inputRadius,
                       borderSide: BorderSide(
                         color: isDark
                             ? AppColors.darkBorder

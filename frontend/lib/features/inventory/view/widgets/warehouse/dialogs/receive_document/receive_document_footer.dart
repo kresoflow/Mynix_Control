@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'receive_document_payment_section.dart';
 
@@ -65,10 +66,10 @@ class ReceiveDocumentFooter extends StatelessWidget {
 
       return InkWell(
         onTap: onToggleCart,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadii.inputRadius,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8), border: Border.all(color: border)),
+          decoration: BoxDecoration(color: bg, borderRadius: AppRadii.inputRadius, border: Border.all(color: border)),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

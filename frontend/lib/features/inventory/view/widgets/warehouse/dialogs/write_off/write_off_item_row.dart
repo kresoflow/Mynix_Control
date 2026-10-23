@@ -52,7 +52,10 @@ class WriteOffItemRow extends StatelessWidget {
             child: Text(
               '${index + 1}',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 11,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
             ),
           ),
           const SizedBox(width: 8),

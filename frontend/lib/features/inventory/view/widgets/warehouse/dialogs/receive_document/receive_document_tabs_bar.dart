@@ -46,7 +46,7 @@ class ReceiveDocumentTabsBar extends StatelessWidget {
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightBg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
@@ -100,7 +100,7 @@ class ReceiveDocumentTabsBar extends StatelessWidget {
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightBg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
@@ -174,16 +174,8 @@ class ReceiveDocumentTabsBar extends StatelessWidget {
           color: isSelected
               ? (isDark ? AppColors.darkSurface : AppColors.pureWhite)
               : AppColors.transparent,
-          borderRadius: BorderRadius.circular(7),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
+          borderRadius: AppRadii.badgeRadius,
+          boxShadow: isSelected ? AppShadows.light : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
@@ -126,13 +127,13 @@ class ReceiveDocumentAutocompleteOptionsView extends StatelessWidget {
       alignment: Alignment.topLeft,
       child: Material(
         elevation: 8,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadii.inputRadius,
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         child: Container(
           width: 360,
           constraints: const BoxConstraints(maxHeight: 220),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: AppRadii.inputRadius,
             border: Border.all(
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),

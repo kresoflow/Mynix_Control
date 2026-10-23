@@ -3,6 +3,7 @@
 // ==============================================================================
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'write_off_category_accordion.dart';
@@ -161,7 +162,7 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),

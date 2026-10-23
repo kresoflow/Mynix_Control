@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
@@ -110,7 +112,7 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
     const currency = 'с';
 
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       elevation: 0,
       shape: const RoundedRectangleBorder(side: BorderSide.none),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -119,14 +121,8 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
         constraints: const BoxConstraints(maxWidth: 720, maxHeight: 820),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.6 : 0.15),
-              blurRadius: 32,
-              offset: const Offset(0, 12),
-            ),
-          ],
+          borderRadius: AppRadii.dialogRadius,
+          boxShadow: AppShadows.dialog,
         ),
         child: FutureBuilder<InventoryDocument>(
           future: _documentFuture,

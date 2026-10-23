@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
 
 class QuickStockActionDialog extends StatefulWidget {
@@ -106,77 +111,60 @@ class _QuickStockActionDialogState extends State<QuickStockActionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isReceipt = widget.actionType == 'receipt';
     final actionName = isReceipt ? 'Приход' : 'Списание';
     final actionColor = isReceipt ? AppColors.success : AppColors.danger;
 
-    return AlertDialog(
-      title: Row(
+    return AppDialog(
+      title: 'Быстрый $actionName',
+      subtitle: widget.item.name,
+      icon: isReceipt ? PhosphorIconsRegular.arrowCircleDown : PhosphorIconsRegular.arrowCircleUp,
+      iconColor: actionColor,
+      isDestructive: !isReceipt,
+      width: 440,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            isReceipt ? Icons.download : Icons.upload,
-            color: actionColor,
+          Text(
+            'Текущий остаток: ${UnitFormatter.formatAmount(widget.item.currentStock, widget.item.unit)}',
+            style: AppTextStyles.caption.copyWith(
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+            ),
           ),
-          const SizedBox(width: 8),
-          Text('Быстрый $actionName'),
+          AppSpacing.vMd,
+          TextField(
+            controller: _qtyController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: 'Количество (${UnitFormatter.format(widget.item.unit)})',
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(PhosphorIconsRegular.calculator, size: 20),
+            ),
+          ),
+          AppSpacing.vMd,
+          TextField(
+            controller: _reasonController,
+            decoration: InputDecoration(
+              labelText: 'Причина (опционально)',
+              hintText: isReceipt ? 'Поставка от поставщика...' : 'Порча, просрочка...',
+              border: const OutlineInputBorder(),
+            ),
+          ),
         ],
       ),
-      content: SizedBox(
-        width: 300,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.item.name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Текущий остаток: ${UnitFormatter.formatAmount(widget.item.currentStock, widget.item.unit)}',
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _qtyController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Количество (${UnitFormatter.format(widget.item.unit)})',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.calculate),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _reasonController,
-              decoration: InputDecoration(
-                labelText: 'Причина (опционально)',
-                hintText: isReceipt ? 'Поставка от поставщика...' : 'Порча, просрочка...',
-                border: const OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-      ),
       actions: [
-        TextButton(
+        AppGhostButton(
+          label: 'Отмена',
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('Отмена'),
         ),
-        ElevatedButton(
+        AppPrimaryButton(
+          label: isReceipt ? 'Оприходовать' : 'Списать',
+          customColor: actionColor,
+          isLoading: _isLoading,
           onPressed: _isLoading ? null : _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: actionColor,
-            foregroundColor: Colors.white,
-          ),
-          child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : Text(isReceipt ? 'Оприходовать' : 'Списать'),
         ),
       ],
     );

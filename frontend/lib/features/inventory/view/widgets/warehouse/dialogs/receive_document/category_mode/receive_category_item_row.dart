@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
@@ -125,7 +126,7 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
               : (_isHovered
                   ? (isDark ? AppColors.darkSurface : AppColors.lightSurface)
                   : (isDark ? AppColors.darkCard : AppColors.lightCard)),
-          borderRadius: widget.isLast ? const BorderRadius.vertical(bottom: Radius.circular(10)) : BorderRadius.zero,
+          borderRadius: widget.isLast ? const BorderRadius.vertical(bottom: Radius.circular(AppRadii.input)) : BorderRadius.zero,
           border: Border(left: borderSide, right: borderSide, bottom: borderSide),
         ),
         child: Row(
@@ -258,7 +259,7 @@ class _ReceiveCategoryItemRowState extends State<ReceiveCategoryItemRow> {
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: AppRadii.radiusXs,
             border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
           child: Text(UnitFormatter.format(widget.item.unit), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),

@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_text_field.dart';
@@ -73,7 +74,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.darkCard,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(
@@ -164,12 +165,12 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
     return Expanded(
       child: InkWell(
         onTap: () => setState(() => _paymentMethod = id),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadii.inputRadius,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.brandPrimary.withValues(alpha: 0.15) : AppColors.darkBg,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: AppRadii.inputRadius,
           ),
           child: Column(
             children: [

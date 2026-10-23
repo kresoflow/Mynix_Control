@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/app_stock_category_accordion.dart';
@@ -76,7 +77,7 @@ class BlindInventoryCategoryAccordion extends StatelessWidget {
               : (filledCount > 0
                   ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.16 : 0.10)
                   : (isDark ? AppColors.darkSurface : AppColors.lightBg)),
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: AppRadii.badgeRadius,
         ),
         child: Text(
           'Посчитано: $filledCount из ${items.length}',

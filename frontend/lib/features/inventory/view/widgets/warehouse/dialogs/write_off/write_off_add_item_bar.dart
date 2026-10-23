@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -58,13 +59,13 @@ class _WriteOffAddItemBarState extends State<WriteOffAddItemBar> {
           alignment: Alignment.topLeft,
           child: Material(
             elevation: 8,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadii.inputRadius,
             color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
             child: Container(
               width: 580,
               constraints: const BoxConstraints(maxHeight: 240),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 border: Border.all(
                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),
@@ -108,7 +109,7 @@ class _WriteOffAddItemBarState extends State<WriteOffAddItemBar> {
                                     .withValues(alpha: isDark ? 0.16 : 0.10)
                                 : AppColors.danger
                                     .withValues(alpha: isDark ? 0.16 : 0.10),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: AppRadii.radiusXs,
                           ),
                           child: Text(
                             'В наличии: ${UnitFormatter.formatAmount(item.currentStock, item.unit)}',
@@ -182,21 +183,21 @@ class _WriteOffAddItemBarState extends State<WriteOffAddItemBar> {
                   vertical: 11,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                   borderSide: BorderSide(
                     color:
                         isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                   borderSide: BorderSide(
                     color:
                         isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                   borderSide: BorderSide(
                     color: AppColors.brandPrimary,
                     width: 1.5,

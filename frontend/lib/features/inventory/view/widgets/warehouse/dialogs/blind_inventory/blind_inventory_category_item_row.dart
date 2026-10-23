@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -47,7 +48,7 @@ class BlindInventoryCategoryItemRow extends StatelessWidget {
             ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.08 : 0.04)
             : (isDark ? AppColors.darkCard : AppColors.lightCard),
         borderRadius: isLast
-            ? const BorderRadius.vertical(bottom: Radius.circular(10))
+            ? const BorderRadius.vertical(bottom: Radius.circular(AppRadii.input))
             : BorderRadius.zero,
         border: Border(left: borderSide, right: borderSide, bottom: borderSide),
       ),
@@ -112,7 +113,7 @@ class BlindInventoryCategoryItemRow extends StatelessWidget {
                         color: isDark
                             ? AppColors.darkSurface
                             : AppColors.lightSurface,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: AppRadii.radiusXs,
                         border: Border.all(
                           color: isDark
                               ? AppColors.darkBorder
@@ -161,7 +162,7 @@ class BlindInventoryCategoryItemRow extends StatelessWidget {
                         color: AppColors.success.withValues(
                           alpha: isDark ? 0.16 : 0.10,
                         ),
-                        borderRadius: BorderRadius.circular(5),
+                        borderRadius: AppRadii.badgeRadius,
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,

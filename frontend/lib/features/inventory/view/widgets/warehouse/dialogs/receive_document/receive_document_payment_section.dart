@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'receive_document_amount_field.dart';
 
@@ -58,7 +59,7 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -132,14 +133,14 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
     final inactiveColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.inputRadius,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? activeBg : inactiveBg,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadii.inputRadius,
           border: Border.all(
             color: isSelected ? activeBorder : inactiveBorder,
             width: isSelected ? 1.5 : 1,
@@ -174,7 +175,7 @@ class ReceiveDocumentPaymentSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightBg,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),

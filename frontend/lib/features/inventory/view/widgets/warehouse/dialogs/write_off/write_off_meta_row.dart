@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 class WriteOffMetaRow extends StatelessWidget {
@@ -29,7 +30,7 @@ class WriteOffMetaRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
@@ -76,14 +77,14 @@ class WriteOffMetaRow extends StatelessWidget {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                   borderSide: BorderSide(
                     color:
                         isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                   borderSide: BorderSide(
                     color:
                         isDark ? AppColors.darkBorder : AppColors.lightBorder,

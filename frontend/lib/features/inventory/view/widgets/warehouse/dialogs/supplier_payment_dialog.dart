@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
@@ -78,7 +80,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadii.radiusLg,
                 border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
               ),
               child: Row(
@@ -92,7 +94,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                           style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        AppSpacing.vXxs,
                         Text(
                           'Текущий долг: ${debt.toStringAsFixed(2)} ${widget.currency}',
                           style: TextStyle(
@@ -106,13 +108,13 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                   ),
                   if (debt > 0)
                     InkWell(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadii.inputRadius,
                       onTap: () => setState(() => _amountController.text = debt.toStringAsFixed(2)),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadii.inputRadius,
                         ),
                         child: Text(
                           'Весь долг',
@@ -142,7 +144,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                 prefixIcon: const Icon(PhosphorIconsRegular.currencyCircleDollar, size: 18),
                 filled: true,
                 fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border: const OutlineInputBorder(borderRadius: AppRadii.inputRadius),
               ),
             ),
             const SizedBox(height: 12),
@@ -155,7 +157,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                 prefixIcon: const Icon(PhosphorIconsRegular.creditCard, size: 18),
                 filled: true,
                 fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border: const OutlineInputBorder(borderRadius: AppRadii.inputRadius),
               ),
               items: [
                 DropdownMenuItem(
@@ -209,7 +211,7 @@ class _SupplierPaymentDialogState extends State<SupplierPaymentDialog> {
                 prefixIcon: const Icon(PhosphorIconsRegular.textAa, size: 18),
                 filled: true,
                 fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border: const OutlineInputBorder(borderRadius: AppRadii.inputRadius),
               ),
             ),
           ],

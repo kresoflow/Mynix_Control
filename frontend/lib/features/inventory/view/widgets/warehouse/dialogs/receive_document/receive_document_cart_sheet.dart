@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
@@ -43,22 +45,19 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(24),
+          color: AppColors.pureBlack.withValues(alpha: 0.45),
+          borderRadius: AppRadii.dialogRadius,
         ),
         alignment: Alignment.bottomCenter,
         child: Container(
           height: MediaQuery.of(context).size.height * 0.58,
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20), bottom: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 30,
-                offset: const Offset(0, -6),
-              ),
-            ],
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppRadii.dialog),
+              bottom: Radius.circular(AppRadii.dialog),
+            ),
+            boxShadow: AppShadows.dialog,
           ),
           child: Column(
             children: [
@@ -94,7 +93,10 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: AppColors.brandPrimary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: AppColors.brandPrimary.withValues(alpha: 0.12),
+              borderRadius: AppRadii.inputRadius,
+            ),
             child: Icon(PhosphorIconsRegular.shoppingCart, size: 20, color: AppColors.brandPrimary),
           ),
           const SizedBox(width: 12),
@@ -102,7 +104,10 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
           const SizedBox(width: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(color: AppColors.brandPrimary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: AppColors.brandPrimary.withValues(alpha: 0.12),
+              borderRadius: AppRadii.radiusLg,
+            ),
             child: Text('$count поз.', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.brandPrimary)),
           ),
           const Spacer(),
@@ -130,7 +135,7 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
               color: isRetail
                   ? AppColors.brandPrimary.withValues(alpha: 0.12)
                   : AppColors.brandTertiary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: AppRadii.badgeRadius,
             ),
             child: Text(
               isRetail ? 'Витрина' : 'Сырьё',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 class WriteOffSummaryCard extends StatelessWidget {
@@ -24,7 +25,7 @@ class WriteOffSummaryCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadii.radiusLg,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -39,7 +40,7 @@ class WriteOffSummaryCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color:
                       AppColors.danger.withValues(alpha: isDark ? 0.16 : 0.10),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: AppRadii.badgeRadius,
                 ),
                 child: Text(
                   '$itemsCount поз.',

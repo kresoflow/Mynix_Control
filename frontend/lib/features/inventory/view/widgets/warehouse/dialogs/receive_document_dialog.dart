@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
@@ -154,6 +156,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
+          shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
           title: const Text('Внимание'),
           content: const Text('Добавьте хотя бы одну позицию с ненулевым количеством.'),
           actions: [AppButton.primary(label: 'ОК', height: 36, onPressed: () => Navigator.pop(ctx))],
@@ -201,15 +204,16 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
           message: 'Все введенные позиции и данные документа будут сброшены. Выйти?',
           confirmLabel: 'Сбросить накладную',
           child: Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
             insetPadding: const EdgeInsets.all(20),
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             child: Container(
               width: width, height: height,
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(24),
+                color: Theme.of(context).cardColor,
+                borderRadius: AppRadii.dialogRadius,
                 border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
-                boxShadow: [BoxShadow(color: AppColors.darkBg.withValues(alpha: 0.35), blurRadius: 40, offset: const Offset(0, 12))],
+                boxShadow: AppShadows.dialog,
               ),
               child: Stack(
                 children: [

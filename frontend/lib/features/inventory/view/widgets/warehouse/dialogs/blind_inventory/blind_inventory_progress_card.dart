@@ -3,6 +3,7 @@
 // ==============================================================================
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 // ==============================================================================
@@ -27,7 +28,7 @@ class BlindInventoryProgressCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -41,7 +42,7 @@ class BlindInventoryProgressCard extends StatelessWidget {
               color: AppColors.brandPrimary.withValues(
                 alpha: isDark ? 0.16 : 0.10,
               ),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: AppRadii.badgeRadius,
             ),
             child: Text(
               'Посчитано: $filledCount из $totalCount',

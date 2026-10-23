@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_input_decoration.dart';
@@ -128,12 +129,12 @@ class _ReceiveDocumentItemRowState extends State<ReceiveDocumentItemRow> {
             decoration: BoxDecoration(
               color: hovered
                   ? (isDark ? AppColors.darkSurface : AppColors.lightSurface)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+                  : AppColors.transparent,
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(
                 color: hovered
                     ? (isDark ? AppColors.darkBorder : AppColors.lightBorder)
-                    : Colors.transparent,
+                    : AppColors.transparent,
               ),
             ),
             child: Row(

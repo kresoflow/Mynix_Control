@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -95,21 +95,23 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
       context: context,
       builder: (dCtx) => AlertDialog(
         backgroundColor: AppColors.darkCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
         title: const Text('Удалить операцию?'),
         content: Text(
           'Операция на сумму ${txn.amount.toStringAsFixed(2)} ${widget.currency} будет удалена.\n'
           'Баланс поставщика автоматически скорректируется.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dCtx), child: const Text('Отмена')),
-          TextButton(
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.pop(dCtx),
+          ),
+          AppButton.danger(
+            label: 'Удалить',
             onPressed: () {
               Navigator.pop(dCtx);
               context.read<DocumentBloc>().add(DeleteSupplierTransaction(widget.supplier.id, txn.id));
             },
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Удалить'),
           ),
         ],
       ),
@@ -120,11 +122,11 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.darkBg,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 820, maxHeight: 720),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.pXl,
           child: BlocBuilder<DocumentBloc, DocumentState>(
             builder: (context, state) {
               final currentSupplier = _getCurrentSupplier(state);
@@ -163,7 +165,7 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
               ),
               child: Icon(PhosphorIconsRegular.wallet, color: AppColors.brandPrimary, size: 24),
             ),

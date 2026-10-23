@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 
@@ -44,11 +45,11 @@ class ReceiveDocumentSupplierSelect extends StatelessWidget {
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                   borderSide: BorderSide(color: borderColor),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                   borderSide: BorderSide(color: borderColor),
                 ),
                 prefixIcon: const Icon(PhosphorIconsRegular.buildings, size: 18),
@@ -98,7 +99,7 @@ class ReceiveDocumentSupplierSelect extends StatelessWidget {
             decoration: BoxDecoration(
               color: bg,
               border: Border.all(color: borderColor),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
             ),
             child: IconButton(
               icon: const Icon(PhosphorIconsRegular.plus, size: 18),

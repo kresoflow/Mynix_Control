@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 // ==============================================================================
@@ -40,7 +42,7 @@ class WriteOffTabsBar extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightBg,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadii.inputRadius,
             border: Border.all(
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
@@ -85,7 +87,7 @@ class WriteOffTabsBar extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.brandPrimary
                   .withValues(alpha: isDark ? 0.16 : 0.10),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: AppRadii.badgeRadius,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -127,16 +129,8 @@ class WriteOffTabsBar extends StatelessWidget {
           color: isSelected
               ? (isDark ? AppColors.darkSurface : AppColors.pureWhite)
               : AppColors.transparent,
-          borderRadius: BorderRadius.circular(7),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
+          borderRadius: AppRadii.badgeRadius,
+          boxShadow: isSelected ? AppShadows.light : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

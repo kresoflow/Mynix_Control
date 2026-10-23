@@ -70,18 +70,18 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
               ),
               filled: true,
               fillColor: isDark ? AppColors.darkCard : AppColors.lightBg,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+              border: const OutlineInputBorder(
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(
                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
               ),
             ),
@@ -105,18 +105,18 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
               ),
               filled: true,
               fillColor: isDark ? AppColors.darkCard : AppColors.lightBg,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+              border: const OutlineInputBorder(
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(
                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
               ),
             ),
@@ -128,7 +128,7 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadii.radiusLg,
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
@@ -140,7 +140,7 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
                   color: _isActive ? AppColors.success : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                   size: 20,
                 ),
-                const SizedBox(width: 10),
+                AppSpacing.hSm,
                 Text(
                   'Статус активности',
                   style: TextStyle(color: isDark ? AppColors.darkText : AppColors.lightText),
@@ -151,11 +151,11 @@ class _EditSupplierDialogState extends State<EditSupplierDialog> {
                   onChanged: (val) => setState(() => _isActive = val),
                   activeThumbColor: AppColors.brandPrimary,
                 ),
-                const SizedBox(width: 4),
+                AppSpacing.hXxs,
                 Text(
                   _isActive ? 'Активен' : 'Неактивен',
                   style: TextStyle(
-                    color: _isActive ? AppColors.success : Colors.grey,
+                    color: _isActive ? AppColors.success : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/models/document.dart';
 import 'package:kreso_frontend/features/inventory/services/document_export_service.dart';
@@ -29,7 +30,7 @@ class DocumentDetailFooter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppRadii.dialog)),
         border: Border(
           top: BorderSide(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -43,8 +44,8 @@ class DocumentDetailFooter extends StatelessWidget {
           PopupMenuButton<String>(
             tooltip: 'Другие форматы экспорта',
             color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+            shape: const RoundedRectangleBorder(
+              borderRadius: AppRadii.buttonRadius,
             ),
             onSelected: (action) async {
               switch (action) {
@@ -112,13 +113,13 @@ class DocumentDetailFooter extends StatelessWidget {
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'copy_json',
                 child: Row(
                   children: [
-                    Icon(PhosphorIconsRegular.copy, size: 18, color: Colors.grey),
-                    SizedBox(width: 10),
-                    Text('Копировать JSON'),
+                    Icon(PhosphorIconsRegular.copy, size: 18, color: AppColors.darkSubtext),
+                    const SizedBox(width: 10),
+                    const Text('Копировать JSON'),
                   ],
                 ),
               ),
@@ -128,7 +129,7 @@ class DocumentDetailFooter extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkSurface : AppColors.lightCard,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 border: Border.all(
                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),

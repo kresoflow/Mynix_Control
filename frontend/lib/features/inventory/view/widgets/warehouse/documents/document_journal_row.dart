@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/document.dart';
@@ -20,7 +21,7 @@ class DocumentJournalRow extends StatelessWidget {
     if (status == 'completed') return AppColors.success;
     if (status == 'draft') return AppColors.warning;
     if (status == 'cancelled') return AppColors.danger;
-    return Colors.grey;
+    return AppColors.darkSubtext;
   }
 
   String _getStatusLabel(String status) {
@@ -39,9 +40,9 @@ class DocumentJournalRow extends StatelessWidget {
 
   Color _getTypeColor(String type) {
     if (type == 'receipt') return AppColors.info;
-    if (type == 'write_off') return Colors.deepOrange;
-    if (type == 'inventory') return Colors.purple;
-    return Colors.grey;
+    if (type == 'write_off') return AppColors.warning;
+    if (type == 'inventory') return AppColors.brandSecondary;
+    return AppColors.darkSubtext;
   }
 
   @override
@@ -65,7 +66,7 @@ class DocumentJournalRow extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getTypeColor(doc.type).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: AppRadii.badgeRadius,
                   ),
                   child: Text(
                     _getTypeLabel(doc.type),
@@ -102,7 +103,7 @@ class DocumentJournalRow extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getStatusColor(doc.status).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: AppRadii.badgeRadius,
                   ),
                   child: Text(
                     _getStatusLabel(doc.status),
@@ -115,9 +116,9 @@ class DocumentJournalRow extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(
+            SizedBox(
               width: 50,
-              child: Icon(PhosphorIconsRegular.caretRight, color: Colors.grey),
+              child: Icon(PhosphorIconsRegular.caretRight, color: AppColors.darkSubtext),
             ),
           ],
         ),

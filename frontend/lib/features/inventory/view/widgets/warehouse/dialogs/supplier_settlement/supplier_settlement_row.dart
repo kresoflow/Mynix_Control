@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier_transaction.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -32,7 +33,7 @@ class SupplierSettlementRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.darkCard,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.inputRadius,
       ),
       child: Row(
         children: [
@@ -43,7 +44,7 @@ class SupplierSettlementRow extends StatelessWidget {
               color: isPayment
                   ? AppColors.success.withValues(alpha: 0.15)
                   : AppColors.danger.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadii.inputRadius,
             ),
             child: Icon(
               isPayment
@@ -125,7 +126,7 @@ class SupplierSettlementRow extends StatelessWidget {
               tooltip: 'Редактировать',
             ),
             IconButton(
-              icon: Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
+              icon: const Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
               onPressed: onDelete,
               tooltip: 'Удалить операцию',
             ),

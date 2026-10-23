@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/inventory/models/document.dart';
 
@@ -19,7 +20,7 @@ class DocumentDetailHeader extends StatelessWidget {
     if (status == 'completed') return AppColors.success;
     if (status == 'draft') return AppColors.warning;
     if (status == 'cancelled') return AppColors.danger;
-    return Colors.grey;
+    return AppColors.darkSubtext;
   }
 
   String _getStatusLabel(String status) {
@@ -52,7 +53,7 @@ class DocumentDetailHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadii.dialog)),
         border: Border(
           bottom: BorderSide(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -65,7 +66,7 @@ class DocumentDetailHeader extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppColors.brandPrimary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
             ),
             child: Icon(
               _getTypeIcon(doc.type),
@@ -94,7 +95,7 @@ class DocumentDetailHeader extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: isDark ? 0.16 : 0.10),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: AppRadii.badgeRadius,
                         border: Border.all(
                           color: statusColor.withValues(alpha: 0.35),
                           width: 1,

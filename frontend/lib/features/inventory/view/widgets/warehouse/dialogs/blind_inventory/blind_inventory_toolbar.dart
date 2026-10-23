@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/app_filter_chip.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/app_search_field.dart';
@@ -99,13 +100,13 @@ class BlindInventoryToolbar extends StatelessWidget {
         // ─── 5. Кнопка Развернуть/Свернуть всё ───
         InkWell(
           onTap: onToggleExpandAll,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadii.inputRadius,
           child: Container(
             height: 36,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightBg,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),

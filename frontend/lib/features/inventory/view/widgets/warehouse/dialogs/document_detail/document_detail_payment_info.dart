@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/document.dart';
@@ -22,7 +23,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -33,7 +34,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: color.withValues(alpha: isDark ? 0.16 : 0.10),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: AppRadii.badgeRadius,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -77,7 +78,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -133,7 +134,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadii.radiusLg,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -162,7 +163,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkSurface : AppColors.lightBg,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: AppRadii.badgeRadius,
                     border: Border.all(
                       color:
                           isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -234,7 +235,7 @@ class DocumentDetailPaymentInfo extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.16 : 0.10),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadii.badgeRadius,
         border: Border.all(
           color: color.withValues(alpha: 0.35),
           width: 1,

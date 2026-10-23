@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/bloc/receive_retail_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/receive_retail_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/receive_retail_state.dart';
@@ -33,7 +35,7 @@ class _ReceiveRetailView extends StatelessWidget {
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
       appBar: AppBar(
         title: const Text('Массовая приемка витрины'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         elevation: 0,
       ),
       body: BlocListener<ReceiveRetailBloc, ReceiveRetailState>(
@@ -110,7 +112,7 @@ class _ReceiveRetailView extends StatelessWidget {
     final hasItems = state.quantities.values.any((qty) => qty > 0);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.pMd,
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         border: Border(
@@ -120,37 +122,16 @@ class _ReceiveRetailView extends StatelessWidget {
         ),
       ),
       child: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: (hasItems && !state.isSubmitting)
-                ? () => context.read<ReceiveRetailBloc>().add(
-                    SubmitReceiveRetail(),
-                  )
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brandPrimary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            child: state.isSubmitting
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : const Text(
-                    'Оприходовать',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-          ),
+        child: AppButton.primary(
+          label: 'Оприходовать',
+          isFullWidth: true,
+          size: AppButtonSize.xl,
+          isLoading: state.isSubmitting,
+          onPressed: (hasItems && !state.isSubmitting)
+              ? () => context.read<ReceiveRetailBloc>().add(
+                  SubmitReceiveRetail(),
+                )
+              : null,
         ),
       ),
     );

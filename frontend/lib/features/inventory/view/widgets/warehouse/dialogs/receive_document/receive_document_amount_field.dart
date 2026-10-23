@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 /// Поле ввода суммы частичной оплаты.
@@ -78,7 +79,7 @@ class _ReceiveDocumentAmountFieldState extends State<ReceiveDocumentAmountField>
               : (_isHovered || _isFocused
                   ? AppColors.lightBg
                   : AppColors.lightBg.withValues(alpha: 0.7)),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadii.inputRadius,
         ),
         alignment: Alignment.center,
         child: Row(
@@ -128,7 +129,7 @@ class _ReceiveDocumentAmountFieldState extends State<ReceiveDocumentAmountField>
                   widget.controller.clear();
                   _focusNode.requestFocus();
                 },
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 child: Padding(
                   padding: const EdgeInsets.all(2),
                   child: Icon(

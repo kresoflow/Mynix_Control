@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
@@ -7,6 +7,9 @@ import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'receipt_row_model.dart';
 import 'bulk_receipt_row_widget.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 
@@ -120,25 +123,19 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadii.cardRadius,
           border: Border.all(
             color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: AppShadows.light,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
-                const Icon(PhosphorIconsRegular.receipt, size: 32, color: Colors.grey),
-                const SizedBox(width: 16),
+                Icon(PhosphorIconsRegular.receipt, size: 32, color: AppColors.darkSubtext),
+                AppSpacing.hMd,
                 Text(
                   'Приходная накладная',
                   style: AppTextStyles.h1,
@@ -166,7 +163,7 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
             ),
             const SizedBox(height: 32),
             // Header
-            const Row(
+            Row(
               children: [
                 Expanded(
                   flex: 3,
@@ -175,11 +172,11 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Colors.grey,
+                      color: AppColors.darkSubtext,
                     ),
                   ),
                 ),
-                SizedBox(width: 16),
+                AppSpacing.hMd,
                 Expanded(
                   flex: 1,
                   child: Text(
@@ -187,11 +184,11 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Colors.grey,
+                      color: AppColors.darkSubtext,
                     ),
                   ),
                 ),
-                SizedBox(width: 16),
+                AppSpacing.hMd,
                 Expanded(
                   flex: 1,
                   child: Text(
@@ -199,11 +196,11 @@ class _BulkReceiptViewState extends State<BulkReceiptView>
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Colors.grey,
+                      color: AppColors.darkSubtext,
                     ),
                   ),
                 ),
-                SizedBox(width: 48),
+                const SizedBox(width: 48),
               ],
             ),
             const Divider(height: 32),

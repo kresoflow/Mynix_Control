@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_date_time_picker.dart';
 import 'receive_document_supplier_select.dart';
@@ -45,11 +46,11 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.inputRadius,
         borderSide: BorderSide(color: borderColor),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.inputRadius,
         borderSide: BorderSide(color: borderColor),
       ),
       prefixIcon: Icon(icon, size: 18),
@@ -68,7 +69,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : AppColors.lightBg,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadii.radiusLg,
           border: Border.all(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
@@ -113,7 +114,7 @@ class ReceiveDocumentMetaRow extends StatelessWidget {
                   child: SizedBox(
                     height: 46,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppRadii.inputRadius,
                       onTap: () async {
                         final picked = await showAppDateTimePicker(
                           context,
