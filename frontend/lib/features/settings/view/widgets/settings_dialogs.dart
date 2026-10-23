@@ -1,20 +1,29 @@
-﻿import 'package:flutter/material.dart';
+// ==============================================================================
+// МОДУЛЬ: Настройки / Системные диалоги (Settings Dialogs)
+// ДОМЕН: lib/features/settings/view/widgets/settings_dialogs.dart
+// ==============================================================================
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
 
+/// Диалоги для управления сменами и системными настройками
 class SettingsDialogs {
   static void showCloseShiftDialog(BuildContext context) {
     final controller = TextEditingController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Закрытие смены'),
+      builder: (ctx) => AppDialog(
+        icon: PhosphorIconsRegular.lockKey,
+        title: 'Закрытие смены',
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Введите фактическую сумму наличных в кассе (Z-отчет):'),
             const SizedBox(height: 16),
@@ -30,20 +39,18 @@ class SettingsDialogs {
           ],
         ),
         actions: [
-          TextButton(
+          AppGhostButton(
+            label: 'Отмена',
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена'),
           ),
-          ElevatedButton(
+          const SizedBox(width: 8),
+          AppDangerButton(
+            label: 'ЗАКРЫТЬ',
             onPressed: () {
               final amount = double.tryParse(controller.text) ?? 0.0;
               context.read<ShiftBloc>().add(CloseShiftRequested(amount));
               Navigator.pop(ctx);
             },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white),
-            child: const Text('ЗАКРЫТЬ'),
           ),
         ],
       ),

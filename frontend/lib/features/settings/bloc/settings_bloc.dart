@@ -175,13 +175,15 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(state.copyWith(isLoading: true, error: null));
     try {
       final data = await _repository.getSettings();
-      emit(state.copyWith(
-        isLoading: false,
-        useOrders: data['use_orders'] ?? state.useOrders,
-        enableInventory: data['enable_inventory_deduction'] ?? state.enableInventory,
-        blindPosEnabled: data['blind_pos_enabled'] ?? state.blindPosEnabled,
-        posMasterPinSet: data['pos_master_pin_set'] ?? state.posMasterPinSet,
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          useOrders: data['use_orders'] ?? state.useOrders,
+          enableInventory: data['enable_inventory_deduction'] ?? state.enableInventory,
+          blindPosEnabled: data['blind_pos_enabled'] ?? state.blindPosEnabled,
+          posMasterPinSet: data['pos_master_pin_set'] ?? state.posMasterPinSet,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
@@ -197,13 +199,15 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     final newSoundEnabled = event.soundEnabled ?? state.soundEnabled;
     final newBlindPos = event.blindPosEnabled ?? state.blindPosEnabled;
 
-    emit(state.copyWith(
-      useOrders: newUseOrders,
-      enableInventory: newEnableInventory,
-      timezone: newTimezone,
-      soundEnabled: newSoundEnabled,
-      blindPosEnabled: newBlindPos,
-    ));
+    emit(
+      state.copyWith(
+        useOrders: newUseOrders,
+        enableInventory: newEnableInventory,
+        timezone: newTimezone,
+        soundEnabled: newSoundEnabled,
+        blindPosEnabled: newBlindPos,
+      ),
+    );
 
     if (_repository != null) {
       try {

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -23,7 +23,7 @@ class _ShowcaseMenuButtonSectionState extends State<ShowcaseMenuButtonSection> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: widget.isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Column(
@@ -69,7 +69,7 @@ class _ShowcaseMenuButtonSectionState extends State<ShowcaseMenuButtonSection> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: widget.isDark ? AppColors.darkCardHover : AppColors.lightCardHover,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadii.inputRadius,
                 ),
                 child: Text(
                   'Выбрано: $_selectedMenuItem',

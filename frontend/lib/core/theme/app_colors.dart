@@ -67,6 +67,11 @@ abstract class AppColors {
     Color(0xFF14B8A6), // Teal
   ];
 
+  // ── Palette Accent Indicators ───────────────────────────────────────────────
+  static const Color emberDot = Color(0xFFE8A020);
+  static const Color creamDot = Color(0xFFD97706);
+  static const Color oceanDot = Color(0xFF00F0FF);
+
   // ── Track Backgrounds (Segmented Controls & Inputs) ────────────────────────
   static Color darkTrackBg   = const Color(0xFF0A1220);
   static Color lightTrackBg  = const Color(0xFFECEEF2);

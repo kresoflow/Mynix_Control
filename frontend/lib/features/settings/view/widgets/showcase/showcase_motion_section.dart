@@ -42,7 +42,7 @@ class _ShowcaseMotionSectionState extends State<ShowcaseMotionSection> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Column(
@@ -178,15 +178,15 @@ class _ShowcaseMotionSectionState extends State<ShowcaseMotionSection> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: AppColors.brandPrimary,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: AppRadii.inputRadius,
                       boxShadow: _hoverElevation ? AppShadows.buttonGlow(AppColors.brandPrimary) : AppShadows.light,
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(PhosphorIconsRegular.arrowUpRight, color: Colors.white, size: 16),
+                        Icon(PhosphorIconsRegular.arrowUpRight, color: AppColors.pureWhite, size: 16),
                         SizedBox(width: 8),
-                        Text('Hover 1: Мягкий подъем (Elevation)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+                        Text('Hover 1: Мягкий подъем (Elevation)', style: TextStyle(color: AppColors.pureWhite, fontWeight: FontWeight.w600, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -203,14 +203,14 @@ class _ShowcaseMotionSectionState extends State<ShowcaseMotionSection> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkCard : AppColors.lightSurface,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: AppRadii.inputRadius,
                     border: Border.all(
                       color: _hoverGlow ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                       width: _hoverGlow ? 1.5 : 1.0,
                     ),
                     boxShadow: _hoverGlow
-                        ? [BoxShadow(color: AppColors.brandPrimary.withValues(alpha: isDark ? 0.40 : 0.25), blurRadius: 14, spreadRadius: 1)]
-                        : [],
+                        ? AppShadows.glow(AppColors.brandPrimary, opacity: isDark ? 0.40 : 0.25, blur: 14, spread: 1)
+                        : null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -247,7 +247,7 @@ class _ShowcaseMotionSectionState extends State<ShowcaseMotionSection> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightBg,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Column(
@@ -267,10 +267,8 @@ class _ShowcaseMotionSectionState extends State<ShowcaseMotionSection> {
               height: 24,
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: BorderRadius.circular(_isExpanded ? 12 : 6),
-                boxShadow: [
-                  BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 6, offset: const Offset(0, 2)),
-                ],
+                borderRadius: _isExpanded ? AppRadii.buttonRadius : AppRadii.badgeRadius,
+                boxShadow: AppShadows.dotGlow(color, opacity: 0.35),
               ),
             ),
           ),

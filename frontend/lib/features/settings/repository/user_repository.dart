@@ -1,4 +1,4 @@
-﻿import 'package:kreso_frontend/core/network/api_client.dart';
+import 'package:kreso_frontend/core/network/api_client.dart';
 import 'package:kreso_frontend/features/settings/models/user_model.dart';
 
 class UserRepository {
@@ -19,14 +19,17 @@ class UserRepository {
     String? pinCode,
     required List<int> roleIds,
   }) async {
-    final response = await apiClient.dio.post('/users/', data: {
-      'username': username,
-      'full_name': fullName,
-      'password': password,
-      'pin_code': pinCode,
-      'tenant_id': 0, // Backend sets this to current user's tenant_id automatically
-      'role_ids': roleIds,
-    });
+    final response = await apiClient.dio.post(
+      '/users/',
+      data: {
+        'username': username,
+        'full_name': fullName,
+        'password': password,
+        'pin_code': pinCode,
+        'tenant_id': 0, // Backend sets this to current user's tenant_id automatically
+        'role_ids': roleIds,
+      },
+    );
     return StaffUser.fromJson(response.data);
   }
 

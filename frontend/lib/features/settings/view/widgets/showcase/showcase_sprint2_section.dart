@@ -34,7 +34,7 @@ class _ShowcaseSprint2SectionState extends State<ShowcaseSprint2Section> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Column(
@@ -210,7 +210,7 @@ class _ShowcaseSprint2SectionState extends State<ShowcaseSprint2Section> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadii.radiusLg,
               border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
             ),
             child: AppEmptyState(

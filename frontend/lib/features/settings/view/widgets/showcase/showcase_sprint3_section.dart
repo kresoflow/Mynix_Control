@@ -39,7 +39,7 @@ class _ShowcaseSprint3SectionState extends State<ShowcaseSprint3Section> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Column(
@@ -140,11 +140,11 @@ class _ShowcaseSprint3SectionState extends State<ShowcaseSprint3Section> {
           ),
           const SizedBox(height: 10),
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadii.inputRadius,
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
               ),
               child: Column(
                 children: [
@@ -172,11 +172,11 @@ class _ShowcaseSprint3SectionState extends State<ShowcaseSprint3Section> {
           ),
           const SizedBox(height: 10),
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadii.inputRadius,
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
               ),
               child: AppDocumentFooter(
                 totalAmount: 48520.0,
@@ -203,7 +203,7 @@ class _ShowcaseSprint3SectionState extends State<ShowcaseSprint3Section> {
       isSelected: isSelected,
       onTap: () => setState(() => _selectedTableRow = index),
       children: [
-        Text('$index', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text('$index', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
         Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         Text(category, style: const TextStyle(fontSize: 12)),
         Text(stock, textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),

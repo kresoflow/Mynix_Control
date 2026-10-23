@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/theme_bloc.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'settings_ui_components.dart';
@@ -78,17 +79,17 @@ class ThemeAppearanceSettingsCard extends StatelessWidget {
                   AppSegmentedItem(
                     value: ThemePalette.ember,
                     label: 'Ember',
-                    leading: _buildColorDot(const Color(0xFFE8A020)),
+                    leading: _buildColorDot(AppColors.emberDot),
                   ),
                   AppSegmentedItem(
                     value: ThemePalette.cream,
                     label: 'Cream',
-                    leading: _buildColorDot(const Color(0xFFD97706)),
+                    leading: _buildColorDot(AppColors.creamDot),
                   ),
                   AppSegmentedItem(
                     value: ThemePalette.ocean,
                     label: 'Ocean',
-                    leading: _buildColorDot(const Color(0xFF00F0FF)),
+                    leading: _buildColorDot(AppColors.oceanDot),
                   ),
                 ],
               ),

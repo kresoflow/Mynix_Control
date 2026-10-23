@@ -39,7 +39,7 @@ class _ShowcaseControlBarState extends State<ShowcaseControlBar> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadii.cardRadius,
             border: Border.all(
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               width: 1.5,
@@ -56,7 +56,7 @@ class _ShowcaseControlBarState extends State<ShowcaseControlBar> {
                     height: 32,
                     decoration: BoxDecoration(
                       color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadii.inputRadius,
                     ),
                     child: Icon(
                       PhosphorIconsRegular.paintBrushBroad,
