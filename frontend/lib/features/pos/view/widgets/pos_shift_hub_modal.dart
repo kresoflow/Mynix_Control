@@ -1,20 +1,36 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Хаб управления сменой (PosShiftHubModal)
+// ДОМЕН: lib/features/pos/view/widgets/pos_shift_hub_modal.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Модальное окно управления кассовой сменой:
+// 1. Вкладки: X-отчет, Z-отчет (закрытие смены), Журнал прошлых смен.
+// 2. Поддержка слепого режима (Blind POS) с защитой финансовых сумм PIN-кодом.
+// 3. Использует дизайн-токены AppRadii, AppColors, AppSpacing.
+//
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog_scaffold.dart';
 import 'package:kreso_frontend/core/network/api_client.dart';
-import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog_scaffold.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_state.dart';
+import 'package:kreso_frontend/features/pos/repository/shift_repository.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 
 import 'shift_hub/shift_x_report_tab.dart';
 import 'shift_hub/shift_z_close_tab.dart';
 import 'shift_hub/shift_history_tab.dart';
 import 'shift_hub/shift_pin_dialog.dart';
+
+// ── 1. Модальное окно хаба смены ──────────────────────────────────────────────
 
 void showShiftHubModal(BuildContext context, {int initialTab = 0}) {
   showDialog(
@@ -123,9 +139,9 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildStatusRow(isOpen, isUnlocked, openedAtStr, isDark),
-                const SizedBox(height: 8),
+                AppSpacing.vSm,
                 _buildTabsBar(isDark),
-                const SizedBox(height: 10),
+                AppSpacing.vSm,
                 Expanded(
                   child: IndexedStack(
                     sizing: StackFit.expand,
@@ -185,12 +201,12 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
                 : (isUnlocked
                     ? () => context.read<ShiftBloc>().add(const ToggleFinancialsVisibility(unlock: false))
                     : _handleUnlockPin),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: AppRadii.radiusXs,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: (isUnlocked ? AppColors.success : AppColors.brandPrimary).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: AppRadii.radiusXs,
                 border: Border.all(color: (isUnlocked ? AppColors.success : AppColors.brandPrimary).withValues(alpha: 0.3)),
               ),
               child: Row(
@@ -201,7 +217,7 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
                     size: 12,
                     color: isUnlocked ? AppColors.success : AppColors.brandPrimary,
                   ),
-                  const SizedBox(width: 4),
+                  AppSpacing.hXxs,
                   Text(
                     !isBlindMode
                         ? 'Суммы открыты'
@@ -225,15 +241,15 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.radiusMd,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Row(
         children: [
           Expanded(child: _buildTabButton(0, 'X-Отчет', PhosphorIconsRegular.chartPie, isDark)),
-          const SizedBox(width: 4),
+          AppSpacing.hXxs,
           Expanded(child: _buildTabButton(1, 'Z-Отчет', PhosphorIconsRegular.lockKey, isDark)),
-          const SizedBox(width: 4),
+          AppSpacing.hXxs,
           Expanded(child: _buildTabButton(2, 'Журнал', PhosphorIconsRegular.archive, isDark)),
         ],
       ),
@@ -242,23 +258,23 @@ class _PosShiftHubModalState extends State<PosShiftHubModal> {
 
   Widget _buildTabButton(int index, String label, IconData icon, bool isDark) {
     final isSelected = _selectedTab == index;
-    final color = isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText);
+    final color = isSelected ? AppColors.white : (isDark ? AppColors.darkText : AppColors.lightText);
     return InkWell(
       onTap: () => setState(() => _selectedTab = index),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.radiusSm,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? AppColors.brandPrimary : AppColors.transparent,
+          borderRadius: AppRadii.radiusSm,
         ),
         alignment: Alignment.center,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 13, color: color),
-            const SizedBox(width: 4),
+            AppSpacing.hXxs,
             Text(label, style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500, color: color)),
           ],
         ),

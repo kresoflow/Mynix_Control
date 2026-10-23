@@ -8,6 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/analytics/view/widgets/dialogs/shift_history_details_dialog.dart';
@@ -88,7 +90,7 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
               Text('Всего записей: ${_history.length}', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
               InkWell(
                 onTap: _loadHistory,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: AppRadii.radiusXs,
                 child: Row(
                   children: [
                     Icon(PhosphorIconsRegular.arrowClockwise, size: 12, color: AppColors.brandPrimary),
@@ -198,12 +200,12 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
         }
         ShiftHistoryDetailsDialog.show(context, item);
       },
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: AppRadii.radiusMd,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: AppRadii.radiusMd,
           border: Border.all(
             color: isOpen ? AppColors.brandPrimary.withValues(alpha: 0.5) : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
@@ -215,7 +217,7 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
               height: 34,
               decoration: BoxDecoration(
                 color: isOpen ? AppColors.success.withValues(alpha: 0.15) : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppRadii.radiusSm,
               ),
               alignment: Alignment.center,
               child: Text(
@@ -254,7 +256,7 @@ class _ShiftHistoryTabState extends State<ShiftHistoryTab> {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
                   color: diff == 0 ? AppColors.success.withValues(alpha: 0.1) : (diff < 0 ? AppColors.danger.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1)),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: AppRadii.radiusXs,
                 ),
                 child: Text(
                   diffText,

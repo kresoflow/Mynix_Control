@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
@@ -48,7 +49,7 @@ class ShiftXReportTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.danger.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadii.radiusLg,
           border: Border.all(color: AppColors.danger.withValues(alpha: 0.2)),
         ),
         child: Column(
@@ -90,7 +91,7 @@ class ShiftXReportTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadii.radiusLg,
             border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
           child: Column(
@@ -125,7 +126,7 @@ class ShiftXReportTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           decoration: BoxDecoration(
             color: AppColors.brandPrimary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadii.radiusMd,
             border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.25)),
           ),
           child: Row(

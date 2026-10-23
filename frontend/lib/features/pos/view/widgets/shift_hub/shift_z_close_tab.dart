@@ -97,7 +97,7 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
         // Blind count hint toggle
         InkWell(
           onTap: _toggleDiscrepancyHint,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadii.radiusXs,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
@@ -152,7 +152,7 @@ class _ShiftZCloseTabState extends State<ShiftZCloseTab> {
               color: diff == 0
                   ? AppColors.success.withValues(alpha: 0.1)
                   : (diff < 0 ? AppColors.danger.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1)),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.radiusMd,
               border: Border.all(
                 color: diff == 0 ? AppColors.success : (diff < 0 ? AppColors.danger : AppColors.warning),
               ),

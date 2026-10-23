@@ -198,7 +198,7 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: AppColors.danger.withValues(alpha: 0.3))),
+                decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.1), borderRadius: AppRadii.radiusXs, border: Border.all(color: AppColors.danger.withValues(alpha: 0.3))),
                 child: Text(_errorMessage!, style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600)),
               ),
             ],

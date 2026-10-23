@@ -1,10 +1,26 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Поля формы кассовых операций (CashOperationFormFields)
+// ДОМЕН: lib/features/pos/view/widgets/cash_operations/cash_operation_form_fields.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Компоненты формы кассовых операций:
+// 1. CashOperationTypeSwitcher: переключатель типа операции (Внесение / Расход).
+// 2. CashOperationCurrentBanner: баннер остатка с защитой PIN.
+// 3. CashOperationQuickAmounts: кнопки быстрого добавления сумм (+50, +100 и т.д.).
+// 4. CashOperationCategoryChips: плашки выбора типовых статей расхода/внесения.
+//
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/features/pos/models/cash_operation.dart';
 
-/// 1. Переключатель типа операции (Внесение / Расход)
+// ── 1. Переключатель типа операции (Внесение / Расход) ────────────────────────
+
 class CashOperationTypeSwitcher extends StatelessWidget {
   final CashOpType selectedType;
   final ValueChanged<CashOpType> onTypeChanged;
@@ -22,13 +38,13 @@ class CashOperationTypeSwitcher extends StatelessWidget {
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.radiusMd,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Row(
         children: [
           Expanded(child: _buildButton(CashOpType.deposit, 'Внесение', PhosphorIconsRegular.arrowDownLeft, isDark)),
-          const SizedBox(width: 4),
+          AppSpacing.hXxs,
           Expanded(child: _buildButton(CashOpType.withdrawal, 'Расход / Инкассация', PhosphorIconsRegular.arrowUpRight, isDark)),
         ],
       ),
@@ -37,16 +53,16 @@ class CashOperationTypeSwitcher extends StatelessWidget {
 
   Widget _buildButton(CashOpType type, String label, IconData icon, bool isDark) {
     final isSelected = selectedType == type;
-    final color = isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText);
+    final color = isSelected ? AppColors.white : (isDark ? AppColors.darkText : AppColors.lightText);
     return InkWell(
       onTap: () => onTypeChanged(type),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.radiusSm,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? AppColors.brandPrimary : AppColors.transparent,
+          borderRadius: AppRadii.radiusSm,
         ),
         alignment: Alignment.center,
         child: Row(
@@ -62,7 +78,8 @@ class CashOperationTypeSwitcher extends StatelessWidget {
   }
 }
 
-/// 2. Баннер текущего остатка в кассе с кнопкой разблокировки PIN
+// ── 2. Баннер текущего остатка в кассе с кнопкой разблокировки PIN ────────────
+
 class CashOperationCurrentBanner extends StatelessWidget {
   final double currentCash;
   final bool isFinancialsUnlocked;
@@ -82,7 +99,7 @@ class CashOperationCurrentBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
         color: AppColors.brandPrimary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.radiusMd,
         border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.25)),
       ),
       child: Row(
@@ -90,33 +107,40 @@ class CashOperationCurrentBanner extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(PhosphorIconsRegular.vault, size: 15, color: AppColors.brandPrimary),
-              const SizedBox(width: 8),
-              Text('В кассе сейчас:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkText : AppColors.lightText)),
+              const Icon(PhosphorIconsRegular.vault, size: 15, color: AppColors.brandPrimary),
+              AppSpacing.hSm,
+              Text(
+                'В кассе сейчас:',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                ),
+              ),
             ],
           ),
           Row(
             children: [
               Text(
                 isFinancialsUnlocked ? currentCash.toCurrency(context) : '••••',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.brandPrimary),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.brandPrimary),
               ),
               if (!isFinancialsUnlocked) ...[
                 const SizedBox(width: 6),
                 InkWell(
                   onTap: onUnlockPin,
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: AppRadii.radiusXs,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: AppRadii.radiusXs,
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(PhosphorIconsRegular.lockKey, size: 10, color: AppColors.brandPrimary),
-                        const SizedBox(width: 3),
+                        SizedBox(width: 3),
                         Text('PIN', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.brandPrimary)),
                       ],
                     ),
@@ -131,7 +155,8 @@ class CashOperationCurrentBanner extends StatelessWidget {
   }
 }
 
-/// 3. Быстрые кнопки добавления сумм
+// ── 3. Быстрые кнопки добавления сумм ─────────────────────────────────────────
+
 class CashOperationQuickAmounts extends StatelessWidget {
   final List<double> quickAmounts;
   final ValueChanged<double> onAddAmount;
@@ -150,12 +175,12 @@ class CashOperationQuickAmounts extends StatelessWidget {
       runSpacing: 4,
       children: quickAmounts.map((q) => InkWell(
         onTap: () => onAddAmount(q),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadii.radiusXs,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: AppRadii.radiusXs,
             border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
           child: Text('+${q.toInt()}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkText : AppColors.lightText)),
@@ -165,7 +190,8 @@ class CashOperationQuickAmounts extends StatelessWidget {
   }
 }
 
-/// 4. Список категорий в виде плашек
+// ── 4. Список категорий в виде плашек ─────────────────────────────────────────
+
 class CashOperationCategoryChips extends StatelessWidget {
   final List<String> categories;
   final String selectedCategory;
@@ -188,13 +214,13 @@ class CashOperationCategoryChips extends StatelessWidget {
         final isSel = selectedCategory == cat;
         return InkWell(
           onTap: () => onCategorySelected(cat),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadii.radiusXs,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 120),
             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
             decoration: BoxDecoration(
               color: isSel ? AppColors.brandPrimary : (isDark ? AppColors.darkCard : AppColors.lightCard),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: AppRadii.radiusXs,
               border: Border.all(color: isSel ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
             ),
             child: Text(
@@ -202,7 +228,7 @@ class CashOperationCategoryChips extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSel ? FontWeight.w800 : FontWeight.w500,
-                color: isSel ? Colors.black : (isDark ? AppColors.darkText : AppColors.lightText),
+                color: isSel ? AppColors.pureBlack : (isDark ? AppColors.darkText : AppColors.lightText),
               ),
             ),
           ),

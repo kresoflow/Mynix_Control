@@ -1,11 +1,30 @@
+// ==============================================================================
+// МОДУЛЬ: POS / Открытие смены (OpenShiftModal)
+// ДОМЕН: lib/features/pos/view/widgets/open_shift_modal.dart
+// ==============================================================================
+//
+// [ИНВАРИАНТ] [UI-KIT] Модальный экран открытия кассовой смены:
+// 1. Предоставляет компактный диалог и полноразмерную посадочную карточку.
+// 2. Требует обязательного внесения разменного фонда для начала операций.
+// 3. Использует официальные токены дизайн-системы (AppRadii, AppColors, AppButton).
+//
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_text_field.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_card_dialog.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/shift_event.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+
+// ── 1. Компактный диалог открытия смены ───────────────────────────────────────
 
 void showOpenShiftDialog(BuildContext context) {
   showDialog(
@@ -69,6 +88,8 @@ class _OpenShiftDialogState extends State<_OpenShiftDialog> {
   }
 }
 
+// ── 2. Посадочная карточка открытия смены (Полноразмерная) ───────────────────
+
 class OpenShiftModal extends StatefulWidget {
   const OpenShiftModal({super.key});
 
@@ -108,113 +129,99 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
     final isDark = theme.brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 500;
-    
+
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: ScaleTransition(
           scale: _scaleAnimation,
           child: Material(
-            color: Colors.transparent,
+            color: AppColors.transparent,
             child: Container(
-                  width: isMobile ? screenWidth - 32 : 420,
-                  padding: EdgeInsets.all(isMobile ? 24 : 40),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                    borderRadius: BorderRadius.circular(isMobile ? 24 : 32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                        blurRadius: 60,
-                        offset: const Offset(0, 20),
-                      ),
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                      width: 1.5,
+              width: isMobile ? screenWidth - 32 : 420,
+              padding: EdgeInsets.all(isMobile ? 24 : 40),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                borderRadius: isMobile ? AppRadii.cardRadius : AppRadii.dialogRadius,
+                boxShadow: AppShadows.dialog,
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  width: 1.5,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(isMobile ? 16 : 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandPrimary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      PhosphorIconsRegular.wallet,
+                      size: isMobile ? 40 : 56,
+                      color: AppColors.brandPrimary,
                     ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(isMobile ? 16 : 20),
-                        decoration: BoxDecoration(
-                          color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(PhosphorIconsRegular.wallet, size: isMobile ? 40 : 56, color: AppColors.brandPrimary),
-                      ),
-                      SizedBox(height: isMobile ? 20 : 32),
-                      Text(
-                        'Открытие смены',
-                        style: AppTextStyles.h1.copyWith(fontSize: isMobile ? 22 : 28, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 12),
-                    Text(
-                      'Внесите разменный фонд в кассу для начала рабочего дня.',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.body.copyWith(
-                        color: isDark ? AppColors.lightSubtext : AppColors.darkSubtext,
-                        height: 1.5,
-                      ),
+                  SizedBox(height: isMobile ? 20 : 32),
+                  Text(
+                    'Открытие смены',
+                    style: AppTextStyles.h1.copyWith(
+                      fontSize: isMobile ? 22 : 28,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 40),
-                    TextField(
-                      controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      style: AppTextStyles.h2.copyWith(fontSize: 24),
-                      textAlign: TextAlign.center,
-                      decoration: InputDecoration(
-                        hintText: '0.00',
-                        labelText: 'Разменный фонд (с)',
-                        labelStyle: AppTextStyles.body.copyWith(color: AppColors.brandPrimary),
-                        filled: true,
-                        fillColor: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey.shade50,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide(color: AppColors.brandPrimary, width: 2),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 20),
-                      ),
+                  ),
+                  AppSpacing.vSm,
+                  Text(
+                    'Внесите разменный фонд в кассу для начала рабочего дня.',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.body.copyWith(
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      height: 1.5,
                     ),
-                    const SizedBox(height: 40),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 64,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final amount = double.tryParse(_amountController.text) ?? 0.0;
-                          context.read<ShiftBloc>().add(OpenShiftRequested(amount));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.brandPrimary,
-                          foregroundColor: Colors.white,
-                          elevation: 8,
-                          shadowColor: AppColors.brandPrimary.withValues(alpha: 0.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        ),
-                        child: Text(
-                          'ОТКРЫТЬ СМЕНУ',
-                          style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                        ),
+                  ),
+                  const SizedBox(height: 36),
+                  TextField(
+                    controller: _amountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    style: AppTextStyles.h2.copyWith(fontSize: 24),
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      hintText: '0.00',
+                      labelText: 'Разменный фонд (с)',
+                      labelStyle: AppTextStyles.body.copyWith(color: AppColors.brandPrimary),
+                      filled: true,
+                      fillColor: isDark
+                          ? AppColors.pureBlack.withValues(alpha: 0.2)
+                          : AppColors.lightSurface,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadii.cardRadius,
+                        borderSide: BorderSide.none,
                       ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: AppRadii.cardRadius,
+                        borderSide: BorderSide(color: AppColors.brandPrimary, width: 2),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 20),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 36),
+                  AppPrimaryButton(
+                    label: 'ОТКРЫТЬ СМЕНУ',
+                    size: AppButtonSize.xl,
+                    isFullWidth: true,
+                    onPressed: () {
+                      final amount = double.tryParse(_amountController.text) ?? 0.0;
+                      context.read<ShiftBloc>().add(OpenShiftRequested(amount));
+                    },
+                  ),
+                ],
               ),
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 }
