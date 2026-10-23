@@ -199,7 +199,7 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
                         borderRadius: AppRadii.cardRadius,
                         borderSide: BorderSide.none,
                       ),
-                      focusedBorder: const OutlineInputBorder(
+                      focusedBorder: OutlineInputBorder(
                         borderRadius: AppRadii.cardRadius,
                         borderSide: BorderSide(color: AppColors.brandPrimary, width: 2),
                       ),

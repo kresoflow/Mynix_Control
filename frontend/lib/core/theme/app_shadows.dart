@@ -39,6 +39,11 @@ abstract class AppShadows {
       ),
     ];
   }
+
+  // Семантические алиасы для диалогов и карточек
+  static List<BoxShadow> get dialog => deep;
+  static List<BoxShadow> get card => light;
+  static List<BoxShadow> get hoverCard => medium;
   
   // Ambient Glow для главных кнопок действия
   static List<BoxShadow> buttonGlow(Color brandColor) {

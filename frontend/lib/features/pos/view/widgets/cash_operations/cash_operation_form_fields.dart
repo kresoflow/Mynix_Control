@@ -107,7 +107,7 @@ class CashOperationCurrentBanner extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(PhosphorIconsRegular.vault, size: 15, color: AppColors.brandPrimary),
+              Icon(PhosphorIconsRegular.vault, size: 15, color: AppColors.brandPrimary),
               AppSpacing.hSm,
               Text(
                 'В кассе сейчас:',
@@ -123,7 +123,7 @@ class CashOperationCurrentBanner extends StatelessWidget {
             children: [
               Text(
                 isFinancialsUnlocked ? currentCash.toCurrency(context) : '••••',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.brandPrimary),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.brandPrimary),
               ),
               if (!isFinancialsUnlocked) ...[
                 const SizedBox(width: 6),
@@ -136,11 +136,11 @@ class CashOperationCurrentBanner extends StatelessWidget {
                       color: AppColors.brandPrimary.withValues(alpha: 0.15),
                       borderRadius: AppRadii.radiusXs,
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(PhosphorIconsRegular.lockKey, size: 10, color: AppColors.brandPrimary),
-                        SizedBox(width: 3),
+                        const SizedBox(width: 3),
                         Text('PIN', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.brandPrimary)),
                       ],
                     ),

@@ -17,7 +17,6 @@ import 'package:kreso_frontend/core/network/api_client.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_spacing.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';

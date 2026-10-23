@@ -215,7 +215,7 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
               ),
             ),
             if (isSelected)
-              const Icon(PhosphorIconsBold.checkCircle, size: 18, color: AppColors.brandPrimary),
+              Icon(PhosphorIconsBold.checkCircle, size: 18, color: AppColors.brandPrimary),
           ],
         ),
       ),

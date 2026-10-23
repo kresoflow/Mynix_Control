@@ -191,7 +191,7 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
                     color: AppColors.brandPrimary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(PhosphorIconsBold.chair, color: AppColors.brandPrimary, size: 22),
+                  child: Icon(PhosphorIconsBold.chair, color: AppColors.brandPrimary, size: 22),
                 ),
                 AppSpacing.hSm,
                 Expanded(
@@ -210,7 +210,7 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
                             ),
                             child: Text(
                               '${_tables.length} открыто',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.brandPrimary,

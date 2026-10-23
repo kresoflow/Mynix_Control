@@ -75,7 +75,7 @@ class PosSettingsModal extends StatelessWidget {
                     color: AppColors.brandPrimary.withValues(alpha: 0.1),
                     borderRadius: AppRadii.cardRadius,
                   ),
-                  child: const Icon(PhosphorIconsRegular.slidersHorizontal, color: AppColors.brandPrimary),
+                  child: Icon(PhosphorIconsRegular.slidersHorizontal, color: AppColors.brandPrimary),
                 ),
                 AppSpacing.hMd,
                 Text(
@@ -112,7 +112,7 @@ class PosSettingsModal extends StatelessWidget {
                     AppSpacing.vSm,
                     Row(
                       children: [
-                        const Icon(PhosphorIconsRegular.squaresFour, size: 16, color: AppColors.darkSubtext),
+                        Icon(PhosphorIconsRegular.squaresFour, size: 16, color: AppColors.darkSubtext),
                         Expanded(
                           child: Slider(
                             value: (9 - state.columnsCount).clamp(3, 6).toDouble(),
@@ -126,7 +126,7 @@ class PosSettingsModal extends StatelessWidget {
                             },
                           ),
                         ),
-                        const Icon(PhosphorIconsRegular.squaresFour, size: 28, color: AppColors.darkSubtext),
+                        Icon(PhosphorIconsRegular.squaresFour, size: 28, color: AppColors.darkSubtext),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -136,7 +136,7 @@ class PosSettingsModal extends StatelessWidget {
                     AppSpacing.vSm,
                     Row(
                       children: [
-                        const Icon(PhosphorIconsRegular.shoppingCart, size: 20, color: AppColors.darkSubtext),
+                        Icon(PhosphorIconsRegular.shoppingCart, size: 20, color: AppColors.darkSubtext),
                         Expanded(
                           child: Slider(
                             value: state.cartWidthPercentage.toDouble(),
@@ -150,7 +150,7 @@ class PosSettingsModal extends StatelessWidget {
                             },
                           ),
                         ),
-                        const Icon(PhosphorIconsRegular.shoppingCart, size: 32, color: AppColors.darkSubtext),
+                        Icon(PhosphorIconsRegular.shoppingCart, size: 32, color: AppColors.darkSubtext),
                       ],
                     ),
                     const SizedBox(height: 32),

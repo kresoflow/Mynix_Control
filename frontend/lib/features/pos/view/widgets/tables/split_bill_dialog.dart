@@ -180,7 +180,7 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
                     color: AppColors.brandPrimary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(PhosphorIconsBold.scissors, color: AppColors.brandPrimary, size: 20),
+                  child: Icon(PhosphorIconsBold.scissors, color: AppColors.brandPrimary, size: 20),
                 ),
                 AppSpacing.hSm,
                 Expanded(

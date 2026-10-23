@@ -76,7 +76,7 @@ class PosSplitBillGuestColumn extends StatelessWidget {
               ),
               Text(
                 total.toCurrency(context),
-                style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.brandPrimary, fontSize: 15),
+                style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.brandPrimary, fontSize: 15),
               ),
             ],
           ),

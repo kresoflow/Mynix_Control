@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
-import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/analytics/view/widgets/dialogs/shift_history_details_dialog.dart';

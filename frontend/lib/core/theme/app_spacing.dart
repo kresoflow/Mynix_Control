@@ -11,6 +11,7 @@ import 'package:flutter/widgets.dart';
 /// и гарантирует идеальное визуальное выравнивание по всей системе.
 abstract class AppSpacing {
   // ── Скалярные значения (double) ───────────────────────────────────────────
+  static const double xxs = 2.0;
   static const double xs  = 4.0;
   static const double sm  = 8.0;
   static const double md  = 12.0;
@@ -20,6 +21,7 @@ abstract class AppSpacing {
   static const double section = 32.0;
 
   // ── Вертикальные константные спейсеры (SizedBox) ──────────────────────────
+  static const SizedBox vXxs = SizedBox(height: xxs);
   static const SizedBox vXs  = SizedBox(height: xs);
   static const SizedBox vSm  = SizedBox(height: sm);
   static const SizedBox vMd  = SizedBox(height: md);
@@ -28,6 +30,7 @@ abstract class AppSpacing {
   static const SizedBox vXxl = SizedBox(height: xxl);
 
   // ── Горизонтальные константные спейсеры (SizedBox) ────────────────────────
+  static const SizedBox hXxs = SizedBox(width: xxs);
   static const SizedBox hXs  = SizedBox(width: xs);
   static const SizedBox hSm  = SizedBox(width: sm);
   static const SizedBox hMd  = SizedBox(width: md);
@@ -36,6 +39,7 @@ abstract class AppSpacing {
   static const SizedBox hXxl = SizedBox(width: xxl);
 
   // ── Константные EdgeInsets ───────────────────────────────────────────────
+  static const EdgeInsets pXxs = EdgeInsets.all(xxs);
   static const EdgeInsets pXs  = EdgeInsets.all(xs);
   static const EdgeInsets pSm  = EdgeInsets.all(sm);
   static const EdgeInsets pMd  = EdgeInsets.all(md);

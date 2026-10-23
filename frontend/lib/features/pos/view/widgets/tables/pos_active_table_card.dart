@@ -92,7 +92,7 @@ class PosActiveTableCard extends StatelessWidget {
                   color: AppColors.brandPrimary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(PhosphorIconsBold.chair, color: AppColors.brandPrimary, size: 16),
+                child: Icon(PhosphorIconsBold.chair, color: AppColors.brandPrimary, size: 16),
               ),
               AppSpacing.hSm,
               Expanded(
@@ -172,7 +172,7 @@ class PosActiveTableCard extends StatelessWidget {
                     ),
                     child: Text(
                       hasDozakaz ? 'Отдать дозаказ' : 'Отдать в зал',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w800,
                         color: AppColors.accentPrimary,
@@ -237,7 +237,7 @@ class PosActiveTableCard extends StatelessWidget {
               ),
               Text(
                 total.toCurrency(context),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w900,
                   color: AppColors.brandPrimary,

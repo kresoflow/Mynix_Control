@@ -6,6 +6,7 @@ abstract class AppColors {
   static Color brandPrimary   = const Color(0xFF0284C7); // Sky / Cobalt Blue
   static Color brandSecondary = const Color(0xFF0369A1); // Deep Cobalt
   static Color brandTertiary  = const Color(0xFF0D9488); // Teal Accent
+  static Color get accentPrimary => brandPrimary;
 
   // ── Dark Theme Surfaces ────────────────────────────────────────────────────
   static Color darkBg         = const Color(0xFF050B14);

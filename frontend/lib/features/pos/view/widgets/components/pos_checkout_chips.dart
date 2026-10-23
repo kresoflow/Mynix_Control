@@ -15,7 +15,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
-import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_tab_cubit.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/table_picker_modal.dart';
