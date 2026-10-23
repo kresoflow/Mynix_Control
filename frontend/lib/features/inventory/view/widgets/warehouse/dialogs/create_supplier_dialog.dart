@@ -8,7 +8,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 // ─── 1. Диалог добавления нового поставщика ──────────────────────────────────
-/// [UI-KIT] Модальное окно добавления контрагента на базе AppDialogScaffold v2.
+/// [UI-KIT] Модальное окно добавления контрагента на базе эталонного AppDialog.
 class CreateSupplierDialog extends StatefulWidget {
   const CreateSupplierDialog({super.key});
 
@@ -45,46 +45,40 @@ class _CreateSupplierDialogState extends State<CreateSupplierDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AppDialogScaffold(
+    return AppDialog(
       title: 'Новый поставщик',
       subtitle: 'Создание контрагента для поставок',
       icon: PhosphorIconsRegular.truck,
-      dialogSize: AppDialogSize.sm,
-      maxHeight: 340,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AppTextField(
-              labelText: 'Название поставщика',
-              hintText: 'Например: ОсОО «Берекет»',
-              controller: _nameController,
-              autofocus: true,
-              prefixIcon: const Icon(PhosphorIconsRegular.buildings, size: 18),
-              onSubmitted: (_) => _save(),
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              labelText: 'Контактные данные (необязательно)',
-              hintText: '+996 555 12-34-56 / менеджер',
-              controller: _contactController,
-              prefixIcon: const Icon(PhosphorIconsRegular.phone, size: 18),
-              onSubmitted: (_) => _save(),
-            ),
-          ],
-        ),
+      width: 460,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppTextField(
+            labelText: 'Название поставщика',
+            hintText: 'Например: ОсОО «Берекет»',
+            controller: _nameController,
+            autofocus: true,
+            prefixIcon: const Icon(PhosphorIconsRegular.buildings, size: 18),
+            onSubmitted: (_) => _save(),
+          ),
+          const SizedBox(height: 16),
+          AppTextField(
+            labelText: 'Контактные данные (необязательно)',
+            hintText: '+996 555 12-34-56 / менеджер',
+            controller: _contactController,
+            prefixIcon: const Icon(PhosphorIconsRegular.phone, size: 18),
+            onSubmitted: (_) => _save(),
+          ),
+        ],
       ),
       actions: [
         AppGhostButton(
           label: 'Отмена',
-          size: AppButtonSize.md,
           onPressed: () => Navigator.pop(context),
         ),
         AppPrimaryButton(
-          label: 'Сохранить',
-          icon: PhosphorIconsRegular.check,
-          size: AppButtonSize.md,
+          label: 'Создать',
           onPressed: _save,
         ),
       ],

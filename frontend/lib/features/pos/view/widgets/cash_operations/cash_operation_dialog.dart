@@ -146,67 +146,63 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
     }
     final categories = _selectedType == CashOpType.deposit ? _depCats : _withCats;
 
-    return AppDialogScaffold(
+    return AppDialog(
       title: 'Кассовая операция',
       icon: _selectedType == CashOpType.deposit ? PhosphorIconsBold.arrowDownLeft : PhosphorIconsBold.arrowUpRight,
-      maxWidth: 480,
-      maxHeight: 495,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CashOperationTypeSwitcher(
-                selectedType: _selectedType,
-                onTypeChanged: _onTypeChanged,
-              ),
+      width: 480,
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CashOperationTypeSwitcher(
+              selectedType: _selectedType,
+              onTypeChanged: _onTypeChanged,
+            ),
+            const SizedBox(height: 8),
+            CashOperationCurrentBanner(
+              currentCash: currentCash,
+              isFinancialsUnlocked: isFinancialsUnlocked,
+              onUnlockPin: _handleUnlockPin,
+            ),
+            const SizedBox(height: 10),
+            AppTextField(
+              controller: _amountController,
+              focusNode: _amountFocus,
+              labelText: 'Сумма операции',
+              hintText: '0.00',
+              prefixIcon: Icon(PhosphorIconsRegular.money, size: 16, color: AppColors.brandPrimary),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 6),
+            CashOperationQuickAmounts(
+              quickAmounts: _quickAmounts,
+              onAddAmount: _addQuickAmount,
+            ),
+            const SizedBox(height: 10),
+            Text('Категория', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
+            const SizedBox(height: 5),
+            CashOperationCategoryChips(
+              categories: categories,
+              selectedCategory: _selectedCategory,
+              onCategorySelected: (cat) => setState(() => _selectedCategory = cat),
+            ),
+            const SizedBox(height: 10),
+            AppTextField(
+              controller: _commentController,
+              labelText: 'Комментарий (опционально)',
+              hintText: 'Например: Закупка бумажных стаканчиков',
+              prefixIcon: Icon(PhosphorIconsRegular.note, size: 16, color: AppColors.darkSubtext),
+            ),
+            if (_errorMessage != null) ...[
               const SizedBox(height: 8),
-              CashOperationCurrentBanner(
-                currentCash: currentCash,
-                isFinancialsUnlocked: isFinancialsUnlocked,
-                onUnlockPin: _handleUnlockPin,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: AppColors.danger.withValues(alpha: 0.3))),
+                child: Text(_errorMessage!, style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600)),
               ),
-              const SizedBox(height: 10),
-              AppTextField(
-                controller: _amountController,
-                focusNode: _amountFocus,
-                labelText: 'Сумма операции',
-                hintText: '0.00',
-                prefixIcon: Icon(PhosphorIconsRegular.money, size: 16, color: AppColors.brandPrimary),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              ),
-              const SizedBox(height: 6),
-              CashOperationQuickAmounts(
-                quickAmounts: _quickAmounts,
-                onAddAmount: _addQuickAmount,
-              ),
-              const SizedBox(height: 10),
-              Text('Категория', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
-              const SizedBox(height: 5),
-              CashOperationCategoryChips(
-                categories: categories,
-                selectedCategory: _selectedCategory,
-                onCategorySelected: (cat) => setState(() => _selectedCategory = cat),
-              ),
-              const SizedBox(height: 10),
-              AppTextField(
-                controller: _commentController,
-                labelText: 'Комментарий (опционально)',
-                hintText: 'Например: Закупка бумажных стаканчиков',
-                prefixIcon: Icon(PhosphorIconsRegular.note, size: 16, color: AppColors.darkSubtext),
-              ),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6), border: Border.all(color: AppColors.danger.withValues(alpha: 0.3))),
-                  child: Text(_errorMessage!, style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600)),
-                ),
-              ],
             ],
-          ),
+          ],
         ),
       ),
       actions: [

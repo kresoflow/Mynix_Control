@@ -87,98 +87,95 @@ class _ChangePosPinDialogState extends State<ChangePosPinDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AppDialogScaffold(
+    return AppDialog(
       title: 'Мастер-PIN кассы',
       subtitle: 'Управление защитным PIN-кодом торговой точки',
       icon: PhosphorIconsRegular.lockKey,
-      dialogSize: AppDialogSize.sm,
-      maxHeight: 400,
+      width: 440,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Мастер-PIN позволяет управляющему и владельцу быстро раскрывать финансовые суммы на кассе и подтверждать инкассации.',
+            style: TextStyle(
+              fontSize: 12,
+              color: widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          AppTextField(
+            labelText: 'Новый мастер-PIN',
+            hintText: '4-6 цифр',
+            controller: _pinController,
+            obscureText: _obscurePin,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            prefixIcon: const Icon(PhosphorIconsRegular.password, size: 18),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePin ? PhosphorIconsRegular.eyeSlash : PhosphorIconsRegular.eye,
+                size: 18,
+              ),
+              onPressed: () => setState(() => _obscurePin = !_obscurePin),
+            ),
+            onSubmitted: (_) => _validateAndSubmit(),
+          ),
+          const SizedBox(height: 14),
+          AppTextField(
+            labelText: 'Подтвердите PIN-код',
+            hintText: 'Повторите введенный PIN',
+            controller: _confirmController,
+            obscureText: _obscurePin,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            prefixIcon: const Icon(PhosphorIconsRegular.checkCircle, size: 18),
+            onSubmitted: (_) => _validateAndSubmit(),
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.danger.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(PhosphorIconsRegular.warningCircle, color: AppColors.danger, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: AppColors.danger, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
       actions: [
         AppGhostButton(
           label: 'Отмена',
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(false),
         ),
-        AppButton.primary(
+        AppPrimaryButton(
           label: 'Сохранить PIN',
           isLoading: _isSaving,
           onPressed: _validateAndSubmit,
         ),
       ],
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Мастер-PIN позволяет управляющему и владельцу быстро раскрывать финансовые суммы на кассе и подтверждать инкассации.',
-              style: TextStyle(
-                fontSize: 12,
-                color: widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              labelText: 'Новый мастер-PIN',
-              hintText: '4-6 цифр',
-              controller: _pinController,
-              obscureText: _obscurePin,
-              keyboardType: TextInputType.number,
-              autofocus: true,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
-              prefixIcon: const Icon(PhosphorIconsRegular.password, size: 18),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _obscurePin ? PhosphorIconsRegular.eyeSlash : PhosphorIconsRegular.eye,
-                  size: 18,
-                ),
-                onPressed: () => setState(() => _obscurePin = !_obscurePin),
-              ),
-              onSubmitted: (_) => _validateAndSubmit(),
-            ),
-            const SizedBox(height: 14),
-            AppTextField(
-              labelText: 'Подтвердите PIN-код',
-              hintText: 'Повторите введенный PIN',
-              controller: _confirmController,
-              obscureText: _obscurePin,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
-              prefixIcon: const Icon(PhosphorIconsRegular.checkCircle, size: 18),
-              onSubmitted: (_) => _validateAndSubmit(),
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.danger.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(PhosphorIconsRegular.warningCircle, color: AppColors.danger, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: AppColors.danger, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 }

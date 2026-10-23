@@ -88,12 +88,40 @@ class _ShiftPinDialogState extends State<ShiftPinDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return AppDialogScaffold(
+    return AppDialog(
       title: 'Доступ администратора',
       subtitle: 'Подтверждение PIN-кода для раскрытия сумм',
       icon: PhosphorIconsRegular.lockKey,
-      dialogSize: AppDialogSize.sm,
-      maxHeight: 330,
+      width: 440,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Введите PIN-код управляющего/владельца или мастер-PIN кассы:',
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          AppTextField(
+            controller: _pinController,
+            obscureText: true,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            labelText: 'PIN-код (4-6 цифр)',
+            prefixIcon: const Icon(PhosphorIconsRegular.lock, size: 18),
+            errorText: _error,
+            onSubmitted: (_) => _isChecking ? null : _submitPin(),
+          ),
+        ],
+      ),
       actions: [
         AppGhostButton(
           label: 'Отмена',
@@ -104,43 +132,12 @@ class _ShiftPinDialogState extends State<ShiftPinDialog> {
                   if (nav.canPop()) nav.pop(false);
                 },
         ),
-        AppButton.primary(
+        AppPrimaryButton(
           label: _isChecking ? 'Проверка...' : 'Подтвердить',
           isLoading: _isChecking,
           onPressed: _isChecking ? null : _submitPin,
         ),
       ],
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Введите PIN-код управляющего/владельца или мастер-PIN кассы:',
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              controller: _pinController,
-              obscureText: true,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
-              labelText: 'PIN-код (4-6 цифр)',
-              prefixIcon: const Icon(PhosphorIconsRegular.lock, size: 18),
-              errorText: _error,
-              onSubmitted: (_) => _isChecking ? null : _submitPin(),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
