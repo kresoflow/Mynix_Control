@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/app_logo_base64.dart';
 
@@ -22,13 +23,12 @@ class SplashScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                    blurRadius: 30,
-                    spreadRadius: 5,
-                  ),
-                ],
+                boxShadow: AppShadows.glow(
+                  AppColors.brandPrimary,
+                  opacity: 0.15,
+                  blur: 30,
+                  spread: 5,
+                ),
               ),
               child: Image.memory(
                 AppLogoData.bytes,

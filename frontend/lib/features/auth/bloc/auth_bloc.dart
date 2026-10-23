@@ -66,11 +66,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   void _onLoggedIn(LoggedIn event, Emitter<AuthState> emit) {
-    emit(AuthAuthenticated(
-      tenantId: event.tenantId,
-      role: event.role,
-      permissions: event.permissions,
-    ));
+    emit(
+      AuthAuthenticated(
+        tenantId: event.tenantId,
+        role: event.role,
+        permissions: event.permissions,
+      ),
+    );
   }
 
   Future<void> _onLoginByPinRequested(LoginByPinRequested event, Emitter<AuthState> emit) async {

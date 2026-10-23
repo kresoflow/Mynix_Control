@@ -2,32 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 class HubScreen extends StatelessWidget {
   const HubScreen({super.key});
 
-  static const List<_HubModule> _modules = [
-    _HubModule(
+  static final List<_HubModule> _modules = [
+    const _HubModule(
       title: 'Каталог меню',
       subtitle: 'Блюда, модификаторы и цены',
       icon: PhosphorIconsRegular.bookOpen,
       route: '/catalog',
-      color: Color(0xFF10B981),
+      color: AppColors.success,
     ),
-    _HubModule(
+    const _HubModule(
       title: 'Склад & Приходы',
       subtitle: 'Остатки, накладные, списания',
       icon: PhosphorIconsRegular.package,
       route: '/warehouse',
-      color: Color(0xFF6366F1),
+      color: AppColors.info,
     ),
     _HubModule(
       title: 'Аналитика',
       subtitle: 'Выручка, графики и средний чек',
       icon: PhosphorIconsRegular.chartLineUp,
       route: '/analytics',
-      color: Color(0xFF06B6D4),
+      color: AppColors.brandTertiary,
     ),
   ];
 
@@ -88,23 +90,17 @@ class HubScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: isDark ? null : AppShadows.card,
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadii.cardRadius,
           onTap: () => context.go(module.route),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -115,7 +111,7 @@ class HubScreen extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     color: module.color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadii.radiusLg,
                   ),
                   child: Icon(module.icon, color: module.color, size: 24),
                 ),

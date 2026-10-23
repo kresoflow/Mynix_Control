@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/app_logo_base64.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
@@ -155,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
                 elevation: 8,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                shape: const RoundedRectangleBorder(borderRadius: AppRadii.pillRadius),
                 child: Padding(
                   padding: const EdgeInsets.all(28),
                   child: Column(
@@ -219,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadii.radiusXl,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Row(
@@ -259,13 +260,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: AppRadii.inputRadius,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          color: isSelected ? AppColors.brandPrimary : AppColors.transparent,
+          borderRadius: AppRadii.inputRadius,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -273,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? Colors.white : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+              color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
             ),
             const SizedBox(width: 6),
             Text(
@@ -281,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+                color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkText : AppColors.lightText),
               ),
             ),
           ],
@@ -295,10 +296,10 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         TextField(
           controller: _usernameController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             labelText: 'Имя пользователя',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            prefixIcon: const Icon(PhosphorIconsRegular.user, size: 18),
+            border: OutlineInputBorder(borderRadius: AppRadii.buttonRadius),
+            prefixIcon: Icon(PhosphorIconsRegular.user, size: 18),
           ),
         ),
         const SizedBox(height: 14),
@@ -307,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
           obscureText: _obscurePassword,
           decoration: InputDecoration(
             labelText: 'Пароль',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border: const OutlineInputBorder(borderRadius: AppRadii.buttonRadius),
             prefixIcon: const Icon(PhosphorIconsRegular.lock, size: 18),
             suffixIcon: IconButton(
               icon: Icon(_obscurePassword ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash, size: 18),
@@ -319,18 +320,12 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 20),
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-            return ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: AppColors.brandPrimary,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-              ),
+            return AppPrimaryButton(
+              label: 'ВОЙТИ',
+              height: 50,
+              isFullWidth: true,
+              isLoading: state is AuthLoading,
               onPressed: state is AuthLoading ? null : _loginByPassword,
-              child: state is AuthLoading
-                  ? const CircularProgressIndicator(strokeWidth: 2, color: Colors.black)
-                  : const Text('ВОЙТИ', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
             );
           },
         ),

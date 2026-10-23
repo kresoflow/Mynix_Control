@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 
 class PinKeypad extends StatelessWidget {
   final String pin;
@@ -53,19 +55,15 @@ class PinKeypad extends StatelessWidget {
               height: 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isFilled ? AppColors.brandPrimary : Colors.transparent,
+                color: isFilled ? AppColors.brandPrimary : AppColors.transparent,
                 border: Border.all(
-                  color: isFilled ? AppColors.brandPrimary : (isDark ? Colors.white24 : Colors.black26),
+                  color: isFilled
+                      ? AppColors.brandPrimary
+                      : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                   width: 2,
                 ),
                 boxShadow: isFilled
-                    ? [
-                        BoxShadow(
-                          color: AppColors.brandPrimary.withValues(alpha: 0.5),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        )
-                      ]
+                    ? AppShadows.dotGlow(AppColors.brandPrimary, opacity: 0.5, blur: 10)
                     : null,
               ),
             );
@@ -108,7 +106,7 @@ class PinKeypad extends StatelessWidget {
   Widget _buildNumberButton(String num) {
     return InkWell(
       onTap: () => _handleKey(num),
-      borderRadius: BorderRadius.circular(100),
+      borderRadius: AppRadii.maxRadius,
       child: Container(
         width: 72,
         height: 72,
@@ -133,7 +131,7 @@ class PinKeypad extends StatelessWidget {
   Widget _buildActionButton(String label, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
+      borderRadius: AppRadii.maxRadius,
       child: Container(
         width: 72,
         height: 72,
@@ -153,7 +151,7 @@ class PinKeypad extends StatelessWidget {
   Widget _buildActionIconButton(IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
+      borderRadius: AppRadii.maxRadius,
       child: Container(
         width: 72,
         height: 72,
