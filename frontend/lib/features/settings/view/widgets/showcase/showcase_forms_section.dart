@@ -86,7 +86,7 @@ class _ShowcaseFormsSectionState extends State<ShowcaseFormsSection> {
 
     showDialog(
       context: context,
-      builder: (_) => AppDialogScaffold(
+      builder: (dialogCtx) => AppDialogScaffold(
         title: title,
         subtitle: subtitle,
         icon: PhosphorIconsRegular.fileText,
@@ -116,8 +116,8 @@ class _ShowcaseFormsSectionState extends State<ShowcaseFormsSection> {
           ),
         ),
         actions: [
-          AppGhostButton(label: 'Отмена', size: AppButtonSize.md, onPressed: () => Navigator.pop(context)),
-          AppPrimaryButton(label: 'Сохранить', icon: PhosphorIconsRegular.checkCircle, onPressed: () => Navigator.pop(context)),
+          AppGhostButton(label: 'Отмена', size: AppButtonSize.md, onPressed: () => Navigator.pop(dialogCtx)),
+          AppPrimaryButton(label: 'Сохранить', icon: PhosphorIconsRegular.checkCircle, onPressed: () => Navigator.pop(dialogCtx)),
         ],
       ),
     );

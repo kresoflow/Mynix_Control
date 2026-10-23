@@ -68,7 +68,6 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                     label: 'Отмена',
                     onPressed: () => Navigator.pop(alertCtx),
                   ),
-                  const SizedBox(width: 8),
                   AppPrimaryButton(
                     label: 'Открыть карточку',
                     icon: PhosphorIconsRegular.arrowSquareOut,
@@ -91,7 +90,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
           return AppDialog(
             title: titleText,
             icon: PhosphorIconsRegular.folderPlus,
-            width: 500,
+            width: 460,
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -192,7 +191,6 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                 label: 'Отмена',
                 onPressed: () => Navigator.pop(ctx),
               ),
-              const SizedBox(width: 12),
               AppPrimaryButton(
                 label: isEditing ? 'Сохранить' : (parsedCount > 1 ? 'Создать $parsedCount категорий' : 'Создать'),
                 icon: PhosphorIconsRegular.floppyDisk,

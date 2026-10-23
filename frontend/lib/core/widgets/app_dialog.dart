@@ -161,17 +161,22 @@ class AppDialog extends StatelessWidget {
 
             // ─── 3. Футер (Кнопки) ─────────────────────────────────────
             if (actions.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.fromLTRB(isMobile ? 16 : 28, 0, isMobile ? 16 : 28, 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    for (int i = 0; i < actions.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 12),
-                      actions[i],
-                    ],
-                  ],
-                ),
+              Builder(
+                builder: (context) {
+                  final cleanActions = actions.where((w) => w is! SizedBox).toList();
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(isMobile ? 16 : 28, 0, isMobile ? 16 : 28, 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        for (int i = 0; i < cleanActions.length; i++) ...[
+                          if (i > 0) const SizedBox(width: 12),
+                          cleanActions[i],
+                        ],
+                      ],
+                    ),
+                  );
+                },
               ),
           ],
         ),

@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_segmented_tab.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
@@ -31,7 +30,7 @@ class _ShowcaseLegacyArchiveSectionState extends State<ShowcaseLegacyArchiveSect
   void _openLegacyDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AppDialog(
+      builder: (dialogCtx) => AppDialog(
         title: 'Старый диалог (AppDialog 450 px)',
         icon: PhosphorIconsRegular.archive,
         width: 450,
@@ -51,8 +50,8 @@ class _ShowcaseLegacyArchiveSectionState extends State<ShowcaseLegacyArchiveSect
           ],
         ),
         actions: [
-          AppGhostButton(label: 'Закрыть', onPressed: () => Navigator.pop(context)),
-          AppButton.secondary(label: 'Тест легаси', onPressed: () => Navigator.pop(context)),
+          AppGhostButton(label: 'Закрыть', onPressed: () => Navigator.pop(dialogCtx)),
+          AppButton.secondary(label: 'Тест легаси', onPressed: () => Navigator.pop(dialogCtx)),
         ],
       ),
     );
