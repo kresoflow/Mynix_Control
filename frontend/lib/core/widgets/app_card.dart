@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_motion.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 /// Hoverable card with Kreso Flow Ember styling.
@@ -46,15 +48,15 @@ class _AppCardState extends State<AppCard> {
     final bgColor = widget.isSelected
         ? AppColors.brandPrimary.withValues(alpha: 0.06)
         : effectiveHover
-            ? (isDark ? AppColors.darkCardHover : const Color(0xFFF8F9FC))
+            ? (isDark ? AppColors.darkCardHover : AppColors.lightCardHover)
             : (isDark ? AppColors.darkCard : AppColors.lightCard);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
-        duration: isMotionDisabled ? Duration.zero : const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
+        duration: isMotionDisabled ? Duration.zero : AppMotion.fast,
+        curve: AppMotion.standardCurve,
         width: widget.width,
         height: widget.height,
         transform: effectiveHover
@@ -62,37 +64,21 @@ class _AppCardState extends State<AppCard> {
             : Matrix4.identity(),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadii.cardRadius,
           border: Border.all(color: borderColor, width: 1),
           boxShadow: isMotionDisabled
               ? null
-              : (_hovered
-                  ? [
-                      BoxShadow(
-                        color: isDark
-                            ? Colors.black.withValues(alpha: 0.4)
-                            : Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 20,
-                        offset: const Offset(0, 6),
-                      ),
-                    ]
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]),
+              : (_hovered ? AppShadows.medium : AppShadows.light),
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadii.cardRadius,
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: widget.onTap,
             splashColor: AppColors.brandPrimary.withValues(alpha: 0.1),
             highlightColor: AppColors.brandPrimary.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: AppRadii.cardRadius,
             child: Padding(
               padding: widget.padding ?? EdgeInsets.zero,
               child: widget.child,
@@ -124,7 +110,7 @@ class AppChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: chipColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: AppRadii.maxRadius,
         border: Border.all(color: chipColor.withValues(alpha: 0.25)),
       ),
       child: Row(

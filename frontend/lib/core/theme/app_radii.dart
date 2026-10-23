@@ -20,13 +20,21 @@ abstract class AppRadii {
   static const double badge  = sm;  // 6.0
   static const double pill   = 24.0;
 
-  // BorderRadius объекты
-  static final BorderRadius inputRadius  = BorderRadius.circular(input);
-  static final BorderRadius tabRadius    = BorderRadius.circular(tab);
-  static final BorderRadius buttonRadius = BorderRadius.circular(button);
-  static final BorderRadius cardRadius   = BorderRadius.circular(card);
-  static final BorderRadius dialogRadius = BorderRadius.circular(dialog);
-  static final BorderRadius badgeRadius  = BorderRadius.circular(badge);
-  static final BorderRadius pillRadius   = BorderRadius.circular(pill);
-  static final BorderRadius maxRadius    = BorderRadius.circular(max);
+  // BorderRadius объекты (Компилируются в const для нулевой нагрузки на GC)
+  static const BorderRadius inputRadius  = BorderRadius.all(Radius.circular(input));
+  static const BorderRadius tabRadius    = BorderRadius.all(Radius.circular(tab));
+  static const BorderRadius buttonRadius = BorderRadius.all(Radius.circular(button));
+  static const BorderRadius cardRadius   = BorderRadius.all(Radius.circular(card));
+  static const BorderRadius dialogRadius = BorderRadius.all(Radius.circular(dialog));
+  static const BorderRadius badgeRadius  = BorderRadius.all(Radius.circular(badge));
+  static const BorderRadius pillRadius   = BorderRadius.all(Radius.circular(pill));
+  static const BorderRadius maxRadius    = BorderRadius.all(Radius.circular(max));
+
+  // Константные алиасы по базовой шкале
+  static const BorderRadius radiusXs  = BorderRadius.all(Radius.circular(xs));
+  static const BorderRadius radiusSm  = BorderRadius.all(Radius.circular(sm));
+  static const BorderRadius radiusMd  = BorderRadius.all(Radius.circular(md));
+  static const BorderRadius radiusLg  = BorderRadius.all(Radius.circular(lg));
+  static const BorderRadius radiusXl  = BorderRadius.all(Radius.circular(xl));
+  static const BorderRadius radiusXxl = BorderRadius.all(Radius.circular(xxl));
 }
