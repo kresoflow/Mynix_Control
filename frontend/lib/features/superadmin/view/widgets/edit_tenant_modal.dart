@@ -262,10 +262,10 @@ class _EditTenantModalState extends State<EditTenantModal> {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.22 : 0.14)
-                : Colors.transparent,
+                : AppColors.transparent,
             borderRadius: AppRadii.inputRadius,
             border: Border.all(
-              color: isSelected ? AppColors.brandPrimary : Colors.transparent,
+              color: isSelected ? AppColors.brandPrimary : AppColors.transparent,
               width: 1,
             ),
           ),

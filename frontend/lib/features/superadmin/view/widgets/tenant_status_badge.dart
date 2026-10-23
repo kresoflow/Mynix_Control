@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 // ─── 1. Status Toggle Badge Button ──────────────────────────────────────────
@@ -25,13 +26,13 @@ class TenantStatusToggle extends StatelessWidget {
     return Tooltip(
       message: isActive ? 'Заморозить работу заведения' : 'Активировать заведение',
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadii.dialogRadius,
         onTap: onToggle,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: AppRadii.dialogRadius,
             border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
           child: Row(
@@ -78,7 +79,7 @@ class TenantBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.15 : 0.10),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadii.badgeRadius,
         border: Border.all(color: color.withValues(alpha: 0.3), width: 0.8),
       ),
       child: Text(

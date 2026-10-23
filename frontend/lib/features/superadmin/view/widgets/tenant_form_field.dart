@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 // ─── 1. Reusable Form Field ─────────────────────────────────────────────────
@@ -55,19 +56,19 @@ class TenantFormField extends StatelessWidget {
         filled: true,
         fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: AppRadii.radiusXl,
           borderSide: BorderSide(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: AppRadii.radiusXl,
           borderSide: BorderSide(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: AppRadii.radiusXl,
           borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
         ),
         contentPadding:

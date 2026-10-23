@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -189,7 +190,7 @@ class _SuperadminScreenState extends State<SuperadminScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: AppColors.brandPrimary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
+                decoration: BoxDecoration(color: AppColors.brandPrimary.withValues(alpha: 0.15), borderRadius: AppRadii.radiusXl),
                 child: Icon(PhosphorIconsRegular.crown, color: AppColors.brandPrimary, size: 26),
               ),
               const SizedBox(width: 14),
@@ -245,8 +246,8 @@ class _SuperadminScreenState extends State<SuperadminScreen> {
                 filled: true,
                 fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
+                border: OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
               ),
             ),
           ),
@@ -267,13 +268,13 @@ class _SuperadminScreenState extends State<SuperadminScreen> {
     final isSelected = _statusFilter == filterIndex;
     final color = isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
     return InkWell(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.inputRadius,
       onTap: () => setState(() => _statusFilter = filterIndex),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.2 : 0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? AppColors.brandPrimary.withValues(alpha: isDark ? 0.2 : 0.12) : AppColors.transparent,
+          borderRadius: AppRadii.inputRadius,
           border: Border.all(color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
         ),
         child: Text('$label ($count)', style: AppTextStyles.caption.copyWith(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: color)),

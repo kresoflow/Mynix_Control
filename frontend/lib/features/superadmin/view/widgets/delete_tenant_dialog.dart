@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
@@ -92,12 +93,12 @@ class _DeleteTenantDialogState extends State<DeleteTenantDialog> {
               ),
               filled: true,
               fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: AppColors.danger),
+              border: const OutlineInputBorder(
+                borderRadius: AppRadii.inputRadius,
+                borderSide: BorderSide(color: AppColors.danger),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(
                   color: _isMatch ? AppColors.danger : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
                 ),
