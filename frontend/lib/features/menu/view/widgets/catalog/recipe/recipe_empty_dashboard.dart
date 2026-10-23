@@ -71,7 +71,7 @@ class RecipeEmptyDashboard extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -86,7 +86,7 @@ class RecipeEmptyDashboard extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: AppColors.brandPrimary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                 ),
                 child: Icon(
                   PhosphorIconsRegular.chartLineUp,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class RecipeVariationTabs extends StatelessWidget {
@@ -73,7 +74,7 @@ class RecipeVariationTabs extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: InkWell(
                       onTap: () => onSelectVariation(idx),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadii.inputRadius,
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -81,7 +82,7 @@ class RecipeVariationTabs extends StatelessWidget {
                           color: isSelected
                               ? AppColors.brandPrimary.withValues(alpha: 0.15)
                               : (isDark ? AppColors.darkCard : AppColors.lightCard),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadii.inputRadius,
                           border: Border.all(
                             color: isSelected
                                 ? AppColors.brandPrimary
@@ -120,7 +121,7 @@ class RecipeVariationTabs extends StatelessWidget {
                                       color: isSelected
                                           ? AppColors.brandPrimary.withValues(alpha: 0.2)
                                           : (isDark ? AppColors.darkBg : AppColors.lightBg),
-                                      borderRadius: BorderRadius.circular(4),
+                                      borderRadius: AppRadii.radiusXs,
                                     ),
                                     child: Text(
                                       '${price.toStringAsFixed(0)} $currency',

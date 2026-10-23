@@ -115,14 +115,14 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                       message: (_forceExpanded == true) ? 'Свернуть все' : 'Развернуть все',
                       child: InkWell(
                         onTap: () => setState(() => _forceExpanded = !(_forceExpanded ?? false)),
-                        borderRadius: BorderRadius.circular(AppRadii.sm),
+                        borderRadius: AppRadii.badgeRadius,
                         child: Container(
                           width: 34,
                           height: 34,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                            borderRadius: BorderRadius.circular(AppRadii.sm),
+                            borderRadius: AppRadii.badgeRadius,
                             border: Border.all(
                               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                             ),
@@ -146,13 +146,13 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: AppRadii.radiusLg,
                       border: Border.all(
                         color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                       ),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: AppRadii.radiusLg,
                       child: Column(
                         children: [
                           // Top item: All Ingredients
@@ -209,13 +209,11 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                               child: SizedBox(
                                 width: double.infinity,
                                 height: 32,
-                                child: TextButton.icon(
+                                child: AppButton.danger(
+                                  size: AppButtonSize.xs,
                                   onPressed: () => _confirmDeleteAllCategories(context, ingredientCategories),
-                                  icon: const Icon(PhosphorIconsRegular.trash, size: 14, color: AppColors.danger),
-                                  label: Text(
-                                    'Удалить все (${ingredientCategories.length})',
-                                    style: const TextStyle(color: AppColors.danger, fontSize: 11, fontWeight: FontWeight.w600),
-                                  ),
+                                  icon: PhosphorIconsRegular.trash,
+                                  label: 'Удалить все (${ingredientCategories.length})',
                                 ),
                               ),
                             ),

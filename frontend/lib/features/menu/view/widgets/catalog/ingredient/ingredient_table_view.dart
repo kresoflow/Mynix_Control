@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -175,7 +174,7 @@ class _IngredientTableViewState extends State<IngredientTableView> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: AppRadii.radiusLg,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           width: 0.8,

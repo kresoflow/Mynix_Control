@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -149,7 +149,7 @@ class IngredientHeaderBar extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadii.inputRadius,
                   border: Border.all(
                     color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   ),
@@ -249,7 +249,7 @@ class IngredientHeaderBar extends StatelessWidget {
         color: isHighlighted
             ? (highlightColor ?? AppColors.danger).withValues(alpha: 0.12)
             : (isDark ? AppColors.darkCard : AppColors.lightCard),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadii.badgeRadius,
         border: Border.all(
           color: isHighlighted
               ? (highlightColor ?? AppColors.danger).withValues(alpha: 0.4)

@@ -189,7 +189,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(AppRadii.md),
+            borderRadius: AppRadii.inputRadius,
             border: Border.all(
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
@@ -236,7 +236,7 @@ class CatalogHeaderManageMode extends StatelessWidget {
         color: hasSelection
             ? AppColors.danger.withValues(alpha: isDark ? 0.2 : 0.1)
             : (isDark ? AppColors.darkCard : AppColors.lightCard),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(
           color: hasSelection
               ? AppColors.danger.withValues(alpha: 0.4)

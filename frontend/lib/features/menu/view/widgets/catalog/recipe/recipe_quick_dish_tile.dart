@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
@@ -53,9 +54,9 @@ class RecipeQuickDishTile extends StatelessWidget {
 
     return Material(
       color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: AppRadii.inputRadius,
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadii.inputRadius,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -107,7 +108,7 @@ class RecipeQuickDishTile extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: (marginPercent >= 0 ? AppColors.success : AppColors.danger)
                                   .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: AppRadii.radiusXs,
                             ),
                             child: Text(
                               'Себестоимость: ${cost.toStringAsFixed(0)} с (${marginPercent.toStringAsFixed(0)}% маржа)',
@@ -123,7 +124,7 @@ class RecipeQuickDishTile extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: AppColors.warning.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: AppRadii.radiusXs,
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,

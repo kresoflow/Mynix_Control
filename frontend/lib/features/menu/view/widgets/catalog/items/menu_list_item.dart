@@ -60,8 +60,9 @@ class MenuListItem extends StatelessWidget {
       }
     } catch (_) {}
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color accentColor = !item.isAvailable
-        ? Colors.grey
+        ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)
         : (inheritedColor ?? AppColors.brandPrimary);
 
     Widget? finalIconWidget;
@@ -76,7 +77,7 @@ class MenuListItem extends StatelessWidget {
     return Opacity(
       opacity: item.isAvailable ? 1.0 : 0.5,
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: finalIconWidget != null ? Container(
@@ -140,7 +141,7 @@ class MenuListItem extends StatelessWidget {
                       style: GoogleFonts.jetBrainsMono(fontWeight: FontWeight.w700, fontSize: 14),
                     ),
                     PopupMenuButton<String>(
-                      icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
+                      icon: Icon(PhosphorIconsRegular.dotsThreeVertical, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                       onSelected: (val) {
                         if (val == 'edit') {
                           onEdit();

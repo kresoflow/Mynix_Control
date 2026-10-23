@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 
@@ -30,7 +31,7 @@ class IngredientMiniKpiBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF131824) : const Color(0xFFF8FAFC),
+        color: isDark ? AppColors.darkCard : AppColors.lightCardHover,
         border: Border(
           bottom: BorderSide(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
@@ -86,7 +87,7 @@ class IngredientMiniKpiBar extends StatelessWidget {
         color: isHighlighted
             ? (highlightColor ?? AppColors.danger).withValues(alpha: 0.12)
             : (isDark ? AppColors.darkCard : AppColors.lightCard),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadii.badgeRadius,
         border: Border.all(
           color: isHighlighted
               ? (highlightColor ?? AppColors.danger).withValues(alpha: 0.4)

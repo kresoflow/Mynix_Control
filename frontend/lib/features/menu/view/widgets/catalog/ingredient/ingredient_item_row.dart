@@ -5,7 +5,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
@@ -73,7 +72,7 @@ class IngredientItemRow extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkCard : AppColors.lightBg,
-                  borderRadius: BorderRadius.circular(AppRadii.xs),
+                  borderRadius: AppRadii.radiusXs,
                   border: Border.all(
                     color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   ),
@@ -102,7 +101,7 @@ class IngredientItemRow extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: (isLowStock ? AppColors.danger : AppColors.brandPrimary).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppRadii.sm),
+                  borderRadius: AppRadii.badgeRadius,
                 ),
                 child: IconHelper.buildIcon(
                   categoryIcon,

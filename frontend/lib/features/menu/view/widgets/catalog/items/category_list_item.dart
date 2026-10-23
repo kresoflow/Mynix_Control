@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/core/widgets/color_picker/color_picker_utils.dart';
@@ -42,13 +43,14 @@ class CategoryListItem extends StatelessWidget {
       effectiveColor = category.getInheritedColor(catState.categories);
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isArchived = category.isArchived;
     final isHiddenFromPos = !category.isVisible;
     final customColor = ColorPickerUtils.parseHex(effectiveColor);
-    final accentColor = isArchived ? Colors.grey : (customColor ?? AppColors.brandPrimary);
+    final accentColor = isArchived ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext) : (customColor ?? AppColors.brandPrimary);
 
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Opacity(
@@ -93,10 +95,10 @@ class CategoryListItem extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4),
+                    color: isDark ? AppColors.darkCard : AppColors.lightCardHover,
+                    borderRadius: AppRadii.radiusXs,
                   ),
-                  child: Text('В архиве', style: AppTextStyles.caption.copyWith(color: Colors.grey, fontSize: 10)),
+                  child: Text('В архиве', style: AppTextStyles.caption.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, fontSize: 10)),
                 ),
               ] else if (isHiddenFromPos) ...[
                 const SizedBox(width: 8),
@@ -104,7 +106,7 @@ class CategoryListItem extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppColors.warning.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: AppRadii.radiusXs,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -122,7 +124,7 @@ class CategoryListItem extends StatelessWidget {
         trailing: manageMode == CategoryManageMode.delete
             ? Checkbox(value: isSelected, onChanged: onToggleSelect)
             : PopupMenuButton<String>(
-                icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
+                icon: Icon(PhosphorIconsRegular.dotsThreeVertical, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                 onSelected: (val) {
                   if (val == 'edit') {
                     onEdit();

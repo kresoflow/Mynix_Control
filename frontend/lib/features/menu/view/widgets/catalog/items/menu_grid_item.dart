@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_card.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -61,8 +63,9 @@ class MenuGridItem extends StatelessWidget {
       }
     } catch (_) {}
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color accentColor = !item.isAvailable
-        ? Colors.grey
+        ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)
         : (inheritedColor ?? AppColors.brandPrimary);
 
     Widget finalIconWidget;
@@ -109,15 +112,9 @@ class MenuGridItem extends StatelessWidget {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: accentColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: AppRadii.cardRadius,
                         border: Border.all(color: accentColor.withValues(alpha: 0.25)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accentColor.withValues(alpha: 0.08),
-                            blurRadius: 12,
-                            spreadRadius: 2,
-                          ),
-                        ],
+                        boxShadow: AppShadows.card,
                       ),
                       child: finalIconWidget,
                     ),
@@ -186,7 +183,7 @@ class MenuGridItem extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
                         color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkBg : AppColors.lightBg,
-                        borderRadius: BorderRadius.circular(100),
+                        borderRadius: AppRadii.maxRadius,
                         border: Border.all(color: accentColor.withAlpha(80)),
                       ),
                       child: FittedBox(
@@ -220,7 +217,7 @@ class MenuGridItem extends StatelessWidget {
                 top: 0,
                 right: 0,
                 child: PopupMenuButton<String>(
-                  icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
+                  icon: Icon(PhosphorIconsRegular.dotsThreeVertical, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                   onSelected: (val) {
                     if (val == 'edit') {
                       onEdit();

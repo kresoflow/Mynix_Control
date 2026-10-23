@@ -56,7 +56,7 @@ class RecipeSpecificationSection extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadii.cardRadius,
           border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
         ),
         child: AppEmptyState(

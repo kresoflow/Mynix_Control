@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
@@ -118,7 +119,7 @@ class IngredientGridView extends StatelessWidget {
             color: isSelected
                 ? AppColors.brandPrimary.withValues(alpha: 0.1)
                 : (isDark ? AppColors.darkCard : AppColors.lightCard),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadii.cardRadius,
             border: Border.all(
               color: isSelected
                   ? AppColors.brandPrimary
@@ -126,9 +127,9 @@ class IngredientGridView extends StatelessWidget {
             ),
           ),
           child: Material(
-            color: Colors.transparent,
+            color: AppColors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppRadii.cardRadius,
               onTap: isManageMode
                   ? () => onToggleSelect(item.id, !isSelected)
                   : () => showAddIngredientDialog(context, itemToEdit: item),
@@ -149,7 +150,7 @@ class IngredientGridView extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: AppRadii.badgeRadius,
                                 border: Border.all(
                                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                                 ),
@@ -169,7 +170,7 @@ class IngredientGridView extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: (isDark ? AppColors.darkCard : AppColors.lightCard),
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: AppRadii.radiusXs,
                                   border: Border.all(
                                     color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                                   ),
@@ -331,7 +332,7 @@ class IngredientGridView extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: stockColor.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: AppRadii.badgeRadius,
                             ),
                             child: Text(
                               _formatStock(item.currentStock, item.unit),

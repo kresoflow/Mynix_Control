@@ -229,10 +229,10 @@ class CreateRetailProductForm extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              TextButton.icon(
+              AppGhostButton(
                 onPressed: onAddVariation,
-                icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-                label: const Text('Серия объемов'),
+                icon: PhosphorIconsRegular.plus,
+                label: 'Серия объемов',
               ),
             ],
           ),

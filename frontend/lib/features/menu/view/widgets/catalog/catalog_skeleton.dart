@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 class CatalogSkeleton extends StatelessWidget {
   final bool isList;
@@ -10,8 +11,8 @@ class CatalogSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
-    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+    final baseColor = isDark ? AppColors.darkBorder : AppColors.lightCardHover;
+    final highlightColor = isDark ? AppColors.darkSurface : AppColors.lightCard;
     final cardBg = isDark ? AppColors.darkCard : AppColors.lightCard;
     
     if (isList) {
@@ -22,7 +23,7 @@ class CatalogSkeleton extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: cardBg,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadii.radiusLg,
           ),
           padding: const EdgeInsets.all(12),
           child: Shimmer.fromColors(
@@ -33,20 +34,20 @@ class CatalogSkeleton extends StatelessWidget {
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                  decoration: const BoxDecoration(color: AppColors.pureWhite, borderRadius: AppRadii.inputRadius),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(width: 150, height: 16, color: Colors.white),
+                      Container(width: 150, height: 16, color: AppColors.pureWhite),
                       const SizedBox(height: 8),
-                      Container(width: 100, height: 12, color: Colors.white),
+                      Container(width: 100, height: 12, color: AppColors.pureWhite),
                     ],
                   ),
                 ),
-                Container(width: 80, height: 16, color: Colors.white),
+                Container(width: 80, height: 16, color: AppColors.pureWhite),
               ],
             ),
           ),
@@ -66,7 +67,7 @@ class CatalogSkeleton extends StatelessWidget {
       itemBuilder: (context, index) => Container(
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadii.cardRadius,
         ),
         child: Shimmer.fromColors(
           baseColor: baseColor,
@@ -78,8 +79,8 @@ class CatalogSkeleton extends StatelessWidget {
                 flex: 3,
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                    color: AppColors.pureWhite,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.card)),
                   ),
                 ),
               ),
@@ -90,9 +91,9 @@ class CatalogSkeleton extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(width: double.infinity, height: 14, color: Colors.white),
+                      Container(width: double.infinity, height: 14, color: AppColors.pureWhite),
                       const SizedBox(height: 8),
-                      Container(width: 60, height: 12, color: Colors.white),
+                      Container(width: 60, height: 12, color: AppColors.pureWhite),
                     ],
                   ),
                 ),

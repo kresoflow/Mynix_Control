@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/recipe_event.dart';
 
@@ -42,11 +43,11 @@ void showAddIngredientToRecipeDialog(BuildContext context, int menuItemId, List<
               ],
             ),
             actions: [
-              TextButton(
+              AppGhostButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Отмена'),
+                label: 'Отмена',
               ),
-              ElevatedButton(
+              AppPrimaryButton(
                 onPressed: () {
                   final qty = double.tryParse(qtyController.text.replaceAll(',', '.')) ?? 0;
                   if (selectedIngredientId != null && qty > 0) {
@@ -60,7 +61,7 @@ void showAddIngredientToRecipeDialog(BuildContext context, int menuItemId, List<
                     Navigator.pop(ctx);
                   }
                 },
-                child: const Text('Добавить'),
+                label: 'Добавить',
               ),
             ],
           );

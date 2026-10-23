@@ -46,7 +46,7 @@ class CatalogVariationDeletionModal extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
@@ -60,7 +60,7 @@ class CatalogVariationDeletionModal extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: isDark ? 0.2 : 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadii.inputRadius,
             ),
             child: Icon(icon, size: 20, color: iconColor),
           ),

@@ -46,12 +46,12 @@ class IngredientRowActions extends StatelessWidget {
                   context.read<IngredientBloc>().add(RestoreIngredient(item.id));
                 }
               },
-              borderRadius: BorderRadius.circular(AppRadii.sm),
+              borderRadius: AppRadii.badgeRadius,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppRadii.sm),
+                  borderRadius: AppRadii.badgeRadius,
                   border: Border.all(
                     color: AppColors.brandPrimary.withValues(alpha: 0.3),
                   ),

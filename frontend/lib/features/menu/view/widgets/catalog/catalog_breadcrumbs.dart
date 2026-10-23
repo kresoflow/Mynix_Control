@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 class CatalogBreadcrumbs extends StatelessWidget {
@@ -24,7 +25,7 @@ class CatalogBreadcrumbs extends StatelessWidget {
     crumbs.add(
       InkWell(
         onTap: onNavigateToRoot,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadii.badgeRadius,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Text(
@@ -51,7 +52,7 @@ class CatalogBreadcrumbs extends StatelessWidget {
       crumbs.add(
         InkWell(
           onTap: isLast ? null : () => onNavigateToHistory(i),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadii.badgeRadius,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Text(

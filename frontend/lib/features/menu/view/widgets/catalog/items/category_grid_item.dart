@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -43,10 +43,11 @@ class CategoryGridItem extends StatelessWidget {
       effectiveColor = category.getInheritedColor(catState.categories);
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isArchived = category.isArchived;
     final isHiddenFromPos = !category.isVisible;
     final customColor = ColorPickerUtils.parseHex(effectiveColor);
-    final accentColor = isArchived ? Colors.grey : (customColor ?? AppColors.brandPrimary);
+    final accentColor = isArchived ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext) : (customColor ?? AppColors.brandPrimary);
 
     return AppCard(
       onTap: onTap,
@@ -98,7 +99,7 @@ class CategoryGridItem extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'В архиве',
-                      style: AppTextStyles.caption.copyWith(color: Colors.grey, fontSize: 11),
+                      style: AppTextStyles.caption.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, fontSize: 11),
                       textAlign: TextAlign.center,
                     ),
                   ] else if (isHiddenFromPos) ...[
@@ -127,7 +128,7 @@ class CategoryGridItem extends StatelessWidget {
               top: 4,
               right: 4,
               child: IconButton(
-                icon: Icon(category.isVisible ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash, color: category.isVisible ? AppColors.success : Colors.grey),
+                icon: Icon(category.isVisible ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash, color: category.isVisible ? AppColors.success : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
                 tooltip: category.isVisible ? 'Отображается на кассе' : 'Скрыто на кассе',
                 onPressed: onVisibilityToggle,
               ),
@@ -137,7 +138,7 @@ class CategoryGridItem extends StatelessWidget {
               top: 0,
               right: 0,
               child: PopupMenuButton<String>(
-                icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
+                icon: Icon(PhosphorIconsRegular.dotsThreeVertical, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                 onSelected: (val) {
                   if (val == 'edit') {
                     onEdit();

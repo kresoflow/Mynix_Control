@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
@@ -39,10 +39,10 @@ class DuplicateWarningChip extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: isDark ? const Color(0xFFFFD54F) : const Color(0xFFB78103),
+                color: AppColors.warning,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -51,9 +51,9 @@ class DuplicateWarningChip extends StatelessWidget {
             const SizedBox(width: 8),
             InkWell(
               onTap: onOpenExisting,
-              borderRadius: BorderRadius.circular(6),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              borderRadius: AppRadii.badgeRadius,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -62,15 +62,15 @@ class DuplicateWarningChip extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? const Color(0xFFFFD54F) : const Color(0xFFB78103),
+                        color: AppColors.warning,
                         decoration: TextDecoration.underline,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Icon(
                       PhosphorIconsRegular.arrowSquareOut,
                       size: 14,
-                      color: isDark ? const Color(0xFFFFD54F) : const Color(0xFFB78103),
+                      color: AppColors.warning,
                     ),
                   ],
                 ),

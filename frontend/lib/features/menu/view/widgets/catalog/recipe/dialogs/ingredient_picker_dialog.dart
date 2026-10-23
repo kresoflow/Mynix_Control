@@ -67,8 +67,8 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
 
     return Dialog(
       backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      surfaceTintColor: AppColors.transparent,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
       child: Container(
         width: 520,
         height: 640,
@@ -82,7 +82,7 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
               children: [
                 Text('Выберите сырье', style: AppTextStyles.h3),
                 InkWell(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadii.inputRadius,
                   onTap: () => Navigator.of(context).pop(),
                   child: Padding(
                     padding: const EdgeInsets.all(4.0),
@@ -120,13 +120,13 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
                           margin: const EdgeInsets.only(top: 8),
                           decoration: BoxDecoration(
                             color: isDark ? AppColors.darkBg.withValues(alpha: 0.5) : AppColors.lightBg.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: AppRadii.inputRadius,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               InkWell(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: AppRadii.inputRadius,
                                 onTap: () {
                                   setState(() {
                                     _expandedCats[catName] = !isExpanded;
@@ -161,7 +161,7 @@ class _IngredientPickerDialogState extends State<IngredientPickerDialog> {
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                                        borderRadius: BorderRadius.circular(4),
+                                        borderRadius: AppRadii.radiusXs,
                                       ),
                                       child: Text(
                                         ing.displayCode,

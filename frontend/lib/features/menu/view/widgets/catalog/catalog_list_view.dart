@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 
@@ -39,11 +40,11 @@ class CatalogListView extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadii.radiusLg,
           border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadii.radiusLg,
           child: ListView.separated(
             padding: EdgeInsets.zero,
             itemCount: totalItems,

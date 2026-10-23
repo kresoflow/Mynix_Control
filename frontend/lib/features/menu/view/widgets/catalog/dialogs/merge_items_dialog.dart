@@ -101,7 +101,7 @@ class _MergeItemsDialogState extends State<MergeItemsDialog> {
             constraints: const BoxConstraints(maxHeight: 200),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(AppRadii.md),
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),

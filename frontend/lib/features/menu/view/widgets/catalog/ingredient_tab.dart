@@ -123,7 +123,7 @@ class _IngredientTabState extends State<IngredientTab> {
                                   color: _selectedIngredients.isNotEmpty
                                       ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: isDark ? 0.2 : 0.1)
                                       : (isDark ? AppColors.darkCard : AppColors.lightCard),
-                                  borderRadius: BorderRadius.circular(AppRadii.md),
+                                  borderRadius: AppRadii.inputRadius,
                                   border: Border.all(
                                     color: _selectedIngredients.isNotEmpty
                                         ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: 0.4)
@@ -370,7 +370,7 @@ class _IngredientTabState extends State<IngredientTab> {
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                                       decoration: BoxDecoration(
                                         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                                        borderRadius: BorderRadius.circular(AppRadii.md),
+                                        borderRadius: AppRadii.inputRadius,
                                         border: Border.all(
                                           color: AppColors.brandPrimary.withValues(alpha: 0.3),
                                         ),
@@ -452,7 +452,7 @@ class _IngredientTabState extends State<IngredientTab> {
                               const SizedBox(height: 12),
                               Text('Не удалось загрузить сырье', style: AppTextStyles.h3),
                               const SizedBox(height: 6),
-                              Text(state.message.replaceAll('Exception: ', ''), style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                              Text(state.message.replaceAll('Exception: ', ''), style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, fontSize: 13)),
                               const SizedBox(height: 16),
                               AppSecondaryButton(
                                 label: 'Повторить попытку',
