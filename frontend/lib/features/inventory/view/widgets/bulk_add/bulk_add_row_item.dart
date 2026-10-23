@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
@@ -163,14 +164,14 @@ class _BulkAddRowItemState extends State<BulkAddRowItem> {
                   ? AppColors.warning.withValues(alpha: isDark ? 0.12 : 0.08)
                   : hovered
                       ? (isDark ? AppColors.darkSurface : AppColors.lightSurface)
-                      : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+                      : AppColors.transparent,
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(
                 color: dupWarning != null
                     ? AppColors.warning.withValues(alpha: isDark ? 0.4 : 0.6)
                     : hovered
                         ? (isDark ? AppColors.darkBorder : AppColors.lightBorder)
-                        : Colors.transparent,
+                        : AppColors.transparent,
               ),
             ),
             child: Column(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
@@ -25,20 +27,13 @@ class StockLowInventoryWidget extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(
           color: lowStockItems.isNotEmpty
               ? AppColors.danger.withValues(alpha: 0.3)
               : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: (lowStockItems.isNotEmpty ? AppColors.danger : Colors.black)
-                .withValues(alpha: isDark ? 0.15 : 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: AppShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,7 +46,7 @@ class StockLowInventoryWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: (lowStockItems.isNotEmpty ? AppColors.danger : AppColors.success)
                       .withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                 ),
                 child: Icon(
                   lowStockItems.isNotEmpty
@@ -113,7 +108,7 @@ class StockLowInventoryWidget extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: AppRadii.inputRadius,
                     border: Border.all(
                       color: AppColors.danger.withValues(alpha: 0.2),
                     ),

@@ -10,6 +10,8 @@ import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_deleti
 import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 
 
 class IngredientListWidget extends StatefulWidget {
@@ -92,18 +94,12 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadii.radiusLg,
           border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: AppShadows.card,
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadii.radiusLg,
           child: ListView.builder(
             padding: EdgeInsets.zero,
             itemCount: flatList.length,
@@ -114,7 +110,7 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                 final catName = data['categoryName'] as String;
                 final isExpanded = data['isExpanded'] as bool;
                 return Material(
-                  color: Colors.transparent,
+                  color: AppColors.transparent,
                   child: InkWell(
                     onTap: () => _toggleCategory(catName),
                     child: Padding(
@@ -156,7 +152,7 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                     Material(
                       color: widget.selectedIngredients.contains(item.id) 
                           ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3) 
-                          : Colors.transparent,
+                          : AppColors.transparent,
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                         leading: widget.isManageMode
@@ -174,7 +170,8 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                             )
                           : () {
                               final cat = widget.catState is CategoryLoaded ? (widget.catState as CategoryLoaded).categories.where((c) => c.id == item.categoryId).firstOrNull : null;
-                              return IconHelper.buildIcon(cat?.icon, color: isLowStock ? AppColors.danger : Colors.grey);
+                              final subtextColor = Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext;
+                              return IconHelper.buildIcon(cat?.icon, color: isLowStock ? AppColors.danger : subtextColor);
                             }(),
                         title: Row(
                           children: [
@@ -183,7 +180,7 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                               margin: const EdgeInsets.only(right: 8),
                               decoration: BoxDecoration(
                                 color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: AppRadii.radiusXs,
                               ),
                               child: Text(
                                 item.displayCode,
@@ -201,7 +198,7 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                                 margin: const EdgeInsets.only(left: 8),
                                 decoration: BoxDecoration(
                                   color: AppColors.warning.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: AppRadii.radiusXs,
                                 ),
                                 child: const Text(
                                   'Без категории',
@@ -220,10 +217,17 @@ class _IngredientListWidgetState extends State<IngredientListWidget> {
                           children: [
                             Text(
                               '${item.costPerUnit.toInt()} ${widget.currency} / ${UnitFormatter.format(item.unit)}',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                              ),
                             ),
                             PopupMenuButton<String>(
-                              icon: const Icon(PhosphorIconsRegular.dotsThreeVertical, color: Colors.grey),
+                              icon: Icon(
+                                PhosphorIconsRegular.dotsThreeVertical,
+                                color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                              ),
                               onSelected: (val) {
                                 if (val == 'edit') {
                                   showAddIngredientDialog(context, itemToEdit: item);

@@ -64,13 +64,13 @@ class StockPillFilters extends StatelessWidget {
           ),
           InkWell(
             onTap: onToggleExpandAll,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: AppRadii.inputRadius,
             child: Container(
               height: 32,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppRadii.inputRadius,
                 border: Border.all(
                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),

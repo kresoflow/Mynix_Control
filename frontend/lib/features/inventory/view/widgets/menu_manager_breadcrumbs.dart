@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class MenuManagerBreadcrumbs extends StatelessWidget {
   final List<MenuCategory> navigationHistory;
@@ -27,7 +29,7 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
         color: Theme.of(
           context,
         ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadii.radiusLg,
       ),
       child: Row(
         children: [
@@ -43,14 +45,15 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
           ),
           ...List.generate(navigationHistory.length, (index) {
             final cat = navigationHistory[index];
+            final isDark = Theme.of(context).brightness == Brightness.dark;
             return Row(
               children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Icon(
                     PhosphorIconsRegular.caretRight,
                     size: 20,
-                    color: Colors.grey,
+                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                   ),
                 ),
                 InkWell(
@@ -71,21 +74,19 @@ class MenuManagerBreadcrumbs extends StatelessWidget {
             );
           }),
           const Spacer(),
-          ElevatedButton.icon(
+          AppSecondaryButton(
             onPressed: onAddCategory,
-            icon: const Icon(PhosphorIconsRegular.folderPlus),
-            label: const Text('Папка'),
+            icon: PhosphorIconsRegular.folderPlus,
+            label: 'Папка',
           ),
-          const SizedBox(width: 12),
-          ElevatedButton.icon(
-            onPressed: onAddMenuItem,
-            icon: const Icon(PhosphorIconsRegular.plusSquare),
-            label: const Text('Товар'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
+          if (onAddMenuItem != null) ...[
+            const SizedBox(width: 12),
+            AppPrimaryButton(
+              onPressed: onAddMenuItem,
+              icon: PhosphorIconsRegular.plusSquare,
+              label: 'Товар',
             ),
-          ),
+          ],
         ],
       ),
     );

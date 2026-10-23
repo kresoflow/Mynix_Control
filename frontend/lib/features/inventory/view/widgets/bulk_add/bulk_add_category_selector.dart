@@ -3,6 +3,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'bulk_input_decoration.dart';
 import 'create_category_quick_dialog.dart';
 
@@ -125,7 +126,7 @@ class BulkAddCategorySelector extends StatelessWidget {
                     height: 46,
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadii.inputRadius,
                       border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.5)),
                     ),
                     child: IconButton(
@@ -148,7 +149,7 @@ class BulkAddCategorySelector extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppColors.warning.withValues(alpha: isDark ? 0.12 : 0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: AppRadii.inputRadius,
                     border: Border.all(
                       color: AppColors.warning.withValues(alpha: isDark ? 0.35 : 0.25),
                     ),

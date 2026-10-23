@@ -74,7 +74,7 @@ class _StockItemRowState extends State<StockItemRow> {
           ),
         ),
         child: Material(
-          color: Colors.transparent,
+          color: AppColors.transparent,
           child: InkWell(
             onTap: () {
               // Детали позиции
@@ -94,7 +94,7 @@ class _StockItemRowState extends State<StockItemRow> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.darkCard : AppColors.lightBg,
-                      borderRadius: BorderRadius.circular(AppRadii.md),
+                      borderRadius: AppRadii.inputRadius,
                       border: Border.all(
                         color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                       ),
@@ -251,7 +251,7 @@ class _StockItemRowState extends State<StockItemRow> {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: textColor.withValues(alpha: isDark ? 0.18 : 0.1),
-        borderRadius: BorderRadius.circular(AppRadii.xs),
+        borderRadius: AppRadii.radiusXs,
         border: Border.all(
           color: textColor.withValues(alpha: isDark ? 0.35 : 0.25),
         ),

@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class MenuItemVariationsSection extends StatelessWidget {
   final List<Map<String, dynamic>> variations;
@@ -26,10 +27,10 @@ class MenuItemVariationsSection extends StatelessWidget {
               'Вариации (Размеры)',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            TextButton.icon(
+            AppGhostButton(
               onPressed: onAddVariation,
-              icon: const Icon(PhosphorIconsRegular.plus),
-              label: const Text('Добавить размер'),
+              icon: PhosphorIconsRegular.plus,
+              label: 'Добавить размер',
             ),
           ],
         ),

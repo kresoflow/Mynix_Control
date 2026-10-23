@@ -137,7 +137,7 @@ Future<void> performBulkSave({
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
         backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         child: Padding(
           padding: const EdgeInsets.all(24),

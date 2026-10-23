@@ -1,5 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -26,29 +28,17 @@ class StockCapitalChartCard extends StatelessWidget {
       topEntries.add(MapEntry('Прочее', otherValue));
     }
 
-    final colors = [
-      AppColors.brandPrimary,
-      const Color(0xFF6366F1),
-      const Color(0xFF10B981),
-      const Color(0xFF00B4D8),
-      const Color(0xFF94A3B8),
-    ];
+    final colors = AppColors.chartPalette;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(
           color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AppShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +50,7 @@ class StockCapitalChartCard extends StatelessWidget {
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
                   color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: AppRadii.radiusSm,
                 ),
                 child: Icon(
                   PhosphorIconsRegular.chartBarHorizontal,
@@ -109,7 +99,7 @@ class StockCapitalChartCard extends StatelessWidget {
           else ...[
             // 1. Сегментированная полоса распределения капитала
             ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: AppRadii.badgeRadius,
               child: SizedBox(
                 height: 10,
                 child: Row(
@@ -168,7 +158,7 @@ class StockCapitalChartCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: AppRadii.badgeRadius,
                       ),
                       child: Text(
                         '${pct.toStringAsFixed(0)}%',

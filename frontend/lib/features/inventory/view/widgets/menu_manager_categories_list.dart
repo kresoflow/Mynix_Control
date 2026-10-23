@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
@@ -7,6 +7,7 @@ import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/create_category_dialog.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
 
 
@@ -44,11 +45,12 @@ class MenuManagerCategoriesList extends StatelessWidget {
                         itemCount: subCategories.length,
                         itemBuilder: (context, index) {
                           final cat = subCategories[index];
+                          final isDark = Theme.of(context).brightness == Brightness.dark;
                           return Card(
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              side: BorderSide(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                              borderRadius: AppRadii.radiusLg,
                             ),
                             margin: const EdgeInsets.only(bottom: 8),
                             child: ListTile(
@@ -88,7 +90,7 @@ class MenuManagerCategoriesList extends StatelessWidget {
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: AppSecondaryButton(
                   onPressed: () {
                     showAddCategoryDialog(
                       context,
@@ -96,14 +98,8 @@ class MenuManagerCategoriesList extends StatelessWidget {
                       type: 'ingredient',
                     );
                   },
-                  icon: const Icon(PhosphorIconsRegular.folderPlus),
-                  label: const Text('Создать категорию'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                  icon: PhosphorIconsRegular.folderPlus,
+                  label: 'Создать категорию',
                 ),
               ),
             ],

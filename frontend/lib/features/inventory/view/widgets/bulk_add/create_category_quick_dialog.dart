@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 
@@ -22,7 +23,7 @@ void showCreateCategoryQuickDialog({
         builder: (context, setStateDialog) {
           return AlertDialog(
             backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
             title: Text(
               'Новая категория',
               style: TextStyle(

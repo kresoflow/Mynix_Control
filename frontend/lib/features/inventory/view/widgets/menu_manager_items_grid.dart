@@ -1,4 +1,4 @@
-﻿import 'menu_item_modal.dart';
+import 'menu_item_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +6,7 @@ import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
 
 
@@ -22,10 +23,14 @@ class MenuManagerItemsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (currentParentId == null) {
-      return const Center(
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return Center(
         child: Text(
           'Выберите папку, чтобы просмотреть товары',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
+          style: TextStyle(
+            fontSize: 16,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
         ),
       );
     }
@@ -55,11 +60,12 @@ class MenuManagerItemsGrid extends StatelessWidget {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
+              final isDark = Theme.of(context).brightness == Brightness.dark;
               return Card(
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                  borderRadius: AppRadii.radiusLg,
                 ),
                 child: ListTile(
                   onTap: () {

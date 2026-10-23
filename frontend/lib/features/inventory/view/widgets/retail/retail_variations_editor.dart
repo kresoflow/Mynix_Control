@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class RetailVariationsEditor extends StatelessWidget {
@@ -77,7 +78,7 @@ class RetailVariationsEditor extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(PhosphorIconsRegular.trash, color: Colors.red),
+                            icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger),
                             onPressed: () => onRemoveVariation(i),
                           ),
                         ],
@@ -145,9 +146,9 @@ class RetailVariationsEditor extends StatelessWidget {
             },
           ),
         ),
-        TextButton.icon(
-          icon: const Icon(PhosphorIconsRegular.plus),
-          label: const Text('Добавить опцию'),
+        AppGhostButton(
+          icon: PhosphorIconsRegular.plus,
+          label: 'Добавить опцию',
           onPressed: onAddVariation,
         ),
       ],

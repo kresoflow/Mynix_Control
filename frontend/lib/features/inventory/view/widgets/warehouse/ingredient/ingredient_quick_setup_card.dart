@@ -1,8 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 
@@ -21,7 +23,7 @@ class IngredientQuickSetupCard extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         elevation: 0,
         insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: IngredientQuickSetupCard(
@@ -75,17 +77,11 @@ class IngredientQuickSetupCard extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 560),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadii.dialogRadius,
           border: Border.all(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 30,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          boxShadow: AppShadows.dialog,
         ),
         child: Stack(
           children: [
@@ -138,7 +134,7 @@ class IngredientQuickSetupCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  TextButton.icon(
+                  AppGhostButton(
                     onPressed: () {
                       if (isModal) Navigator.of(context).pop();
                       showDialog(
@@ -146,12 +142,8 @@ class IngredientQuickSetupCard extends StatelessWidget {
                         builder: (_) => const BulkAddModal(initialTabIndex: 3),
                       );
                     },
-                    icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 16),
-                    label: const Text('Создать свои вручную'),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      textStyle: AppTextStyles.button,
-                    ),
+                    icon: PhosphorIconsRegular.pencilSimple,
+                    label: 'Создать свои вручную',
                   ),
                 ],
               ),
@@ -195,10 +187,10 @@ class _PresetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadii.radiusLg,
         hoverColor: AppColors.brandPrimary.withValues(alpha: 0.08),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -206,7 +198,7 @@ class _PresetCard extends StatelessWidget {
             border: Border.all(
               color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: AppRadii.radiusLg,
           ),
           child: Column(
             children: [

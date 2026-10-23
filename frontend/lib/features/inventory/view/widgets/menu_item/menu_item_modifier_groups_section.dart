@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 class MenuItemModifierGroupsSection extends StatelessWidget {
   final List<Map<String, dynamic>> modifierGroups;
@@ -32,10 +33,10 @@ class MenuItemModifierGroupsSection extends StatelessWidget {
               'Группы модификаторов',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            TextButton.icon(
+            AppGhostButton(
               onPressed: onAddGroup,
-              icon: const Icon(PhosphorIconsRegular.plus),
-              label: const Text('Добавить группу'),
+              icon: PhosphorIconsRegular.plus,
+              label: 'Добавить группу',
             ),
           ],
         ),
@@ -49,7 +50,7 @@ class MenuItemModifierGroupsSection extends StatelessWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadii.radiusLg,
             ),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -145,10 +146,10 @@ class MenuItemModifierGroupsSection extends StatelessWidget {
                       ),
                     );
                   }),
-                  TextButton.icon(
+                  AppGhostButton(
                     onPressed: () => onAddOption(gIndex),
-                    icon: const Icon(PhosphorIconsRegular.plus, size: 16),
-                    label: const Text('Добавить опцию'),
+                    icon: PhosphorIconsRegular.plus,
+                    label: 'Добавить опцию',
                   ),
                 ],
               ),

@@ -113,7 +113,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
               content: Text(state.errorMessage!),
               backgroundColor: AppColors.danger,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: const RoundedRectangleBorder(borderRadius: AppRadii.inputRadius),
             ),
           );
         }

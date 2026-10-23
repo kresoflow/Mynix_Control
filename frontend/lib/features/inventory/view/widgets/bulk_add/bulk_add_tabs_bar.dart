@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
@@ -43,7 +43,7 @@ class BulkAddTabsBar extends StatelessWidget {
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightBg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
             ),
             child: Row(
@@ -119,7 +119,7 @@ class BulkAddTabsBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkCard : AppColors.lightBg,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadii.inputRadius,
                   border: Border.all(
                     color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   ),
@@ -158,7 +158,7 @@ class BulkAddTabsBar extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkCard : AppColors.lightBg,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: AppRadii.inputRadius,
                 border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
               ),
               child: Row(

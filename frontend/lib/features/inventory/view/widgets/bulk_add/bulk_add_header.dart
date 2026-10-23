@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 class BulkAddHeader extends StatelessWidget {
   const BulkAddHeader({super.key});
@@ -18,7 +19,7 @@ class BulkAddHeader extends StatelessWidget {
             height: 36,
             decoration: BoxDecoration(
               gradient: AppColors.brandGradient,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
             ),
             child: Icon(PhosphorIconsRegular.listBullets, color: AppColors.lightSurface, size: 18),
           ),

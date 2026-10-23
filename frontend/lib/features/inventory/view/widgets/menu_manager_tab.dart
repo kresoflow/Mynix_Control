@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
@@ -8,6 +8,7 @@ import 'menu_manager_categories_list.dart';
 import 'menu_manager_items_grid.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/menu_manager_breadcrumbs.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 
 class MenuManagerTab extends StatefulWidget {
@@ -72,11 +73,11 @@ class _MenuManagerTabState extends State<MenuManagerTab> {
             ],
           ),
           actions: [
-            TextButton(
+            AppGhostButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Отмена'),
+              label: 'Отмена',
             ),
-            ElevatedButton(
+            AppPrimaryButton(
               onPressed: () {
                 final sortOrder = int.tryParse(sortOrderController.text) ?? 0;
                 if (nameController.text.isNotEmpty) {
@@ -90,7 +91,7 @@ class _MenuManagerTabState extends State<MenuManagerTab> {
                   Navigator.pop(ctx);
                 }
               },
-              child: const Text('Создать'),
+              label: 'Создать',
             ),
           ],
         );
@@ -137,11 +138,11 @@ class _MenuManagerTabState extends State<MenuManagerTab> {
             ],
           ),
           actions: [
-            TextButton(
+            AppGhostButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Отмена'),
+              label: 'Отмена',
             ),
-            ElevatedButton(
+            AppPrimaryButton(
               onPressed: () {
                 final price = double.tryParse(priceController.text) ?? 0.0;
                 if (nameController.text.isNotEmpty && price > 0) {
@@ -155,7 +156,7 @@ class _MenuManagerTabState extends State<MenuManagerTab> {
                   Navigator.pop(ctx);
                 }
               },
-              child: const Text('Создать'),
+              label: 'Создать',
             ),
           ],
         );

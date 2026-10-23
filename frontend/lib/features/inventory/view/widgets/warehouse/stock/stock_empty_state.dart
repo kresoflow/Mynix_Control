@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -59,13 +60,7 @@ class StockEmptyState extends StatelessWidget {
                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                   width: 1.5,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: AppShadows.card,
               ),
               child: Center(
                 child: Icon(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 import 'retail/retail_single_product_form.dart';
 import 'retail/retail_variations_editor.dart';
@@ -113,7 +113,7 @@ class _RetailProductModalState extends State<RetailProductModal> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
       child: Container(
         width: 500,
         padding: const EdgeInsets.all(24),
@@ -196,18 +196,14 @@ class _RetailProductModalState extends State<RetailProductModal> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
+                  AppGhostButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Отмена'),
+                    label: 'Отмена',
                   ),
                   const SizedBox(width: 16),
-                  ElevatedButton(
+                  AppPrimaryButton(
                     onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.brandPrimary,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Сохранить'),
+                    label: 'Сохранить',
                   ),
                 ],
               ),

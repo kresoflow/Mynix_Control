@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'bulk_add/bulk_add_controller.dart';
 import 'bulk_add/bulk_add_header.dart';
@@ -123,7 +125,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
           message: 'Все введенные строки и данные будут сброшены. Вы уверены, что хотите выйти?',
           confirmLabel: 'Сбросить строки',
           child: Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
             backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
             elevation: 0,
             child: Container(
@@ -131,14 +133,8 @@ class _BulkAddModalState extends State<BulkAddModal> {
             height: MediaQuery.of(context).size.height * 0.88,
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.darkBg.withValues(alpha: 0.25),
-                  blurRadius: 40,
-                  offset: const Offset(0, 12),
-                ),
-              ],
+              borderRadius: AppRadii.dialogRadius,
+              boxShadow: AppShadows.dialog,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -177,7 +173,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadii.radiusLg,
                       border: Border.all(
                         color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                       ),

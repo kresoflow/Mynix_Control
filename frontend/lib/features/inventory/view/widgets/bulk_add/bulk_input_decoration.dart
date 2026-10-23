@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 InputDecoration buildBulkInputDecoration(
   BuildContext context,
@@ -29,7 +30,7 @@ InputDecoration buildBulkInputDecoration(
     filled: true,
     fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.inputRadius,
       borderSide: isHintOnly
           ? BorderSide(
               color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.35),
@@ -38,7 +39,7 @@ InputDecoration buildBulkInputDecoration(
           : BorderSide.none,
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.inputRadius,
       borderSide: isHintOnly
           ? BorderSide(
               color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.35),
@@ -47,7 +48,7 @@ InputDecoration buildBulkInputDecoration(
           : BorderSide.none,
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.inputRadius,
       borderSide: BorderSide(
         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
         width: 1.5,
