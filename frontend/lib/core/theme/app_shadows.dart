@@ -70,6 +70,37 @@ abstract class AppShadows {
     ];
   }
 
+  // Свечение статуса / бейджа
+  static List<BoxShadow> glow(
+    Color color, {
+    double opacity = 0.25,
+    double blur = 16,
+    Offset offset = const Offset(0, 4),
+    double spread = 0,
+  }) {
+    if (AppMotion.disableAnimations) return const [];
+    return [
+      BoxShadow(
+        color: color.withValues(alpha: opacity),
+        blurRadius: blur,
+        offset: offset,
+        spreadRadius: spread,
+      ),
+    ];
+  }
+
+  // Свечение круглого индикатора (dot)
+  static List<BoxShadow> dotGlow(Color color, {double opacity = 0.5, double blur = 6}) {
+    if (AppMotion.disableAnimations) return const [];
+    return [
+      BoxShadow(
+        color: color.withValues(alpha: opacity),
+        blurRadius: blur,
+        spreadRadius: 1,
+      ),
+    ];
+  }
+
   // Legacy alias
   static List<BoxShadow> primaryButton(Color brandColor) => buttonGlow(brandColor);
 }

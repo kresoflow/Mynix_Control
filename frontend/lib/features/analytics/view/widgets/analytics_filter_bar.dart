@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/analytics/bloc/analytics_bloc.dart';
 import 'package:kreso_frontend/features/analytics/bloc/analytics_event.dart';
@@ -119,7 +120,7 @@ class AnalyticsFilterBar extends StatelessWidget {
             height: 2,
             child: LinearProgressIndicator(
               color: AppColors.brandPrimary,
-              backgroundColor: Colors.transparent,
+              backgroundColor: AppColors.transparent,
             ),
           ),
       ],
@@ -161,7 +162,7 @@ class AnalyticsFilterBar extends StatelessWidget {
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadii.inputRadius,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Row(
@@ -173,19 +174,19 @@ class AnalyticsFilterBar extends StatelessWidget {
               onPeriodChanged(p.$1);
               context.read<AnalyticsBloc>().add(LoadAnalytics(period: p.$1));
             },
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: AppRadii.badgeRadius,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               padding: const EdgeInsets.symmetric(horizontal: 10),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.brandPrimary : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
+                color: isSelected ? AppColors.brandPrimary : AppColors.transparent,
+                borderRadius: AppRadii.badgeRadius,
               ),
               child: Text(
                 p.$2,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+                  color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkText : AppColors.lightText),
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   fontSize: 12,
                 ),
@@ -209,16 +210,14 @@ class AnalyticsFilterBar extends StatelessWidget {
           initialDateRange: startDate != null && endDate != null
               ? DateTimeRange(start: startDate!, end: endDate!)
               : null,
-          builder: (context, child) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                colorScheme: isDark
-                    ? ColorScheme.dark(primary: AppColors.brandPrimary)
-                    : ColorScheme.light(primary: AppColors.brandPrimary),
-              ),
-              child: child!,
-            );
-          },
+          builder: (context, child) => Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: isDark
+                  ? ColorScheme.dark(primary: AppColors.brandPrimary)
+                  : ColorScheme.light(primary: AppColors.brandPrimary),
+            ),
+            child: child!,
+          ),
         );
 
         if (picked != null) {
@@ -234,13 +233,13 @@ class AnalyticsFilterBar extends StatelessWidget {
           }
         }
       },
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadii.inputRadius,
       child: Container(
         height: 32,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSurface : AppColors.lightSurface),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadii.inputRadius,
           border: Border.all(color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder)),
         ),
         child: Row(
@@ -249,13 +248,13 @@ class AnalyticsFilterBar extends StatelessWidget {
             Icon(
               PhosphorIconsRegular.calendar,
               size: 14,
-              color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+              color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkText : AppColors.lightText),
             ),
             const SizedBox(width: 6),
             Text(
               'Период',
               style: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+                color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkText : AppColors.lightText),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 fontSize: 12,
               ),

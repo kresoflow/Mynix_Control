@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/analytics/models/dashboard_data.dart';
 
@@ -41,23 +43,22 @@ class LowStockAlertsWidget extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(
           color: hasAlerts 
               ? AppColors.danger.withValues(alpha: 0.3)
               : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
           width: hasAlerts ? 1.5 : 1.0,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: hasAlerts 
-                ? AppColors.danger.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.05),
-            blurRadius: hasAlerts ? 24 : 10,
-            offset: hasAlerts ? const Offset(0, 12) : const Offset(0, 4),
-            spreadRadius: hasAlerts ? 2 : 0,
-          ),
-        ],
+        boxShadow: hasAlerts
+            ? AppShadows.glow(
+                AppColors.danger,
+                opacity: 0.08,
+                blur: 24,
+                offset: const Offset(0, 12),
+                spread: 2,
+              )
+            : (isDark ? null : AppShadows.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,14 +69,10 @@ class LowStockAlertsWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: (hasAlerts ? AppColors.danger : AppColors.success).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: hasAlerts ? [
-                    BoxShadow(
-                      color: AppColors.danger.withValues(alpha: 0.2),
-                      blurRadius: 12,
-                      spreadRadius: 1,
-                    )
-                  ] : [],
+                  borderRadius: AppRadii.radiusXl,
+                  boxShadow: hasAlerts
+                      ? AppShadows.glow(AppColors.danger, opacity: 0.2, blur: 12)
+                      : null,
                 ),
                 child: Icon(
                   hasAlerts ? PhosphorIconsRegular.warning : PhosphorIconsRegular.checkCircle,
@@ -124,18 +121,16 @@ class LowStockAlertsWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
         border: Border.all(
           color: AppColors.danger.withValues(alpha: 0.15),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.danger.withValues(alpha: 0.04),
-            blurRadius: 8,
-            spreadRadius: 1,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: AppShadows.glow(
+          AppColors.danger,
+          opacity: 0.04,
+          blur: 8,
+          spread: 1,
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -149,13 +144,7 @@ class LowStockAlertsWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.danger,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.danger.withValues(alpha: 0.5),
-                        blurRadius: 6,
-                        spreadRadius: 1,
-                      )
-                    ],
+                    boxShadow: AppShadows.dotGlow(AppColors.danger),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -175,7 +164,7 @@ class LowStockAlertsWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: AppColors.danger.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: AppRadii.radiusPill,
               border: Border.all(
                 color: AppColors.danger.withValues(alpha: 0.2),
               ),

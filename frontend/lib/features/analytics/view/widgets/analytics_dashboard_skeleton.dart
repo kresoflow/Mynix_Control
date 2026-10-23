@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 // ── Скелетон структуры аналитического дашборда ──────────────────────────────
 /// [UI-KIT] Сохраняет пространственный каркас дашборда при первом холодном запуске,
@@ -20,8 +21,8 @@ class AnalyticsDashboardSkeleton extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final baseColor = isDark ? AppColors.darkCard : AppColors.lightCard;
-    final shimmerBase = isDark ? AppColors.darkBorder : Colors.grey[300]!;
-    final shimmerHighlight = isDark ? AppColors.darkCardHover : Colors.grey[100]!;
+    final shimmerBase = isDark ? AppColors.darkBorder : AppColors.lightCardHover;
+    final shimmerHighlight = isDark ? AppColors.darkCardHover : AppColors.lightCard;
 
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
@@ -99,7 +100,7 @@ class AnalyticsDashboardSkeleton extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: baseColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadii.cardRadius,
       ),
     );
   }

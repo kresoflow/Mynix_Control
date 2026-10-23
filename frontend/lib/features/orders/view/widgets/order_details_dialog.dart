@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -30,21 +32,15 @@ class OrderDetailsDialog extends StatelessWidget {
       elevation: 0,
       shadowColor: AppColors.transparent,
       surfaceTintColor: AppColors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide.none),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius, side: BorderSide.none),
       child: Center(
         child: Container(
           width: 440,
           constraints: const BoxConstraints(maxHeight: 800),
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.black.withValues(alpha: isDark ? 0.4 : 0.1),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            borderRadius: AppRadii.dialogRadius,
+            boxShadow: AppShadows.dialog,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -54,7 +50,7 @@ class OrderDetailsDialog extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadii.dialog)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -98,7 +94,7 @@ class OrderDetailsDialog extends StatelessWidget {
               // Dashed separator
               SizedBox(
                 height: 1,
-                child: CustomPaint(painter: _DashedLinePainter(color: isDark ? Colors.white24 : Colors.black12)),
+                child: CustomPaint(painter: _DashedLinePainter(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
               ),
 
               // ── Receipt Meta ─────────────────────────────────────────
@@ -115,7 +111,7 @@ class OrderDetailsDialog extends StatelessWidget {
 
               SizedBox(
                 height: 1,
-                child: CustomPaint(painter: _DashedLinePainter(color: isDark ? Colors.white24 : Colors.black12)),
+                child: CustomPaint(painter: _DashedLinePainter(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
               ),
 
               // ── Items List ───────────────────────────────────────────

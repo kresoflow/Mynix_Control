@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
@@ -60,7 +61,7 @@ class _CancelOrderDialogState extends State<CancelOrderDialog> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.danger.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppRadii.inputRadius,
               border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
             ),
             child: Row(
@@ -90,7 +91,7 @@ class _CancelOrderDialogState extends State<CancelOrderDialog> {
             final reason = _reasons[index];
             final isSelected = _selectedReason == reason;
             return InkWell(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadii.inputRadius,
               onTap: () => setState(() => _selectedReason = reason),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
@@ -124,10 +125,10 @@ class _CancelOrderDialogState extends State<CancelOrderDialog> {
               controller: _customReasonCtrl,
               autofocus: true,
               style: AppTextStyles.body,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Опишите причину отмены...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                border: OutlineInputBorder(borderRadius: AppRadii.inputRadius),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
             ),
           ],

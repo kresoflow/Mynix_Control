@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -36,30 +38,16 @@ class _OrderCardState extends State<OrderCard> {
         transform: Matrix4.translationValues(0, _isHovered ? -2 : 0, 0),
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadii.cardRadius,
           border: Border.all(
             color: _isHovered ? AppColors.brandPrimary.withValues(alpha: 0.5) : border,
           ),
-          boxShadow: _isHovered
-              ? [
-                  BoxShadow(
-                    color: AppColors.brandPrimary.withValues(alpha: 0.1),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+          boxShadow: _isHovered ? AppShadows.hoverCard : AppShadows.card,
         ),
         child: Material(
-          color: Colors.transparent,
+          color: AppColors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadii.cardRadius,
             onTap: () {
               showDialog(
                 context: context,
@@ -121,7 +109,7 @@ class _OrderCardState extends State<OrderCard> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: AppRadii.inputRadius,
                   ),
                   child: Icon(
                     isCancelled ? PhosphorIconsRegular.xCircle : PhosphorIconsRegular.receipt,
@@ -154,7 +142,7 @@ class _OrderCardState extends State<OrderCard> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadii.radiusLg,
                 border: Border.all(color: statusColor.withValues(alpha: 0.3)),
               ),
               child: Text(

@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 class DashboardSkeleton extends StatefulWidget {
   const DashboardSkeleton({super.key});
@@ -102,7 +103,7 @@ class _DashboardSkeletonState extends State<DashboardSkeleton> with SingleTicker
       height: height,
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadii.dialogRadius,
       ),
     );
   }

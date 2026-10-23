@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:kreso_frontend/features/analytics/models/analytics_models.dart';
@@ -23,7 +24,7 @@ class XRayTableCard extends StatelessWidget {
       padding: EdgeInsets.all(isDesktop ? 24 : 16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: AppRadii.radiusPill,
         border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
       ),
       child: Column(
@@ -90,48 +91,63 @@ class XRayTableCard extends StatelessWidget {
 
             return DataRow(
               cells: [
-                DataCell(Text(
-                  '${index + 1}',
-                  style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: AppColors.brandPrimary),
-                )),
-                DataCell(Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      item.name,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.darkText : AppColors.lightText,
-                      ),
+                DataCell(
+                  Text(
+                    '${index + 1}',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.brandPrimary,
                     ),
-                    Text(
-                      '$price $currency',
-                      style: AppTextStyles.caption.copyWith(
-                        color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                  ),
+                ),
+                DataCell(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        item.name,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppColors.darkText : AppColors.lightText,
+                        ),
                       ),
+                      Text(
+                        '$price $currency',
+                        style: AppTextStyles.caption.copyWith(
+                          color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                DataCell(
+                  Text(
+                    item.options ?? '-',
+                    style: AppTextStyles.caption.copyWith(
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                     ),
-                  ],
-                )),
-                DataCell(Text(
-                  item.options ?? '-',
-                  style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                   ),
-                )),
-                DataCell(Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                    borderRadius: BorderRadius.circular(12),
+                ),
+                DataCell(
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                      borderRadius: AppRadii.radiusLg,
+                    ),
+                    child: Text(item.category, style: AppTextStyles.caption),
                   ),
-                  child: Text(item.category, style: AppTextStyles.caption),
-                )),
-                DataCell(Text('${item.quantity} шт.', style: AppTextStyles.bodyMedium)),
-                DataCell(Text(
-                  '${item.revenue.toStringAsFixed(0)} $currency',
-                  style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
-                )),
+                ),
+                DataCell(
+                  Text('${item.quantity} шт.', style: AppTextStyles.bodyMedium),
+                ),
+                DataCell(
+                  Text(
+                    '${item.revenue.toStringAsFixed(0)} $currency',
+                    style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             );
           }).toList(),

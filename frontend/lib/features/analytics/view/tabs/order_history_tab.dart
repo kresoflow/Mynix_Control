@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:kreso_frontend/core/network/api_client.dart';
@@ -116,11 +116,11 @@ class _OrderHistoryTabState extends State<OrderHistoryTab> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(PhosphorIconsRegular.receipt, size: 64, color: isDark ? Colors.white24 : Colors.black38),
+                    Icon(PhosphorIconsRegular.receipt, size: 64, color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
                     const SizedBox(height: 16),
                     Text(
                       'Нет заказов за этот период',
-                      style: AppTextStyles.h3.copyWith(color: isDark ? Colors.white54 : Colors.black54),
+                      style: AppTextStyles.h3.copyWith(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                     ),
                   ],
                 ),
