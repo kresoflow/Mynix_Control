@@ -1,16 +1,15 @@
 <!-- =========================================================================== -->
 <!-- ДОКУМЕНТ: Frontend Architecture Map (frontend/ARCHITECTURE_MAP.md)          -->
-<!-- СТАТУС:   АКТУАЛЬНО (Phase 0: Rebranding, CI/CD & Documentation Hardening)   -->
-<!-- ДАТА:     2026-09-19 | Контрольный коммит: e5ae1c6                         -->
+<!-- СТАТУС:   АКТУАЛЬНО (Phase 1: Stateful Shell Navigation, SWR Quiet Refresh, UI Kit Hardening & Performance) -->
+<!-- ДАТА:     2026-10-24 | Контрольный коммит: f5ff7f1                         -->
 <!-- =========================================================================== -->
 # Kreso Flow — Frontend Architecture Map
 **Стек:** Flutter 3.x, Dart, BLoC (`flutter_bloc` + `equatable`), Dio, Feature-Driven Architecture.  
-**Дизайн-система:** Строгий UI Kit, шкала размеров `AppButtonSize`, запрет сырых `Colors.*` и стандартных кнопок.  
+**Дизайн-система:** Строгий UI Kit, 100% токенизация, шкала размеров `AppButtonSize`, запрет сырых `Colors.*` и стандартных кнопок.  
 **Порядок отображения:** **100% точное соответствие проводнику VS Code (Explorer)**: каталог за каталогом, файл за файлом, включая слои архитектуры внутри каждой фичи.
 > [!IMPORTANT] РЕГЛАМЕНТ АКТУАЛИЗАЦИИ КАРТЫ (PHASE-DRIVEN SYNC)
 > 1. **Фазовый жизненный цикл:** Данная карта обновляется **централизованно по завершении ключевых архитектурных/бизнес-фаз (Milestones / Sprints)** или при крупных рефакторингах структуры, а **не** при каждом мелком коммите.
 > 2. **Правило недоверия для AI-агентов:** Если текущая дата или состояние репозитория (Git HEAD) новее даты, указанной в шапке этой карты — **НЕ доверяйте структуре слепо**. Перед чтением, редактированием или удалением файлов всегда проверяйте реальное существование путей через `find_by_name`, `list_dir` или `git status`.
-
 
 ---
 
@@ -20,16 +19,19 @@
    - Запрещено использовать `ElevatedButton`, `TextButton`, `OutlinedButton`.
    - Разрешены только компоненты дизайн-системы: `AppPrimaryButton`, `AppSecondaryButton`, `AppGhostButton`, `AppDangerButton`, `AppMenuButton`.
    - Шкала размеров `AppButtonSize`: `xs (28px)`, `sm (32px)`, `md (36px)`, `lg (44-48px)`, `xl (52px)`.
-2. **Запрет хардкода цветов и стилей:**
+2. **Запрет хардкода цветов и стилей (100% UI Kit Tokenization):**
    - Запрещено использовать `Colors.*` и сырые `Color(0x...)` в коде виджетов (за исключением `core/theme/`).
    - Все цвета берутся только из `AppColors.*` (`brandPrimary`, `darkCard`, `lightCard`, `pureWhite`, `transparent`, `danger`, `success`, `warning`).
    - Скругления: `AppRadii.*`. Тени: `AppShadows.*`. Типографика: `AppTextStyles.*`.
-3. **Принцип связности (Locality of Behavior > Line Count):**
-   - Целевой размер файлов: 200–250 строк. Потолок: 300 строк.
-   - Для связных монолитов (BLoC со своими Event и State) разрешено до 300–350 строк.
-   - Табу на файлы-карлики (<60 строк): приватные виджеты экрана обязаны оставаться в файле экрана.
-4. **Сетевой слой:**
-   - Прямые HTTP-запросы из UI или BLoC запрещены. Используется слой `Repository`, инжектируемый через `RepositoryProvider`.
+3. **Stateful Навигация & SWR:**
+   - Сохранение состояния экранов при навигации через `StatefulShellRoute.indexedStack` (0 мс переключение, сохранение скролла и форм).
+   - Stale-While-Revalidate: при повторном открытии или ревалидации данные отображаются из памяти мгновенно, фоновое обновление происходит тихо, без пульсирующих скелетонов (`SkeletonList` только при холодном старте).
+   - Живая синхронизация через `webSocketService` (Склад, Аналитика, Касса).
+4. **Графическая изоляция (FPS & Repaint Optimization):**
+   - Установка `RepaintBoundary` на тяжелые поддеревья: графики аналитики (`fl_chart`), плитки каталога кассы, корзина и активные столы.
+5. **Принцип связности и лимиты строк (Locality of Behavior):**
+   - Целевой размер файлов: 200–250 строк. Жесткий потолок: 300 строк.
+   - Запрещены файлы-карлики (<60 строк).
 
 ---
 
@@ -50,32 +52,36 @@ frontend/
 │
 ├── lib/                              # [7] Исходный код приложения на Dart
 │   ├── core/                         # Общесистемное ядро и инфраструктура
+│   │   ├── layout/                   # Адаптивные каркасы главного лейаута
 │   │   ├── network/                  # Сетевой транспорт: api_client.dart (Dio), websocket_service.dart
-│   │   ├── router/                   # Навигация: app_router.dart (декларативный GoRouter)
+│   │   ├── router/                   # Навигация: app_router.dart (StatefulShellRoute.indexedStack)
 │   │   ├── theme/                    # Дизайн-система (SSOT): app_colors, app_radii, app_shadows, app_text_styles, theme_bloc
 │   │   ├── utils/                    # Хелперы: app_bloc_observer, audio_helper, currency_formatter, role_formatter
-│   │   └── widgets/                  # Библиотека компонентов UI Kit:
+│   │   └── widgets/                  # Библиотека компонентов UI Kit (100% токенизирована):
 │   │       ├── color_picker/         # Виджеты пикера цветов номенклатуры (HSV plane, hue slider, dialog)
-│   │       ├── main_layout/          # Адаптивные каркасы (desktop_layout, mobile_layout, nav_rail)
+│   │       ├── main_layout/          # Адаптивные каркасы (desktop_layout, mobile_layout, app_nav_bar, app_nav_rail)
 │   │       ├── profile/              # Модальное окно профиля кассира и выход из системы
-│   │       ├── ui_kit/               # Специализированные контролы (AppFilterChip, AppSearchField)
+│   │       ├── ui_kit/               # Специализированные контролы (AppFilterChip, AppSearchField, AppSegmentedControl)
 │   │       ├── app_button.dart       # Семейство кнопок AppButton со шкалой размеров AppButtonSize
 │   │       ├── app_card.dart         # Универсальные карточки с поддержкой тёмной и светлой тем
 │   │       ├── app_dialog_scaffold.dart # Каркас модальных диалогов с фиксированной шапкой и футером
 │   │       ├── app_segmented_tab.dart   # Анимированный сегментированный переключатель вкладок
 │   │       ├── app_text_field.dart   # Стилизованные текстовые поля ввода с поддержкой POS-клавиатуры
-│   │       └── app_toast.dart        # Всплывающие toast-уведомления об успехе или ошибке
+│   │       ├── app_toast.dart        # Всплывающие toast-уведомления об успехе или ошибке
+│   │       ├── date_time_picker_*.dart # Календарь и время с токенами дизайн-системы
+│   │       ├── logout_confirm_dialog.dart # Диалог подтверждения выхода с защитой
+│   │       └── skeleton_loader.dart  # Скелетонные плейсхолдеры для первичной загрузки данных
 │   │
 │   ├── features/                     # Модули бизнес-логики (Feature-Driven Architecture)
 │   │   ├── analytics/                # Модуль: Аналитика и Отчетность
-│   │   │   ├── bloc/                 # analytics_bloc.dart, analytics_event.dart, analytics_state.dart
+│   │   │   ├── bloc/                 # analytics_bloc.dart (SWR + WS), analytics_event.dart, analytics_state.dart
 │   │   │   ├── models/               # analytics_models.dart, dashboard_data.dart
 │   │   │   ├── repository/           # analytics_repository.dart
-│   │   │   └── view/                 # analytics_dashboard_screen.dart, tabs/ (смены, продажи), widgets/
+│   │   │   └── view/                 # analytics_dashboard_screen.dart (SWR), tabs/ (сводка, чеки, смены), widgets/
 │   │   ├── auth/                     # Модуль: Авторизация и Смена кассира
 │   │   │   ├── bloc/                 # auth_bloc.dart, auth_event.dart, auth_state.dart
 │   │   │   ├── repository/           # auth_repository.dart (вход по логину/паролю и PIN-коду)
-│   │   │   └── view/                 # login_screen.dart, splash_screen.dart, widgets/ (pin_keypad.dart)
+│   │   │   └── view/                 # login_screen.dart (декомпозирован), splash_screen.dart, widgets/ (pin_keypad.dart)
 │   │   ├── crm/                      # Модуль: База клиентов и Программа лояльности
 │   │   │   ├── bloc/                 # crm_bloc.dart, crm_event.dart, crm_state.dart
 │   │   │   ├── models/               # customer.dart, bonus_transaction.dart, customer_transaction.dart
@@ -84,7 +90,7 @@ frontend/
 │   │   ├── hub/                      # Модуль: Стартовый лаунчер (Hub)
 │   │   │   └── view/                 # hub_screen.dart (быстрый переход между Кассой, Складом и Аналитикой)
 │   │   ├── inventory/                # Модуль: Складской учет и Товародвижение
-│   │   │   ├── bloc/                 # category_bloc, document_bloc, inventory_bloc, receive_retail_bloc
+│   │   │   ├── bloc/                 # category_bloc, document_bloc (SWR + WS + handlers), ingredient_bloc (SWR + WS)
 │   │   │   ├── models/               # document.dart, ingredient.dart, supplier.dart, supplier_transaction.dart
 │   │   │   ├── repository/           # inventory_repository.dart, parts/ (stock_part, documents_part)
 │   │   │   ├── services/             # document_export_service.dart, export_helper (web/stub)
@@ -102,17 +108,17 @@ frontend/
 │   │   │   ├── repository/           # orders_repository.dart
 │   │   │   └── view/                 # orders_screen.dart, widgets/ (order_details_dialog.dart, возврат)
 │   │   ├── pos/                      # Модуль: Сенсорная POS-касса
-│   │   │   ├── bloc/                 # cart_bloc.dart, menu_bloc.dart (связный BLoC), pos_settings_cubit.dart
-│   │   │   ├── models/               # cart_item.dart, menu_category.dart, menu_item.dart
+│   │   │   ├── bloc/                 # cart_bloc.dart, menu_bloc.dart, shift_bloc.dart, pos_tab_cubit.dart
+│   │   │   ├── models/               # cart_item.dart, menu_category.dart, menu_item.dart, cash_operation.dart
 │   │   │   ├── repository/           # menu_repository.dart, order_repository.dart, shift_repository.dart
 │   │   │   ├── services/             # pos_outbox_service.dart, pos_sync_service.dart, lan/ (локальный POS-сервер)
 │   │   │   └── view/                 # pos_screen.dart, widgets/ (столы зала, диалог модификаторов, закрытие смены)
 │   │   ├── settings/                 # Модуль: Настройки заведения
-│   │   │   ├── bloc/                 # settings_bloc.dart, user_bloc.dart
+│   │   │   ├── bloc/                 # settings_bloc.dart, user_bloc.dart (pre-cached)
 │   │   │   ├── models/               # user_model.dart
 │   │   │   ├── repository/           # settings_repository.dart, user_repository.dart
 │   │   │   ├── services/             # lan_settings_service.dart (сетевые принтеры и сканеры)
-│   │   │   └── view/                 # settings_screen.dart, ui_kit_showcase_screen.dart, tabs/ (принтеры, сотрудники)
+│   │   │   └── view/                 # settings_screen.dart, ui_kit_showcase_screen.dart (ListView.builder), tabs/
 │   │   └── superadmin/               # Модуль: SaaS-управление тенантами
 │   │       ├── bloc/                 # superadmin_bloc.dart, tenant_explorer_bloc.dart
 │   │       ├── models/               # tenant.dart (сущность организации и владельца)
@@ -124,11 +130,18 @@ frontend/
 ├── linux/                            # [8] Нативный проект Linux Desktop
 ├── macos/                            # [9] Нативный проект macOS Desktop
 │
-├── test/                             # [10] Автоматические тесты Flutter (flutter test)
+├── test/                             # [10] Автоматические тесты Flutter (11 наборов, 76 тестов)
 │   ├── api_test.dart                 # Тесты сериализации моделей поставщиков и взаиморасчетов
+│   ├── bulk_add_duplicate_validator_test.dart # Тесты валидатора коллизий и дубликатов при пакетном добавлении
 │   ├── bulk_add_test.dart            # Комплексные тесты пакетного создания номенклатуры и навигации
-│   ├── goods_receipt_test.dart       # Тесты проведения складских накладных
-│   └── widget_test.dart              # Тесты дизайн-системы и кнопок AppButton
+│   ├── cash_operation_test.dart      # Тесты моделей кассовых операций (инкассация, размен)
+│   ├── document_export_test.dart     # Тесты экспорта складских документов в Excel / PDF
+│   ├── duplicate_detector_test.dart  # Тесты детектора дубликатов позиций меню
+│   ├── goods_receipt_test.dart       # Тесты проведения складских накладных и синхронизации BLoC
+│   ├── menu_item_variations_test.dart# Тесты вариаций блюд и упаковок номенклатуры
+│   ├── unit_formatter_test.dart      # Тесты форматирования единиц измерения
+│   ├── widget_test.dart              # Тесты дизайн-системы и кнопок AppButton
+│   └── write_off_hybrid_test.dart    # Тесты гибридного списания номенклатуры
 │
 ├── web/                              # [11] Нативный проект Web (PWA для браузеров)
 ├── windows/                          # [12] Нативный проект Windows Desktop (основной таргет POS кассы)

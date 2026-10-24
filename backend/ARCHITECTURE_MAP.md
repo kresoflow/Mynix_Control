@@ -1,7 +1,7 @@
 <!-- =========================================================================== -->
 <!-- ДОКУМЕНТ: Backend Architecture Map (backend/ARCHITECTURE_MAP.md)            -->
-<!-- СТАТУС:   АКТУАЛЬНО (Phase 0: Rebranding, CI/CD & Documentation Hardening)   -->
-<!-- ДАТА:     2026-09-19 | Контрольный коммит: e5ae1c6                         -->
+<!-- СТАТУС:   АКТУАЛЬНО (Phase 1: Real-time WebSockets, PBAC Hardening & SWR)   -->
+<!-- ДАТА:     2026-10-24 | Контрольный коммит: f5ff7f1                         -->
 <!-- =========================================================================== -->
 # Kreso Flow — Backend Architecture Map
 **Стек:** Python 3.12, FastAPI, SQLModel / SQLAlchemy 2.0 (asyncpg), PostgreSQL (Multi-Tenancy по схемам).  
@@ -9,7 +9,6 @@
 > [!IMPORTANT] РЕГЛАМЕНТ АКТУАЛИЗАЦИИ КАРТЫ (PHASE-DRIVEN SYNC)
 > 1. **Фазовый жизненный цикл:** Данная карта обновляется **централизованно по завершении ключевых архитектурных/бизнес-фаз (Milestones / Sprints)** или при крупных рефакторингах структуры, а **не** при каждом мелком коммите.
 > 2. **Правило недоверия для AI-агентов:** Если текущая дата или состояние репозитория (Git HEAD) новее даты, указанной в шапке этой карты — **НЕ доверяйте структуре слепо**. Перед чтением, редактированием или удалением файлов всегда проверяйте реальное существование путей через `find_by_name`, `list_dir` или `git status`.
-
 
 ---
 
@@ -28,6 +27,8 @@
    - `services/` — вся бизнес-логика, расчет себестоимости, списание остатков и транзакции с базой данных.
 4. **Связанность кода (Locality of Behavior):**
    - Монолитные связные транзакции допускают до 300–350 строк, механический распил единых методов запрещен.
+5. **Real-time Синхронизация (WebSockets):**
+   - Любые изменения заказов, остатков и документов склада автоматически транслируются через `kitchen_manager.broadcast_to_tenant` (`new_order`, `status_update`, `inventory_updated`).
 
 ---
 
@@ -67,7 +68,7 @@ backend/
 │   ├── inventory/                    # Модуль: Склад, Меню, Техкарты и Поставщики
 │   │   ├── __pycache__/              # Байт-код модуля склада
 │   │   ├── models/                   # Модели: menu_models, ingredient_models, document_models, enums
-│   │   ├── routers/                  # HTTP-маршруты: menu, ingredient, category, document, supplier, stock
+│   │   ├── routers/                  # HTTP-маршруты: menu, ingredient, category, document (с WS-broadcast), supplier, stock
 │   │   ├── services/                 # Бизнес-логика: menu_service, ingredient_service, document_service
 │   │   ├── __init__.py               # Инициализация пакета inventory
 │   │   ├── router.py                 # Главный роутер склада и каталога
@@ -78,7 +79,7 @@ backend/
 │   │   ├── services/                 # Бизнес-логика: checkout_service, shift_service, order_table_service
 │   │   ├── __init__.py               # Инициализация пакета pos
 │   │   ├── models.py                 # Модели: Order, OrderItem, Shift, Cashbox, OrderTable
-│   │   └── ws.py                     # WebSocket хаб реального времени (включая уведомления поваров)
+│   │   └── ws.py                     # WebSocket хаб реального времени (уведомления касс, кухни и склада)
 │   ├── system/                       # Модуль: Системные настройки, Управление кластером и Диагностика
 │   │   ├── __pycache__/              # Байт-код модуля system
 │   │   ├── routers/                  # HTTP-маршруты системного управления
@@ -113,13 +114,15 @@ backend/
 │       ├── 002_add_ingredient_is_archived.sql # Добавление флага архивации ингредиентов
 │       ├── 003_purge_dummy_parent_retail_products.sql # Очистка фиктивных RetailProduct для серий
 │       ├── 004_add_gift_card_client_uuid.sql # Идемпотентность транзакций сертификатов
-│       └── 005_normalize_retail_product_units.sql # Нормализация единиц учета в 'PCS' и названий плоских товаров
+│       ├── 005_normalize_retail_product_units.sql # Нормализация единиц учета в 'PCS' и названий плоских товаров
+│       ├── 006_heal_orphaned_flat_variations.sql # Восстановление связей плоских вариаций номенклатуры
+│       └── 007_sync_archived_retail_products.sql # Синхронизация статусов архивации товаров ритейла
 │
 ├── scripts/                          # Скрипты ручного тестирования и утилиты
 │   ├── manual_tests/                 # Ручные сценарии проверки API (смены, печать, X-отчеты)
 │   └── seed_data.py                  # Утилита наполнения тестовыми данными
 │
-├── tests/                            # Набор автоматических тестов pytest (124 теста)
+├── tests/                            # Набор автоматических тестов pytest (127 тестов)
 │   ├── __pycache__/                  # Служебный кэш байт-кода тестов
 │   ├── conftest.py                   # Корневые фикстуры (SQLite in-memory, моки сессий)
 │   ├── test_adversarial_m1.py        # Стресс-тестирование граничных условий
@@ -136,6 +139,7 @@ backend/
 │   ├── test_pbac_three_roles.py      # Тесты матриц ролей PBAC
 │   ├── test_poka_yoke_guards.py      # Тесты защиты от дублей и ошибок ввода (Poka-Yoke)
 │   ├── test_pos_offline_idempotency.py # Тесты идемпотентности кассы
+│   ├── test_pos_security_admin.py    # Тесты безопасности суперадминистратора и PIN-кодов кассы
 │   ├── test_pos_shifts.py            # Тесты открытия и закрытия смен
 │   ├── test_recipe_api.py            # Тесты калькуляций техкарт и граммовок
 │   ├── test_retail_variations.py     # Тесты вариаций штучного ритейла и упаковок
