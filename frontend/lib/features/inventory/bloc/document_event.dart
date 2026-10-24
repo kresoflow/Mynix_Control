@@ -17,7 +17,9 @@ class LoadDocuments extends DocumentEvent {
   List<Object?> get props => [type];
 }
 
-class LoadSuppliers extends DocumentEvent {}
+class LoadSuppliers extends DocumentEvent {
+  const LoadSuppliers();
+}
 
 class CreateDocument extends DocumentEvent {
   final Map<String, dynamic> data;

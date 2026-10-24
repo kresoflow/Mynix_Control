@@ -7,7 +7,9 @@ abstract class CategoryEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadCategories extends CategoryEvent {}
+class LoadCategories extends CategoryEvent {
+  const LoadCategories();
+}
 
 class CreateCategory extends CategoryEvent {
   final String name;
