@@ -221,10 +221,13 @@
     // Fail-safe timeout: never leave user stuck on splash screen even if CDN fonts fail
     setTimeout(removeSplashScreen, 3500);
 
-    // Intercept browser search hotkey (Ctrl+F, Cmd+F) so it triggers in-app search instead of browser find bar
+    // Intercept browser hotkeys (Ctrl+F, Ctrl+B, Ctrl+S) to prevent browser default actions
     window.addEventListener('keydown', function(e) {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F' || e.key === 'а' || e.key === 'А')) {
-        e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        var k = e.key.toLowerCase();
+        if (k === 'f' || k === 'а' || k === 'b' || k === 'и' || k === 's' || k === 'ы') {
+          e.preventDefault();
+        }
       }
     });
 
