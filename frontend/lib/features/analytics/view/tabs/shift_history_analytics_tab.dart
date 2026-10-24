@@ -29,7 +29,10 @@ class ShiftHistoryAnalyticsTab extends StatefulWidget {
   State<ShiftHistoryAnalyticsTab> createState() => _ShiftHistoryAnalyticsTabState();
 }
 
-class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
+class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   bool _isLoading = true;
   String? _error;
   List<Map<String, dynamic>> _history = [];
@@ -119,6 +122,7 @@ class _ShiftHistoryAnalyticsTabState extends State<ShiftHistoryAnalyticsTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

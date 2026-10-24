@@ -123,13 +123,15 @@ class _IngredientTableViewState extends State<IngredientTableView> {
       allCategories = catState.categories;
     }
 
+    final validCategoryIds = widget.selectedCategoryId == null
+        ? null
+        : _getCategoryAndSubcategories(widget.selectedCategoryId!, allCategories);
+
     final rawIngredients = widget.ingredients.where((i) => !i.isRetail).toList();
-    final filteredIngredients = widget.selectedCategoryId == null
+    final filteredIngredients = validCategoryIds == null
         ? rawIngredients
         : rawIngredients.where((i) {
-            if (i.categoryId == null) return false;
-            final validIds = _getCategoryAndSubcategories(widget.selectedCategoryId!, allCategories);
-            return validIds.contains(i.categoryId);
+            return i.categoryId != null && validCategoryIds.contains(i.categoryId);
           }).toList();
 
     final currency = context.watch<SettingsBloc>().state.currency;

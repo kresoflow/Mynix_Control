@@ -1,3 +1,9 @@
+// ==============================================================================
+// Title: Supplier Settlement Row
+// Path: frontend/lib/features/inventory/view/widgets/warehouse/dialogs/supplier_settlement/supplier_settlement_row.dart
+// Description: Строка операции взаиморасчетов с поставщиком в истории акта сверки.
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -22,6 +28,7 @@ class SupplierSettlementRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isInvoice = transaction.type == SupplierTransactionType.invoice;
     final isPayment = transaction.type == SupplierTransactionType.payment;
 
@@ -32,8 +39,12 @@ class SupplierSettlementRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: AppRadii.inputRadius,
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 0.8,
+        ),
       ),
       child: Row(
         children: [
@@ -68,13 +79,16 @@ class SupplierSettlementRow extends StatelessWidget {
                   transaction.type.label,
                   style: AppTextStyles.body.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.darkText,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   dateStr,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext, fontSize: 11),
+                  style: AppTextStyles.caption.copyWith(
+                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
@@ -88,7 +102,10 @@ class SupplierSettlementRow extends StatelessWidget {
               children: [
                 Text(
                   transaction.comment ?? (isInvoice ? 'Приходная накладная #${transaction.documentId}' : '-'),
-                  style: AppTextStyles.body.copyWith(fontSize: 13, color: AppColors.darkText),
+                  style: AppTextStyles.body.copyWith(
+                    fontSize: 13,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -96,7 +113,10 @@ class SupplierSettlementRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     _formatPaymentMethod(transaction.paymentMethod),
-                    style: AppTextStyles.caption.copyWith(color: AppColors.darkSubtext, fontSize: 11),
+                    style: AppTextStyles.caption.copyWith(
+                      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ],
@@ -121,32 +141,37 @@ class SupplierSettlementRow extends StatelessWidget {
           // Actions
           if (!isInvoice) ...[
             IconButton(
-              icon: Icon(PhosphorIconsRegular.pencilSimple, size: 16, color: AppColors.darkSubtext),
+              icon: Icon(
+                PhosphorIconsRegular.pencilSimple,
+                size: 16,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
               onPressed: onEdit,
               tooltip: 'Редактировать',
             ),
             IconButton(
               icon: const Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
               onPressed: onDelete,
-              tooltip: 'Удалить операцию',
+              tooltip: 'Удалить',
             ),
-          ] else
-            const SizedBox(width: 72),
+          ] else ...[
+            const SizedBox(width: 80),
+          ],
         ],
       ),
     );
   }
 
-  String _formatPaymentMethod(String method) {
+  String _formatPaymentMethod(String? method) {
     switch (method) {
       case 'cash':
         return 'Наличные';
-      case 'card':
-        return 'Карта';
       case 'bank_transfer':
         return 'Перевод / Р/С';
+      case 'card':
+        return 'Банковская карта';
       default:
-        return method;
+        return method ?? 'Не указан';
     }
   }
 }

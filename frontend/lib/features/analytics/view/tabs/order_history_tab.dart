@@ -25,7 +25,10 @@ class OrderHistoryTab extends StatefulWidget {
   State<OrderHistoryTab> createState() => _OrderHistoryTabState();
 }
 
-class _OrderHistoryTabState extends State<OrderHistoryTab> {
+class _OrderHistoryTabState extends State<OrderHistoryTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   late final OrdersBloc _ordersBloc;
 
   @override
@@ -89,6 +92,7 @@ class _OrderHistoryTabState extends State<OrderHistoryTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocProvider.value(

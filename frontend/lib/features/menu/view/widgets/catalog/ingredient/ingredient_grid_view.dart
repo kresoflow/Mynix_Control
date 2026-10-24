@@ -53,13 +53,15 @@ class IngredientGridView extends StatelessWidget {
       allCategories = catState.categories;
     }
 
+    final validCategoryIds = selectedCategoryId == null
+        ? null
+        : _getCategoryAndSubcategories(selectedCategoryId!, allCategories);
+
     final rawIngredients = ingredients.where((i) => !i.isRetail).toList();
-    final filtered = selectedCategoryId == null
+    final filtered = validCategoryIds == null
         ? rawIngredients
         : rawIngredients.where((i) {
-            if (i.categoryId == null) return false;
-            final validIds = _getCategoryAndSubcategories(selectedCategoryId!, allCategories);
-            return validIds.contains(i.categoryId);
+            return i.categoryId != null && validCategoryIds.contains(i.categoryId);
           }).toList();
 
     final currency = context.watch<SettingsBloc>().state.currency;

@@ -17,7 +17,7 @@ import '../widgets/category_pie_chart_card.dart';
 import '../widgets/xray_table_card.dart';
 
 // ── Вкладка сводки показателей дашборда ──────────────────────────────────────
-class DashboardSummaryTab extends StatelessWidget {
+class DashboardSummaryTab extends StatefulWidget {
   final String selectedPeriod;
   final DateTime? startDate;
   final DateTime? endDate;
@@ -30,7 +30,16 @@ class DashboardSummaryTab extends StatelessWidget {
   });
 
   @override
+  State<DashboardSummaryTab> createState() => _DashboardSummaryTabState();
+}
+
+class _DashboardSummaryTabState extends State<DashboardSummaryTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return BlocBuilder<AnalyticsBloc, AnalyticsState>(
@@ -54,12 +63,13 @@ class DashboardSummaryTab extends StatelessWidget {
                 const SizedBox(height: 12),
                 AppSecondaryButton(
                   label: 'Повторить попытку',
+                  icon: Icons.refresh,
                   onPressed: () {
                     context.read<AnalyticsBloc>().add(
                           LoadAnalytics(
-                            period: selectedPeriod,
-                            startDate: startDate,
-                            endDate: endDate,
+                            period: widget.selectedPeriod,
+                            startDate: widget.startDate,
+                            endDate: widget.endDate,
                           ),
                         );
                   },
@@ -69,25 +79,18 @@ class DashboardSummaryTab extends StatelessWidget {
           );
         }
 
-        // 3. Данные успешно загружены (или отображаются из кэша с фоновым обновлением)
-        if (state is AnalyticsLoaded) {
-          final metrics = state.metrics;
-          final xray = state.xray;
+        // 3. Успешное состояние или фоновое обновление с кэшем
+        if (state is AnalyticsLoaded || (state is AnalyticsError && state.previousMetrics != null)) {
+          final metrics = state is AnalyticsLoaded
+              ? state.metrics
+              : (state as AnalyticsError).previousMetrics!;
+          final xray = state is AnalyticsLoaded
+              ? state.xray
+              : (state as AnalyticsError).previousXray!;
 
-          return RefreshIndicator(
-            onRefresh: () async {
-              context.read<AnalyticsBloc>().add(
-                    LoadAnalytics(
-                      period: selectedPeriod,
-                      startDate: startDate,
-                      endDate: endDate,
-                    ),
-                  );
-            },
-            color: AppColors.brandPrimary,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(isDesktop ? 16 : 12),
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -98,12 +101,12 @@ class DashboardSummaryTab extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          flex: 2,
+                          flex: 6,
                           child: RevenueChartCard(timeSeries: metrics.timeSeries),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
-                          flex: 1,
+                          flex: 4,
                           child: CategoryPieChartCard(categories: xray.categories),
                         ),
                       ],

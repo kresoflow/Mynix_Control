@@ -1,6 +1,14 @@
+// ==============================================================================
+// Title: Supplier Settlement Dialog
+// Path: frontend/lib/features/inventory/view/widgets/warehouse/dialogs/supplier_settlement/supplier_settlement_dialog.dart
+// Description: Окно истории взаиморасчетов, акта сверки и ручных начислений по поставщику.
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
@@ -90,38 +98,28 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
     }
   }
 
-  void _confirmDelete(BuildContext context, SupplierTransaction txn) {
-    showDialog(
+  Future<void> _confirmDelete(BuildContext context, SupplierTransaction txn) async {
+    final isConfirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (dCtx) => AlertDialog(
-        backgroundColor: AppColors.darkCard,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
-        title: const Text('Удалить операцию?'),
-        content: Text(
-          'Операция на сумму ${txn.amount.toStringAsFixed(2)} ${widget.currency} будет удалена.\n'
+      title: 'Удалить операцию?',
+      message: 'Операция на сумму ${txn.amount.toStringAsFixed(2)} ${widget.currency} будет удалена.\n'
           'Баланс поставщика автоматически скорректируется.',
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(dCtx),
-          ),
-          AppButton.danger(
-            label: 'Удалить',
-            onPressed: () {
-              Navigator.pop(dCtx);
-              context.read<DocumentBloc>().add(DeleteSupplierTransaction(widget.supplier.id, txn.id));
-            },
-          ),
-        ],
-      ),
+      confirmLabel: 'Удалить',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
+    if (isConfirmed == true && mounted) {
+      context.read<DocumentBloc>().add(DeleteSupplierTransaction(widget.supplier.id, txn.id));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Dialog(
-      backgroundColor: AppColors.darkBg,
+      backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
       shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 820, maxHeight: 720),
@@ -133,14 +131,17 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
               final txns = state.supplierTransactions.where((t) {
                 if (_filter == 'payments') return t.type == SupplierTransactionType.payment;
                 if (_filter == 'invoices') return t.type == SupplierTransactionType.invoice;
-                if (_filter == 'manual') return t.type == SupplierTransactionType.manualDebt || t.type == SupplierTransactionType.adjustment;
+                if (_filter == 'manual') {
+                  return t.type == SupplierTransactionType.manualDebt ||
+                      t.type == SupplierTransactionType.adjustment;
+                }
                 return true;
               }).toList();
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(context, currentSupplier, state.supplierTransactions),
+                  _buildHeader(context, currentSupplier, state.supplierTransactions, isDark),
                   const SizedBox(height: 16),
                   _buildToolbar(context),
                   const SizedBox(height: 16),
@@ -154,7 +155,7 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, Supplier supplier, List<SupplierTransaction> allTxns) {
+  Widget _buildHeader(BuildContext context, Supplier supplier, List<SupplierTransaction> allTxns, bool isDark) {
     final hasDebt = supplier.balance < 0;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -167,13 +168,18 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
                 color: AppColors.brandPrimary.withValues(alpha: 0.15),
                 borderRadius: AppRadii.inputRadius,
               ),
-              child: Icon(PhosphorIconsRegular.wallet, color: AppColors.brandPrimary, size: 24),
+              child: const Icon(PhosphorIconsRegular.wallet, color: AppColors.brandPrimary, size: 24),
             ),
             const SizedBox(width: 14),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(supplier.name, style: AppTextStyles.h2.copyWith(color: AppColors.darkText)),
+                Text(
+                  supplier.name,
+                  style: AppTextStyles.h2.copyWith(
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   hasDebt
@@ -199,7 +205,11 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: Icon(PhosphorIconsRegular.x, color: AppColors.darkSubtext, size: 22),
+              icon: Icon(
+                PhosphorIconsRegular.x,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                size: 22,
+              ),
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -249,8 +259,13 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
       return const SkeletonList();
     }
     if (txns.isEmpty) {
-      return Center(
-        child: Text('История взаиморасчетов пуста', style: TextStyle(color: AppColors.darkSubtext)),
+      return const Center(
+        child: AppEmptyState(
+          icon: PhosphorIconsRegular.receipt,
+          title: 'История взаиморасчетов пуста',
+          description: 'Проведенные накладные, выплаты и корректировки отображаются здесь',
+          size: AppEmptyStateSize.md,
+        ),
       );
     }
     return ListView.separated(

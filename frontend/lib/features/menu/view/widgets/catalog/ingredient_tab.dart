@@ -26,7 +26,10 @@ class IngredientTab extends StatefulWidget {
   State<IngredientTab> createState() => _IngredientTabState();
 }
 
-class _IngredientTabState extends State<IngredientTab> {
+class _IngredientTabState extends State<IngredientTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   int? _selectedCategoryId;
   bool _isManageMode = false;
   bool _isGridView = false;
@@ -86,6 +89,7 @@ class _IngredientTabState extends State<IngredientTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final ingState = context.watch<IngredientBloc>().state;
     final archivedCount = ingState is IngredientLoaded
