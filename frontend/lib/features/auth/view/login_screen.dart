@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
@@ -31,8 +32,22 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isPinMode = true; // Default to fast PIN login for staff/waiters
+  bool _isPinMode = false;
   String _pinCode = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInitialMode();
+  }
+
+  Future<void> _checkInitialMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastTenantId = prefs.getInt('last_tenant_id') ?? 0;
+    if (mounted && lastTenantId > 0) {
+      setState(() => _isPinMode = true);
+    }
+  }
 
   @override
   void dispose() {
@@ -156,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
                 elevation: 8,
-                shape: const RoundedRectangleBorder(borderRadius: AppRadii.pillRadius),
+                shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
                 child: Padding(
                   padding: const EdgeInsets.all(28),
                   child: Column(
@@ -262,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onTap: onTap,
       borderRadius: AppRadii.inputRadius,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected ? AppColors.brandPrimary : AppColors.transparent,
@@ -270,6 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
@@ -277,12 +293,16 @@ class _LoginScreenState extends State<LoginScreen> {
               color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
             ),
             const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkText : AppColors.lightText),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkText : AppColors.lightText),
+                ),
               ),
             ),
           ],
@@ -296,6 +316,10 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         TextField(
           controller: _usernameController,
+          autocorrect: false,
+          enableSuggestions: false,
+          textCapitalization: TextCapitalization.none,
+          keyboardType: TextInputType.text,
           decoration: const InputDecoration(
             labelText: 'Имя пользователя',
             border: OutlineInputBorder(borderRadius: AppRadii.buttonRadius),
@@ -306,6 +330,8 @@ class _LoginScreenState extends State<LoginScreen> {
         TextField(
           controller: _passwordController,
           obscureText: _obscurePassword,
+          autocorrect: false,
+          enableSuggestions: false,
           decoration: InputDecoration(
             labelText: 'Пароль',
             border: const OutlineInputBorder(borderRadius: AppRadii.buttonRadius),

@@ -8,6 +8,7 @@ and permission aggregation.
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
@@ -71,9 +72,10 @@ async def authenticate_by_password(
     password: str,
 ) -> Optional[User]:
     """Verify username + password, return User or None."""
+    clean_username = username.strip().lower()
     stmt = (
         select(User)
-        .where(User.username == username, User.is_active == True)
+        .where(func.lower(User.username) == clean_username, User.is_active == True)
         .options(
             selectinload(User.roles).selectinload(Role.permissions)
         )
@@ -81,7 +83,7 @@ async def authenticate_by_password(
     result = await session.execute(stmt)
     user = result.scalars().first()
 
-    if user is None or not verify_password(password, user.hashed_password):
+    if user is None or not verify_password(password.strip(), user.hashed_password):
         return None
     return user
 
@@ -91,20 +93,39 @@ async def authenticate_by_pin(
     pin_code: str,
     tenant_id: int,
 ) -> Optional[User]:
-    """Quick PIN login — scoped to a specific tenant."""
-    stmt = (
-        select(User)
-        .where(
-            User.pin_code == pin_code,
-            User.tenant_id == tenant_id,
-            User.is_active == True,
+    """Quick PIN login — scoped to a specific tenant or unique fallback."""
+    clean_pin = pin_code.strip()
+    if tenant_id and tenant_id > 0:
+        stmt = (
+            select(User)
+            .where(
+                User.pin_code == clean_pin,
+                User.tenant_id == tenant_id,
+                User.is_active == True,
+            )
+            .options(
+                selectinload(User.roles).selectinload(Role.permissions)
+            )
         )
-        .options(
-            selectinload(User.roles).selectinload(Role.permissions)
+        result = await session.execute(stmt)
+        return result.scalars().first()
+    else:
+        # Fallback when last_tenant_id is not saved yet on this device
+        stmt = (
+            select(User)
+            .where(
+                User.pin_code == clean_pin,
+                User.is_active == True,
+            )
+            .options(
+                selectinload(User.roles).selectinload(Role.permissions)
+            )
         )
-    )
-    result = await session.execute(stmt)
-    return result.scalars().first()
+        result = await session.execute(stmt)
+        users = result.scalars().all()
+        if len(users) == 1:
+            return users[0]
+        return None
 
 
 # ── Permission helpers ───────────────────────────────────────────
