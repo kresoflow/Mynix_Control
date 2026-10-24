@@ -1,7 +1,7 @@
 <!-- =========================================================================== -->
 <!-- ДОКУМЕНТ: Frontend Architecture Map (frontend/ARCHITECTURE_MAP.md)          -->
-<!-- СТАТУС:   АКТУАЛЬНО (Phase 1: Stateful Shell Navigation, SWR Quiet Refresh, UI Kit Hardening & Performance) -->
-<!-- ДАТА:     2026-10-24 | Контрольный коммит: f5ff7f1                         -->
+<!-- СТАТУС:   АКТУАЛЬНО (Phase 1: Stateful Shell, SWR, Desktop UX & Bloat Decomposition) -->
+<!-- ДАТА:     2026-10-24 | Контрольный коммит: fb5322e                         -->
 <!-- =========================================================================== -->
 # Kreso Flow — Frontend Architecture Map
 **Стек:** Flutter 3.x, Dart, BLoC (`flutter_bloc` + `equatable`), Dio, Feature-Driven Architecture.  
@@ -32,6 +32,9 @@
 5. **Принцип связности и лимиты строк (Locality of Behavior):**
    - Целевой размер файлов: 200–250 строк. Жесткий потолок: 300 строк.
    - Запрещены файлы-карлики (<60 строк).
+6. **Desktop Инварианты & Hotkeys:**
+   - Аппаратные хоткеи: `Ctrl + S` / `Cmd + S` (сохранение в модальных окнах), `Esc` (закрытие диалогов), `Ctrl + 1..6` (быстрая навигация по сайдбару), `Ctrl + B` (свернуть/развернуть меню).
+   - Ограничение окна Windows Desktop (`WM_GETMINMAXINFO`): минимальный размер 1024x700 px (защита от сжатия POS-терминалов кассы).
 
 ---
 

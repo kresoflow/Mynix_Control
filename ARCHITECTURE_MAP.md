@@ -1,7 +1,7 @@
 <!-- =========================================================================== -->
 <!-- ДОКУМЕНТ: Master Repository Architecture Map (ARCHITECTURE_MAP.md)          -->
-<!-- СТАТУС:   АКТУАЛЬНО (Phase 1: Performance, Design Tokens & Real-time SWR)   -->
-<!-- ДАТА:     2026-10-24 | Контрольный коммит: f5ff7f1                         -->
+<!-- СТАТУС:   АКТУАЛЬНО (Phase 1: Desktop UX, Hotkeys, SWR, Tokens & Clean Bloat) -->
+<!-- ДАТА:     2026-10-24 | Контрольный коммит: fb5322e                         -->
 <!-- =========================================================================== -->
 
 # Kreso Flow — Master Repository Architecture Map
