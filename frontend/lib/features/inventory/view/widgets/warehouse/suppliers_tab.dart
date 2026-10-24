@@ -25,7 +25,10 @@ class SuppliersTab extends StatefulWidget {
   State<SuppliersTab> createState() => _SuppliersTabState();
 }
 
-class _SuppliersTabState extends State<SuppliersTab> {
+class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   String _searchQuery = '';
   bool _showArchived = false;
 
@@ -102,6 +105,7 @@ class _SuppliersTabState extends State<SuppliersTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currency = context.watch<SettingsBloc>().state.currency;
 

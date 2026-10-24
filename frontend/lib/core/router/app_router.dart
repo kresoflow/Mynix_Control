@@ -15,7 +15,6 @@ import 'package:kreso_frontend/features/hub/view/hub_screen.dart';
 import 'package:kreso_frontend/core/widgets/main_layout.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
 class AppRouter {
   final AuthBloc authBloc;
@@ -73,39 +72,66 @@ class AppRouter {
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-      ShellRoute(
-        navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) {
-          return MainLayout(location: state.uri.path, child: child);
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainLayout(location: state.uri.path, child: navigationShell);
         },
-        routes: [
-          GoRoute(
-            path: '/pos',
-            builder: (context, state) => const PosScreen(),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/pos',
+                builder: (context, state) => const PosScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/orders',
-            builder: (context, state) => const OrdersScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/orders',
+                builder: (context, state) => const OrdersScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/catalog',
-            builder: (context, state) => const CatalogScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/catalog',
+                builder: (context, state) => const CatalogScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/warehouse',
-            builder: (context, state) => const WarehouseScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/warehouse',
+                builder: (context, state) => const WarehouseScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/analytics',
-            builder: (context, state) => const AnalyticsDashboardScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/analytics',
+                builder: (context, state) => const AnalyticsDashboardScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/hub',
-            builder: (context, state) => const HubScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/hub',
+                builder: (context, state) => const HubScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/settings',
-            builder: (context, state) => const SettingsScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
           ),
         ],
       ),

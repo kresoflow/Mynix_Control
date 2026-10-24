@@ -3,7 +3,9 @@
 // ДОМЕН: lib/features/analytics/bloc/analytics_bloc.dart
 // ==============================================================================
 
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kreso_frontend/core/network/websocket_service.dart';
 import 'package:kreso_frontend/features/analytics/models/analytics_models.dart';
 import 'package:kreso_frontend/features/analytics/repository/analytics_repository.dart';
 import 'analytics_event.dart';
@@ -15,6 +17,8 @@ import 'analytics_state.dart';
 /// в фоновом режиме через флаг isRefreshing: true.
 class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   final AnalyticsRepository repository;
+  StreamSubscription? _wsSubscription;
+  Timer? _wsDebounceTimer;
 
   // Кэш аналитики в памяти сессии: ключ периода -> (metrics, xray)
   final Map<String, ({AnalyticsMetrics metrics, AnalyticsXRay xray})> _cache = {};
@@ -22,6 +26,33 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
   AnalyticsBloc(this.repository) : super(AnalyticsInitial()) {
     on<LoadAnalytics>(_onLoadAnalytics);
     on<ResetAnalytics>(_onResetAnalytics);
+
+    _wsSubscription = webSocketService.messages.listen((data) {
+      final event = data['event'];
+      if ((event == 'new_order' || event == 'status_update' || event == 'inventory_updated') &&
+          state is AnalyticsLoaded) {
+        _wsDebounceTimer?.cancel();
+        _wsDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+          if (state is AnalyticsLoaded) {
+            final loaded = state as AnalyticsLoaded;
+            add(
+              LoadAnalytics(
+                period: loaded.period,
+                startDate: loaded.startDate,
+                endDate: loaded.endDate,
+              ),
+            );
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _wsDebounceTimer?.cancel();
+    _wsSubscription?.cancel();
+    return super.close();
   }
 
   String _cacheKey(String period, DateTime? start, DateTime? end) {

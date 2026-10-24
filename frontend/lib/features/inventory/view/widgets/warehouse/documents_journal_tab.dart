@@ -129,11 +129,12 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
                     Expanded(
                       child: BlocBuilder<DocumentBloc, DocumentState>(
                         builder: (context, state) {
-                          if (state.status == DocumentStatus.initial ||
-                              state.status == DocumentStatus.loading) {
+                          if ((state.status == DocumentStatus.initial ||
+                                  state.status == DocumentStatus.loading) &&
+                              state.documents.isEmpty) {
                             return const SkeletonList();
                           }
-                          if (state.status == DocumentStatus.failure) {
+                          if (state.status == DocumentStatus.failure && state.documents.isEmpty) {
                             return Center(
                               child: Text(
                                 'Ошибка загрузки: ${state.errorMessage}',

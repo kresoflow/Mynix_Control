@@ -6,6 +6,7 @@ from app.inventory.models import (
     InventoryDocumentRead, InventoryDocumentDetailRead, InventoryDocumentCreate, DocumentType
 )
 from app.inventory.services import document_service
+from app.pos.ws import notify_inventory_updated
 
 router = APIRouter(prefix="/documents", tags=["Inventory Documents"])
 
@@ -23,7 +24,9 @@ async def create_document(
     session: TenantSession,
     user: CurrentUser,
 ):
-    return await document_service.create_document(session, doc_in, user_id=user.id)
+    res = await document_service.create_document(session, doc_in, user_id=user.id)
+    await notify_inventory_updated(user.tenant_id)
+    return res
 
 @router.get("/{document_id}", response_model=InventoryDocumentDetailRead, dependencies=[Depends(require_permission(Perm.INVENTORY_VIEW))])
 async def get_document(
@@ -40,7 +43,9 @@ async def update_document(
     session: TenantSession,
     user: CurrentUser,
 ):
-    return await document_service.update_document(session, document_id, doc_in, user_id=user.id)
+    res = await document_service.update_document(session, document_id, doc_in, user_id=user.id)
+    await notify_inventory_updated(user.tenant_id)
+    return res
 
 @router.delete("/{document_id}", dependencies=[Depends(require_permission(Perm.INVENTORY_MANAGE))])
 async def delete_document(
@@ -48,7 +53,9 @@ async def delete_document(
     session: TenantSession,
     user: CurrentUser,
 ):
-    return await document_service.delete_document(session, document_id)
+    res = await document_service.delete_document(session, document_id)
+    await notify_inventory_updated(user.tenant_id)
+    return res
 
 @router.post("/{document_id}/complete", response_model=InventoryDocumentRead, dependencies=[Depends(require_permission(Perm.INVENTORY_MANAGE))])
 async def complete_document(
@@ -56,4 +63,6 @@ async def complete_document(
     session: TenantSession,
     user: CurrentUser,
 ):
-    return await document_service.complete_document(session, document_id, user_id=user.id)
+    res = await document_service.complete_document(session, document_id, user_id=user.id)
+    await notify_inventory_updated(user.tenant_id)
+    return res

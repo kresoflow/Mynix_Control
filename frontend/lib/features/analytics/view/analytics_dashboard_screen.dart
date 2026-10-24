@@ -29,20 +29,33 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    // [ИНВАРИАНТ] При первом открытии запрашиваем данные за сегодня, если они еще не загружены.
-    // Если BLoC уже держит данные в памяти, экран отобразит их мгновенно без спиннеров.
+    // [ИНВАРИАНТ] Stale-While-Revalidate: при открытии экрана мгновенно отображаем
+    // существующие данные и параллельно запускаем фоновое тихое обновление.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final bloc = context.read<AnalyticsBloc>();
-      if (bloc.state is AnalyticsInitial) {
-        bloc.add(const LoadAnalytics(period: 'today'));
-      } else if (bloc.state is AnalyticsLoaded) {
+      if (bloc.state is AnalyticsLoaded) {
         final loaded = bloc.state as AnalyticsLoaded;
         setState(() {
           _selectedPeriod = loaded.period;
           _startDate = loaded.startDate;
           _endDate = loaded.endDate;
         });
+        bloc.add(
+          LoadAnalytics(
+            period: loaded.period,
+            startDate: loaded.startDate,
+            endDate: loaded.endDate,
+          ),
+        );
+      } else {
+        bloc.add(
+          LoadAnalytics(
+            period: _selectedPeriod,
+            startDate: _startDate,
+            endDate: _endDate,
+          ),
+        );
       }
     });
   }

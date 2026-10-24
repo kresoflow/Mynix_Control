@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kreso_frontend/core/network/websocket_service.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
@@ -13,6 +15,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   final IngredientBloc? _ingredientBloc;
   static IngredientBloc? globalIngredientBloc;
   static void Function()? onDocumentCompletedCallback;
+  StreamSubscription? _wsSubscription;
+  Timer? _wsDebounceTimer;
 
   DocumentBloc(this._repository, [this._ingredientBloc]) : super(const DocumentState()) {
     on<LoadDocuments>(_onLoadDocuments);
@@ -29,6 +33,25 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<AddSupplierTransaction>(_onAddSupplierTransaction);
     on<UpdateSupplierTransaction>(_onUpdateSupplierTransaction);
     on<DeleteSupplierTransaction>(_onDeleteSupplierTransaction);
+
+    _wsSubscription = webSocketService.messages.listen((data) {
+      final event = data['event'];
+      if (event == 'inventory_updated' ||
+          event == 'document_created' ||
+          event == 'document_completed') {
+        _wsDebounceTimer?.cancel();
+        _wsDebounceTimer = Timer(const Duration(milliseconds: 350), () {
+          add(const LoadDocuments());
+        });
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _wsDebounceTimer?.cancel();
+    _wsSubscription?.cancel();
+    return super.close();
   }
 
   static String _formatError(Object e) {
@@ -52,7 +75,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     LoadDocuments event,
     Emitter<DocumentState> emit,
   ) async {
-    emit(state.copyWith(status: DocumentStatus.loading));
+    if (state.documents.isEmpty) {
+      emit(state.copyWith(status: DocumentStatus.loading));
+    }
     try {
       final documents = await _repository.getDocuments(type: event.type);
       emit(
@@ -63,7 +88,11 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         ),
       );
     } catch (e) {
-      emit(state.copyWith(status: DocumentStatus.failure, errorMessage: _formatError(e)));
+      if (state.documents.isEmpty) {
+        emit(state.copyWith(status: DocumentStatus.failure, errorMessage: _formatError(e)));
+      } else {
+        emit(state.copyWith(errorMessage: _formatError(e)));
+      }
     }
   }
 
@@ -71,16 +100,23 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     LoadSuppliers event,
     Emitter<DocumentState> emit,
   ) async {
+    if (state.suppliers.isEmpty) {
+      emit(state.copyWith(status: DocumentStatus.loading));
+    }
     try {
       final suppliers = await _repository.getSuppliers();
       emit(state.copyWith(suppliers: suppliers, clearError: true));
     } catch (e) {
-      emit(
-        state.copyWith(
-          status: DocumentStatus.failure,
-          errorMessage: _formatError(e),
-        ),
-      );
+      if (state.suppliers.isEmpty) {
+        emit(
+          state.copyWith(
+            status: DocumentStatus.failure,
+            errorMessage: _formatError(e),
+          ),
+        );
+      } else {
+        emit(state.copyWith(errorMessage: _formatError(e)));
+      }
     }
   }
 
