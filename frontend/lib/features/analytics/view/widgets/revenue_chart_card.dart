@@ -48,8 +48,9 @@ class RevenueChartCard extends StatelessWidget {
                       ),
                     ),
                   )
-                : LineChart(
-                    LineChartData(
+                : RepaintBoundary(
+                    child: LineChart(
+                      LineChartData(
                       gridData: FlGridData(
                         show: true,
                         drawVerticalLine: false,
@@ -101,6 +102,7 @@ class RevenueChartCard extends StatelessWidget {
                       ],
                     ),
                   ),
+                ),
           ),
         ],
       ),

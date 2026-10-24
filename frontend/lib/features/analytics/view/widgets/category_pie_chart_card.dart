@@ -72,25 +72,27 @@ class CategoryPieChartCard extends StatelessWidget {
 
   Widget _buildPieChart() {
     final colors = AppColors.chartPalette;
-    return PieChart(
-      PieChartData(
-        sectionsSpace: 2,
-        centerSpaceRadius: 40,
-        sections: categories.asMap().entries.map((e) {
-          final index = e.key;
-          final item = e.value;
-          return PieChartSectionData(
-            color: colors[index % colors.length],
-            value: item.percentage,
-            title: '${item.percentage.toStringAsFixed(0)}%',
-            radius: 50,
-            titleStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: AppColors.pureWhite,
-            ),
-          );
-        }).toList(),
+    return RepaintBoundary(
+      child: PieChart(
+        PieChartData(
+          sectionsSpace: 2,
+          centerSpaceRadius: 40,
+          sections: categories.asMap().entries.map((e) {
+            final index = e.key;
+            final item = e.value;
+            return PieChartSectionData(
+              color: colors[index % colors.length],
+              value: item.percentage,
+              title: '${item.percentage.toStringAsFixed(0)}%',
+              radius: 50,
+              titleStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.pureWhite,
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

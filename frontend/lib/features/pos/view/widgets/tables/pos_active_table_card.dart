@@ -68,8 +68,9 @@ class PosActiveTableCard extends StatelessWidget {
     final cardBg = isDark ? AppColors.darkCard : AppColors.lightCard;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
-    return Container(
-      decoration: BoxDecoration(
+    return RepaintBoundary(
+      child: Container(
+        decoration: BoxDecoration(
         color: cardBg,
         borderRadius: AppRadii.cardRadius,
         border: Border.all(
@@ -282,6 +283,7 @@ class PosActiveTableCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

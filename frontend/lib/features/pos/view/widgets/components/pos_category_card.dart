@@ -42,10 +42,11 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
         ? widget.accent.withValues(alpha: 0.5)
         : (isDark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.8));
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
+    return RepaintBoundary(
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTapDown: (_) => setState(() => _isPressed = true),
         onTapUp: (_) {
@@ -113,6 +114,7 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

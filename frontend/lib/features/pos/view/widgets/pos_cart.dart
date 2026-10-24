@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
@@ -17,45 +17,47 @@ class PosCart extends StatelessWidget {
     final bg = isDark ? AppColors.darkCard : AppColors.lightCard;
     final border = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: bg,
-        border: Border(
-          left: BorderSide(color: border, width: 1),
-        ),
-      ),
-      child: Column(
-        children: [
-          // ── Header ─────────────────────────────────────────────────────────
-          const PosCartHeader(),
-
-          // ── Items ──────────────────────────────────────────────────────────
-          Expanded(
-            child: BlocBuilder<CartBloc, CartState>(
-              builder: (context, state) {
-                if (state.items.isEmpty) {
-                  return const PosEmptyCart();
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  itemCount: state.items.length,
-                  separatorBuilder: (ctx, idx) => Divider(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                    height: 1,
-                  ),
-                  itemBuilder: (context, index) {
-                    final item = state.items[index];
-                    return PosCartItemTile(cartItem: item);
-                  },
-                );
-              },
-            ),
+    return RepaintBoundary(
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: bg,
+          border: Border(
+            left: BorderSide(color: border, width: 1),
           ),
+        ),
+        child: Column(
+          children: [
+            // ── Header ─────────────────────────────────────────────────────────
+            const PosCartHeader(),
 
-          // ── Checkout ───────────────────────────────────────────────────────
-          const PosCheckoutPanel(),
-        ],
+            // ── Items ──────────────────────────────────────────────────────────
+            Expanded(
+              child: BlocBuilder<CartBloc, CartState>(
+                builder: (context, state) {
+                  if (state.items.isEmpty) {
+                    return const PosEmptyCart();
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    itemCount: state.items.length,
+                    separatorBuilder: (ctx, idx) => Divider(
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                      height: 1,
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = state.items[index];
+                      return PosCartItemTile(cartItem: item);
+                    },
+                  );
+                },
+              ),
+            ),
+
+            // ── Checkout ───────────────────────────────────────────────────────
+            const PosCheckoutPanel(),
+          ],
+        ),
       ),
     );
   }
