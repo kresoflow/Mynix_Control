@@ -108,7 +108,25 @@ async def authenticate_by_pin(
             )
         )
         result = await session.execute(stmt)
-        return result.scalars().first()
+        user = result.scalars().first()
+        if user is not None:
+            return user
+
+        # Авто-резолвинг: если в сохраненном тенанте сотрудник не найден,
+        # проверяем, есть ли ровно один активный сотрудник с этим PIN в другом заведении.
+        fallback_stmt = (
+            select(User)
+            .where(
+                User.pin_code == clean_pin,
+                User.is_active == True,
+            )
+            .options(
+                selectinload(User.roles).selectinload(Role.permissions)
+            )
+        )
+        fallback_res = await session.execute(fallback_stmt)
+        candidates = fallback_res.scalars().all()
+        return candidates[0] if len(candidates) == 1 else None
     else:
         # Fallback when last_tenant_id is not saved yet on this device
         stmt = (

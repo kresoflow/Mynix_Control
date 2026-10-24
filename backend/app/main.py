@@ -45,6 +45,10 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"  Seed note: {e}")
 
+    # Re-apply logger handlers to guarantee console and file output after Alembic
+    import logging
+    setup_logging()
+    logging.info(f"==> {settings.app_name} is running! Docs: http://localhost:8000/docs <==")
     print(f"{settings.app_name} is running!")
     print(f"Docs: http://localhost:8000/docs")
 

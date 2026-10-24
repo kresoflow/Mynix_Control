@@ -27,9 +27,12 @@ config = context.config
 # Override sqlalchemy.url from our app settings (sync driver for migrations)
 config.set_main_option("sqlalchemy.url", settings.database_url_sync)
 
-# Setup logging
+# Setup logging (не отключаем существующие логгеры FastAPI и Uvicorn)
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    try:
+        fileConfig(config.config_file_name, disable_existing_loggers=False)
+    except Exception:
+        pass
 
 # Use SQLModel's metadata for autogenerate
 target_metadata = SQLModel.metadata

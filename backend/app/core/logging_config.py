@@ -27,6 +27,15 @@ def setup_logging() -> None:
     Настраивает вывод логов одновременно в консоль (stdout) и в локальные файлы.
     Файлы ротируются автоматически при достижении 15 МБ (до 5 архивных копий).
     """
+    if sys.platform == "win32":
+        try:
+            if hasattr(sys.stdout, "reconfigure"):
+                sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+            if hasattr(sys.stderr, "reconfigure"):
+                sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
     formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt=DATE_FORMAT)
@@ -81,10 +90,14 @@ def setup_logging() -> None:
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
 
-    # Очищаем дефолтные хендлеры, чтобы избежать дублирования строк
-    if not root_logger.handlers:
-        root_logger.addHandler(console_handler)
+    # Гарантируем наличие консольного и файлового хэндлеров на root
+    has_file = any(isinstance(h, RotatingFileHandler) for h in root_logger.handlers)
+    if not has_file:
         root_logger.addHandler(file_handler)
+
+    has_console = any(isinstance(h, logging.StreamHandler) and not isinstance(h, RotatingFileHandler) for h in root_logger.handlers)
+    if not has_console:
+        root_logger.addHandler(console_handler)
 
     # Настройка логгеров Uvicorn и приложения
     for logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access", "app"):
@@ -92,6 +105,8 @@ def setup_logging() -> None:
         target_logger.setLevel(logging.INFO)
         if not any(isinstance(h, RotatingFileHandler) for h in target_logger.handlers):
             target_logger.addHandler(file_handler)
+        if not any(isinstance(h, logging.StreamHandler) and not isinstance(h, RotatingFileHandler) for h in target_logger.handlers):
+            target_logger.addHandler(console_handler)
 
     # Отдельный логгер для аудита трафика
     audit_logger = logging.getLogger("traffic_audit")

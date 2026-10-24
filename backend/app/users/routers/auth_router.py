@@ -78,6 +78,7 @@ router = APIRouter(tags=["Authentication"])
 
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
@@ -90,6 +91,13 @@ async def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
+
+    # При успешном входе по паролю сбрасываем блокировки PIN для клиента
+    ip = get_client_ip(request)
+    for key in list(_pin_locked_keys.keys()):
+        if ip in key:
+            _pin_locked_keys.pop(key, None)
+            _pin_failed_attempts.pop(key, None)
 
     permissions = svc.collect_permissions(user)
     token = svc.create_access_token(
