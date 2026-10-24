@@ -6,7 +6,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier_transaction.dart';
@@ -51,7 +50,7 @@ class _EditTransactionModalState extends State<EditTransactionModal> {
     super.initState();
     _amountController = TextEditingController(text: widget.transaction.amount.toStringAsFixed(2));
     _commentController = TextEditingController(text: widget.transaction.comment ?? '');
-    _paymentMethod = widget.transaction.paymentMethod ?? 'cash';
+    _paymentMethod = widget.transaction.paymentMethod;
   }
 
   @override

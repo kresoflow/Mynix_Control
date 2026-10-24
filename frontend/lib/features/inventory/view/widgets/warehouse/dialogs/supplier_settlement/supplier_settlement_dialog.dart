@@ -7,8 +7,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
-import 'package:kreso_frontend/core/theme/app_spacing.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
@@ -58,7 +56,7 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
     }
   }
 
-  Future<void> _openAddTransaction(BuildContext context, SupplierTransactionType type) async {
+  Future<void> _openAddTransaction(SupplierTransactionType type) async {
     final currentSupplier = _getCurrentSupplier(context.read<DocumentBloc>().state);
     final res = await SupplierPaymentModal.show(
       context,
@@ -66,39 +64,37 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
       currency: widget.currency,
       initialType: type,
     );
-    if (res != null && mounted) {
-      context.read<DocumentBloc>().add(
-            AddSupplierTransaction(
-              widget.supplier.id,
-              type: res['type'] as SupplierTransactionType,
-              amount: res['amount'] as double,
-              paymentMethod: res['payment_method'] as String? ?? 'cash',
-              comment: res['comment'] as String?,
-            ),
-          );
-    }
+    if (!mounted || res == null) return;
+    context.read<DocumentBloc>().add(
+          AddSupplierTransaction(
+            widget.supplier.id,
+            type: res['type'] as SupplierTransactionType,
+            amount: res['amount'] as double,
+            paymentMethod: res['payment_method'] as String? ?? 'cash',
+            comment: res['comment'] as String?,
+          ),
+        );
   }
 
-  Future<void> _openEditTransaction(BuildContext context, SupplierTransaction txn) async {
+  Future<void> _openEditTransaction(SupplierTransaction txn) async {
     final res = await EditTransactionModal.show(
       context,
       transaction: txn,
       currency: widget.currency,
     );
-    if (res != null && mounted) {
-      context.read<DocumentBloc>().add(
-            UpdateSupplierTransaction(
-              widget.supplier.id,
-              txn.id,
-              amount: res['amount'] as double?,
-              paymentMethod: res['payment_method'] as String?,
-              comment: res['comment'] as String?,
-            ),
-          );
-    }
+    if (!mounted || res == null) return;
+    context.read<DocumentBloc>().add(
+          UpdateSupplierTransaction(
+            widget.supplier.id,
+            txn.id,
+            amount: res['amount'] as double?,
+            paymentMethod: res['payment_method'] as String?,
+            comment: res['comment'] as String?,
+          ),
+        );
   }
 
-  Future<void> _confirmDelete(BuildContext context, SupplierTransaction txn) async {
+  Future<void> _confirmDelete(SupplierTransaction txn) async {
     final isConfirmed = await AppConfirmDialog.show(
       context: context,
       title: 'Удалить операцию?',
@@ -109,9 +105,8 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
       isDanger: true,
       icon: PhosphorIconsRegular.trash,
     );
-    if (isConfirmed == true && mounted) {
-      context.read<DocumentBloc>().add(DeleteSupplierTransaction(widget.supplier.id, txn.id));
-    }
+    if (!mounted || isConfirmed != true) return;
+    context.read<DocumentBloc>().add(DeleteSupplierTransaction(widget.supplier.id, txn.id));
   }
 
   @override
@@ -168,7 +163,7 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
                 color: AppColors.brandPrimary.withValues(alpha: 0.15),
                 borderRadius: AppRadii.inputRadius,
               ),
-              child: const Icon(PhosphorIconsRegular.wallet, color: AppColors.brandPrimary, size: 24),
+              child: Icon(PhosphorIconsRegular.wallet, color: AppColors.brandPrimary, size: 24),
             ),
             const SizedBox(width: 14),
             Column(
@@ -239,14 +234,14 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
               label: 'Начислить долг',
               icon: PhosphorIconsRegular.plus,
               size: AppButtonSize.sm,
-              onPressed: () => _openAddTransaction(context, SupplierTransactionType.manualDebt),
+              onPressed: () => _openAddTransaction(SupplierTransactionType.manualDebt),
             ),
             const SizedBox(width: 8),
             AppPrimaryButton(
               label: 'Внести оплату',
               icon: PhosphorIconsRegular.money,
               size: AppButtonSize.sm,
-              onPressed: () => _openAddTransaction(context, SupplierTransactionType.payment),
+              onPressed: () => _openAddTransaction(SupplierTransactionType.payment),
             ),
           ],
         ),
@@ -276,8 +271,8 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
         return SupplierSettlementRow(
           transaction: txn,
           currency: widget.currency,
-          onEdit: () => _openEditTransaction(context, txn),
-          onDelete: () => _confirmDelete(context, txn),
+          onEdit: () => _openEditTransaction(txn),
+          onDelete: () => _confirmDelete(txn),
         );
       },
     );
