@@ -4,16 +4,13 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
-import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/create_menu_item_dialog.dart';
 import 'menu_item/menu_item_basic_fields.dart';
-import 'menu_item/menu_item_variations_section.dart';
-import 'menu_item/menu_item_modifier_groups_section.dart';
+import 'menu_item/menu_item_duplicate_dialog.dart';
+import 'menu_item/menu_item_options_section.dart';
 
 class MenuItemModal extends StatefulWidget {
   final int? preselectedCategoryId;
@@ -81,9 +78,7 @@ class _MenuItemModalState extends State<MenuItemModal> {
   }
 
   void _addVariation() {
-    setState(() {
-      _variations.add({'name': '', 'price': 0});
-    });
+    setState(() => _variations.add({'name': '', 'price': 0}));
   }
 
   void _addModifierGroup() {
@@ -95,41 +90,6 @@ class _MenuItemModalState extends State<MenuItemModal> {
         'modifiers': [],
       });
     });
-  }
-
-  void _showDuplicateBlockedDialog(BuildContext context, MenuItem existingItem) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AppDialog(
-        title: 'Блюдо уже существует',
-        icon: PhosphorIconsRegular.warningCircle,
-        width: 440,
-        content: Text(
-          'В этой категории уже есть активное блюдо «${existingItem.cleanName}».\n\nОткрыть существующую карточку для редактирования?',
-          style: const TextStyle(fontSize: 14, height: 1.4),
-        ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            onPressed: () => Navigator.pop(dialogCtx),
-          ),
-          const SizedBox(width: 8),
-          AppPrimaryButton(
-            label: 'Открыть карточку',
-            icon: PhosphorIconsRegular.arrowSquareOut,
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              Navigator.pop(context);
-              showAddMenuItemDialog(
-                context,
-                currentCategoryId: _selectedCategoryId,
-                itemToEdit: existingItem,
-              );
-            },
-          ),
-        ],
-      ),
-    );
   }
 
   void _submit() {
@@ -180,7 +140,11 @@ class _MenuItemModalState extends State<MenuItemModal> {
           );
 
           if (duplicateMatch != null && duplicateMatch.isSameCategory) {
-            _showDuplicateBlockedDialog(context, duplicateMatch.item);
+            MenuItemDuplicateDialog.show(
+              context: context,
+              existingItem: duplicateMatch.item,
+              currentCategoryId: _selectedCategoryId,
+            );
             return;
           }
         }
@@ -206,27 +170,19 @@ class _MenuItemModalState extends State<MenuItemModal> {
   }
 
   bool get _isDirty {
-    final initialName = widget.existingItem?.cleanName ?? '';
-    final initialPrice = widget.existingItem != null ? widget.existingItem!.price.toString() : '';
-    final initialBarcode = widget.existingItem?.barcode ?? '';
-    final initialSort = (widget.existingItem?.sortOrder ?? 0) > 0 ? widget.existingItem!.sortOrder.toString() : '';
-    final rawCat = widget.existingItem?.categoryId;
-    final parsedCat = (rawCat != null && rawCat.isNotEmpty && rawCat != '0') ? int.tryParse(rawCat) : null;
-    final initialCat = widget.preselectedCategoryId ?? parsedCat;
-
-    if (_nameController.text.trim() != initialName.trim()) return true;
-    if (_priceController.text.trim() != initialPrice.trim()) return true;
-    if (_barcodeController.text.trim() != initialBarcode.trim()) return true;
-    if (_sortOrderController.text.trim() != initialSort.trim()) return true;
-    if (_selectedCategoryId != (initialCat == 0 ? null : initialCat)) return true;
-    if (_hasModifiers) return true;
-    return false;
+    final item = widget.existingItem;
+    final initialCat = widget.preselectedCategoryId ?? (int.tryParse(item?.categoryId ?? '') ?? 0);
+    return _nameController.text.trim() != (item?.cleanName ?? '').trim() ||
+        _priceController.text.trim() != (item != null ? item.price.toString() : '') ||
+        _barcodeController.text.trim() != (item?.barcode ?? '').trim() ||
+        _sortOrderController.text.trim() != ((item?.sortOrder ?? 0) > 0 ? item!.sortOrder.toString() : '') ||
+        _selectedCategoryId != (initialCat == 0 ? null : initialCat) ||
+        _hasModifiers;
   }
 
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existingItem != null;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DirtyPopScope(
       isDirtyCheck: () => _isDirty,
@@ -239,52 +195,29 @@ class _MenuItemModalState extends State<MenuItemModal> {
         title: isEditing ? 'Редактировать блюдо' : 'Новое блюдо',
         icon: PhosphorIconsRegular.bowlFood,
         width: 580,
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              MenuItemBasicFields(
-                nameController: _nameController,
-                priceController: _priceController,
-                barcodeController: _barcodeController,
-                sortOrderController: _sortOrderController,
-                selectedCategoryId: _selectedCategoryId,
-                onCategoryChanged: (val) => setState(() => _selectedCategoryId = val),
-                excludeItemId: widget.existingItem?.id,
-              ),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkBg : AppColors.lightBg,
-                  borderRadius: AppRadii.cardRadius,
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                MenuItemBasicFields(
+                  nameController: _nameController,
+                  priceController: _priceController,
+                  barcodeController: _barcodeController,
+                  sortOrderController: _sortOrderController,
+                  selectedCategoryId: _selectedCategoryId,
+                  onCategoryChanged: (val) => setState(() => _selectedCategoryId = val),
+                  excludeItemId: widget.existingItem?.id,
                 ),
-                child: SwitchListTile(
-                  title: Text(
-                    'Размеры или модификаторы (опции)',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
-                  ),
-                  value: _hasModifiers,
-                  onChanged: (val) => setState(() => _hasModifiers = val),
-                  activeThumbColor: AppColors.brandPrimary,
-                  shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
-                ),
-              ),
-              if (_hasModifiers) ...[
-                const SizedBox(height: 20),
-                MenuItemVariationsSection(
+                const SizedBox(height: 16),
+                MenuItemOptionsSection(
+                  hasModifiers: _hasModifiers,
+                  onToggleModifiers: (val) => setState(() => _hasModifiers = val),
                   variations: _variations,
                   onAddVariation: _addVariation,
                   onRemoveVariation: (i) => setState(() => _variations.removeAt(i)),
-                ),
-                const SizedBox(height: 20),
-                MenuItemModifierGroupsSection(
                   modifierGroups: _modifierGroups,
                   onAddGroup: _addModifierGroup,
                   onRemoveGroup: (gIndex) => setState(() => _modifierGroups.removeAt(gIndex)),
@@ -293,24 +226,23 @@ class _MenuItemModalState extends State<MenuItemModal> {
                   onToggleRequired: (gIndex, val) => setState(() => _modifierGroups[gIndex]['required'] = val),
                 ),
               ],
-            ],
+            ),
           ),
         ),
+        actions: [
+          AppGhostButton(
+            label: 'Отмена',
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          const SizedBox(width: 12),
+          AppPrimaryButton(
+            label: isEditing ? 'Сохранить' : 'Создать',
+            icon: PhosphorIconsRegular.floppyDisk,
+            width: null,
+            onPressed: _submit,
+          ),
+        ],
       ),
-      actions: [
-        AppGhostButton(
-          label: 'Отмена',
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        const SizedBox(width: 12),
-        AppPrimaryButton(
-          label: isEditing ? 'Сохранить' : 'Создать',
-          icon: PhosphorIconsRegular.floppyDisk,
-          width: null,
-          onPressed: _submit,
-        ),
-      ],
-    ),
-  );
-}
+    );
+  }
 }

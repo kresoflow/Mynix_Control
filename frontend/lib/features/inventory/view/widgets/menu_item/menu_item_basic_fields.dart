@@ -93,7 +93,7 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                 labelText: 'Категория блюда',
                 filled: true,
                 fillColor: inputBg,
-                border: OutlineInputBorder(
+                border: const OutlineInputBorder(
                   borderRadius: AppRadii.inputRadius,
                   borderSide: BorderSide.none,
                 ),
@@ -127,7 +127,7 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                   labelText: 'Название блюда',
                   filled: true,
                   fillColor: inputBg,
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                     borderRadius: AppRadii.inputRadius,
                     borderSide: BorderSide.none,
                   ),
@@ -157,7 +157,7 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                       ),
                       filled: true,
                       fillColor: inputBg,
-                      border: OutlineInputBorder(
+                      border: const OutlineInputBorder(
                         borderRadius: AppRadii.inputRadius,
                         borderSide: BorderSide.none,
                       ),
@@ -191,7 +191,7 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                   labelText: 'Штрихкод (опционально)',
                   filled: true,
                   fillColor: inputBg,
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                     borderRadius: AppRadii.inputRadius,
                     borderSide: BorderSide.none,
                   ),
@@ -209,7 +209,7 @@ class _MenuItemBasicFieldsState extends State<MenuItemBasicFields> {
                   hintText: 'Пусто = авто-очередь',
                   filled: true,
                   fillColor: inputBg,
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                     borderRadius: AppRadii.inputRadius,
                     borderSide: BorderSide.none,
                   ),
