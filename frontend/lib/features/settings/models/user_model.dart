@@ -45,7 +45,7 @@ class Role {
     return Role(
       id: json['id'] as int,
       name: json['name'] as String,
-      description: json['description'] as String,
+      description: (json['description'] as String?) ?? '',
     );
   }
 }

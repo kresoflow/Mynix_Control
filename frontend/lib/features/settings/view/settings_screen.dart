@@ -8,6 +8,8 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
+import 'package:kreso_frontend/features/settings/bloc/user_bloc.dart';
+import 'package:kreso_frontend/features/settings/repository/user_repository.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/general_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/appearance_settings_tab.dart';
 import 'package:kreso_frontend/features/settings/view/tabs/personnel_settings_tab.dart';
@@ -31,6 +33,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   int _selectedIndex = 0;
   final Set<int> _activatedTabs = {0};
+  late final UserBloc _userBloc;
 
   final List<_SettingsCategory> _categories = const [
     _SettingsCategory(PhosphorIconsRegular.slidersHorizontal, 'Основные'),
@@ -39,6 +42,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _SettingsCategory(PhosphorIconsRegular.hardDrives, 'Система'),
     _SettingsCategory(PhosphorIconsRegular.paintBrushBroad, 'UI Kit & Дизайн'),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _userBloc = UserBloc(repository: UserRepository())..add(LoadUsers());
+  }
+
+  @override
+  void dispose() {
+    _userBloc.close();
+    super.dispose();
+  }
 
   void _onCategorySelected(int index) {
     if (_selectedIndex == index) return;
@@ -160,7 +175,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ? AppearanceSettingsTab(isDark: isDark)
                 : const SizedBox.shrink(),
             _activatedTabs.contains(2)
-                ? PersonnelSettingsTab(isDark: isDark)
+                ? PersonnelSettingsTab(isDark: isDark, userBloc: _userBloc)
                 : const SizedBox.shrink(),
             _activatedTabs.contains(3)
                 ? SystemSettingsTab(isDark: isDark)

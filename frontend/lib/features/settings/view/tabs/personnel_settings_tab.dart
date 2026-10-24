@@ -17,31 +17,41 @@ import 'package:kreso_frontend/features/settings/view/widgets/user_form_dialog.d
 
 class PersonnelSettingsTab extends StatefulWidget {
   final bool isDark;
-  const PersonnelSettingsTab({super.key, required this.isDark});
+  final UserBloc? userBloc;
+
+  const PersonnelSettingsTab({
+    super.key,
+    required this.isDark,
+    this.userBloc,
+  });
 
   @override
   State<PersonnelSettingsTab> createState() => _PersonnelSettingsTabState();
 }
 
 class _PersonnelSettingsTabState extends State<PersonnelSettingsTab> {
-  late final UserBloc _userBloc;
+  UserBloc? _internalUserBloc;
+
+  UserBloc get _effectiveBloc => widget.userBloc ?? _internalUserBloc!;
 
   @override
   void initState() {
     super.initState();
-    _userBloc = UserBloc(repository: UserRepository())..add(LoadUsers());
+    if (widget.userBloc == null) {
+      _internalUserBloc = UserBloc(repository: UserRepository())..add(LoadUsers());
+    }
   }
 
   @override
   void dispose() {
-    _userBloc.close();
+    _internalUserBloc?.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
-      value: _userBloc,
+      value: _effectiveBloc,
       child: _PersonnelSettingsView(isDark: widget.isDark),
     );
   }
@@ -55,9 +65,7 @@ class _PersonnelSettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
-        if (state.isLoading && state.users.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        final isInitialLoading = state.isLoading && state.users.isEmpty;
 
         final ownerUsers = state.users.where((u) {
           return u.roles.any((r) => r.toLowerCase().contains('owner') || r.toLowerCase().contains('superadmin'));
@@ -79,7 +87,7 @@ class _PersonnelSettingsView extends StatelessWidget {
                   label: 'Добавить сотрудника',
                   icon: PhosphorIconsRegular.plus,
                   size: AppButtonSize.md,
-                  onPressed: () => UserFormDialog.show(
+                  onPressed: isInitialLoading ? null : () => UserFormDialog.show(
                     context: context,
                     isDark: isDark,
                     roles: state.roles,
@@ -96,7 +104,36 @@ class _PersonnelSettingsView extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            if (ownerUsers.isEmpty)
+            if (isInitialLoading)
+              SettingsCard(
+                isDark: isDark,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Загрузка персонала...',
+                            style: TextStyle(
+                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else if (ownerUsers.isEmpty)
               SettingsCard(
                 isDark: isDark,
                 children: const [
@@ -148,7 +185,36 @@ class _PersonnelSettingsView extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            if (staffUsers.isEmpty)
+            if (isInitialLoading)
+              SettingsCard(
+                isDark: isDark,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Загрузка сотрудников...',
+                            style: TextStyle(
+                              color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else if (staffUsers.isEmpty)
               SettingsCard(
                 isDark: isDark,
                 children: const [
