@@ -234,8 +234,6 @@ class _AppColorPickerDialogState extends State<AppColorPickerDialog> {
           ],
         ),
       ],
-        ),
-      ],
     );
   }
 }
