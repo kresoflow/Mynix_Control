@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -158,7 +159,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
 
   Widget _buildQuickChip(String label, VoidCallback onTap, bool isSelected, bool isDark) {
     return InkWell(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: AppRadii.radiusSm,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -166,7 +167,7 @@ class _AppDateTimePickerDialogState extends State<_AppDateTimePickerDialog> {
           color: isSelected
               ? AppColors.brandPrimary.withValues(alpha: 0.2)
               : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadii.radiusSm,
           border: Border.all(
             color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
             width: isSelected ? 1.5 : 1,

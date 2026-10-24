@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 class DateTimePickerCalendar extends StatelessWidget {
@@ -42,7 +43,7 @@ class DateTimePickerCalendar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadii.inputRadius,
             border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
           child: Row(
@@ -136,7 +137,9 @@ class DateTimePickerCalendar extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: isWeekend ? AppColors.danger.withValues(alpha: 0.8) : Colors.grey,
+                    color: isWeekend
+                        ? AppColors.danger.withValues(alpha: 0.8)
+                        : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
                   ),
                 ),
               ),
@@ -171,14 +174,18 @@ class DateTimePickerCalendar extends StatelessWidget {
                 cellDate.day == now.day;
 
             return InkWell(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: AppRadii.radiusSm,
               onTap: () => onDateSelected(cellDate),
               child: Container(
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.brandPrimary
-                      : (isToday ? (isDark ? Colors.white10 : Colors.black12) : Colors.transparent),
-                  borderRadius: BorderRadius.circular(6),
+                      : (isToday
+                          ? (isDark
+                              ? AppColors.darkCardHover
+                              : AppColors.lightBorder.withValues(alpha: 0.5))
+                          : AppColors.transparent),
+                  borderRadius: AppRadii.radiusSm,
                   border: isToday && !isSelected
                       ? Border.all(color: AppColors.brandPrimary, width: 1.2)
                       : null,
@@ -189,7 +196,7 @@ class DateTimePickerCalendar extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected || isToday ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.white : (isDark ? AppColors.darkText : AppColors.lightText),
+                      color: isSelected ? AppColors.pureWhite : (isDark ? AppColors.darkText : AppColors.lightText),
                     ),
                   ),
                 ),

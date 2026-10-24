@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'color_picker_utils.dart';
 import 'app_color_picker_dialog.dart';
@@ -28,12 +30,12 @@ class ColorPickerField extends StatelessWidget {
           onColorSelected(result.isEmpty ? null : result);
         }
       },
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: AppRadii.inputRadius,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkBg : AppColors.lightBg,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: AppRadii.inputRadius,
           border: Border.all(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           ),
@@ -45,23 +47,17 @@ class ColorPickerField extends StatelessWidget {
               height: 24,
               decoration: BoxDecoration(
                 color: parsedColor ?? AppColors.brandPrimary,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: AppRadii.radiusSm,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: AppColors.pureWhite.withValues(alpha: 0.2),
                   width: 1.5,
                 ),
                 boxShadow: hasColor
-                    ? [
-                        BoxShadow(
-                          color: parsedColor.withValues(alpha: 0.35),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
+                    ? AppShadows.dotGlow(parsedColor, opacity: 0.35, blur: 6)
                     : null,
               ),
               child: !hasColor
-                  ? const Icon(PhosphorIconsRegular.palette, size: 14, color: Colors.white)
+                  ? const Icon(PhosphorIconsRegular.palette, size: 14, color: AppColors.pureWhite)
                   : null,
             ),
             const SizedBox(width: 12),

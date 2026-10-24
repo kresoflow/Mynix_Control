@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 
@@ -18,7 +18,7 @@ class SkeletonLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark ? AppColors.darkCardHover : AppColors.lightBorder;
-    final highlightColor = isDark ? AppColors.darkBorder : Colors.white;
+    final highlightColor = isDark ? AppColors.darkBorder : AppColors.pureWhite;
 
     return Shimmer.fromColors(
       baseColor: baseColor,
@@ -27,7 +27,7 @@ class SkeletonLoader extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white, // Shimmer requires an opaque child to paint over
+          color: AppColors.pureWhite, // Shimmer requires an opaque child to paint over
           borderRadius: BorderRadius.circular(borderRadius),
         ),
       ),

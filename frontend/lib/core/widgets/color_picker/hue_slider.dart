@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 class HueSlider extends StatelessWidget {
   final double hue;
@@ -47,13 +49,13 @@ class HueSlider extends StatelessWidget {
                 Container(
                   height: 14,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(7),
+                    borderRadius: AppRadii.radiusSm,
                     gradient: const LinearGradient(
                       colors: _rainbowColors,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: AppColors.black.withValues(alpha: 0.1),
                         blurRadius: 2,
                         offset: const Offset(0, 1),
                       ),
@@ -69,10 +71,10 @@ class HueSlider extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: currentHueColor,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2.5),
+                      border: Border.all(color: AppColors.pureWhite, width: 2.5),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.35),
+                          color: AppColors.black.withValues(alpha: 0.35),
                           blurRadius: 4,
                           offset: const Offset(0, 1),
                         ),

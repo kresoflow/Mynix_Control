@@ -1,7 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'color_picker_utils.dart';
 import 'hsv_color_plane.dart';
@@ -119,18 +122,12 @@ class _AppColorPickerDialogState extends State<AppColorPickerDialog> {
                 height: 44,
                 decoration: BoxDecoration(
                   color: activeColor,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: AppRadii.inputRadius,
                   border: Border.all(
                     color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     width: 1.5,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: activeColor.withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  boxShadow: AppShadows.glow(activeColor, opacity: 0.35, blur: 10),
                 ),
               ),
               const SizedBox(width: 12),
@@ -153,8 +150,8 @@ class _AppColorPickerDialogState extends State<AppColorPickerDialog> {
                     filled: true,
                     fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                    border: const OutlineInputBorder(
+                      borderRadius: AppRadii.inputRadius,
                       borderSide: BorderSide.none,
                     ),
                   ),
@@ -180,7 +177,7 @@ class _AppColorPickerDialogState extends State<AppColorPickerDialog> {
               final isSelected = ColorPickerUtils.toHex(preset.color) == ColorPickerUtils.toHex(activeColor);
               return InkWell(
                 onTap: () => _selectPreset(preset.color),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppRadii.radiusMd,
                 child: Tooltip(
                   message: preset.title,
                   child: Container(
@@ -188,23 +185,17 @@ class _AppColorPickerDialogState extends State<AppColorPickerDialog> {
                     height: 32,
                     decoration: BoxDecoration(
                       color: preset.color,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppRadii.radiusMd,
                       border: Border.all(
-                        color: isSelected ? Colors.white : Colors.transparent,
+                        color: isSelected ? AppColors.pureWhite : AppColors.transparent,
                         width: isSelected ? 2.5 : 1,
                       ),
                       boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: preset.color.withValues(alpha: 0.5),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
+                          ? AppShadows.dotGlow(preset.color, opacity: 0.5, blur: 8)
                           : null,
                     ),
                     child: isSelected
-                        ? const Icon(PhosphorIconsBold.check, size: 14, color: Colors.white)
+                        ? const Icon(PhosphorIconsBold.check, size: 14, color: AppColors.pureWhite)
                         : null,
                   ),
                 ),
@@ -217,37 +208,32 @@ class _AppColorPickerDialogState extends State<AppColorPickerDialog> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextButton.icon(
+            AppGhostButton(
               onPressed: () => Navigator.pop(context, ''),
-              icon: const Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 16),
-              label: const Text('Сбросить'),
-              style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+              icon: PhosphorIconsRegular.arrowCounterClockwise,
+              label: 'Сбросить',
+              customColor: AppColors.danger,
+              size: AppButtonSize.sm,
             ),
             Row(
               children: [
-                TextButton(
+                AppGhostButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Отмена'),
+                  label: 'Отмена',
+                  size: AppButtonSize.sm,
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton(
+                AppPrimaryButton(
                   onPressed: () => Navigator.pop(context, ColorPickerUtils.toHex(activeColor)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: activeColor,
-                    foregroundColor: ThemeData.estimateBrightnessForColor(activeColor) == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: const Text(
-                    'Выбрать цвет',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  customColor: activeColor,
+                  label: 'Выбрать цвет',
+                  size: AppButtonSize.sm,
                 ),
               ],
             ),
           ],
+        ),
+      ],
         ),
       ],
     );

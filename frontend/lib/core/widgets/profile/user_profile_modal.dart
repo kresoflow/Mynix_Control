@@ -158,7 +158,7 @@ class _UserProfileModalState extends State<UserProfileModal> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: AppRadii.buttonRadius,
               border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
             ),
             child: Row(

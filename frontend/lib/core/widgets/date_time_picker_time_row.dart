@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 class DateTimePickerTimeRow extends StatelessWidget {
@@ -21,7 +22,7 @@ class DateTimePickerTimeRow extends StatelessWidget {
 
     return Row(
       children: [
-        const Icon(PhosphorIconsRegular.clock, size: 16, color: Colors.grey),
+        Icon(PhosphorIconsRegular.clock, size: 16, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
         const SizedBox(width: 6),
         Text('Время:', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(width: 10),
@@ -49,7 +50,7 @@ class DateTimePickerTimeRow extends StatelessWidget {
       height: 36,
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadii.radiusMd,
         border: Border.all(color: AppColors.brandPrimary.withValues(alpha: 0.5)),
       ),
       child: Center(
@@ -82,17 +83,21 @@ class DateTimePickerTimeRow extends StatelessWidget {
 
   Widget _buildQuickTimeChip(String label, VoidCallback onTap, bool isDark) {
     return InkWell(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: AppRadii.radiusXs,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white10 : Colors.black12,
-          borderRadius: BorderRadius.circular(4),
+          color: isDark ? AppColors.darkCardHover : AppColors.lightBorder.withValues(alpha: 0.5),
+          borderRadius: AppRadii.radiusXs,
         ),
         child: Text(
           label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+          ),
         ),
       ),
     );

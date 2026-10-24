@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 class IconBtn extends StatefulWidget {
   final IconData icon;
@@ -41,8 +42,8 @@ class _IconBtnState extends State<IconBtn> {
             decoration: BoxDecoration(
               color: _hovered
                   ? (isDark ? AppColors.darkBorder : AppColors.lightBorder)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+                  : AppColors.transparent,
+              borderRadius: AppRadii.radiusMd,
             ),
             child: Icon(widget.icon, size: 20, color: iconColor),
           ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 
 enum ToastType { success, error, warning, info, cart }
@@ -84,15 +86,9 @@ class AppToast {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadii.cardRadius,
           border: Border.all(color: borderColor, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: isDark ? 0.4 : 0.12),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          boxShadow: AppShadows.medium,
         ),
         child: Row(
           children: [
@@ -115,12 +111,12 @@ class AppToast {
                 messenger.hideCurrentSnackBar();
                 onUndo();
               },
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadii.buttonRadius,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.warning.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadii.buttonRadius,
                   border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
                 ),
                 child: Text(
@@ -135,7 +131,7 @@ class AppToast {
             const SizedBox(width: 6),
             InkWell(
               onTap: () => messenger.hideCurrentSnackBar(),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppRadii.dialogRadius,
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Icon(
@@ -207,20 +203,9 @@ class AppToast {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadii.cardRadius,
           border: Border.all(color: accentColor.withValues(alpha: 0.35), width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: isDark ? 0.4 : 0.12),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: AppShadows.glow(accentColor, opacity: 0.15, blur: 20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/theme/theme_bloc.dart';
 import 'package:kreso_frontend/features/auth/bloc/auth_bloc.dart';
@@ -40,7 +41,7 @@ class AppBarProfileMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       tooltip: 'Профиль и смена',
       offset: const Offset(0, 48),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.buttonRadius),
       color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       elevation: 8,
       child: Stack(

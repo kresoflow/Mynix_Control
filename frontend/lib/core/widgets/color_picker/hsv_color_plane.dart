@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 
 class HsvColorPlane extends StatelessWidget {
   final double hue;
@@ -40,7 +42,7 @@ class HsvColorPlane extends StatelessWidget {
             children: [
               // Base Hue + Saturation (White to Hue) + Value (Transparent to Black)
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadii.buttonRadius,
                 child: Stack(
                   children: [
                     Container(
@@ -48,7 +50,7 @@ class HsvColorPlane extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
-                          colors: [Colors.white, pureHueColor],
+                          colors: [AppColors.pureWhite, pureHueColor],
                         ),
                       ),
                     ),
@@ -57,7 +59,7 @@ class HsvColorPlane extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.black],
+                          colors: [AppColors.transparent, AppColors.black],
                         ),
                       ),
                     ),
@@ -73,10 +75,10 @@ class HsvColorPlane extends StatelessWidget {
                   height: 20,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2.5),
+                    border: Border.all(color: AppColors.pureWhite, width: 2.5),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
+                        color: AppColors.black.withValues(alpha: 0.4),
                         blurRadius: 4,
                         offset: const Offset(0, 1),
                       ),

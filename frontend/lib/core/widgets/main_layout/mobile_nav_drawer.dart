@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/role_formatter.dart';
 import 'package:kreso_frontend/core/widgets/profile/user_profile_modal.dart';
@@ -133,7 +134,7 @@ class MobileNavDrawer extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadii.buttonRadius,
                     onTap: () {
                       Navigator.pop(context);
                       if (isOpen) {
@@ -146,7 +147,7 @@ class MobileNavDrawer extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: isOpen ? AppColors.success.withValues(alpha: 0.12) : AppColors.danger.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppRadii.buttonRadius,
                         border: Border.all(color: isOpen ? AppColors.success.withValues(alpha: 0.35) : AppColors.danger.withValues(alpha: 0.35)),
                       ),
                       child: Row(
@@ -179,7 +180,7 @@ class MobileNavDrawer extends StatelessWidget {
 
                   return ListTile(
                     dense: true,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadii.inputRadius),
                     selected: isSelected,
                     selectedTileColor: AppColors.brandPrimary.withValues(alpha: 0.15),
                     leading: Icon(item.icon, color: isSelected ? AppColors.brandPrimary : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),

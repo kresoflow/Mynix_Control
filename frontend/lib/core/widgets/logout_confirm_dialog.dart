@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -83,7 +83,7 @@ class _LogoutConfirmDialogState extends State<LogoutConfirmDialog> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.danger.withValues(alpha: isDark ? 0.16 : 0.08),
-                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          borderRadius: AppRadii.inputRadius,
                           border: Border.all(
                             color: AppColors.danger.withValues(alpha: 0.35),
                           ),
@@ -125,7 +125,7 @@ class _LogoutConfirmDialogState extends State<LogoutConfirmDialog> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.brandPrimary.withValues(alpha: isDark ? 0.12 : 0.06),
-                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          borderRadius: AppRadii.inputRadius,
                           border: Border.all(
                             color: AppColors.brandPrimary.withValues(alpha: 0.25),
                           ),
