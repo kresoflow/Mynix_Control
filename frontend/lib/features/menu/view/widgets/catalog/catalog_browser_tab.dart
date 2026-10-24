@@ -1,18 +1,24 @@
+// ==============================================================================
+// Title: CatalogBrowserTab
+// Path: frontend/lib/features/menu/view/widgets/catalog/catalog_browser_tab.dart
+// Description: Навигационный браузер категорий и блюд меню с поддержкой хлебных крошек.
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_browser_actions.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/menu_modifiers_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'catalog_dialogs.dart';
-import 'catalog_header.dart';
 import 'catalog_content_view.dart';
-import 'catalog_enums.dart';
-import 'catalog_skeleton.dart';
 import 'catalog_deletion_dialogs.dart';
-import 'dialogs/merge_items_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_toast.dart';
+import 'catalog_dialogs.dart';
+import 'catalog_enums.dart';
+import 'catalog_header.dart';
+import 'catalog_skeleton.dart';
 
 class CatalogBrowserTab extends StatefulWidget {
   final String categoryType;
@@ -66,6 +72,14 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
 
   int? get _currentCategoryId => _navigationHistory.isEmpty ? null : _navigationHistory.last.id;
 
+  void _clearSelection() {
+    setState(() {
+      _selectedCategories.clear();
+      _selectedItems.clear();
+      _manageMode = CategoryManageMode.none;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -74,27 +88,13 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
         listeners: [
           BlocListener<CategoryBloc, CategoryState>(
             listener: (context, state) {
-              if (state is CategoryLoaded) {
-                context.read<MenuBloc>().add(LoadMenu());
-              }
-              if (state is CategoryError) {
-                AppToast.showError(
-                  context,
-                  'Ошибка категории',
-                  subtitle: state.message,
-                );
-              }
+              if (state is CategoryLoaded) context.read<MenuBloc>().add(LoadMenu());
+              if (state is CategoryError) AppToast.showError(context, 'Ошибка категории', subtitle: state.message);
             },
           ),
           BlocListener<MenuBloc, MenuState>(
             listener: (context, state) {
-              if (state is MenuError) {
-                AppToast.showError(
-                  context,
-                  'Ошибка каталога',
-                  subtitle: state.message,
-                );
-              }
+              if (state is MenuError) AppToast.showError(context, 'Ошибка каталога', subtitle: state.message);
             },
           ),
         ],
@@ -104,50 +104,21 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
               builder: (context, menuState) {
                 final bool isLoading = catState is CategoryLoading || menuState is MenuLoading;
 
-                List<dynamic> currentCategories = [];
-                if (catState is CategoryLoaded) {
-                  currentCategories = catState.categories.where((c) {
-                    if (!_showArchived && c.isArchived) return false;
-                    if (widget.categoryType == 'all' && c.categoryType == 'ingredient') return false;
-                    if (widget.categoryType != 'all' && c.categoryType != widget.categoryType) return false;
-                    if (_searchQuery.isNotEmpty) {
-                      return c.name.toLowerCase().contains(_searchQuery);
-                    }
-                    return c.parentId == _currentCategoryId;
-                  }).toList()
-                    ..sort((a, b) {
-                      final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;
-                      final sortB = b.sortOrder == 0 ? 999999 : b.sortOrder;
-                      final cmp = sortA.compareTo(sortB);
-                      return cmp != 0 ? cmp : a.id.compareTo(b.id);
-                    });
-                }
+                final currentCategories = CatalogBrowserActions.filterCategories(
+                  catState: catState,
+                  categoryType: widget.categoryType,
+                  showArchived: _showArchived,
+                  searchQuery: _searchQuery,
+                  currentCategoryId: _currentCategoryId,
+                );
 
-                List<dynamic> currentItems = [];
-                if (menuState is MenuLoaded) {
-                  final currentCatStr = _currentCategoryId?.toString();
-                  currentItems = menuState.items.where((i) {
-                    if (!_showArchived && !i.isAvailable) return false;
-                    if (!widget.itemFilter(i)) return false;
-                    if (i.parentId != null) return false;
-
-                    if (_searchQuery.isNotEmpty) {
-                      final name = i.cleanName.toLowerCase();
-                      final barcode = i.barcode?.toLowerCase() ?? '';
-                      return name.contains(_searchQuery) || barcode.contains(_searchQuery);
-                    }
-
-                    final iCatStr = i.categoryId.toString();
-                    final isRootItem = iCatStr == '0' || iCatStr == 'null' || iCatStr == 'uncategorized' || iCatStr == '';
-                    return iCatStr == currentCatStr || (isRootItem && currentCatStr == null);
-                  }).toList()
-                    ..sort((a, b) {
-                      final sortA = a.sortOrder == 0 ? 999999 : a.sortOrder;
-                      final sortB = b.sortOrder == 0 ? 999999 : b.sortOrder;
-                      final cmp = sortA.compareTo(sortB);
-                      return cmp != 0 ? cmp : a.id.compareTo(b.id);
-                    });
-                }
+                final currentItems = CatalogBrowserActions.filterItems(
+                  menuState: menuState,
+                  showArchived: _showArchived,
+                  searchQuery: _searchQuery,
+                  currentCategoryId: _currentCategoryId,
+                  itemFilter: widget.itemFilter,
+                );
 
                 final int selectedCount = _selectedCategories.length + _selectedItems.length;
                 final bool isAllSelected = currentCategories.isNotEmpty || currentItems.isNotEmpty
@@ -195,29 +166,41 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                           _selectedItems.addAll(currentItems.map((i) => i.id as int));
                         }
                       }),
-                      onClearSelection: () => setState(() {
-                        _selectedCategories.clear();
-                        _selectedItems.clear();
-                        _manageMode = CategoryManageMode.none;
-                      }),
+                      onClearSelection: _clearSelection,
                       onDeleteSelected: () => CatalogDeletionDialogs.confirmDeleteSelected(
                         context: context,
                         selectedItems: _selectedItems,
                         selectedCategories: _selectedCategories,
-                        onCleared: () => setState(() {
-                          _selectedCategories.clear();
-                          _selectedItems.clear();
-                          _manageMode = CategoryManageMode.none;
-                        }),
+                        onCleared: _clearSelection,
                       ),
                       onNavigateUp: () => setState(() => _navigationHistory.removeLast()),
                       onNavigateToRoot: () => setState(() => _navigationHistory.clear()),
                       onNavigateToHistory: (index) => setState(() => _navigationHistory = _navigationHistory.sublist(0, index + 1)),
                       onAddPressed: () => showAddCategoryDialog(context, currentCategoryId: _currentCategoryId),
                       addMenuBuilder: widget.addMenuBuilder,
-                      onRestoreSelected: () => _restoreSelected(currentCategories, currentItems),
-                      onToggleVisibilitySelected: () => _toggleVisibilitySelected(currentCategories, currentItems),
-                      onMergeSelected: _selectedItems.length >= 2 ? () => _mergeSelected(currentItems) : null,
+                      onRestoreSelected: () => CatalogBrowserActions.restoreSelected(
+                        context: context,
+                        selectedCategories: _selectedCategories,
+                        selectedItems: _selectedItems,
+                        currentCategories: currentCategories,
+                        currentItems: currentItems,
+                        onCleared: _clearSelection,
+                      ),
+                      onToggleVisibilitySelected: () => CatalogBrowserActions.toggleVisibilitySelected(
+                        context: context,
+                        selectedCategories: _selectedCategories,
+                        selectedItems: _selectedItems,
+                        currentCategories: currentCategories,
+                        currentItems: currentItems,
+                      ),
+                      onMergeSelected: _selectedItems.length >= 2
+                          ? () => CatalogBrowserActions.mergeSelected(
+                                context: context,
+                                selectedItems: _selectedItems,
+                                currentItems: currentItems,
+                                onMerged: _clearSelection,
+                              )
+                          : null,
                     ),
                     Expanded(
                       child: isLoading
@@ -238,9 +221,9 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                                     } else {
                                       _selectedCategories.add(category.id);
                                     }
-                                  },);
+                                  });
                                 } else {
-                                  setState(() => _navigationHistory.add(category),);
+                                  setState(() => _navigationHistory.add(category));
                                 }
                               },
                               onCategoryToggle: (cat, val) => setState(() => _selectedCategories.contains(cat.id) ? _selectedCategories.remove(cat.id) : _selectedCategories.add(cat.id)),
@@ -289,77 +272,6 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
           },
         ),
       ),
-    );
-  }
-
-  void _toggleVisibilitySelected(List<dynamic> currentCategories, List<dynamic> currentItems) {
-    final selectedCats = currentCategories.where((c) => _selectedCategories.contains(c.id)).toList();
-    final selectedDishes = currentItems.where((i) => _selectedItems.contains(i.id)).toList();
-    if (selectedCats.isEmpty && selectedDishes.isEmpty) return;
-
-    final anyVisible = selectedCats.any((c) => c.isVisible == true) || selectedDishes.any((i) => i.isAvailable == true);
-    final targetVisible = !anyVisible;
-
-    for (final cat in selectedCats) {
-      context.read<CategoryBloc>().add(UpdateCategory(id: cat.id, isVisible: targetVisible));
-    }
-    for (final item in selectedDishes) {
-      context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': targetVisible}));
-    }
-    context.read<CategoryBloc>().add(LoadCategories());
-
-    final count = selectedCats.length + selectedDishes.length;
-    AppToast.showSuccess(
-      context,
-      targetVisible ? 'Элементы отображаются на кассе' : 'Элементы скрыты на кассе',
-      subtitle: '$count шт.',
-    );
-  }
-
-  void _restoreSelected(List<dynamic> currentCategories, List<dynamic> currentItems) {
-    final selectedCats = currentCategories.where((c) => _selectedCategories.contains(c.id)).toList();
-    final selectedDishes = currentItems.where((i) => _selectedItems.contains(i.id)).toList();
-    if (selectedCats.isEmpty && selectedDishes.isEmpty) return;
-
-    for (final cat in selectedCats) {
-      context.read<CategoryBloc>().add(RestoreCategory(cat.id));
-    }
-    for (final item in selectedDishes) {
-      context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true}));
-    }
-    context.read<CategoryBloc>().add(LoadCategories());
-
-    final count = selectedCats.length + selectedDishes.length;
-    setState(() {
-      _selectedCategories.clear();
-      _selectedItems.clear();
-      _manageMode = CategoryManageMode.none;
-    });
-
-    AppToast.showSuccess(
-      context,
-      'Восстановлено элементов',
-      subtitle: '$count шт.',
-    );
-  }
-
-  void _mergeSelected(List<dynamic> currentItems) {
-    final itemsToMerge = currentItems
-        .whereType<MenuItem>()
-        .where((i) => _selectedItems.contains(i.id))
-        .toList();
-    if (itemsToMerge.length < 2) return;
-
-    showMergeItemsDialog(
-      context: context,
-      items: itemsToMerge,
-      onMerged: () {
-        setState(() {
-          _selectedItems.clear();
-          _selectedCategories.clear();
-          _manageMode = CategoryManageMode.none;
-        });
-      },
     );
   }
 }

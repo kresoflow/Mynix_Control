@@ -8,11 +8,13 @@
 // ==============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 
 /// Стандартные размеры диалоговых окон
 enum AppDialogSize {
@@ -40,6 +42,7 @@ class AppDialogScaffold extends StatelessWidget {
   final double? maxWidth;
   final double? maxHeight;
   final Color? iconColor;
+  final VoidCallback? onSave;
 
   const AppDialogScaffold({
     super.key,
@@ -53,7 +56,21 @@ class AppDialogScaffold extends StatelessWidget {
     this.maxWidth,
     this.maxHeight,
     this.iconColor,
+    this.onSave,
   });
+
+  void _triggerSave(BuildContext context) {
+    if (onSave != null) {
+      onSave!();
+      return;
+    }
+    for (final action in actions.reversed) {
+      if (action is AppButton && action.onPressed != null && !action.isLoading) {
+        action.onPressed!();
+        return;
+      }
+    }
+  }
 
   double _resolveWidth() {
     if (maxWidth != null) return maxWidth!;
@@ -95,13 +112,27 @@ class AppDialogScaffold extends StatelessWidget {
     final resolvedWidth = _resolveWidth();
     final resolvedHeight = _resolveHeight();
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 12 : 24,
-        vertical: isMobile ? 12 : 24,
-      ),
-      child: Container(
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          Navigator.of(context).maybePop();
+        },
+        const SingleActivator(LogicalKeyboardKey.keyS, control: true): () {
+          _triggerSave(context);
+        },
+        const SingleActivator(LogicalKeyboardKey.keyS, meta: true): () {
+          _triggerSave(context);
+        },
+      },
+      child: Focus(
+        autofocus: true,
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 12 : 24,
+            vertical: isMobile ? 12 : 24,
+          ),
+          child: Container(
         width: isMobile ? size.width : resolvedWidth,
         height: isMobile ? size.height * 0.94 : resolvedHeight,
         decoration: BoxDecoration(
@@ -222,6 +253,8 @@ class AppDialogScaffold extends StatelessWidget {
           ],
         ),
       ),
+    ),
+    ),
     );
   }
 }

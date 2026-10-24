@@ -12,11 +12,13 @@
 // ==============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
 
 /// [UI-KIT] Официальный компактный модальный диалог системы
 class AppDialog extends StatelessWidget {
@@ -47,6 +49,9 @@ class AppDialog extends StatelessWidget {
   /// Обратный вызов при закрытии окна крестиком
   final VoidCallback? onClose;
 
+  /// Быстрое сохранение формы по хоткею Ctrl + S / Cmd + S
+  final VoidCallback? onSave;
+
   const AppDialog({
     super.key,
     required this.title,
@@ -58,7 +63,21 @@ class AppDialog extends StatelessWidget {
     this.isDestructive = false,
     this.iconColor,
     this.onClose,
+    this.onSave,
   });
+
+  void _triggerSave(BuildContext context) {
+    if (onSave != null) {
+      onSave!();
+      return;
+    }
+    for (final action in actions.reversed) {
+      if (action is AppButton && action.onPressed != null && !action.isLoading) {
+        action.onPressed!();
+        return;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,10 +86,28 @@ class AppDialog extends StatelessWidget {
     final isMobile = screenWidth < 768;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
 
-    return Dialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 40, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
-      backgroundColor: Colors.transparent,
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          if (onClose != null) {
+            onClose!();
+          } else {
+            Navigator.of(context).maybePop();
+          }
+        },
+        const SingleActivator(LogicalKeyboardKey.keyS, control: true): () {
+          _triggerSave(context);
+        },
+        const SingleActivator(LogicalKeyboardKey.keyS, meta: true): () {
+          _triggerSave(context);
+        },
+      },
+      child: Focus(
+        autofocus: true,
+        child: Dialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 40, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
+          backgroundColor: Colors.transparent,
       elevation: 0,
       child: Container(
         width: isMobile ? screenWidth - 24 : width,
@@ -181,6 +218,8 @@ class AppDialog extends StatelessWidget {
           ],
         ),
       ),
+    ),
+    ),
     );
   }
 }

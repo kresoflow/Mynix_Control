@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
@@ -48,32 +49,53 @@ class _DesktopLayoutState extends State<DesktopLayout> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-      // AppNavBar получает стабильные ссылки на методы — не пересоздаётся
-      // при каждом rebuild. Логотип и сегментированный контрол не дёргаются.
-      appBar: AppNavBar(
-        location: widget.location,
-        onCashTap: _handleCashTap,
-        onToggleSidebar: _toggleSidebar,
-      ),
-      body: Row(
-        children: [
-          // Только AppNavRail обновляется при открытии/закрытии сайдбара
-          ValueListenableBuilder<bool>(
-            valueListenable: _sidebarNotifier,
-            builder: (context, isOpen, _) => AppNavRail(
-              isOpen: isOpen,
-              location: widget.location,
-              onRouteSelected: (route) => context.go(route),
-            ),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.digit1, control: true): () => context.go('/pos'),
+        const SingleActivator(LogicalKeyboardKey.digit2, control: true): () => context.go('/orders'),
+        const SingleActivator(LogicalKeyboardKey.digit3, control: true): () => context.go('/catalog'),
+        const SingleActivator(LogicalKeyboardKey.digit4, control: true): () => context.go('/warehouse'),
+        const SingleActivator(LogicalKeyboardKey.digit5, control: true): () => context.go('/analytics'),
+        const SingleActivator(LogicalKeyboardKey.digit6, control: true): () => context.go('/settings'),
+        const SingleActivator(LogicalKeyboardKey.digit1, meta: true): () => context.go('/pos'),
+        const SingleActivator(LogicalKeyboardKey.digit2, meta: true): () => context.go('/orders'),
+        const SingleActivator(LogicalKeyboardKey.digit3, meta: true): () => context.go('/catalog'),
+        const SingleActivator(LogicalKeyboardKey.digit4, meta: true): () => context.go('/warehouse'),
+        const SingleActivator(LogicalKeyboardKey.digit5, meta: true): () => context.go('/analytics'),
+        const SingleActivator(LogicalKeyboardKey.digit6, meta: true): () => context.go('/settings'),
+        const SingleActivator(LogicalKeyboardKey.keyB, control: true): _toggleSidebar,
+        const SingleActivator(LogicalKeyboardKey.keyB, meta: true): _toggleSidebar,
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+          // AppNavBar получает стабильные ссылки на методы — не пересоздаётся
+          // при каждом rebuild. Логотип и сегментированный контрол не дёргаются.
+          appBar: AppNavBar(
+            location: widget.location,
+            onCashTap: _handleCashTap,
+            onToggleSidebar: _toggleSidebar,
           ),
-          Container(
-            width: 1,
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          body: Row(
+            children: [
+              // Только AppNavRail обновляется при открытии/закрытии сайдбара
+              ValueListenableBuilder<bool>(
+                valueListenable: _sidebarNotifier,
+                builder: (context, isOpen, _) => AppNavRail(
+                  isOpen: isOpen,
+                  location: widget.location,
+                  onRouteSelected: (route) => context.go(route),
+                ),
+              ),
+              Container(
+                width: 1,
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              ),
+              Expanded(child: widget.child),
+            ],
           ),
-          Expanded(child: widget.child),
-        ],
+        ),
       ),
     );
   }

@@ -1,20 +1,21 @@
+// ==============================================================================
+// Title: IngredientGridView
+// Path: frontend/lib/features/menu/view/widgets/catalog/ingredient/ingredient_grid_view.dart
+// Description: Сеточное отображение каталога сырья и заготовок.
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/utils/icon_helper.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
-import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
-import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
-import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_grid_card.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
+// [UI-KIT] Сетка карточек сырья с фильтрацией по дереву категорий
 class IngredientGridView extends StatelessWidget {
   final List<Ingredient> ingredients;
   final int? selectedCategoryId;
@@ -41,10 +42,6 @@ class IngredientGridView extends StatelessWidget {
       toCheck.addAll(children);
     }
     return result;
-  }
-
-  String _formatStock(double val, String unit) {
-    return UnitFormatter.formatAmount(val, unit);
   }
 
   @override
@@ -109,265 +106,16 @@ class IngredientGridView extends StatelessWidget {
           if (cat != null) catName = cat.name;
         }
 
-        final hasIcon = iconStr != null && iconStr.isNotEmpty;
-        final isLow = item.isLowStock;
-        final isCritical = item.currentStock <= 0;
-        final stockColor = isCritical ? AppColors.danger : (isLow ? AppColors.warning : AppColors.success);
-
-        return Container(
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.brandPrimary.withValues(alpha: 0.1)
-                : (isDark ? AppColors.darkCard : AppColors.lightCard),
-            borderRadius: AppRadii.cardRadius,
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.brandPrimary
-                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            ),
-          ),
-          child: Material(
-            color: AppColors.transparent,
-            child: InkWell(
-              borderRadius: AppRadii.cardRadius,
-              onTap: isManageMode
-                  ? () => onToggleSelect(item.id, !isSelected)
-                  : () => showAddIngredientDialog(context, itemToEdit: item),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Top Row: Code Badge + Actions / Checkbox
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                                borderRadius: AppRadii.badgeRadius,
-                                border: Border.all(
-                                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                                ),
-                              ),
-                              child: Text(
-                                item.displayCode,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontFamily: 'monospace',
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            if (item.isArchived)
-                              Container(
-                                margin: const EdgeInsets.only(left: 6),
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: (isDark ? AppColors.darkCard : AppColors.lightCard),
-                                  borderRadius: AppRadii.radiusXs,
-                                  border: Border.all(
-                                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                                  ),
-                                ),
-                                child: Text(
-                                  'Архив',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        if (isManageMode)
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: Checkbox(
-                              value: isSelected,
-                              onChanged: (val) => onToggleSelect(item.id, val == true),
-                              activeColor: AppColors.brandPrimary,
-                            ),
-                          )
-                        else
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: PopupMenuButton<String>(
-                              padding: EdgeInsets.zero,
-                              icon: Icon(
-                                PhosphorIconsRegular.dotsThreeVertical,
-                                size: 16,
-                                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                              ),
-                              onSelected: (val) {
-                                if (val == 'edit') {
-                                  showAddIngredientDialog(context, itemToEdit: item);
-                                } else if (val == 'delete') {
-                                  _confirmDelete(context, item);
-                                } else if (val == 'restore') {
-                                  context.read<IngredientBloc>().add(RestoreIngredient(item.id));
-                                }
-                              },
-                              itemBuilder: (ctx) => item.isArchived
-                                  ? [
-                                      const PopupMenuItem(
-                                        value: 'restore',
-                                        child: Row(
-                                          children: [
-                                            Icon(PhosphorIconsRegular.arrowCounterClockwise, size: 16),
-                                            SizedBox(width: 8),
-                                            Text('Восстановить'),
-                                          ],
-                                        ),
-                                      ),
-                                      const PopupMenuItem(
-                                        value: 'delete',
-                                        child: Row(
-                                          children: [
-                                            Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.danger),
-                                            SizedBox(width: 8),
-                                            Text('Удалить навсегда', style: TextStyle(color: AppColors.danger)),
-                                          ],
-                                        ),
-                                      ),
-                                    ]
-                                  : [
-                                      const PopupMenuItem(
-                                        value: 'edit',
-                                        child: Row(
-                                          children: [
-                                            Icon(PhosphorIconsRegular.pencilSimple, size: 16),
-                                            SizedBox(width: 8),
-                                            Text('Редактировать'),
-                                          ],
-                                        ),
-                                      ),
-                                      const PopupMenuItem(
-                                        value: 'delete',
-                                        child: Row(
-                                          children: [
-                                            Icon(PhosphorIconsRegular.archive, size: 16, color: AppColors.danger),
-                                            SizedBox(width: 8),
-                                            Text('Архивировать', style: TextStyle(color: AppColors.danger)),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                            ),
-                          ),
-                      ],
-                    ),
-
-                    // Middle Section: Icon (if category has icon) OR Initial
-                    Center(
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: (hasIcon ? stockColor : AppColors.brandPrimary).withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: hasIcon
-                            ? IconHelper.buildIcon(
-                                iconStr,
-                                size: 22,
-                                color: stockColor,
-                              )
-                            : Text(
-                                item.name.isNotEmpty ? item.name[0].toUpperCase() : '?',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                                ),
-                              ),
-                      ),
-                    ),
-
-                    // Name & Category Subtitle
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.name,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            decoration: item.isArchived ? TextDecoration.lineThrough : null,
-                            color: item.isArchived
-                                ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext)
-                                : (isDark ? AppColors.darkText : AppColors.lightText),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          catName,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-
-                    // Bottom Row: Stock Badge + Price (Overflow-Proof)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: stockColor.withValues(alpha: 0.12),
-                              borderRadius: AppRadii.badgeRadius,
-                            ),
-                            child: Text(
-                              _formatStock(item.currentStock, item.unit),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: stockColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '${item.costPerUnit.toStringAsFixed(item.costPerUnit.truncateToDouble() == item.costPerUnit ? 0 : 2)} $currency/${UnitFormatter.format(item.unit)}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        return IngredientGridCard(
+          item: item,
+          isSelected: isSelected,
+          isManageMode: isManageMode,
+          catName: catName,
+          iconStr: iconStr,
+          currency: currency,
+          onToggleSelect: onToggleSelect,
         );
       },
     );
-  }
-
-  void _confirmDelete(BuildContext context, Ingredient item) {
-    CatalogDeletionDialogs.confirmDeleteIngredient(context, item);
   }
 }

@@ -1,20 +1,25 @@
+// ==============================================================================
+// Title: CreateIngredientDialog
+// Path: frontend/lib/features/menu/view/widgets/catalog/dialogs/create_ingredient_dialog.dart
+// Description: Диалог создания и редактирования сырья со встроенной защитой от дублей.
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_dialog.dart';
+import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
-import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
-import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
-import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
-import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/create_ingredient_form_fields.dart';
+import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 
+// [UI-KIT] Показ модального окна добавления/редактирования сырья
 void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int? initialCategoryId}) {
   final isEditing = itemToEdit != null;
   final initialName = itemToEdit?.name ?? '';
@@ -66,8 +71,6 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
             if (ctx.mounted) setState(() {});
           });
 
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-
           final ingState = context.watch<IngredientBloc>().state;
           DuplicateMatch? duplicateMatch;
           if (ingState is IngredientLoaded) {
@@ -90,22 +93,6 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
             if (sortOrderController.text.trim() != initialSort.trim()) return true;
             if (selectedCategoryId != initialCat) return true;
             return false;
-          }
-
-          InputDecoration inputDeco(String label, {Widget? prefixIcon, Widget? suffixIcon, String? hintText, EdgeInsetsGeometry? contentPadding}) {
-            return InputDecoration(
-              labelText: label,
-              hintText: hintText,
-              prefixIcon: prefixIcon,
-              suffixIcon: suffixIcon,
-              contentPadding: contentPadding,
-              filled: true,
-              fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-              border: OutlineInputBorder(
-                borderRadius: AppRadii.inputRadius,
-                borderSide: BorderSide.none,
-              ),
-            );
           }
 
           void showDuplicateBlockedDialog(BuildContext dialogCtx, Ingredient existingItem) {
@@ -143,6 +130,47 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
             );
           }
 
+          void onSubmit() {
+            final cost = double.tryParse(costController.text) ?? 0.0;
+            final alert = double.tryParse(alertController.text) ?? 0.0;
+            final stock = double.tryParse(initialStockController.text) ?? 0.0;
+            final sortOrder = int.tryParse(sortOrderController.text.trim()) ?? 0;
+            if (nameController.text.isEmpty) return;
+
+            final barcode = barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim();
+            if (!isEditing && duplicateMatch != null && duplicateMatch.isSameCategory) {
+              showDuplicateBlockedDialog(ctx, duplicateMatch.item);
+              return;
+            }
+            if (isEditing) {
+              context.read<IngredientBloc>().add(
+                UpdateIngredient(itemToEdit.id, {
+                  'name': nameController.text,
+                  'unit': selectedUnit,
+                  'cost_per_unit': cost,
+                  'min_stock_alert': alert,
+                  'category_id': selectedCategoryId,
+                  'sort_order': sortOrder,
+                  'barcode': barcode,
+                }),
+              );
+            } else {
+              context.read<IngredientBloc>().add(
+                CreateIngredient(
+                  name: nameController.text,
+                  unit: selectedUnit,
+                  costPerUnit: cost,
+                  minStockAlert: alert,
+                  categoryId: selectedCategoryId,
+                  initialStock: stock,
+                  sortOrder: sortOrder,
+                  barcode: barcode,
+                ),
+              );
+            }
+            Navigator.pop(ctx);
+          }
+
           return DirtyPopScope(
             isDirty: isDirty(),
             title: isEditing ? 'Отменить изменения?' : 'Отменить создание?',
@@ -155,151 +183,36 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
               icon: PhosphorIconsRegular.leaf,
               width: 500,
               content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BlocBuilder<CategoryBloc, CategoryState>(
-                      builder: (context, state) {
-                        if (state is CategoryLoaded) {
-                          final ingredientCategories = state.categories.where((c) => c.categoryType == 'ingredient').toList();
-                          final bool hasMatchingCategory = selectedCategoryId != null &&
-                              selectedCategoryId != 0 &&
-                              ingredientCategories.any((c) => c.id == selectedCategoryId);
-                          final int? effectiveCategoryId = hasMatchingCategory ? selectedCategoryId : null;
-
-                          return DropdownButtonFormField<int?>(
-                            initialValue: effectiveCategoryId,
-                            decoration: inputDeco('Категория склада', prefixIcon: Icon(PhosphorIconsRegular.folderPlus, color: AppColors.brandPrimary)),
-                            dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                            items: [
-                              const DropdownMenuItem<int?>(value: null, child: Text('Без категории')),
-                              ...ingredientCategories.map((cat) => DropdownMenuItem<int?>(value: cat.id, child: Text(cat.name))),
-                            ],
-                            onChanged: (val) {
-                              setState(() {
-                                selectedCategoryId = val;
-                                if (!isEditing || barcodeController.text.isEmpty || barcodeController.text.contains('-')) {
-                                  barcodeController.text = generateNextSku(val);
-                                }
-                              });
-                            },
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: TextFormField(
-                            controller: nameController,
-                            decoration: inputDeco('Название сырья', prefixIcon: Icon(PhosphorIconsRegular.leaf, color: AppColors.brandPrimary)),
-                            autofocus: !isEditing,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          flex: 1,
-                          child: DropdownButtonFormField<String>(
-                            initialValue: selectedUnit,
-                            isExpanded: true,
-                            decoration: inputDeco(
-                              'Ед. изм.',
-                              prefixIcon: Icon(PhosphorIconsRegular.scales, size: 18, color: AppColors.brandPrimary),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                            ),
-                            dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                            items: UnitFormatter.dropdownItems,
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() {
-                                  selectedUnit = val;
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (duplicateMatch != null)
-                      DuplicateWarningChip(
-                        message: duplicateMatch.matchReason,
-                        onOpenExisting: () {
-                          Navigator.pop(ctx);
-                          showAddIngredientDialog(
-                            context,
-                            itemToEdit: duplicateMatch!.item,
-                            initialCategoryId: selectedCategoryId,
-                          );
-                        },
-                      ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: costController,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            decoration: inputDeco('Себестоимость за ед. ($currency)', prefixIcon: Icon(PhosphorIconsRegular.tag, color: AppColors.brandPrimary)),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextFormField(
-                            controller: alertController,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            decoration: inputDeco('Мин. остаток (алерт)', prefixIcon: Icon(PhosphorIconsRegular.warning, color: AppColors.brandPrimary)),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: barcodeController,
-                            decoration: inputDeco(
-                              'Артикул / SKU (или штрихкод)',
-                              prefixIcon: Icon(PhosphorIconsRegular.barcode, color: AppColors.brandPrimary),
-                              suffixIcon: IconButton(
-                                icon: Icon(PhosphorIconsRegular.sparkle, color: AppColors.brandPrimary),
-                                tooltip: 'Автогенерация серийного SKU',
-                                onPressed: () {
-                                  setState(() {
-                                    barcodeController.text = generateNextSku(selectedCategoryId);
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextFormField(
-                            controller: sortOrderController,
-                            keyboardType: TextInputType.number,
-                            decoration: inputDeco(
-                              'Порядок (1, 2, 3...)',
-                              hintText: 'Пусто = авто',
-                              prefixIcon: Icon(PhosphorIconsRegular.sortAscending, color: AppColors.brandPrimary),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (!isEditing) ...[
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: initialStockController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: inputDeco('Начальный остаток на складе', prefixIcon: Icon(PhosphorIconsRegular.package, color: AppColors.brandPrimary)),
-                      ),
-                    ],
-                  ],
+                child: CreateIngredientFormFields(
+                  nameController: nameController,
+                  sortOrderController: sortOrderController,
+                  costController: costController,
+                  alertController: alertController,
+                  initialStockController: initialStockController,
+                  barcodeController: barcodeController,
+                  selectedUnit: selectedUnit,
+                  selectedCategoryId: selectedCategoryId,
+                  isEditing: isEditing,
+                  currency: currency,
+                  duplicateMatch: duplicateMatch,
+                  onCategoryChanged: (val) {
+                    setState(() {
+                      selectedCategoryId = val;
+                      if (!isEditing || barcodeController.text.isEmpty || barcodeController.text.contains('-')) {
+                        barcodeController.text = generateNextSku(val);
+                      }
+                    });
+                  },
+                  onUnitChanged: (val) => setState(() => selectedUnit = val),
+                  onGenerateSku: () => setState(() => barcodeController.text = generateNextSku(selectedCategoryId)),
+                  onOpenExistingDuplicate: () {
+                    Navigator.pop(ctx);
+                    showAddIngredientDialog(
+                      context,
+                      itemToEdit: duplicateMatch!.item,
+                      initialCategoryId: selectedCategoryId,
+                    );
+                  },
                 ),
               ),
               actions: [
@@ -312,46 +225,7 @@ void showAddIngredientDialog(BuildContext context, {Ingredient? itemToEdit, int?
                   label: isEditing ? 'Сохранить' : 'Создать',
                   icon: PhosphorIconsRegular.floppyDisk,
                   width: null,
-                  onPressed: () {
-                    final cost = double.tryParse(costController.text) ?? 0.0;
-                    final alert = double.tryParse(alertController.text) ?? 0.0;
-                    final stock = double.tryParse(initialStockController.text) ?? 0.0;
-                    final sortOrder = int.tryParse(sortOrderController.text.trim()) ?? 0;
-                    if (nameController.text.isNotEmpty) {
-                      final barcode = barcodeController.text.trim().isEmpty ? null : barcodeController.text.trim();
-                      if (!isEditing && duplicateMatch != null && duplicateMatch.isSameCategory) {
-                        showDuplicateBlockedDialog(ctx, duplicateMatch.item);
-                        return;
-                      }
-                      if (isEditing) {
-                        context.read<IngredientBloc>().add(
-                          UpdateIngredient(itemToEdit.id, {
-                            'name': nameController.text,
-                            'unit': selectedUnit,
-                            'cost_per_unit': cost,
-                            'min_stock_alert': alert,
-                            'category_id': selectedCategoryId,
-                            'sort_order': sortOrder,
-                            'barcode': barcode,
-                          }),
-                        );
-                      } else {
-                        context.read<IngredientBloc>().add(
-                          CreateIngredient(
-                            name: nameController.text,
-                            unit: selectedUnit,
-                            costPerUnit: cost,
-                            minStockAlert: alert,
-                            categoryId: selectedCategoryId,
-                            initialStock: stock,
-                            sortOrder: sortOrder,
-                            barcode: barcode,
-                          ),
-                        );
-                      }
-                      Navigator.pop(ctx);
-                    }
-                  },
+                  onPressed: onSubmit,
                 ),
               ],
             ),

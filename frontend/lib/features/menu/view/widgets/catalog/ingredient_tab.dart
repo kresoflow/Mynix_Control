@@ -1,18 +1,23 @@
+// ==============================================================================
+// Title: IngredientTab
+// Path: frontend/lib/features/menu/view/widgets/catalog/ingredient_tab.dart
+// Description: Вкладка каталога сырья и заготовок (таблица / сетка / архив).
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
-import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_dialogs.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_category_sidebar.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_grid_view.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_header_bar.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_kpi_cards.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_table_view.dart';
-import 'package:kreso_frontend/features/menu/view/widgets/catalog/ingredient/ingredient_grid_view.dart';
-import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add_modal.dart';
 
 class IngredientTab extends StatefulWidget {
   const IngredientTab({super.key});
@@ -29,15 +34,20 @@ class _IngredientTabState extends State<IngredientTab> {
   final Set<int> _selectedIngredients = {};
   String _searchQuery = '';
 
-  void _selectAll(IngredientLoaded state) {
+  void _toggleSelectAll(IngredientLoaded state) {
     final raw = state.ingredients
         .where((i) => !i.isRetail && (_showArchived ? i.isArchived : !i.isArchived))
         .toList();
     final filtered = _selectedCategoryId == null
         ? raw
         : raw.where((i) => i.categoryId == _selectedCategoryId).toList();
+    final isAll = filtered.isNotEmpty && _selectedIngredients.length == filtered.length;
     setState(() {
-      _selectedIngredients.addAll(filtered.map((i) => i.id));
+      if (isAll) {
+        _selectedIngredients.clear();
+      } else {
+        _selectedIngredients.addAll(filtered.map((i) => i.id));
+      }
     });
   }
 
@@ -87,223 +97,29 @@ class _IngredientTabState extends State<IngredientTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Clean Header Row matching RecipeTab ─────────────────────
-          LayoutBuilder(
-            builder: (context, headerConstraints) {
-              final isNarrow = headerConstraints.maxWidth < 750;
-              final actionButtons = SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_isManageMode) ...[
-                      Builder(
-                        builder: (context) {
-                          final raw = ingState is IngredientLoaded
-                              ? ingState.ingredients.where((i) => !i.isRetail && (_showArchived ? i.isArchived : !i.isArchived)).toList()
-                              : [];
-                          final filtered = _selectedCategoryId == null
-                              ? raw
-                              : raw.where((i) => i.categoryId == _selectedCategoryId).toList();
-                          final isAllSelected = filtered.isNotEmpty && _selectedIngredients.length == filtered.length;
-                          final IconData badgeIcon = _selectedIngredients.isEmpty
-                              ? PhosphorIconsRegular.square
-                              : (isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.minusSquare);
-                          final Color badgeColor = _selectedIngredients.isNotEmpty
-                              ? (_showArchived ? AppColors.brandPrimary : AppColors.danger)
-                              : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext);
-
-                          return Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                height: 38,
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: _selectedIngredients.isNotEmpty
-                                      ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: isDark ? 0.2 : 0.1)
-                                      : (isDark ? AppColors.darkCard : AppColors.lightCard),
-                                  borderRadius: AppRadii.inputRadius,
-                                  border: Border.all(
-                                    color: _selectedIngredients.isNotEmpty
-                                        ? (_showArchived ? AppColors.brandPrimary : AppColors.danger).withValues(alpha: 0.4)
-                                        : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                                  ),
-                                ),
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      badgeIcon,
-                                      size: 16,
-                                      color: badgeColor,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Выбрано: ${_selectedIngredients.length}',
-                                      style: AppTextStyles.bodyMedium.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: _selectedIngredients.isNotEmpty
-                                            ? badgeColor
-                                            : (isDark ? AppColors.darkText : AppColors.lightText),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              AppSecondaryButton(
-                                label: isAllSelected ? 'Снять выделение' : 'Выбрать все',
-                                icon: isAllSelected ? PhosphorIconsRegular.checkSquare : PhosphorIconsRegular.square,
-                                isSelected: isAllSelected,
-                                height: 38,
-                                size: AppButtonSize.md,
-                                onPressed: () {
-                                  if (isAllSelected) {
-                                    setState(() => _selectedIngredients.clear());
-                                  } else if (ingState is IngredientLoaded) {
-                                    _selectAll(ingState);
-                                  }
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      if (_showArchived) ...[
-                        AppPrimaryButton(
-                          label: 'Восстановить (${_selectedIngredients.length})',
-                          icon: PhosphorIconsRegular.arrowCounterClockwise,
-                          height: 38,
-                          size: AppButtonSize.md,
-                          onPressed: _selectedIngredients.isEmpty ? null : _confirmRestoreSelected,
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      AppDangerButton(
-                        label: _showArchived ? 'Удалить навсегда (${_selectedIngredients.length})' : 'Архивировать (${_selectedIngredients.length})',
-                        icon: _showArchived ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
-                        height: 38,
-                        size: AppButtonSize.md,
-                        onPressed: _selectedIngredients.isEmpty ? null : _confirmDeleteSelected,
-                      ),
-                      const SizedBox(width: 8),
-                      AppGhostButton(
-                        label: 'Отмена',
-                        icon: PhosphorIconsRegular.x,
-                        height: 38,
-                        size: AppButtonSize.md,
-                        onPressed: () => setState(() {
-                          _isManageMode = false;
-                          _selectedIngredients.clear();
-                        }),
-                      ),
-                    ] else ...[
-                      // Group 1: View Switcher (Grid / List)
-                      AppSegmentedControl<bool>(
-                        size: AppSegmentedSize.md,
-                        selectedValue: _isGridView,
-                        onValueChanged: (val) => setState(() => _isGridView = val),
-                        items: const [
-                          AppSegmentedItem(
-                            value: true,
-                            icon: PhosphorIconsRegular.squaresFour,
-                            tooltip: 'Сетка',
-                          ),
-                          AppSegmentedItem(
-                            value: false,
-                            icon: PhosphorIconsRegular.listDashes,
-                            tooltip: 'Список',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 8),
-
-                      // Group 1.5: Archive Toggle with badge
-                      Badge(
-                        isLabelVisible: archivedCount > 0,
-                        label: Text('$archivedCount', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                        backgroundColor: AppColors.brandPrimary,
-                        offset: const Offset(4, -4),
-                        child: AppSecondaryButton(
-                          label: '',
-                          icon: PhosphorIconsRegular.archive,
-                          tooltip: _showArchived ? 'Скрыть архив' : (archivedCount > 0 ? 'Архив ($archivedCount)' : 'Архив'),
-                          isSelected: _showArchived,
-                          height: 38,
-                          width: 38,
-                          size: AppButtonSize.md,
-                          onPressed: () => setState(() {
-                            _showArchived = !_showArchived;
-                            _selectedIngredients.clear();
-                          }),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-
-                      // Group 2: Operations
-                      AppSecondaryButton(
-                        label: 'Выбрать',
-                        icon: PhosphorIconsRegular.checkSquareOffset,
-                        height: 38,
-                        size: AppButtonSize.md,
-                        onPressed: () => setState(() => _isManageMode = true),
-                      ),
-                      const SizedBox(width: 10),
-
-                      // Group 3: Main CTA Button
-                      AppMenuButton(
-                        label: 'Добавить',
-                        icon: PhosphorIconsRegular.plus,
-                        size: AppButtonSize.md,
-                        items: const [
-                          AppMenuItem(id: 'ingredient', label: 'Сырье / Ингредиент', icon: PhosphorIconsRegular.leaf),
-                          AppMenuItem(id: 'category', label: 'Категория сырья', icon: PhosphorIconsRegular.folderPlus),
-                          AppMenuDivider(),
-                          AppMenuItem(id: 'bulk_add', label: 'Массовый ввод', icon: PhosphorIconsRegular.table),
-                        ],
-                        onSelected: (val) {
-                          if (val == 'ingredient') {
-                            showAddIngredientDialog(context, initialCategoryId: _selectedCategoryId);
-                          } else if (val == 'category') {
-                            showAddCategoryDialog(context, currentCategoryId: _selectedCategoryId, type: 'ingredient');
-                          } else if (val == 'bulk_add') {
-                            showDialog(
-                              context: context,
-                              builder: (_) => BulkAddModal(initialTabIndex: 2, initialParentId: _selectedCategoryId),
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                  ],
-                ),
-              );
-
-              if (isNarrow) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Сырье и заготовки', style: AppTextStyles.h2),
-                    const SizedBox(height: 10),
-                    actionButtons,
-                  ],
-                );
-              }
-
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Сырье и заготовки',
-                    style: AppTextStyles.h2,
-                  ),
-                  actionButtons,
-                ],
-              );
+          // ── Clean Header Row matching Design System ─────────────────
+          IngredientHeaderBar(
+            isManageMode: _isManageMode,
+            isGridView: _isGridView,
+            showArchived: _showArchived,
+            archivedCount: archivedCount,
+            selectedIngredients: _selectedIngredients,
+            selectedCategoryId: _selectedCategoryId,
+            onSelectAll: () {
+              if (ingState is IngredientLoaded) _toggleSelectAll(ingState);
             },
+            onConfirmRestore: _confirmRestoreSelected,
+            onConfirmDelete: _confirmDeleteSelected,
+            onCancelManageMode: () => setState(() {
+              _isManageMode = false;
+              _selectedIngredients.clear();
+            }),
+            onToggleGridView: (val) => setState(() => _isGridView = val),
+            onToggleShowArchived: () => setState(() {
+              _showArchived = !_showArchived;
+              _selectedIngredients.clear();
+            }),
+            onEnterManageMode: () => setState(() => _isManageMode = true),
           ),
           const SizedBox(height: 16),
 
@@ -333,9 +149,9 @@ class _IngredientTabState extends State<IngredientTab> {
                           if (_searchQuery.isEmpty) return true;
                           final q = _searchQuery.toLowerCase().trim();
                           return i.name.toLowerCase().contains(q) ||
-                                 '#${i.id}'.contains(q) ||
-                                 '${i.id}' == q ||
-                                 (i.barcode != null && i.barcode!.toLowerCase().contains(q));
+                              '#${i.id}'.contains(q) ||
+                              '${i.id}' == q ||
+                              (i.barcode != null && i.barcode!.toLowerCase().contains(q));
                         }).toList();
 
                         return LayoutBuilder(
@@ -359,90 +175,61 @@ class _IngredientTabState extends State<IngredientTab> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                  // 3 KPI Cards Row (matching Recipe Tab)
-                                  IngredientKpiCards(ingredients: state.ingredients),
-                                  const SizedBox(height: 14),
+                                      // 3 KPI Cards Row
+                                      IngredientKpiCards(ingredients: state.ingredients),
+                                      const SizedBox(height: 14),
 
-                                  // Archive Mode Information Banner
-                                  if (_showArchived) ...[
-                                    Container(
-                                      margin: const EdgeInsets.only(bottom: 12),
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                      decoration: BoxDecoration(
-                                        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                                        borderRadius: AppRadii.inputRadius,
-                                        border: Border.all(
-                                          color: AppColors.brandPrimary.withValues(alpha: 0.3),
+                                      // Archive Mode Information Banner
+                                      if (_showArchived)
+                                        IngredientArchiveBanner(
+                                          archivedCount: archivedCount,
+                                          onClose: () => setState(() {
+                                            _showArchived = false;
+                                            _selectedIngredients.clear();
+                                          }),
                                         ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(PhosphorIconsRegular.archive, size: 18, color: AppColors.brandPrimary),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Text(
-                                              'Режим архива ($archivedCount поз.). Архивные позиции скрыты из кассы, накладных и расчетов остатков.',
-                                              style: AppTextStyles.bodyMedium.copyWith(
-                                                fontSize: 13,
-                                                color: isDark ? AppColors.darkText : AppColors.lightText,
-                                              ),
-                                            ),
-                                          ),
-                                          AppGhostButton(
-                                            label: 'Закрыть архив',
-                                            icon: PhosphorIconsRegular.x,
-                                            size: AppButtonSize.sm,
-                                            onPressed: () => setState(() {
-                                              _showArchived = false;
-                                              _selectedIngredients.clear();
-                                            }),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
 
-                                  // Table or Grid View
-                                  Expanded(
-                                    child: _isGridView
-                                        ? IngredientGridView(
-                                            ingredients: filteredList,
-                                            selectedCategoryId: _selectedCategoryId,
-                                            isManageMode: _isManageMode,
-                                            selectedIngredients: _selectedIngredients,
-                                            onToggleSelect: (id, sel) {
-                                              setState(() {
-                                                if (sel) {
-                                                  _selectedIngredients.add(id);
-                                                } else {
-                                                  _selectedIngredients.remove(id);
-                                                }
-                                              });
-                                            },
-                                          )
-                                        : IngredientTableView(
-                                            ingredients: filteredList,
-                                            selectedCategoryId: _selectedCategoryId,
-                                            isManageMode: _isManageMode,
-                                            selectedIngredients: _selectedIngredients,
-                                            onToggleSelect: (id, sel) {
-                                              setState(() {
-                                                if (sel) {
-                                                  _selectedIngredients.add(id);
-                                                } else {
-                                                  _selectedIngredients.remove(id);
-                                                }
-                                              });
-                                            },
-                                          ),
+                                      // Table or Grid View
+                                      Expanded(
+                                        child: _isGridView
+                                            ? IngredientGridView(
+                                                ingredients: filteredList,
+                                                selectedCategoryId: _selectedCategoryId,
+                                                isManageMode: _isManageMode,
+                                                selectedIngredients: _selectedIngredients,
+                                                onToggleSelect: (id, sel) {
+                                                  setState(() {
+                                                    if (sel) {
+                                                      _selectedIngredients.add(id);
+                                                    } else {
+                                                      _selectedIngredients.remove(id);
+                                                    }
+                                                  });
+                                                },
+                                              )
+                                            : IngredientTableView(
+                                                ingredients: filteredList,
+                                                selectedCategoryId: _selectedCategoryId,
+                                                isManageMode: _isManageMode,
+                                                selectedIngredients: _selectedIngredients,
+                                                onToggleSelect: (id, sel) {
+                                                  setState(() {
+                                                    if (sel) {
+                                                      _selectedIngredients.add(id);
+                                                    } else {
+                                                      _selectedIngredients.remove(id);
+                                                    }
+                                                  });
+                                                },
+                                              ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
+                                ),
+                              ],
+                            );
+                          },
                         );
-                      },
-                    );
                       } else if (state is IngredientError) {
                         return Center(
                           child: Column(
