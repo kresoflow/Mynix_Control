@@ -112,9 +112,12 @@ class _RetailProductModalState extends State<RetailProductModal> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
-      child: Container(
+    return AppSaveShortcutScope(
+      onSave: _submit,
+      onCancel: () => Navigator.of(context).pop(),
+      child: Dialog(
+        shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
+        child: Container(
         width: 500,
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -211,6 +214,7 @@ class _RetailProductModalState extends State<RetailProductModal> {
           ),
         ),
       ),
+    ),
     );
   }
 }

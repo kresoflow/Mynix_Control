@@ -185,10 +185,10 @@ class _TablePickerModalState extends State<TablePickerModal> {
               Expanded(
                 child: TextField(
                   controller: _customController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Другой стол (напр. Бар 2)',
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     border: OutlineInputBorder(borderRadius: AppRadii.radiusMd),
                   ),
                 ),

@@ -195,7 +195,7 @@ class _OpenShiftModalState extends State<OpenShiftModal> with SingleTickerProvid
                       fillColor: isDark
                           ? AppColors.pureBlack.withValues(alpha: 0.2)
                           : AppColors.lightSurface,
-                      border: OutlineInputBorder(
+                      border: const OutlineInputBorder(
                         borderRadius: AppRadii.cardRadius,
                         borderSide: BorderSide.none,
                       ),

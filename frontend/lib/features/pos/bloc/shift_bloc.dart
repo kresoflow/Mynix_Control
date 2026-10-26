@@ -68,11 +68,11 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
     emit(ShiftLoading());
     try {
       await repository.openShift(event.openingCash);
-      add(CheckCurrentShift());
+      add(const CheckCurrentShift());
     } catch (e) {
       emit(ShiftError(e.toString()));
       // Re-check to restore correct UI state
-      add(CheckCurrentShift());
+      add(const CheckCurrentShift());
     }
   }
 
@@ -86,7 +86,7 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
     } catch (e) {
       emit(ShiftError(e.toString()));
       // Re-check to restore correct UI state
-      add(CheckCurrentShift());
+      add(const CheckCurrentShift());
     }
   }
 }

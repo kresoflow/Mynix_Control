@@ -82,7 +82,7 @@ class CreateRetailProductForm extends StatelessWidget {
     fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
     isDense: isDense,
     contentPadding: contentPadding,
-    border: OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide.none),
+    border: const OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide.none),
   );
 
   @override

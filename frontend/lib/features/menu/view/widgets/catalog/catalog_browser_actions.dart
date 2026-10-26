@@ -95,7 +95,7 @@ class CatalogBrowserActions {
     for (final item in selectedDishes) {
       context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': targetVisible}));
     }
-    context.read<CategoryBloc>().add(LoadCategories());
+    context.read<CategoryBloc>().add(const LoadCategories());
 
     final count = selectedCats.length + selectedDishes.length;
     AppToast.showSuccess(
@@ -123,7 +123,7 @@ class CatalogBrowserActions {
     for (final item in selectedDishes) {
       context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true}));
     }
-    context.read<CategoryBloc>().add(LoadCategories());
+    context.read<CategoryBloc>().add(const LoadCategories());
 
     final count = selectedCats.length + selectedDishes.length;
     onCleared();

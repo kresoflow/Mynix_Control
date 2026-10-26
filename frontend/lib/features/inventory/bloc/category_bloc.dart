@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
@@ -48,10 +48,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   ) async {
     try {
       await repository.createCategoriesBulk(event.categories);
-      add(LoadCategories());
+      add(const LoadCategories());
     } catch (e) {
       emit(CategoryError(message: e.toString()));
-      add(LoadCategories());
+      add(const LoadCategories());
     }
   }
 
@@ -62,13 +62,13 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     final currentCategories = state is CategoryLoaded ? (state as CategoryLoaded).categories : <MenuCategory>[];
     try {
       await repository.deleteCategoriesBulk(event.ids, mode: event.mode);
-      add(LoadCategories());
+      add(const LoadCategories());
     } catch (e) {
       emit(CategoryError(message: e.toString().replaceFirst('Exception: ', '')));
       if (currentCategories.isNotEmpty) {
         emit(CategoryLoaded(categories: currentCategories));
       } else {
-        add(LoadCategories());
+        add(const LoadCategories());
       }
     }
   }
@@ -104,10 +104,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         isVisible: event.isVisible,
         icon: event.icon,
       );
-      add(LoadCategories());
+      add(const LoadCategories());
     } catch (e) {
       emit(CategoryError(message: e.toString()));
-      add(LoadCategories());
+      add(const LoadCategories());
     }
   }
 
@@ -126,10 +126,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         isArchived: event.isArchived,
         icon: event.icon,
       );
-      add(LoadCategories());
+      add(const LoadCategories());
     } catch (e) {
       emit(CategoryError(message: e.toString()));
-      add(LoadCategories());
+      add(const LoadCategories());
     }
   }
 
@@ -139,10 +139,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   ) async {
     try {
       await repository.restoreCategory(event.id);
-      add(LoadCategories());
+      add(const LoadCategories());
     } catch (e) {
       emit(CategoryError(message: e.toString()));
-      add(LoadCategories());
+      add(const LoadCategories());
     }
   }
 
@@ -153,7 +153,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     final currentCategories = state is CategoryLoaded ? (state as CategoryLoaded).categories : <MenuCategory>[];
     try {
       await repository.deleteCategory(event.id, mode: event.mode);
-      add(LoadCategories());
+      add(const LoadCategories());
     } catch (e) {
       emit(
         CategoryError(message: e.toString().replaceFirst('Exception: ', '')),
@@ -161,7 +161,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       if (currentCategories.isNotEmpty) {
         emit(CategoryLoaded(categories: currentCategories));
       } else {
-        add(LoadCategories());
+        add(const LoadCategories());
       }
     }
   }

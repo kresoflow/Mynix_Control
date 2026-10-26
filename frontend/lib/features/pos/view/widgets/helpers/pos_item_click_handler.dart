@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/pos/bloc/cart_bloc.dart';
@@ -65,7 +65,7 @@ void handlePosItemClick(BuildContext context, MenuItem item) {
       item,
       selectedOptionsJson: jsonEncode(selected),
       selectedOptionsPrice: additional,
-    ));
+    ),);
   } else if (hasOptions) {
     showDialog(
       context: context,
@@ -77,7 +77,7 @@ void handlePosItemClick(BuildContext context, MenuItem item) {
             item,
             selectedOptionsJson: result['json'],
             selectedOptionsPrice: result['price'],
-          ));
+          ),);
         },
       ),
     );

@@ -78,7 +78,7 @@ class AppPageHeader extends StatelessWidget {
                     children: kpiChips!.map((chip) => Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: chip,
-                    )).toList(),
+                    ),).toList(),
                   ),
                   const SizedBox(width: 12),
                 ],
@@ -96,7 +96,7 @@ class AppPageHeader extends StatelessWidget {
                     children: actions!.map((act) => Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: act,
-                    )).toList(),
+                    ),).toList(),
                   ),
               ],
             ],
@@ -117,13 +117,13 @@ class AppPageHeader extends StatelessWidget {
                     ...kpiChips!.map((chip) => Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: chip,
-                    )),
+                    ),),
                   ],
                   if (actions != null) ...[
                     ...actions!.map((act) => Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: act,
-                    )),
+                    ),),
                   ],
                 ],
               ),

@@ -191,11 +191,13 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   void _onSelectCustomer(SelectCustomer event, Emitter<CartState> emit) {
-    emit(state.copyWith(
-      selectedCustomer: event.customer,
-      clearCustomer: event.customer == null,
-      bonusToSpend: 0.0,
-    ));
+    emit(
+      state.copyWith(
+        selectedCustomer: event.customer,
+        clearCustomer: event.customer == null,
+        bonusToSpend: 0.0,
+      ),
+    );
   }
 
   void _onSetBonusToSpend(SetBonusToSpend event, Emitter<CartState> emit) {
@@ -203,16 +205,18 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   void _onSetTableNumber(SetTableNumber event, Emitter<CartState> emit) {
-    emit(state.copyWith(
-      tableNumber: event.tableNumber,
-      clearTableNumber: event.tableNumber == null,
-    ));
+    emit(
+      state.copyWith(
+        tableNumber: event.tableNumber,
+        clearTableNumber: event.tableNumber == null,
+      ),
+    );
   }
 
   void _onAddItemToCart(AddItemToCart event, Emitter<CartState> emit) {
     final existingIndex = state.items.indexWhere(
       (item) => item.menuItem.id == event.item.id && 
-                item.selectedOptionsJson == event.selectedOptionsJson
+                item.selectedOptionsJson == event.selectedOptionsJson,
     );
     
     List<CartItem> updatedItems;
@@ -228,7 +232,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           quantity: 1,
           selectedOptionsJson: event.selectedOptionsJson,
           selectedOptionsPrice: event.selectedOptionsPrice,
-        )
+        ),
       );
     }
     emit(state.copyWith(items: updatedItems));
@@ -261,10 +265,12 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   Future<void> _onCheckoutCart(CheckoutCart event, Emitter<CartState> emit) async {
     if (state.items.isEmpty) return;
     
-    emit(state.copyWith(
-      isSubmitting: true,
-      submittingAction: event.submittingAction,
-    ));
+    emit(
+      state.copyWith(
+        isSubmitting: true,
+        submittingAction: event.submittingAction,
+      ),
+    );
     try {
       final customerId = state.selectedCustomer != null ? state.selectedCustomer.id as int : null;
       await orderRepository.submitOrder(
@@ -276,21 +282,25 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         tableNumber: event.tableNumber ?? state.tableNumber,
         orderSource: event.orderSource,
       );
-      emit(state.copyWith(
-        items: const [],
-        clearCustomer: true,
-        clearTableNumber: true,
-        lastSubmittedSource: event.orderSource,
-        isSubmitting: false,
-        clearSubmittingAction: true,
-        submitSuccess: true,
-      ));
+      emit(
+        state.copyWith(
+          items: const [],
+          clearCustomer: true,
+          clearTableNumber: true,
+          lastSubmittedSource: event.orderSource,
+          isSubmitting: false,
+          clearSubmittingAction: true,
+          submitSuccess: true,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        isSubmitting: false,
-        clearSubmittingAction: true,
-        submitError: e.toString(),
-      ));
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          clearSubmittingAction: true,
+          submitError: e.toString(),
+        ),
+      );
     }
   }
 
@@ -303,11 +313,13 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     
     updatedHeld[name] = List.from(state.items);
     
-    emit(state.copyWith(
-      items: const [],
-      heldCarts: updatedHeld,
-      holdCounter: state.holdCounter + 1,
-    ));
+    emit(
+      state.copyWith(
+        items: const [],
+        heldCarts: updatedHeld,
+        holdCounter: state.holdCounter + 1,
+      ),
+    );
   }
 
   void _onResumeHeldCart(ResumeHeldCart event, Emitter<CartState> emit) {
@@ -322,10 +334,12 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       updatedHeld[autoHoldName] = List.from(state.items);
     }
 
-    emit(state.copyWith(
-      items: itemsToResume,
-      heldCarts: updatedHeld,
-      holdCounter: state.items.isNotEmpty ? state.holdCounter + 1 : state.holdCounter,
-    ));
+    emit(
+      state.copyWith(
+        items: itemsToResume,
+        heldCarts: updatedHeld,
+        holdCounter: state.items.isNotEmpty ? state.holdCounter + 1 : state.holdCounter,
+      ),
+    );
   }
 }

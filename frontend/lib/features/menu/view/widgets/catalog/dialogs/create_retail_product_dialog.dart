@@ -9,12 +9,10 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
-import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'create_retail_duplicate_helper.dart';
 import 'create_retail_product_form.dart';
 import 'create_retail_submit_helper.dart';

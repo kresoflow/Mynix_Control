@@ -238,7 +238,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               onItemDelete: (item) => CatalogDeletionDialogs.confirmDeleteItem(context, item),
                               onItemRestore: (item) {
                                 context.read<MenuBloc>().add(UpdateMenuItem(item.id, {'is_available': true}));
-                                context.read<CategoryBloc>().add(LoadCategories());
+                                context.read<CategoryBloc>().add(const LoadCategories());
                               },
                               onItemTap: (item) {
                                 if (_manageMode != CategoryManageMode.none) {

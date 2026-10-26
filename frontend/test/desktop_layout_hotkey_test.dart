@@ -32,7 +32,7 @@ class _TestAuthBloc extends AuthBloc {
       fullName: 'Owner',
       username: 'owner',
       tenantName: 'Test Point',
-    ));
+    ),);
   }
 }
 

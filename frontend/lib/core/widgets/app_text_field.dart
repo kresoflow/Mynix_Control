@@ -108,9 +108,9 @@ class AppTextField extends StatelessWidget {
                 borderRadius: AppRadii.inputRadius,
                 borderSide: BorderSide(color: AppColors.brandPrimary, width: 1.5),
               ),
-              errorBorder: OutlineInputBorder(
+              errorBorder: const OutlineInputBorder(
                 borderRadius: AppRadii.inputRadius,
-                borderSide: const BorderSide(color: AppColors.danger),
+                borderSide: BorderSide(color: AppColors.danger),
               ),
             ),
           ),

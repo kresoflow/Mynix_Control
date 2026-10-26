@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/app_save_shortcut_scope.dart';
+import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
 import 'package:kreso_frontend/features/inventory/models/document.dart';
@@ -60,7 +60,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     _totalSumNotifier = ValueNotifier<double>(0.0);
     _cartCountNotifier = ValueNotifier<int>(0);
     _categoryAdapter = ReceiveCategorySyncAdapter(items: _items, onTotalChanged: _updateTotal);
-    context.read<DocumentBloc>().add(LoadSuppliers());
+    context.read<DocumentBloc>().add(const LoadSuppliers());
     _loadIngredients();
     if (widget.initialDocument != null) {
       _initFromDraft(widget.initialDocument!);
@@ -153,15 +153,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   Future<void> _save({required bool complete}) async {
     _categoryAdapter.pruneEmptyRows();
     if (_items.isEmpty || _items.every((item) => item.ingredient == null || item.quantity <= 0)) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
-          title: const Text('Внимание'),
-          content: const Text('Добавьте хотя бы одну позицию с ненулевым количеством.'),
-          actions: [AppButton.primary(label: 'ОК', height: 36, onPressed: () => Navigator.pop(ctx))],
-        ),
-      );
+      AppToast.showError(context, 'Добавьте хотя бы одну позицию с ненулевым количеством');
       return;
     }
 
@@ -191,14 +183,10 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     final width = MediaQuery.of(context).size.width * 0.95;
     final height = MediaQuery.of(context).size.height * 0.95;
 
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyS, control: true): () => _save(complete: true),
-        const SingleActivator(LogicalKeyboardKey.keyS, meta: true): () => _save(complete: true),
-      },
-      child: Focus(
-        autofocus: true,
-        child: DirtyPopScope(
+    return AppSaveShortcutScope(
+      onSave: () => _save(complete: true),
+      onCancel: () => Navigator.of(context).maybePop(),
+      child: DirtyPopScope(
           isDirtyCheck: () => _isDirty,
           title: 'Отменить приходную накладную?',
           message: 'Все введенные позиции и данные документа будут сброшены. Выйти?',
@@ -293,7 +281,6 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

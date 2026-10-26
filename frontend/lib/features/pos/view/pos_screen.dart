@@ -53,10 +53,10 @@ class _PosScreenState extends State<PosScreen> {
         context.read<MenuBloc>().add(LoadMenu());
       }
       if (context.read<CategoryBloc>().state is! CategoryLoaded) {
-        context.read<CategoryBloc>().add(LoadCategories());
+        context.read<CategoryBloc>().add(const LoadCategories());
       }
       if (context.read<ShiftBloc>().state is ShiftInitial) {
-        context.read<ShiftBloc>().add(CheckCurrentShift());
+        context.read<ShiftBloc>().add(const CheckCurrentShift());
       }
       context.read<PosTabCubit>().refreshCounts();
       _initWebSocketListener();
@@ -106,7 +106,7 @@ class _PosScreenState extends State<PosScreen> {
     final startOfToday = DateTime(now.year, now.month, now.day, 0, 0, 0).toUtc().toIso8601String();
     final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59).toUtc().toIso8601String();
     context.read<OrdersBloc>().add(LoadOrders(startDate: startOfToday, endDate: endOfToday));
-    context.read<ShiftBloc>().add(CheckCurrentShift());
+    context.read<ShiftBloc>().add(const CheckCurrentShift());
     _refreshCounts();
   }
 

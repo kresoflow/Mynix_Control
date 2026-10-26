@@ -115,7 +115,7 @@ class PosCartHeader extends StatelessWidget {
     return PopupMenuButton<String>(
       tooltip: 'Отложенные чеки',
       offset: const Offset(0, 40),
-      shape: RoundedRectangleBorder(borderRadius: AppRadii.radiusLg),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadii.radiusLg),
       color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       elevation: 8,
       child: Container(

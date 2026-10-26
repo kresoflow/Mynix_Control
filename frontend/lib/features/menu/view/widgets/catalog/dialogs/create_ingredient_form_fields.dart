@@ -61,7 +61,7 @@ class CreateIngredientFormFields extends StatelessWidget {
       contentPadding: contentPadding,
       filled: true,
       fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-      border: OutlineInputBorder(
+      border: const OutlineInputBorder(
         borderRadius: AppRadii.inputRadius,
         borderSide: BorderSide.none,
       ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
+import 'package:kreso_frontend/core/widgets/app_save_shortcut_scope.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
 import 'bulk_add/bulk_add_controller.dart';
 import 'bulk_add/bulk_add_header.dart';
@@ -112,14 +112,9 @@ class _BulkAddModalState extends State<BulkAddModal> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyS, control: true): _saveAll,
-        const SingleActivator(LogicalKeyboardKey.keyS, meta: true): _saveAll,
-      },
-      child: Focus(
-        autofocus: true,
-        child: DirtyPopScope(
+    return AppSaveShortcutScope(
+      onSave: _saveAll,
+      child: DirtyPopScope(
           isDirtyCheck: () => _isDirty,
           title: 'Отменить массовое добавление?',
           message: 'Все введенные строки и данные будут сброшены. Вы уверены, что хотите выйти?',
@@ -214,9 +209,8 @@ class _BulkAddModalState extends State<BulkAddModal> {
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   @override
   void dispose() {

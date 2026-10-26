@@ -88,17 +88,21 @@ Future<void> performBulkSave({
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: duplicateErrors.map((err) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(PhosphorIconsRegular.warning, size: 14, color: AppColors.warning),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text(err, style: const TextStyle(fontSize: 12))),
-                      ],
-                    ),
-                  )).toList(),
+                  children: duplicateErrors
+                      .map(
+                        (err) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(PhosphorIconsRegular.warning, size: 14, color: AppColors.warning),
+                              const SizedBox(width: 6),
+                              Expanded(child: Text(err, style: const TextStyle(fontSize: 12))),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
                 ),
               ),
             ),

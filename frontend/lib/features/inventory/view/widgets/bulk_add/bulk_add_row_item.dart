@@ -207,7 +207,7 @@ class _BulkAddRowItemState extends State<BulkAddRowItem> {
                             onPressed: widget.onDuplicate,
                           ),
                           IconButton(
-                            icon: Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.error),
+                            icon: const Icon(PhosphorIconsRegular.trash, size: 16, color: AppColors.error),
                             tooltip: 'Удалить',
                             visualDensity: VisualDensity.compact,
                             splashRadius: 16,
@@ -224,7 +224,7 @@ class _BulkAddRowItemState extends State<BulkAddRowItem> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(PhosphorIconsRegular.warningCircle, size: 14, color: AppColors.warning),
+                        const Icon(PhosphorIconsRegular.warningCircle, size: 14, color: AppColors.warning),
                         const SizedBox(width: 6),
                         Text(
                           dupWarning,

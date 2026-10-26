@@ -88,7 +88,7 @@ class _MergeItemsDialogState extends State<MergeItemsDialog> {
               prefixIcon: Icon(PhosphorIconsRegular.tag, color: AppColors.brandPrimary),
               filled: true,
               fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-              border: OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide.none),
+              border: const OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide.none),
             ),
           ),
           const SizedBox(height: 16),

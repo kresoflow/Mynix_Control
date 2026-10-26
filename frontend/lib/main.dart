@@ -41,6 +41,7 @@ import 'package:kreso_frontend/features/pos/services/pos_outbox_service.dart';
 import 'package:kreso_frontend/features/pos/services/pos_sync_service.dart';
 
 import 'package:flutter/foundation.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart'; // Added for URL strategy
 import 'package:device_preview/device_preview.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -168,7 +169,7 @@ class _KresoAppState extends State<KresoApp> {
             useOrders: authState.useOrders,
           ),
         );
-        _shiftBloc.add(CheckCurrentShift());
+        _shiftBloc.add(const CheckCurrentShift());
         _posTabCubit.refreshCounts();
       }
     });
@@ -210,6 +211,7 @@ class _KresoAppState extends State<KresoApp> {
         RepositoryProvider.value(value: _ordersHistoryRepository),
         RepositoryProvider.value(value: _settingsRepository),
         RepositoryProvider.value(value: _analyticsRepository),
+        RepositoryProvider.value(value: _posSyncService),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -236,7 +238,7 @@ class _KresoAppState extends State<KresoApp> {
                   webSocketService.connect(state.tenantId);
                   context.read<MenuBloc>().add(LoadMenu());
                   context.read<ShiftBloc>().add(CheckCurrentShift(blindPosEnabled: state.blindPosEnabled));
-                  context.read<CategoryBloc>().add(LoadCategories());
+                  context.read<CategoryBloc>().add(const LoadCategories());
                   context.read<SettingsBloc>().add(const LoadSettings());
                   if (state.hasPermission('inventory:view')) {
                     context.read<IngredientBloc>().add(const LoadIngredients());

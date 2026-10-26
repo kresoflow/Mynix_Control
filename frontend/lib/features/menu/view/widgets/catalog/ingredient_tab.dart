@@ -250,7 +250,7 @@ class _IngredientTabState extends State<IngredientTab> with AutomaticKeepAliveCl
                                 icon: PhosphorIconsRegular.arrowsClockwise,
                                 onPressed: () {
                                   context.read<IngredientBloc>().add(const LoadIngredients());
-                                  context.read<CategoryBloc>().add(LoadCategories());
+                                  context.read<CategoryBloc>().add(const LoadCategories());
                                 },
                               ),
                             ],

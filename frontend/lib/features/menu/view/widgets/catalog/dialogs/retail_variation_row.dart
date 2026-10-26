@@ -42,7 +42,7 @@ class RetailVariationRow extends StatelessWidget {
     fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
     isDense: true,
     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-    border: OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide.none),
+    border: const OutlineInputBorder(borderRadius: AppRadii.inputRadius, borderSide: BorderSide.none),
   );
 
   @override

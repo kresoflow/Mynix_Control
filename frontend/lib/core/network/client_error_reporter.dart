@@ -3,7 +3,6 @@
 // ДОМЕН: core/network/client_error_reporter.dart
 // ==============================================================================
 
-import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:kreso_frontend/core/network/api_client.dart';
 
@@ -111,9 +110,7 @@ class ClientErrorReporter {
       }
 
       // Вырезаем первые 6 строк стека для компактности
-      final compactStack = stackTrace != null
-          ? stackTrace.split('\n').take(6).join('\n')
-          : null;
+      final compactStack = stackTrace?.split('\n').take(6).join('\n');
 
       final data = {
         'category': category,

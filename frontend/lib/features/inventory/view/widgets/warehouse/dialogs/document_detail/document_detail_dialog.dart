@@ -6,6 +6,7 @@ import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/app_confirm_dialog.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
 import 'package:kreso_frontend/features/inventory/models/document.dart';
@@ -79,24 +80,14 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
   }
 
   Future<void> _deleteDraft(InventoryDocument doc) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await AppConfirmDialog.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Удалить черновик?'),
-        content: Text('Черновик накладной #${doc.id} будет безвозвратно удален.'),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            height: 36,
-            onPressed: () => Navigator.pop(ctx, false),
-          ),
-          AppButton.danger(
-            label: 'Удалить',
-            height: 36,
-            onPressed: () => Navigator.pop(ctx, true),
-          ),
-        ],
-      ),
+      title: 'Удалить черновик?',
+      message: 'Черновик накладной #${doc.id} будет безвозвратно удален.',
+      confirmLabel: 'Удалить',
+      confirmIcon: PhosphorIconsRegular.trash,
+      isDanger: true,
+      icon: PhosphorIconsRegular.trash,
     );
 
     if (confirmed == true && mounted) {

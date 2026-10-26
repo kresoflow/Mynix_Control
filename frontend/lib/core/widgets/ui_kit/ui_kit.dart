@@ -11,6 +11,7 @@ export '../app_dialog_scaffold.dart';
 export '../app_card.dart';
 export '../app_text_field.dart';
 export '../app_toast.dart';
+export '../app_save_shortcut_scope.dart';
 export 'app_empty_state.dart';
 export 'app_quantity_stepper.dart';
 export 'app_confirm_dialog.dart';

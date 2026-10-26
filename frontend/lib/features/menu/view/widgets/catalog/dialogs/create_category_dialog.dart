@@ -101,7 +101,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                     labelText: isEditing ? 'Название категории' : (isBulk ? 'Список названий (каждая с новой строки)' : 'Названия (можно несколько с новой строки)'),
                     filled: true,
                     fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                    border: OutlineInputBorder(
+                    border: const OutlineInputBorder(
                       borderRadius: AppRadii.inputRadius,
                       borderSide: BorderSide.none,
                     ),
@@ -142,7 +142,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                     labelText: 'Порядок сортировки',
                     filled: true,
                     fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                    border: OutlineInputBorder(
+                    border: const OutlineInputBorder(
                       borderRadius: AppRadii.inputRadius,
                       borderSide: BorderSide.none,
                     ),
@@ -176,7 +176,7 @@ void showAddCategoryDialog(BuildContext context, {int? currentCategoryId, dynami
                     title: const Text('Отображать на кассе'),
                     value: isVisible,
                     activeThumbColor: AppColors.brandPrimary,
-                    shape: RoundedRectangleBorder(borderRadius: AppRadii.inputRadius),
+                    shape: const RoundedRectangleBorder(borderRadius: AppRadii.inputRadius),
                     onChanged: (val) {
                       setState(() {
                         isVisible = val;

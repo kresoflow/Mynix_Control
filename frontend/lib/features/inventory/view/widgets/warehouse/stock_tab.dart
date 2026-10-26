@@ -5,26 +5,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/dialogs/receive_document_dialog.dart';
-import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_capital_chart_card.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_category_header.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_empty_state.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_error_view.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_hierarchy_builder.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_item_row.dart';
-import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_low_inventory_widget.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_metrics_header.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_pill_filters.dart';
+import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_side_panel.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_subcategory_header.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 // ─── 1. Виджет вкладки остатков склада ───────────────────────────────────────
 
@@ -109,36 +105,15 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocBuilder<IngredientBloc, IngredientState>(
       builder: (context, state) {
         if (state is IngredientLoading) {
           return const SkeletonList();
         } else if (state is IngredientError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(PhosphorIconsRegular.warningCircle, size: 48, color: AppColors.danger),
-                const SizedBox(height: 12),
-                Text('Не удалось загрузить остатки склада', style: AppTextStyles.h3),
-                const SizedBox(height: 6),
-                Text(
-                  state.message.replaceAll('Exception: ', ''),
-                  style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                AppSecondaryButton(
-                  onPressed: () => context.read<IngredientBloc>().add(const LoadIngredients()),
-                  icon: PhosphorIconsRegular.arrowsClockwise,
-                  label: 'Повторить попытку',
-                ),
-              ],
-            ),
+          return StockErrorView(
+            errorMessage: state.message,
+            onRetry: () => context.read<IngredientBloc>().add(const LoadIngredients()),
           );
         } else if (state is! IngredientLoaded) {
           return const SizedBox.shrink();
@@ -260,30 +235,11 @@ class _StockTabState extends State<StockTab> with AutomaticKeepAliveClientMixin 
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(flex: 65, child: mainStockColumn),
-                      Container(
-                        width: 350,
-                        padding: const EdgeInsets.only(
-                          right: 24,
-                          top: 8,
-                          bottom: 16,
-                        ),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              StockCapitalChartCard(
-                                categoryCapitals: categoryCapitals,
-                                totalCapital: totalCapital,
-                                key: ValueKey(totalCapital),
-                              ),
-                              const SizedBox(height: 14),
-                              StockLowInventoryWidget(
-                                lowStockItems: lowStockItems,
-                                onReceiveTap: () =>
-                                    _openReceiveDialog(context),
-                              ),
-                            ],
-                          ),
-                        ),
+                      StockSidePanel(
+                        categoryCapitals: categoryCapitals,
+                        totalCapital: totalCapital,
+                        lowStockItems: lowStockItems,
+                        onReceiveTap: () => _openReceiveDialog(context),
                       ),
                     ],
                   );

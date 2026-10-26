@@ -35,7 +35,7 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
   @override
   void initState() {
     super.initState();
-    context.read<DocumentBloc>().add(LoadSuppliers());
+    context.read<DocumentBloc>().add(const LoadSuppliers());
   }
 
   Future<void> _openCreate(BuildContext context) async {

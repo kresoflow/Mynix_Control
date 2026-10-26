@@ -195,7 +195,7 @@ class MenuRepository {
         'target_item_id': targetItemId,
         'source_item_ids': sourceItemIds,
         'target_name': targetName,
-      });
+      },);
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
         throw Exception(e.response?.data['detail'] ?? 'Ошибка при объединении товаров');

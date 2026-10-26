@@ -7,7 +7,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
@@ -16,8 +15,8 @@ import 'package:kreso_frontend/features/inventory/bloc/document_state.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier.dart';
 import 'package:kreso_frontend/features/inventory/models/supplier_transaction.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'supplier_payment_modal.dart';
-import 'edit_transaction_modal.dart';
+import 'supplier_settlement_drawer.dart';
+import 'supplier_settlement_header.dart';
 import 'supplier_settlement_row.dart';
 import 'supplier_reconciliation_pdf_service.dart';
 
@@ -47,6 +46,8 @@ class SupplierSettlementDialog extends StatefulWidget {
 
 class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
   String _filter = 'all';
+  SupplierTransactionType? _activeDrawerType;
+  SupplierTransaction? _editingTransaction;
 
   Supplier _getCurrentSupplier(DocumentState state) {
     try {
@@ -56,42 +57,25 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
     }
   }
 
-  Future<void> _openAddTransaction(SupplierTransactionType type) async {
-    final currentSupplier = _getCurrentSupplier(context.read<DocumentBloc>().state);
-    final res = await SupplierPaymentModal.show(
-      context,
-      supplier: currentSupplier,
-      currency: widget.currency,
-      initialType: type,
-    );
-    if (!mounted || res == null) return;
-    context.read<DocumentBloc>().add(
-          AddSupplierTransaction(
-            widget.supplier.id,
-            type: res['type'] as SupplierTransactionType,
-            amount: res['amount'] as double,
-            paymentMethod: res['payment_method'] as String? ?? 'cash',
-            comment: res['comment'] as String?,
-          ),
-        );
+  void _openAddTransaction(SupplierTransactionType type) {
+    setState(() {
+      _activeDrawerType = type;
+      _editingTransaction = null;
+    });
   }
 
-  Future<void> _openEditTransaction(SupplierTransaction txn) async {
-    final res = await EditTransactionModal.show(
-      context,
-      transaction: txn,
-      currency: widget.currency,
-    );
-    if (!mounted || res == null) return;
-    context.read<DocumentBloc>().add(
-          UpdateSupplierTransaction(
-            widget.supplier.id,
-            txn.id,
-            amount: res['amount'] as double?,
-            paymentMethod: res['payment_method'] as String?,
-            comment: res['comment'] as String?,
-          ),
-        );
+  void _openEditTransaction(SupplierTransaction txn) {
+    setState(() {
+      _activeDrawerType = txn.type;
+      _editingTransaction = txn;
+    });
+  }
+
+  void _closeDrawer() {
+    setState(() {
+      _activeDrawerType = null;
+      _editingTransaction = null;
+    });
   }
 
   Future<void> _confirmDelete(SupplierTransaction txn) async {
@@ -117,9 +101,9 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
       backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
       shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 820, maxHeight: 720),
-        child: Padding(
-          padding: AppSpacing.pXl,
+        constraints: const BoxConstraints(maxWidth: 860, maxHeight: 720),
+        child: ClipRRect(
+          borderRadius: AppRadii.dialogRadius,
           child: BlocBuilder<DocumentBloc, DocumentState>(
             builder: (context, state) {
               final currentSupplier = _getCurrentSupplier(state);
@@ -133,119 +117,70 @@ class _SupplierSettlementDialogState extends State<SupplierSettlementDialog> {
                 return true;
               }).toList();
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              return Stack(
                 children: [
-                  _buildHeader(context, currentSupplier, state.supplierTransactions, isDark),
-                  const SizedBox(height: 16),
-                  _buildToolbar(context),
-                  const SizedBox(height: 16),
-                  Expanded(child: _buildTransactionList(state, txns)),
+                  Padding(
+                    padding: AppSpacing.pXl,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SupplierSettlementHeader(
+                          supplier: currentSupplier,
+                          currency: widget.currency,
+                          activeFilter: _filter,
+                          onFilterChanged: (val) => setState(() => _filter = val),
+                          onDownloadPdf: () => SupplierReconciliationPdfService.downloadPdf(
+                            currentSupplier,
+                            state.supplierTransactions,
+                            widget.currency,
+                          ),
+                          onClose: () => Navigator.pop(context),
+                          onAddManualDebt: () => _openAddTransaction(SupplierTransactionType.manualDebt),
+                          onAddPayment: () => _openAddTransaction(SupplierTransactionType.payment),
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(child: _buildTransactionList(state, txns)),
+                      ],
+                    ),
+                  ),
+                  if (_activeDrawerType != null)
+                    SupplierSettlementDrawer(
+                      supplier: currentSupplier,
+                      currency: widget.currency,
+                      initialType: _activeDrawerType!,
+                      transactionToEdit: _editingTransaction,
+                      onClose: _closeDrawer,
+                      onSave: (res) {
+                        if (_editingTransaction != null) {
+                          context.read<DocumentBloc>().add(
+                                UpdateSupplierTransaction(
+                                  widget.supplier.id,
+                                  _editingTransaction!.id,
+                                  amount: res['amount'] as double?,
+                                  paymentMethod: res['payment_method'] as String?,
+                                  comment: res['comment'] as String?,
+                                ),
+                              );
+                        } else {
+                          context.read<DocumentBloc>().add(
+                                AddSupplierTransaction(
+                                  widget.supplier.id,
+                                  type: res['type'] as SupplierTransactionType,
+                                  amount: res['amount'] as double,
+                                  paymentMethod: res['payment_method'] as String? ?? 'cash',
+                                  comment: res['comment'] as String?,
+                                ),
+                              );
+                        }
+                        _closeDrawer();
+                      },
+                    ),
                 ],
               );
             },
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, Supplier supplier, List<SupplierTransaction> allTxns, bool isDark) {
-    final hasDebt = supplier.balance < 0;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.brandPrimary.withValues(alpha: 0.15),
-                borderRadius: AppRadii.inputRadius,
-              ),
-              child: Icon(PhosphorIconsRegular.wallet, color: AppColors.brandPrimary, size: 24),
-            ),
-            const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  supplier.name,
-                  style: AppTextStyles.h2.copyWith(
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  hasDebt
-                      ? 'Текущий долг: ${supplier.balance.abs().toStringAsFixed(2)} ${widget.currency}'
-                      : 'Баланс: +${supplier.balance.toStringAsFixed(2)} ${widget.currency} (Аванс)',
-                  style: AppTextStyles.caption.copyWith(
-                    color: hasDebt ? AppColors.danger : AppColors.success,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            AppButton(
-              label: 'Акт сверки (PDF)',
-              icon: PhosphorIconsRegular.filePdf,
-              variant: AppButtonVariant.secondary,
-              onPressed: () => SupplierReconciliationPdfService.downloadPdf(supplier, allTxns, widget.currency),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: Icon(
-                PhosphorIconsRegular.x,
-                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                size: 22,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildToolbar(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        AppSegmentedControl<String>(
-          selectedValue: _filter,
-          size: AppSegmentedSize.sm,
-          onValueChanged: (val) => setState(() => _filter = val),
-          items: const [
-            AppSegmentedItem(value: 'all', label: 'Все'),
-            AppSegmentedItem(value: 'invoices', label: 'Накладные'),
-            AppSegmentedItem(value: 'payments', label: 'Выплаты'),
-            AppSegmentedItem(value: 'manual', label: 'Ручные'),
-          ],
-        ),
-        Row(
-          children: [
-            AppSecondaryButton(
-              label: 'Начислить долг',
-              icon: PhosphorIconsRegular.plus,
-              size: AppButtonSize.sm,
-              onPressed: () => _openAddTransaction(SupplierTransactionType.manualDebt),
-            ),
-            const SizedBox(width: 8),
-            AppPrimaryButton(
-              label: 'Внести оплату',
-              icon: PhosphorIconsRegular.money,
-              size: AppButtonSize.sm,
-              onPressed: () => _openAddTransaction(SupplierTransactionType.payment),
-            ),
-          ],
-        ),
-      ],
     );
   }
 

@@ -45,7 +45,6 @@ List<Map<String, dynamic>> buildDishPayload({
   required List<DishRowData> dishRows,
   required int? targetCategoryId,
 }) {
-  int sortIndex = 0;
   final items = <Map<String, dynamic>>[];
   for (final row in dishRows) {
     final name = row.nameController.text.trim();
@@ -137,7 +136,6 @@ List<Map<String, dynamic>> buildRetailPayload({
   required List<RetailRowData> retailRows,
   required int? targetCategoryId,
 }) {
-  int sortIndex = 1;
   final items = <Map<String, dynamic>>[];
 
   for (final row in retailRows) {

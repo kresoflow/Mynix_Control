@@ -119,7 +119,7 @@ class _CashOperationDialogState extends State<CashOperationDialog> {
       );
 
       if (mounted) {
-        context.read<ShiftBloc>().add(CheckCurrentShift());
+        context.read<ShiftBloc>().add(const CheckCurrentShift());
         AppToast.showSuccess(context, res['message'] ?? 'Операция успешно проведена');
         Navigator.of(context).pop(true);
       }

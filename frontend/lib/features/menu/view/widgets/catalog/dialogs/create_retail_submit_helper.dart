@@ -11,7 +11,6 @@ import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:kreso_frontend/features/pos/bloc/menu_event.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 
 class CreateRetailSubmitPayload {

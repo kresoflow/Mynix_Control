@@ -111,7 +111,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                                   label: 'Повторить попытку',
                                   onPressed: () {
                                     context.read<MenuBloc>().add(LoadMenu());
-                                    context.read<CategoryBloc>().add(LoadCategories());
+                                    context.read<CategoryBloc>().add(const LoadCategories());
                                   },
                                 ),
                               ],
