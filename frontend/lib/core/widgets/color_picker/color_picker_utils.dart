@@ -1,6 +1,14 @@
+// ==============================================================================
+// Title: ColorPickerUtils (color_picker_utils.dart)
+// Path: frontend/lib/core/widgets/color_picker/color_picker_utils.dart
+// Description: Утилиты конвертации, парсинга и кэширования HEX-цветов категорий.
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 
 class ColorPickerUtils {
+  static final Map<String, Color> _hexColorCache = {};
+
   /// Converts a Color to a standard 6-char HEX string with leading '#' (e.g. #FF5A00)
   static String toHex(Color color) {
     final r = (color.r * 255).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
@@ -9,9 +17,12 @@ class ColorPickerUtils {
     return '#$r$g$b'.toUpperCase();
   }
 
-  /// Parses a HEX string (#FF5A00, FF5A00, #F5A) into a Flutter Color
+  /// Parses a HEX string (#FF5A00, FF5A00, #F5A) into a Flutter Color with O(1) caching
   static Color? parseHex(String? hexString) {
     if (hexString == null || hexString.trim().isEmpty) return null;
+    final cached = _hexColorCache[hexString];
+    if (cached != null) return cached;
+
     var clean = hexString.replaceAll('#', '').trim();
     if (clean.length == 3) {
       clean = clean.split('').map((c) => '$c$c').join();
@@ -19,12 +30,16 @@ class ColorPickerUtils {
     if (clean.length == 6) {
       final val = int.tryParse(clean, radix: 16);
       if (val != null) {
-        return Color(val | 0xFF000000);
+        final color = Color(val | 0xFF000000);
+        _hexColorCache[hexString] = color;
+        return color;
       }
     } else if (clean.length == 8) {
       final val = int.tryParse(clean, radix: 16);
       if (val != null) {
-        return Color(val);
+        final color = Color(val);
+        _hexColorCache[hexString] = color;
+        return color;
       }
     }
     return null;

@@ -17,18 +17,14 @@ void handlePosItemClick(BuildContext context, MenuItem item) {
   List<dynamic>? variations;
   List<dynamic>? modifiers;
 
-  if (item.attributesJson != null &&
-      item.attributesJson!.isNotEmpty &&
-      item.attributesJson != '{}') {
-    try {
-      final attrs = jsonDecode(item.attributesJson!);
-      variations = attrs['variations'] as List?;
-      modifiers = attrs['modifier_groups'] as List?;
-      if ((variations != null && variations.isNotEmpty) ||
-          (modifiers != null && modifiers.isNotEmpty)) {
-        hasOptions = true;
-      }
-    } catch (_) {}
+  final attrs = item.parsedAttributes;
+  if (attrs != null) {
+    variations = attrs['variations'] as List?;
+    modifiers = attrs['modifier_groups'] as List?;
+    if ((variations != null && variations.isNotEmpty) ||
+        (modifiers != null && modifiers.isNotEmpty)) {
+      hasOptions = true;
+    }
   }
 
   if (hasOptions && (modifiers == null || modifiers.isEmpty)) {

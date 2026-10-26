@@ -1,3 +1,9 @@
+// ==============================================================================
+// Title: MenuItem (menu_item.dart)
+// Path: frontend/lib/features/pos/models/menu_item.dart
+// Description: Доменная модель товара меню с высокоскоростным O(1) кэшированием JSON-атрибутов.
+// ==============================================================================
+
 import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:equatable/equatable.dart';
@@ -43,6 +49,8 @@ class MenuItem extends Equatable {
   @HiveField(11, defaultValue: 0)
   final int sortOrder;
 
+  static final Map<String, Map<String, dynamic>> _attributesCache = {};
+
   const MenuItem({
     required this.id,
     required this.name,
@@ -59,34 +67,55 @@ class MenuItem extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, name, price, categoryId, categoryName, shortName, tags, attributesJson, isAvailable, barcode, parentId, sortOrder];
+  List<Object?> get props => [
+        id,
+        name,
+        price,
+        categoryId,
+        categoryName,
+        shortName,
+        tags,
+        attributesJson,
+        isAvailable,
+        barcode,
+        parentId,
+        sortOrder,
+      ];
 
-  String get cleanName {
-    return name.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];
+  String get cleanName => name.split('|TYPE|')[0].split('|ATTR|')[0].split('|ICON|')[0];
+
+  /// [UI-KIT] Мемоизированный парсинг JSON атрибутов за O(1)
+  Map<String, dynamic>? get parsedAttributes {
+    if (attributesJson == null || attributesJson!.isEmpty || attributesJson == '{}') return null;
+    final cached = _attributesCache[attributesJson!];
+    if (cached != null) return cached;
+    try {
+      final decoded = jsonDecode(attributesJson!) as Map<String, dynamic>;
+      _attributesCache[attributesJson!] = decoded;
+      return decoded;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Извлекает название вкуса из атрибутов или групп модификаторов.
-  ///
-  /// [ИНВАРИАНТ] Для товаров витрины вкус хранится в `attrs['flavor']` либо в модификаторе 'Вкус'.
   String? get flavorString {
-    if (attributesJson != null && attributesJson!.isNotEmpty) {
-      try {
-        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
-        if (attrs['flavor'] != null && attrs['flavor'].toString().trim().isNotEmpty) {
-          return attrs['flavor'].toString().trim();
-        }
-        if (attrs['modifier_groups'] != null) {
-          final groups = attrs['modifier_groups'] as List;
-          for (var group in groups) {
-            if (group['name'] == 'Вкус') {
-              final modifiers = group['modifiers'] as List;
-              if (modifiers.isNotEmpty) {
-                return modifiers.first['name'].toString().trim();
-              }
+    final attrs = parsedAttributes;
+    if (attrs != null) {
+      if (attrs['flavor'] != null && attrs['flavor'].toString().trim().isNotEmpty) {
+        return attrs['flavor'].toString().trim();
+      }
+      if (attrs['modifier_groups'] != null) {
+        final groups = attrs['modifier_groups'] as List;
+        for (final group in groups) {
+          if (group['name'] == 'Вкус') {
+            final modifiers = group['modifiers'] as List;
+            if (modifiers.isNotEmpty) {
+              return modifiers.first['name'].toString().trim();
             }
           }
         }
-      } catch (_) {}
+      }
     }
     return null;
   }
@@ -94,50 +123,43 @@ class MenuItem extends Equatable {
   /// Возвращает список меток вариаций (фасовок) без повторения названия товара и вкуса.
   List<String> get variationLabels {
     final List<String> labels = [];
-    final flavor = flavorString;
-    if (attributesJson != null && attributesJson!.isNotEmpty) {
-      try {
-        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
-        if (attrs['variations'] != null && attrs['variations'] is List) {
-          final vars = attrs['variations'] as List;
-          for (var v in vars) {
-            if (v is Map && v['name'] != null) {
-              String vName = v['name'].toString().trim();
-              final cName = cleanName.trim();
-              if (vName.startsWith(cName)) {
-                vName = vName.substring(cName.length).trim();
-              }
-              if (vName.startsWith('(') && vName.endsWith(')')) {
-                vName = vName.substring(1, vName.length - 1).trim();
-              }
-              if (flavor != null && flavor.isNotEmpty && vName.startsWith(flavor)) {
-                vName = vName.substring(flavor.length).trim();
-              }
-              if (vName.startsWith('•')) {
-                vName = vName.substring(1).trim();
-              }
-              if (vName.isNotEmpty) {
-                labels.add(vName);
-              }
+    final attrs = parsedAttributes;
+    if (attrs != null) {
+      final flavor = flavorString;
+      if (attrs['variations'] != null && attrs['variations'] is List) {
+        final vars = attrs['variations'] as List;
+        for (final v in vars) {
+          if (v is Map && v['name'] != null) {
+            String vName = v['name'].toString().trim();
+            final cName = cleanName.trim();
+            if (vName.startsWith(cName)) {
+              vName = vName.substring(cName.length).trim();
+            }
+            if (vName.startsWith('(') && vName.endsWith(')')) {
+              vName = vName.substring(1, vName.length - 1).trim();
+            }
+            if (flavor != null && flavor.isNotEmpty && vName.startsWith(flavor)) {
+              vName = vName.substring(flavor.length).trim();
+            }
+            if (vName.startsWith('•')) {
+              vName = vName.substring(1).trim();
+            }
+            if (vName.isNotEmpty) {
+              labels.add(vName);
             }
           }
-        } else if (attrs['volume'] != null && attrs['volume'].toString().trim().isNotEmpty) {
-          labels.add(attrs['volume'].toString().trim());
-        } else if (attrs['unit'] != null && attrs['unit'].toString().trim().isNotEmpty && attrs['unit'] != 'pcs') {
-          final u = attrs['unit'].toString().trim();
-          labels.add(UnitFormatter.format(u));
         }
-      } catch (_) {}
+      } else if (attrs['volume'] != null && attrs['volume'].toString().trim().isNotEmpty) {
+        labels.add(attrs['volume'].toString().trim());
+      } else if (attrs['unit'] != null && attrs['unit'].toString().trim().isNotEmpty && attrs['unit'] != 'pcs') {
+        final u = attrs['unit'].toString().trim();
+        labels.add(UnitFormatter.format(u));
+      }
     }
     return labels;
   }
 
   /// Краткая сводка вариаций/фасовок для карточки каталога и витрины.
-  ///
-  /// [UI-KIT] Форматирует список фасовок:
-  /// - 1 вариация: "100г"
-  /// - 2–3 вариации: "50г  200г  300г"
-  /// - 4+ вариаций: "N вариаций"
   String? get variationsSummary {
     final labels = variationLabels;
     if (labels.isEmpty) return null;
@@ -178,33 +200,23 @@ class MenuItem extends Equatable {
     return null;
   }
 
-  bool get isRetail {
-    return name.contains('|TYPE|retail');
-  }
+  bool get isRetail => name.contains('|TYPE|retail');
 
   List<double>? get variationPrices {
-    if (attributesJson != null && attributesJson!.isNotEmpty) {
-      try {
-        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
-        if (attrs['variations'] != null && attrs['variations'] is List) {
-          final vars = attrs['variations'] as List;
-          return vars.map((v) => (v['price'] as num?)?.toDouble() ?? 0.0).toList();
-        }
-      } catch (_) {}
+    final attrs = parsedAttributes;
+    if (attrs != null && attrs['variations'] != null && attrs['variations'] is List) {
+      final vars = attrs['variations'] as List;
+      return vars.map((v) => (v['price'] as num?)?.toDouble() ?? 0.0).toList();
     }
     return null;
   }
 
   List<Map<String, dynamic>>? get variations {
-    if (attributesJson != null && attributesJson!.isNotEmpty) {
-      try {
-        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
-        if (attrs['variations'] != null && attrs['variations'] is List) {
-          return List<Map<String, dynamic>>.from(
-            (attrs['variations'] as List).whereType<Map>().map((m) => Map<String, dynamic>.from(m)),
-          );
-        }
-      } catch (_) {}
+    final attrs = parsedAttributes;
+    if (attrs != null && attrs['variations'] != null && attrs['variations'] is List) {
+      return List<Map<String, dynamic>>.from(
+        (attrs['variations'] as List).whereType<Map>().map((m) => Map<String, dynamic>.from(m)),
+      );
     }
     return null;
   }
@@ -212,14 +224,11 @@ class MenuItem extends Equatable {
   bool get hasVariations => variations != null && variations!.isNotEmpty;
 
   bool get hasModifiers {
-    if (attributesJson != null && attributesJson!.isNotEmpty) {
-      try {
-        final Map<String, dynamic> attrs = jsonDecode(attributesJson!);
-        final groups = attrs['modifier_groups'] as List?;
-        return groups != null && groups.isNotEmpty;
-      } catch (_) {}
+    final attrs = parsedAttributes;
+    if (attrs != null) {
+      final groups = attrs['modifier_groups'] as List?;
+      return groups != null && groups.isNotEmpty;
     }
     return false;
   }
 }
-

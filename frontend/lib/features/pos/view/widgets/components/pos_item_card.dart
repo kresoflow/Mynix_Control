@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
@@ -36,23 +35,23 @@ class _PosItemCardState extends State<PosItemCard> {
     Color? inheritedColor;
     String? effectiveIcon = widget.item.icon;
     
-    // Check if the item's own icon is valid
-    if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
-      final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
-      if (!IconHelper.availableIcons.contains(cleanName)) {
-        effectiveIcon = null; // Invalid icon, fall back to parent
-      }
+    // 1. Быстрая валидация иконки за O(1) без создания списков
+    if (effectiveIcon != null && effectiveIcon.isNotEmpty && !IconHelper.hasIcon(effectiveIcon)) {
+      effectiveIcon = null;
     }
     
+    // 2. Мгновенный поиск категории по хэш-таблице O(1) вместо firstWhere
     try {
       final categoryState = context.read<CategoryBloc>().state;
       if (categoryState is CategoryLoaded) {
-        final category = categoryState.categories.firstWhere((c) => c.id.toString() == widget.item.categoryId);
-        if (effectiveIcon == null || effectiveIcon.isEmpty) {
-          effectiveIcon = category.getInheritedIcon(categoryState.categories);
+        final category = categoryState.getById(widget.item.categoryId);
+        if (category != null) {
+          if (effectiveIcon == null || effectiveIcon.isEmpty) {
+            effectiveIcon = category.getInheritedIcon(categoryState.categories);
+          }
+          final colorHex = category.getInheritedColor(categoryState.categories);
+          inheritedColor = ColorPickerUtils.parseHex(colorHex);
         }
-        final colorHex = category.getInheritedColor(categoryState.categories);
-        inheritedColor = ColorPickerUtils.parseHex(colorHex);
       }
     } catch (_) {}
 
@@ -67,8 +66,7 @@ class _PosItemCardState extends State<PosItemCard> {
 
     Widget finalIconWidget;
     if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
-      final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
-      if (IconHelper.availableIcons.contains(cleanName)) {
+      if (IconHelper.hasIcon(effectiveIcon)) {
         finalIconWidget = IconHelper.buildIcon(
           effectiveIcon,
           size: isMobile ? 24 : 32,
@@ -164,11 +162,7 @@ class _PosItemCardState extends State<PosItemCard> {
                                   const TextSpan(text: ' '),
                                   TextSpan(
                                     text: widget.item.flavorString!.trim(),
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontSize: isMobile ? 11.5 : 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.warning,
-                                    ),
+                                    style: isMobile ? AppTextStyles.flavorBadgeMobile : AppTextStyles.flavorBadge,
                                   ),
                                 ],
                               ],
@@ -226,9 +220,7 @@ class _PosItemCardState extends State<PosItemCard> {
                           }
                           return CurrencyFormatter.format(context, widget.item.price as num);
                         }(),
-                        style: GoogleFonts.jetBrainsMono(
-                          fontSize: isMobile ? 12 : 14,
-                          fontWeight: FontWeight.w800,
+                        style: (isMobile ? AppTextStyles.cardPriceMobile : AppTextStyles.cardPrice).copyWith(
                           color: _isHovered ? AppColors.white : accentColor,
                         ),
                         maxLines: 1,

@@ -26,6 +26,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
   final FocusNode _searchFocusNode = FocusNode();
   bool _isSearchOpen = false;
   String _searchQuery = '';
+  bool _initialSyncDone = false;
 
   @override
   void dispose() {
@@ -53,7 +54,8 @@ class _PosMenuGridState extends State<PosMenuGrid> {
     final catState = context.read<CategoryBloc>().state;
     final posNavCubit = context.read<PosNavCubit>();
 
-    if (catState is CategoryLoaded) {
+    if (catState is CategoryLoaded && !_initialSyncDone) {
+      _initialSyncDone = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         posNavCubit.syncWithUrl(context, urlCategoryId, catState.categories);
       });

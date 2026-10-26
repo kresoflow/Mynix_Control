@@ -15,7 +15,22 @@ class CategoryLoading extends CategoryState {}
 
 class CategoryLoaded extends CategoryState {
   final List<MenuCategory> categories;
-  const CategoryLoaded({required this.categories});
+  final Map<int, MenuCategory> categoryMap;
+  final Map<String, MenuCategory> categoryStringMap;
+
+  CategoryLoaded({
+    required this.categories,
+    Map<int, MenuCategory>? categoryMap,
+    Map<String, MenuCategory>? categoryStringMap,
+  })  : categoryMap = categoryMap ?? {for (final c in categories) c.id: c},
+        categoryStringMap = categoryStringMap ?? {for (final c in categories) c.id.toString(): c};
+
+  /// [UI-KIT] Мгновенный поиск категории по ID за O(1)
+  MenuCategory? getById(dynamic id) {
+    if (id == null) return null;
+    if (id is int) return categoryMap[id];
+    return categoryStringMap[id.toString()];
+  }
 
   @override
   List<Object?> get props => [categories];

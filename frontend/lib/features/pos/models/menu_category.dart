@@ -1,3 +1,9 @@
+// ==============================================================================
+// Title: MenuCategory (menu_category.dart)
+// Path: frontend/lib/features/pos/models/menu_category.dart
+// Description: Доменная модель категории меню с O(1) кэшированием цвета и иконки.
+// ==============================================================================
+
 class MenuCategory {
   final int id;
   final String name;
@@ -10,6 +16,9 @@ class MenuCategory {
   final bool isVisible;
   final bool isArchived;
   final int? parentId;
+
+  String? _cachedInheritedIcon;
+  String? _cachedInheritedColor;
 
   MenuCategory({
     required this.id,
@@ -57,10 +66,14 @@ class MenuCategory {
     };
   }
 
+  /// [UI-KIT] Наследуемая иконка с мемоизацией результата
   String? getInheritedIcon(List<MenuCategory> allCategories, [Set<int>? visited]) {
+    if (_cachedInheritedIcon != null) return _cachedInheritedIcon;
+
     if (icon != null && icon!.isNotEmpty) {
       final cleanIcon = icon!.replaceAll('icon:', '').trim();
       if (cleanIcon.isNotEmpty && cleanIcon != 'null' && cleanIcon != 'none' && cleanIcon != 'undefined') {
+        _cachedInheritedIcon = icon;
         return icon;
       }
     }
@@ -70,15 +83,22 @@ class MenuCategory {
         try {
           final parent = allCategories.firstWhere((c) => c.id == parentId);
           final parentIcon = parent.getInheritedIcon(allCategories, seen);
-          if (parentIcon != null && parentIcon.isNotEmpty) return parentIcon;
+          if (parentIcon != null && parentIcon.isNotEmpty) {
+            _cachedInheritedIcon = parentIcon;
+            return parentIcon;
+          }
         } catch (_) {}
       }
     }
     return null;
   }
 
+  /// [UI-KIT] Наследуемый цвет с мемоизацией результата
   String? getInheritedColor(List<MenuCategory> allCategories, [Set<int>? visited]) {
+    if (_cachedInheritedColor != null) return _cachedInheritedColor;
+
     if (color != null && color!.trim().isNotEmpty && color != 'null' && color != 'none') {
+      _cachedInheritedColor = color;
       return color;
     }
     if (parentId != null && parentId != id) {
@@ -87,7 +107,10 @@ class MenuCategory {
         try {
           final parent = allCategories.firstWhere((c) => c.id == parentId);
           final parentColor = parent.getInheritedColor(allCategories, seen);
-          if (parentColor != null && parentColor.isNotEmpty) return parentColor;
+          if (parentColor != null && parentColor.isNotEmpty) {
+            _cachedInheritedColor = parentColor;
+            return parentColor;
+          }
         } catch (_) {}
       }
     }

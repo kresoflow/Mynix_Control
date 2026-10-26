@@ -5,7 +5,6 @@ import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/app_card.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../catalog_enums.dart';
 import '../catalog_deletion_dialogs.dart';
@@ -43,23 +42,23 @@ class MenuGridItem extends StatelessWidget {
     Color? inheritedColor;
     String? effectiveIcon = item.icon;
     
-    // Check if the item's own icon is valid
-    if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
-      final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
-      if (!IconHelper.availableIcons.contains(cleanName)) {
-        effectiveIcon = null; // Invalid icon, fall back to parent
-      }
+    // 1. Быстрая проверка иконки за O(1)
+    if (effectiveIcon != null && effectiveIcon.isNotEmpty && !IconHelper.hasIcon(effectiveIcon)) {
+      effectiveIcon = null;
     }
     
+    // 2. Мгновенный поиск категории по хэш-таблице O(1) вместо firstWhere
     try {
       final categoryState = context.read<CategoryBloc>().state;
       if (categoryState is CategoryLoaded) {
-        final category = categoryState.categories.firstWhere((c) => c.id.toString() == item.categoryId);
-        if (effectiveIcon == null || effectiveIcon.isEmpty) {
-          effectiveIcon = category.getInheritedIcon(categoryState.categories);
+        final category = categoryState.getById(item.categoryId);
+        if (category != null) {
+          if (effectiveIcon == null || effectiveIcon.isEmpty) {
+            effectiveIcon = category.getInheritedIcon(categoryState.categories);
+          }
+          final colorHex = category.getInheritedColor(categoryState.categories);
+          inheritedColor = ColorPickerUtils.parseHex(colorHex);
         }
-        final colorHex = category.getInheritedColor(categoryState.categories);
-        inheritedColor = ColorPickerUtils.parseHex(colorHex);
       }
     } catch (_) {}
 
@@ -70,8 +69,7 @@ class MenuGridItem extends StatelessWidget {
 
     Widget finalIconWidget;
     if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
-      final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
-      if (IconHelper.availableIcons.contains(cleanName)) {
+      if (IconHelper.hasIcon(effectiveIcon)) {
         finalIconWidget = IconHelper.buildIcon(
           effectiveIcon,
           size: 28,
@@ -144,11 +142,7 @@ class MenuGridItem extends StatelessWidget {
                                   const TextSpan(text: ' '),
                                   TextSpan(
                                     text: item.flavorString!.trim(),
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.warning,
-                                    ),
+                                    style: AppTextStyles.flavorBadge,
                                   ),
                                 ],
                               ],
@@ -201,7 +195,7 @@ class MenuGridItem extends StatelessWidget {
                             }
                             return (item.price as num).toCurrency(context);
                           }(),
-                          style: GoogleFonts.jetBrainsMono(fontSize: 14, fontWeight: FontWeight.w800, color: accentColor),
+                          style: AppTextStyles.cardPrice.copyWith(color: accentColor),
                           maxLines: 1,
                         ),
                       ),
