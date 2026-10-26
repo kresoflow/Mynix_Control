@@ -1,9 +1,3 @@
-// ==============================================================================
-// Title: IconHelper (icon_helper.dart)
-// Path: frontend/lib/core/utils/icon_helper.dart
-// Description: Вспомогательный класс для отображения и кэширования иконок категорий и блюд.
-// ==============================================================================
-
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -57,20 +51,12 @@ class IconHelper {
     'md-tapas': Icons.tapas, // Закуски/тапас
   };
 
-  static final Set<String> _availableIconsSet = _iconMap.keys.toSet();
-
-  static final List<String> availableIcons = List.unmodifiable(_iconMap.keys);
-
-  /// [UI-KIT] Мгновенная проверка наличия иконки за O(1) без повторных аллокаций памяти
-  static bool hasIcon(String? iconName) {
-    if (iconName == null || iconName.isEmpty) return false;
-    final cleanName = iconName.startsWith('icon:') ? iconName.substring(5) : iconName;
-    return _availableIconsSet.contains(cleanName);
-  }
-
   static IconData? getIcon(String? iconName, {IconData? fallback}) {
     if (iconName == null || iconName.isEmpty) return fallback;
+    
+    // Remove 'icon:' prefix if present
     final cleanName = iconName.startsWith('icon:') ? iconName.substring(5) : iconName;
+    
     final icon = _iconMap[cleanName];
     if (icon != null && icon is IconData) {
       return icon;
@@ -109,4 +95,6 @@ class IconHelper {
     
     return fallback != null ? Icon(fallback, size: size, color: color) : const SizedBox.shrink();
   }
+
+  static List<String> get availableIcons => _iconMap.keys.toList();
 }

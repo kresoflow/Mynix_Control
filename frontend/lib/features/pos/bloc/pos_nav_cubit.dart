@@ -60,11 +60,10 @@ class PosNavCubit extends Cubit<List<dynamic>> {
   }
 
   void _updateUrl(BuildContext context, String? categoryId) {
-    try {
-      final currentUri = GoRouterState.of(context).uri;
-      final targetPath = categoryId == null ? '/pos' : '/pos?category=$categoryId';
-      if (currentUri.toString() == targetPath) return;
-      context.replace(targetPath);
-    } catch (_) {}
+    if (categoryId == null) {
+      context.go('/pos');
+    } else {
+      context.go('/pos?category=$categoryId');
+    }
   }
 }

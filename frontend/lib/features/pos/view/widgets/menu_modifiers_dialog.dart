@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
@@ -49,13 +50,12 @@ class _MenuModifiersDialogState extends State<MenuModifiersDialog> {
           'name': child.cleanName,
           'price': child.price,
           'barcode': child.barcode,
-          'retail_product_id': child.parsedAttributes?['retail_product_id'],
+          'retail_product_id': child.attributesJson != null ? jsonDecode(child.attributesJson!)['retail_product_id'] : null,
         },).toList();
       }
 
-      final itemAttrs = widget.item.parsedAttributes;
-      if (itemAttrs != null) {
-        _attributes = itemAttrs;
+      if (widget.item.attributesJson != null && widget.item.attributesJson!.isNotEmpty) {
+        _attributes = jsonDecode(widget.item.attributesJson!);
         if (_variations.isEmpty && _attributes['variations'] != null) {
           _variations = _attributes['variations'] as List<dynamic>;
         }

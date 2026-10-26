@@ -113,38 +113,6 @@ abstract class AppTextStyles {
   );
   static TextStyle get buttonLarge => _buttonLarge;
 
-  // ── Flavor Badge (название вкуса в карточке товара) ─────────────────────
-  static final TextStyle _flavorBadge = GoogleFonts.spaceGrotesk(
-    textStyle: const TextStyle(inherit: true),
-    fontSize: 13,
-    fontWeight: FontWeight.w700,
-    color: AppColors.warning,
-  );
-  static TextStyle get flavorBadge => _flavorBadge;
-
-  static final TextStyle _flavorBadgeMobile = GoogleFonts.spaceGrotesk(
-    textStyle: const TextStyle(inherit: true),
-    fontSize: 11.5,
-    fontWeight: FontWeight.w700,
-    color: AppColors.warning,
-  );
-  static TextStyle get flavorBadgeMobile => _flavorBadgeMobile;
-
-  // ── Card Price (цены в карточке товара на сетке/списке) ────────────────
-  static final TextStyle _cardPrice = GoogleFonts.jetBrainsMono(
-    textStyle: const TextStyle(inherit: true),
-    fontSize: 14,
-    fontWeight: FontWeight.w800,
-  );
-  static TextStyle get cardPrice => _cardPrice;
-
-  static final TextStyle _cardPriceMobile = GoogleFonts.jetBrainsMono(
-    textStyle: const TextStyle(inherit: true),
-    fontSize: 12,
-    fontWeight: FontWeight.w800,
-  );
-  static TextStyle get cardPriceMobile => _cardPriceMobile;
-
   // ── TextTheme для ThemeData ────────────────────────────────────────────────
   static TextTheme get textTheme => TextTheme(
     displayLarge: display,
