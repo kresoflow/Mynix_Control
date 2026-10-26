@@ -89,8 +89,7 @@ class MenuGridItem extends StatelessWidget {
       );
     }
 
-    return RepaintBoundary(
-      child: Opacity(
+    return Opacity(
         opacity: item.isAvailable ? 1.0 : 0.5,
         child: AppCard(
         onTap: onTap,
@@ -238,7 +237,6 @@ class MenuGridItem extends StatelessWidget {
           ],
         ),
       ),
-    ),
     );
   }
 }

@@ -86,8 +86,7 @@ class _PosItemCardState extends State<PosItemCard> {
       );
     }
 
-    return RepaintBoundary(
-      child: MouseRegion(
+    return MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         cursor: SystemMouseCursors.click,
@@ -238,7 +237,6 @@ class _PosItemCardState extends State<PosItemCard> {
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }

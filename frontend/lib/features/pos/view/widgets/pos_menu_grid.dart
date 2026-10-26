@@ -26,6 +26,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
   final FocusNode _searchFocusNode = FocusNode();
   bool _isSearchOpen = false;
   String _searchQuery = '';
+  bool _initialSyncDone = false;
 
   @override
   void dispose() {
@@ -49,14 +50,19 @@ class _PosMenuGridState extends State<PosMenuGrid> {
 
   @override
   Widget build(BuildContext context) {
-    final urlCategoryId = GoRouterState.of(context).uri.queryParameters['category'];
     final catState = context.read<CategoryBloc>().state;
     final posNavCubit = context.read<PosNavCubit>();
 
-    if (catState is CategoryLoaded) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        posNavCubit.syncWithUrl(context, urlCategoryId, catState.categories);
-      });
+    if (!_initialSyncDone && catState is CategoryLoaded) {
+      _initialSyncDone = true;
+      final urlCategoryId = GoRouterState.of(context).uri.queryParameters['category'];
+      if (urlCategoryId != null && urlCategoryId.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            posNavCubit.syncWithUrl(urlCategoryId, catState.categories);
+          }
+        });
+      }
     }
 
     return BlocBuilder<PosNavCubit, List<dynamic>>(
@@ -75,9 +81,9 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                 ),
                 child: PosBreadcrumbBar(
                   history: navigationHistory,
-                  onBack: navigationHistory.isEmpty ? null : () => posNavCubit.popCategory(context),
-                  onRoot: () => posNavCubit.clearHistory(context),
-                  onCrumb: (index) => posNavCubit.popTo(context, index),
+                  onBack: navigationHistory.isEmpty ? null : () => posNavCubit.popCategory(),
+                  onRoot: () => posNavCubit.clearHistory(),
+                  onCrumb: (index) => posNavCubit.popTo(index),
                   isSearchOpen: _isSearchOpen,
                   onOpenSearch: _openSearch,
                   onCloseSearch: _closeSearch,
@@ -172,7 +178,7 @@ class _PosMenuGridState extends State<PosMenuGrid> {
                               categories: categories,
                               items: items,
                               posSettings: posSettings,
-                              onCategoryTap: (cat) => posNavCubit.pushCategory(context, cat),
+                              onCategoryTap: (cat) => posNavCubit.pushCategory(cat),
                             );
                           },
                         );

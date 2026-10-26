@@ -72,8 +72,7 @@ class MenuListItem extends StatelessWidget {
       );
     }
 
-    return RepaintBoundary(
-      child: Opacity(
+    return Opacity(
         opacity: item.isAvailable ? 1.0 : 0.5,
         child: Material(
         color: AppColors.transparent,
@@ -164,7 +163,6 @@ class MenuListItem extends StatelessWidget {
           onTap: onTap,
         ),
       ),
-    ),
     );
   }
 }

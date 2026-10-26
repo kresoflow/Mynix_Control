@@ -1,12 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:flutter/material.dart';
 
 class PosNavCubit extends Cubit<List<dynamic>> {
   PosNavCubit() : super([]);
 
-  // Syncs the cubit state with the URL
-  void syncWithUrl(BuildContext context, String? categoryId, List<dynamic> allCategories) {
+  // Syncs the cubit state with the URL (только при инициализации/диплинке)
+  void syncWithUrl(String? categoryId, List<dynamic> allCategories) {
     if (categoryId == null || categoryId.isEmpty) {
       if (state.isNotEmpty) emit([]);
       return;
@@ -32,38 +30,27 @@ class PosNavCubit extends Cubit<List<dynamic>> {
     emit(history);
   }
 
-  void pushCategory(BuildContext context, dynamic category) {
+  void pushCategory(dynamic category) {
     emit(List.from(state)..add(category));
-    _updateUrl(context, category.id.toString());
   }
 
-  void popCategory(BuildContext context) {
+  void popCategory() {
     if (state.isNotEmpty) {
       final newState = List<dynamic>.from(state)..removeLast();
       emit(newState);
-      final newId = newState.isEmpty ? null : newState.last.id.toString();
-      _updateUrl(context, newId);
     }
   }
 
-  void clearHistory(BuildContext context) {
-    emit([]);
-    _updateUrl(context, null);
+  void clearHistory() {
+    if (state.isNotEmpty) {
+      emit([]);
+    }
   }
 
-  void popTo(BuildContext context, int index) {
+  void popTo(int index) {
     if (index >= 0 && index < state.length) {
       final newState = state.sublist(0, index + 1);
       emit(newState);
-      _updateUrl(context, newState.last.id.toString());
-    }
-  }
-
-  void _updateUrl(BuildContext context, String? categoryId) {
-    if (categoryId == null) {
-      context.go('/pos');
-    } else {
-      context.go('/pos?category=$categoryId');
     }
   }
 }

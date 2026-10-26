@@ -49,8 +49,7 @@ class CategoryGridItem extends StatelessWidget {
     final customColor = ColorPickerUtils.parseHex(effectiveColor);
     final accentColor = isArchived ? (isDark ? AppColors.darkSubtext : AppColors.lightSubtext) : (customColor ?? AppColors.brandPrimary);
 
-    return RepaintBoundary(
-      child: AppCard(
+    return AppCard(
         onTap: onTap,
         isSelected: isSelected,
         child: Stack(
@@ -210,7 +209,6 @@ class CategoryGridItem extends StatelessWidget {
             ),
         ],
       ),
-    ),
     );
   }
 }

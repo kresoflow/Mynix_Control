@@ -73,7 +73,7 @@ class _AppCardState extends State<AppCard> {
         child: Material(
           color: Colors.transparent,
           borderRadius: AppRadii.cardRadius,
-          clipBehavior: Clip.antiAlias,
+          clipBehavior: Clip.none,
           child: InkWell(
             onTap: widget.onTap,
             splashColor: AppColors.brandPrimary.withValues(alpha: 0.1),

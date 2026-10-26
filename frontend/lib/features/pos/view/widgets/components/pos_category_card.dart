@@ -42,8 +42,7 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
         ? widget.accent.withValues(alpha: 0.5)
         : (isDark ? AppColors.darkBorder : AppColors.lightBorder.withValues(alpha: 0.8));
 
-    return RepaintBoundary(
-      child: MouseRegion(
+    return MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         cursor: SystemMouseCursors.click,
@@ -114,7 +113,6 @@ class _PosCategoryCardState extends State<PosCategoryCard> {
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }
