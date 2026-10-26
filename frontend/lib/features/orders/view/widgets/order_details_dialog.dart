@@ -1,18 +1,29 @@
+// ==============================================================================
+// Title: OrderDetailsDialog (order_details_dialog.dart)
+// Path: frontend/lib/features/orders/view/widgets/order_details_dialog.dart
+// Description: Модальное окно детализации кассового чека / заказа.
+// ==============================================================================
+
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:intl/intl.dart';
-
+import 'package:kreso_frontend/core/widgets/app_save_shortcut_scope.dart';
 import '../../models/pos_order.dart';
 import '../../bloc/orders_bloc.dart';
 import 'cancel_order_dialog.dart';
 
+// ─── 1. Модальное окно чека ──────────────────────────────────────────────────
+
+/// [UI-KIT] Диалог детальной информации по чеку/заказу.
+/// Адаптируется по высоте содержимого (wrap-content) и поддерживает Esc / закрытие по клику вне окна.
 class OrderDetailsDialog extends StatelessWidget {
   final PosOrder order;
 
@@ -24,28 +35,30 @@ class OrderDetailsDialog extends StatelessWidget {
     final bg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final text = isDark ? AppColors.darkText : AppColors.lightText;
     final subtext = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
-
     final canCancel = order.status != 'cancelled' && order.status != 'completed';
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    return Dialog(
-      backgroundColor: AppColors.transparent,
-      elevation: 0,
-      shadowColor: AppColors.transparent,
-      surfaceTintColor: AppColors.transparent,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadii.dialogRadius, side: BorderSide.none),
-      child: Center(
+    return AppSaveShortcutScope(
+      onCancel: () => Navigator.of(context).maybePop(),
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Container(
-          width: 440,
-          constraints: const BoxConstraints(maxHeight: 800),
+          width: min(440.0, screenWidth - 32.0),
+          constraints: BoxConstraints(maxHeight: screenHeight * 0.85),
           decoration: BoxDecoration(
             color: bg,
             borderRadius: AppRadii.dialogRadius,
+            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
             boxShadow: AppShadows.dialog,
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ── Header (Order Number & Status Badge) ─────────────────
+              // ── Шапка (Номер чека, дата и закрытие) ────────────────────────
               Container(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 decoration: BoxDecoration(
@@ -69,10 +82,7 @@ class OrderDetailsDialog extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Чек #${order.orderNumber}',
-                              style: AppTextStyles.h2,
-                            ),
+                            Text('Чек #${order.orderNumber}', style: AppTextStyles.h2),
                             const SizedBox(height: 2),
                             Text(
                               DateFormat('dd.MM.yyyy, HH:mm').format(order.createdAt),
@@ -91,13 +101,13 @@ class OrderDetailsDialog extends StatelessWidget {
                 ),
               ),
 
-              // Dashed separator
+              // Пунктирный разделитель
               SizedBox(
                 height: 1,
                 child: CustomPaint(painter: _DashedLinePainter(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
               ),
 
-              // ── Receipt Meta ─────────────────────────────────────────
+              // ── Метаданные чека (Способ оплаты, статус) ───────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
@@ -114,9 +124,10 @@ class OrderDetailsDialog extends StatelessWidget {
                 child: CustomPaint(painter: _DashedLinePainter(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
               ),
 
-              // ── Items List ───────────────────────────────────────────
-              Expanded(
+              // ── Список позиций чека (Адаптивная высота) ───────────────────
+              Flexible(
                 child: ListView.separated(
+                  shrinkWrap: true,
                   padding: const EdgeInsets.all(24),
                   itemCount: order.items.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 14),
@@ -170,7 +181,7 @@ class OrderDetailsDialog extends StatelessWidget {
                 ),
               ),
 
-              // ── Bottom Summary & Total (UX Fixed: prominently placed at bottom of receipt) ──
+              // ── Итоговый блок чека ─────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -241,15 +252,13 @@ class OrderDetailsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMetaRow(String label, String value, Color valueColor, Color labelColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: AppTextStyles.body.copyWith(color: labelColor)),
-        Text(value, style: AppTextStyles.body.copyWith(color: valueColor, fontWeight: FontWeight.w600)),
-      ],
-    );
-  }
+  Widget _buildMetaRow(String label, String value, Color valueColor, Color labelColor) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: AppTextStyles.body.copyWith(color: labelColor)),
+          Text(value, style: AppTextStyles.body.copyWith(color: valueColor, fontWeight: FontWeight.w600)),
+        ],
+      );
 
   String _localizeStatus(String status) => switch (status) {
         'new' => 'Новый',
@@ -269,19 +278,15 @@ class OrderDetailsDialog extends StatelessWidget {
 
 class _DashedLinePainter extends CustomPainter {
   final Color color;
-  _DashedLinePainter({required this.color});
+  const _DashedLinePainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
       ..strokeWidth = 1;
-    const dashWidth = 4.0;
-    const dashSpace = 4.0;
-    double startX = 0;
-    while (startX < size.width) {
-      canvas.drawLine(Offset(startX, 0), Offset(startX + dashWidth, 0), paint);
-      startX += dashWidth + dashSpace;
+    for (double x = 0; x < size.width; x += 8) {
+      canvas.drawLine(Offset(x, 0), Offset(x + 4, 0), paint);
     }
   }
 

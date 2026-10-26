@@ -16,8 +16,8 @@ import 'package:flutter/services.dart';
 /// 3. Опционально перехватывает Escape для закрытия формы.
 /// 4. Корректно перехватывает события даже при активном фокусе внутри полей ввода.
 class AppSaveShortcutScope extends StatelessWidget {
-  /// Действие сохранения данных формы
-  final VoidCallback onSave;
+  /// Опциональное действие сохранения данных формы
+  final VoidCallback? onSave;
 
   /// Опциональное действие отмены / закрытия по клавише Escape
   final VoidCallback? onCancel;
@@ -30,8 +30,8 @@ class AppSaveShortcutScope extends StatelessWidget {
 
   const AppSaveShortcutScope({
     super.key,
-    required this.onSave,
     required this.child,
+    this.onSave,
     this.onCancel,
     this.enabled = true,
   });
@@ -57,8 +57,8 @@ class AppSaveShortcutScope extends StatelessWidget {
     final isKeyS = event.physicalKey == PhysicalKeyboardKey.keyS ||
         event.logicalKey == LogicalKeyboardKey.keyS;
 
-    if (isKeyS) {
-      onSave();
+    if (isKeyS && onSave != null) {
+      onSave!();
       return KeyEventResult.handled;
     }
 
