@@ -43,25 +43,23 @@ class MenuGridItem extends StatelessWidget {
     Color? inheritedColor;
     String? effectiveIcon = item.icon;
     
-    // Check if the item's own icon is valid
-    if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
-      final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
-      if (!IconHelper.availableIcons.contains(cleanName)) {
-        effectiveIcon = null; // Invalid icon, fall back to parent
-      }
+    // [UI-KIT] Быстрая проверка наличия иконки за O(1)
+    if (effectiveIcon != null && effectiveIcon.isNotEmpty && !IconHelper.isIconAvailable(effectiveIcon)) {
+      effectiveIcon = null;
     }
     
-    try {
-      final categoryState = context.read<CategoryBloc>().state;
-      if (categoryState is CategoryLoaded) {
-        final category = categoryState.categories.firstWhere((c) => c.id.toString() == item.categoryId);
+    // [UI-KIT] Безопасный поиск категории без генерации исключений StateError
+    final categoryState = context.read<CategoryBloc>().state;
+    if (categoryState is CategoryLoaded) {
+      final category = categoryState.categories.where((c) => c.id.toString() == item.categoryId).firstOrNull;
+      if (category != null) {
         if (effectiveIcon == null || effectiveIcon.isEmpty) {
           effectiveIcon = category.getInheritedIcon(categoryState.categories);
         }
         final colorHex = category.getInheritedColor(categoryState.categories);
         inheritedColor = ColorPickerUtils.parseHex(colorHex);
       }
-    } catch (_) {}
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color accentColor = !item.isAvailable
@@ -70,8 +68,7 @@ class MenuGridItem extends StatelessWidget {
 
     Widget finalIconWidget;
     if (effectiveIcon != null && effectiveIcon.isNotEmpty) {
-      final cleanName = effectiveIcon.startsWith('icon:') ? effectiveIcon.substring(5) : effectiveIcon;
-      if (IconHelper.availableIcons.contains(cleanName)) {
+      if (IconHelper.isIconAvailable(effectiveIcon)) {
         finalIconWidget = IconHelper.buildIcon(
           effectiveIcon,
           size: 28,
@@ -92,9 +89,10 @@ class MenuGridItem extends StatelessWidget {
       );
     }
 
-    return Opacity(
-      opacity: item.isAvailable ? 1.0 : 0.5,
-      child: AppCard(
+    return RepaintBoundary(
+      child: Opacity(
+        opacity: item.isAvailable ? 1.0 : 0.5,
+        child: AppCard(
         onTap: onTap,
         isSelected: isSelected,
         child: Stack(
@@ -240,6 +238,7 @@ class MenuGridItem extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

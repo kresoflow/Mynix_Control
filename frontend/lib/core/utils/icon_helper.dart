@@ -96,5 +96,12 @@ class IconHelper {
     return fallback != null ? Icon(fallback, size: size, color: color) : const SizedBox.shrink();
   }
 
+  /// [UI-KIT] Проверка доступности иконки за O(1) без создания списков
+  static bool isIconAvailable(String? iconName) {
+    if (iconName == null || iconName.isEmpty) return false;
+    final cleanName = iconName.startsWith('icon:') ? iconName.substring(5) : iconName;
+    return _iconMap.containsKey(cleanName);
+  }
+
   static List<String> get availableIcons => _iconMap.keys.toList();
 }
