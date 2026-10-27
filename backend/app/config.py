@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     # ── Application ──────────────────────────────────────────────
     app_name: str = "Kreso Flow"
     debug: bool = True
+    sql_echo: bool = False
 
     # ── Database (PostgreSQL) ────────────────────────────────────
     database_url: str = "postgresql+asyncpg://kreso:kreso_secret@127.0.0.1:5444/kreso_flow"

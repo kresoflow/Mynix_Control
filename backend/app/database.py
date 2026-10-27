@@ -12,7 +12,7 @@ from app.config import settings
 # ── Async Engine (for FastAPI runtime) ───────────────────────────
 async_engine = create_async_engine(
     settings.database_url,
-    echo=settings.debug,
+    echo=settings.sql_echo,
     future=True,
     connect_args={"statement_cache_size": 0, "prepared_statement_cache_size": 0},
 )
