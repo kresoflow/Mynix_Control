@@ -25,6 +25,12 @@ class CatalogBrowserActions {
   }) {
     if (catState is! CategoryLoaded) return [];
 
+    // [ИНВАРИАНТ] При поиске на вкладках «Блюда» (dish) и «Витрина» (retail)
+    // папки категорий скрываются, а выдача содержит исключительно позиции блюд и товаров.
+    if (searchQuery.isNotEmpty && categoryType != 'all') {
+      return [];
+    }
+
     return catState.categories.where((c) {
       if (!showArchived && c.isArchived) return false;
       if (categoryType == 'all' && c.categoryType == 'ingredient') return false;

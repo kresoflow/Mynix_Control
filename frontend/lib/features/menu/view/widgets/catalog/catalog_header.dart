@@ -1,3 +1,9 @@
+// ==============================================================================
+// Title: CatalogHeader
+// Path: frontend/lib/features/menu/view/widgets/catalog/catalog_header.dart
+// Description: Шапка каталога с хлебными крошками, поиском и панелью действий.
+// ==============================================================================
+
 import 'package:flutter/material.dart';
 import 'catalog_enums.dart';
 import 'catalog_header_manage_mode.dart';
@@ -28,6 +34,8 @@ class CatalogHeader extends StatelessWidget {
   final int archivedCount;
   final VoidCallback onShowArchivedToggle;
   final ValueChanged<String>? onSearchChanged;
+  final VoidCallback? onClearSearch;
+  final TextEditingController? searchController;
   final VoidCallback? onRestoreSelected;
   final VoidCallback? onToggleVisibilitySelected;
   final VoidCallback? onMergeSelected;
@@ -55,6 +63,8 @@ class CatalogHeader extends StatelessWidget {
     this.archivedCount = 0,
     required this.onShowArchivedToggle,
     this.onSearchChanged,
+    this.onClearSearch,
+    this.searchController,
     this.onRestoreSelected,
     this.onToggleVisibilitySelected,
     this.onMergeSelected,
@@ -118,6 +128,8 @@ class CatalogHeader extends StatelessWidget {
             if (onSearchChanged != null) ...[
               const SizedBox(width: 8),
               AppSearchField(
+                controller: searchController,
+                onClear: onClearSearch,
                 mode: AppSearchMode.collapsible,
                 size: AppSearchFieldSize.sm,
                 hintText: 'Поиск...',
@@ -199,6 +211,8 @@ class CatalogHeader extends StatelessWidget {
         // ── Group 1: Search & View Controls ──────────────────────────
         if (onSearchChanged != null) ...[
           AppSearchField(
+            controller: searchController,
+            onClear: onClearSearch,
             mode: AppSearchMode.collapsible,
             size: AppSearchFieldSize.md,
             hintText: 'Поиск в каталоге...',

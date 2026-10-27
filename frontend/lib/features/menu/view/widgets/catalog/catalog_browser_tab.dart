@@ -43,6 +43,7 @@ class CatalogBrowserTab extends StatefulWidget {
 class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+  late final TextEditingController _searchController;
   List<dynamic> _navigationHistory = [];
   CategoryManageMode _manageMode = CategoryManageMode.none;
   CategoryViewMode _viewMode = CategoryViewMode.grid;
@@ -59,8 +60,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
 
   Future<void> _loadViewMode() async {
     final prefs = await SharedPreferences.getInstance();
-    final mode = prefs.getString('category_view_mode');
-    if (mode == 'list' && mounted) {
+    if (prefs.getString('category_view_mode') == 'list' && mounted) {
       setState(() => _viewMode = CategoryViewMode.list);
     }
   }
@@ -71,6 +71,15 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
   }
 
   int? get _currentCategoryId => _navigationHistory.isEmpty ? null : _navigationHistory.last.id;
+
+  void _resetSearch() {
+    _searchController.clear();
+    _searchQuery = '';
+  }
+
+  void _navigateUp() => setState(() { _resetSearch(); _navigationHistory.removeLast(); });
+  void _navigateToRoot() => setState(() { _resetSearch(); _navigationHistory.clear(); });
+  void _navigateToHistory(int idx) => setState(() { _resetSearch(); _navigationHistory = _navigationHistory.sublist(0, idx + 1); });
 
   void _clearSelection() {
     setState(() {
@@ -146,6 +155,8 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                       rootTitle: widget.rootTitle,
                       showArchived: _showArchived,
                       archivedCount: totalArchivedCount,
+                      searchController: _searchController,
+                      onClearSearch: () => setState(_resetSearch),
                       onSearchChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
                       onShowArchivedToggle: () => setState(() => _showArchived = !_showArchived),
                       onManageModeChanged: (mode) => setState(() {
@@ -173,9 +184,9 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                         selectedCategories: _selectedCategories,
                         onCleared: _clearSelection,
                       ),
-                      onNavigateUp: () => setState(() => _navigationHistory.removeLast()),
-                      onNavigateToRoot: () => setState(() => _navigationHistory.clear()),
-                      onNavigateToHistory: (index) => setState(() => _navigationHistory = _navigationHistory.sublist(0, index + 1)),
+                      onNavigateUp: _navigateUp,
+                      onNavigateToRoot: _navigateToRoot,
+                      onNavigateToHistory: _navigateToHistory,
                       onAddPressed: () => showAddCategoryDialog(context, currentCategoryId: _currentCategoryId),
                       addMenuBuilder: widget.addMenuBuilder,
                       onRestoreSelected: () => CatalogBrowserActions.restoreSelected(
@@ -215,15 +226,18 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                               emptyMessage: widget.emptyMessage,
                               onCategoryTap: (category) {
                                 if (_manageMode != CategoryManageMode.none) {
+                                  setState(
+                                    () => _selectedCategories.contains(category.id)
+                                        ? _selectedCategories.remove(category.id)
+                                        : _selectedCategories.add(category.id),
+                                  );
+                                } else {
                                   setState(() {
-                                    if (_selectedCategories.contains(category.id)) {
-                                      _selectedCategories.remove(category.id);
-                                    } else {
-                                      _selectedCategories.add(category.id);
+                                    _resetSearch();
+                                    if (_navigationHistory.isEmpty || _navigationHistory.last.id != category.id) {
+                                      _navigationHistory.add(category);
                                     }
                                   });
-                                } else {
-                                  setState(() => _navigationHistory.add(category));
                                 }
                               },
                               onCategoryToggle: (cat, val) => setState(() => _selectedCategories.contains(cat.id) ? _selectedCategories.remove(cat.id) : _selectedCategories.add(cat.id)),
