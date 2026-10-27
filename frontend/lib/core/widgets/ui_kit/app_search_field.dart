@@ -1,3 +1,9 @@
+// ==============================================================================
+// Title: AppSearchField (UI Kit Search Field)
+// Path: frontend/lib/core/widgets/ui_kit/app_search_field.dart
+// Description: Поле поиска Design System с поддержкой хоткеев и изоляции экрана.
+// ==============================================================================
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +31,7 @@ class AppSearchField extends StatefulWidget {
   final FocusNode? focusNode;
   final String hintText;
   final String? shortcutHint;
+  final bool isPrimary;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onClear;
   final VoidCallback? onCollapsed;
@@ -43,7 +50,8 @@ class AppSearchField extends StatefulWidget {
     this.controller,
     this.focusNode,
     this.hintText = 'Поиск...',
-    this.shortcutHint = 'Ctrl+F',
+    this.shortcutHint,
+    this.isPrimary = true,
     this.onChanged,
     this.onClear,
     this.onCollapsed,
@@ -63,6 +71,7 @@ class AppSearchField extends StatefulWidget {
 }
 
 class _AppSearchFieldState extends State<AppSearchField> {
+  static KeyEvent? _lastHandledKeyEvent;
   late TextEditingController _controller;
   late FocusNode _focusNode;
   Timer? _debounceTimer;
@@ -114,6 +123,64 @@ class _AppSearchFieldState extends State<AppSearchField> {
     });
   }
 
+  // [ИНВАРИАНТ] Проверка видимости и активности текущего поля поиска.
+  // Исключает перехват фокуса полями на скрытых экранах (IndexedStack) и неактивных вкладках (TabBarView).
+  bool _isActiveAndVisible() {
+    if (!mounted) return false;
+
+    // 1. Модальные окна: если поверх открыт другой Route/Dialog,
+    // фоновый поиск не должен перехватывать горячие клавиши.
+    final modalRoute = ModalRoute.of(context);
+    if (modalRoute != null && !modalRoute.isCurrent) {
+      return false;
+    }
+
+    // 2. Изоляция веток IndexedStack (проверяем Visibility в дереве предков)
+    if (!Visibility.of(context)) {
+      return false;
+    }
+
+    // 3. Изоляция скрытых веток TickerMode
+    if (!TickerMode.valuesOf(context).enabled) {
+      return false;
+    }
+
+    // 4. RenderObject: проверяем, что виджет смонтирован и имеет размеры.
+    final renderObject = context.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.attached || !renderObject.hasSize) {
+      return false;
+    }
+    if (renderObject.size.isEmpty) return false;
+
+    // 5. Проверяем попадание в видимый прямоугольник экрана (актуально для TabBarView / PageView)
+    try {
+      final translation = renderObject.getTransformTo(null).getTranslation();
+      final mediaQuery = MediaQuery.maybeOf(context);
+      if (mediaQuery != null) {
+        final fieldRect = Rect.fromLTWH(
+          translation.x,
+          translation.y,
+          renderObject.size.width,
+          renderObject.size.height,
+        );
+        final viewportRect = Rect.fromLTWH(
+          0,
+          0,
+          mediaQuery.size.width,
+          mediaQuery.size.height,
+        );
+        if (!viewportRect.overlaps(fieldRect)) {
+          return false;
+        }
+      }
+    } catch (_) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // ── 2. Обработка локальных хоткеев (Ctrl+F, Cmd+K, F2, Esc) ───────────────
   bool _handleGlobalKeyEvent(KeyEvent event) {
     if (!widget.enableHotkeys || !mounted) return false;
     if (event is! KeyDownEvent) return false;
@@ -121,9 +188,29 @@ class _AppSearchFieldState extends State<AppSearchField> {
     final isCtrlOrCmd = HardwareKeyboard.instance.isControlPressed ||
         HardwareKeyboard.instance.isMetaPressed;
 
-    // Ctrl+F / Cmd+K / F2: открыть и сфокусировать поиск
-    if ((isCtrlOrCmd && (event.logicalKey == LogicalKeyboardKey.keyF || event.logicalKey == LogicalKeyboardKey.keyK)) ||
-        event.logicalKey == LogicalKeyboardKey.f2) {
+    // [ИНВАРИАНТ] physicalKey гарантирует срабатывание в русской раскладке (клавиша 'А')
+    final isKeyF = event.physicalKey == PhysicalKeyboardKey.keyF ||
+        event.logicalKey == LogicalKeyboardKey.keyF;
+    final isKeyK = event.physicalKey == PhysicalKeyboardKey.keyK ||
+        event.logicalKey == LogicalKeyboardKey.keyK;
+    final isF2 = event.physicalKey == PhysicalKeyboardKey.f2 ||
+        event.logicalKey == LogicalKeyboardKey.f2;
+
+    // Ctrl+F / Cmd+K / F2: открыть и сфокусировать поиск именно в текущем видимом разделе
+    if ((isCtrlOrCmd && (isKeyF || isKeyK)) || isF2) {
+      if (!widget.isPrimary) return false;
+
+      // Игнорируем невидимые или неактивные инпуты на фоновых экранах/вкладках
+      if (!_isActiveAndVisible()) {
+        return false;
+      }
+
+      // Предотвращаем гонку, если на одном экране смонтировано несколько поисковых полей
+      if (identical(_lastHandledKeyEvent, event)) {
+        return true;
+      }
+      _lastHandledKeyEvent = event;
+
       if (!_isExpanded) {
         setState(() {
           _isExpanded = true;
@@ -131,13 +218,22 @@ class _AppSearchFieldState extends State<AppSearchField> {
         });
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _focusNode.requestFocus();
+        if (mounted && _isActiveAndVisible()) {
+          _focusNode.requestFocus();
+          if (_controller.text.isNotEmpty) {
+            _controller.selection = TextSelection(
+              baseOffset: 0,
+              extentOffset: _controller.text.length,
+            );
+          }
+        }
       });
       return true;
     }
 
     // Escape: очистить, расфокусировать и свернуть
-    if (event.logicalKey == LogicalKeyboardKey.escape) {
+    if (event.logicalKey == LogicalKeyboardKey.escape ||
+        event.physicalKey == PhysicalKeyboardKey.escape) {
       if (_isFocused || (widget.mode == AppSearchMode.collapsible && _isExpanded)) {
         _debounceTimer?.cancel();
         _controller.clear();

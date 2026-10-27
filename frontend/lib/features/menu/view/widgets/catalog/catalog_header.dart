@@ -202,7 +202,6 @@ class CatalogHeader extends StatelessWidget {
             mode: AppSearchMode.collapsible,
             size: AppSearchFieldSize.md,
             hintText: 'Поиск в каталоге...',
-            shortcutHint: 'Ctrl+F',
             onChanged: onSearchChanged,
           ),
           const SizedBox(width: 8),

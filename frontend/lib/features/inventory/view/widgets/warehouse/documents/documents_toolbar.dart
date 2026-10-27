@@ -44,7 +44,6 @@ class DocumentsToolbar extends StatelessWidget {
           mode: AppSearchMode.collapsible,
           size: AppSearchFieldSize.sm,
           hintText: 'Поиск по номеру, поставщику...',
-          shortcutHint: 'Ctrl+F',
           onChanged: onSearchChanged,
         ),
       ],

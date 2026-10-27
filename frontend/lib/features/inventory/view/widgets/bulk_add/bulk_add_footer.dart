@@ -22,7 +22,6 @@ class BulkAddFooter extends StatelessWidget {
           label: 'Сохранить всё',
           icon: PhosphorIconsRegular.floppyDisk,
           size: AppButtonSize.lg,
-          tooltip: 'Ctrl+S',
           onPressed: onSaveAll,
         ),
       ],

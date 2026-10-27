@@ -175,7 +175,6 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
                         mode: AppSearchMode.collapsible,
                         size: AppSearchFieldSize.md,
                         hintText: 'Поиск поставщика...',
-                        shortcutHint: 'Ctrl+F',
                         width: 240,
                         onChanged: (val) => setState(() => _searchQuery = val),
                       ),

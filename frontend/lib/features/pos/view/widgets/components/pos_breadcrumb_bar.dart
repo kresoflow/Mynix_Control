@@ -134,7 +134,6 @@ class PosBreadcrumbBar extends StatelessWidget {
             controller: searchController,
             focusNode: searchFocusNode,
             hintText: 'Поиск блюд...',
-            shortcutHint: isMobile ? null : 'Ctrl+F',
             size: AppSearchFieldSize.md,
             mode: AppSearchMode.collapsible,
             isInitiallyExpanded: isSearchOpen,
