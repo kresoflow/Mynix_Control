@@ -123,6 +123,30 @@ class _AppSearchFieldState extends State<AppSearchField> {
     });
   }
 
+  @override
+  void didUpdateWidget(AppSearchField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isInitiallyExpanded != oldWidget.isInitiallyExpanded) {
+      if (widget.mode == AppSearchMode.collapsible && _isExpanded != widget.isInitiallyExpanded) {
+        setState(() {
+          _isExpanded = widget.isInitiallyExpanded;
+        });
+      }
+    }
+  }
+
+  void _focusAndPositionCursor() {
+    _focusNode.requestFocus();
+    if (_controller.text.isNotEmpty) {
+      _controller.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: _controller.text.length,
+      );
+    } else {
+      _controller.selection = const TextSelection.collapsed(offset: 0);
+    }
+  }
+
   // [ИНВАРИАНТ] Проверка видимости и активности текущего поля поиска.
   // Исключает перехват фокуса полями на скрытых экранах (IndexedStack) и неактивных вкладках (TabBarView).
   bool _isActiveAndVisible() {
@@ -152,14 +176,18 @@ class _AppSearchFieldState extends State<AppSearchField> {
     }
     if (renderObject.size.isEmpty) return false;
 
-    // 5. Проверяем попадание в видимый прямоугольник экрана (актуально для TabBarView / PageView)
+    // 5. Точная проверка экранных координат через localToGlobal:
+    // В TabBarView / PageView неактивные вкладки возвращают NaN или координаты за пределами экрана.
     try {
-      final translation = renderObject.getTransformTo(null).getTranslation();
+      final pos = renderObject.localToGlobal(Offset.zero);
+      if (pos.dx.isNaN || pos.dy.isNaN) {
+        return false;
+      }
       final mediaQuery = MediaQuery.maybeOf(context);
       if (mediaQuery != null) {
         final fieldRect = Rect.fromLTWH(
-          translation.x,
-          translation.y,
+          pos.dx,
+          pos.dy,
           renderObject.size.width,
           renderObject.size.height,
         );
@@ -186,7 +214,11 @@ class _AppSearchFieldState extends State<AppSearchField> {
     if (event is! KeyDownEvent) return false;
 
     final isCtrlOrCmd = HardwareKeyboard.instance.isControlPressed ||
-        HardwareKeyboard.instance.isMetaPressed;
+        HardwareKeyboard.instance.isMetaPressed ||
+        HardwareKeyboard.instance.physicalKeysPressed.contains(PhysicalKeyboardKey.controlLeft) ||
+        HardwareKeyboard.instance.physicalKeysPressed.contains(PhysicalKeyboardKey.controlRight) ||
+        HardwareKeyboard.instance.physicalKeysPressed.contains(PhysicalKeyboardKey.metaLeft) ||
+        HardwareKeyboard.instance.physicalKeysPressed.contains(PhysicalKeyboardKey.metaRight);
 
     // [ИНВАРИАНТ] physicalKey гарантирует срабатывание в русской раскладке (клавиша 'А')
     final isKeyF = event.physicalKey == PhysicalKeyboardKey.keyF ||
@@ -217,15 +249,10 @@ class _AppSearchFieldState extends State<AppSearchField> {
           widget.onExpandedChanged?.call(true);
         });
       }
+      _focusAndPositionCursor();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _isActiveAndVisible()) {
-          _focusNode.requestFocus();
-          if (_controller.text.isNotEmpty) {
-            _controller.selection = TextSelection(
-              baseOffset: 0,
-              extentOffset: _controller.text.length,
-            );
-          }
+        if (mounted) {
+          _focusAndPositionCursor();
         }
       });
       return true;
@@ -271,7 +298,12 @@ class _AppSearchFieldState extends State<AppSearchField> {
       _isExpanded = !_isExpanded;
       widget.onExpandedChanged?.call(_isExpanded);
       if (_isExpanded) {
-        _focusNode.requestFocus();
+        _focusAndPositionCursor();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _focusAndPositionCursor();
+          }
+        });
       } else {
         _debounceTimer?.cancel();
         _controller.clear();

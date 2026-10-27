@@ -104,7 +104,6 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                       child: AppSearchField(
                         size: AppSearchFieldSize.sm,
                         hintText: 'Поиск...',
-                        enableHotkeys: false,
                         onChanged: (val) {
                           setState(() => _searchQuery = val);
                           widget.onSearchChanged?.call(val);
