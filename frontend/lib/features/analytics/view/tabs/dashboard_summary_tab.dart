@@ -89,9 +89,8 @@ class _DashboardSummaryTabState extends State<DashboardSummaryTab> with Automati
               : (state as AnalyticsError).previousXray!;
 
           return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
+            padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 24.0),
+            child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   DashboardKpiGrid(metrics: metrics),
@@ -121,7 +120,6 @@ class _DashboardSummaryTabState extends State<DashboardSummaryTab> with Automati
                   const SizedBox(height: 14),
                 ],
               ),
-            ),
           );
         }
 

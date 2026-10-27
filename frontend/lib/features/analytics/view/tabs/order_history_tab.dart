@@ -137,7 +137,7 @@ class _OrderHistoryTabState extends State<OrderHistoryTab> with AutomaticKeepAli
               },
               color: AppColors.brandPrimary,
               child: ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 24.0),
                 itemCount: orders.length,
                 itemBuilder: (context, index) {
                   return OrderCard(order: orders[index]);

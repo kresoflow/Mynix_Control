@@ -26,7 +26,7 @@ class AnalyticsDashboardSkeleton extends StatelessWidget {
 
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.all(isDesktop ? 16 : 12),
+      padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 24.0),
       child: Shimmer.fromColors(
         baseColor: shimmerBase,
         highlightColor: shimmerHighlight,
