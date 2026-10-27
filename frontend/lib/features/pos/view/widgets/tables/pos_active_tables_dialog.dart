@@ -97,9 +97,14 @@ class _PosActiveTablesDialogState extends State<PosActiveTablesDialog> {
     await TableOrderPaymentModal.show(
       context,
       order: table,
-      onConfirm: (paymentMethod) async {
+      onConfirm: (paymentMethod, paymentAccount) async {
         try {
-          await _orderRepo.settleTableOrder(orderId, paymentMethod);
+          await _orderRepo.settleTableOrder(
+            orderId,
+            paymentMethod,
+            paymentAccount: paymentAccount,
+            note: paymentMethod == 'transfer' ? 'Перевод: ${paymentAccount.toUpperCase()}' : null,
+          );
           if (mounted) {
             AppToast.showSuccess(context, 'Столик рассчитан и закрыт');
             final now = DateTime.now();

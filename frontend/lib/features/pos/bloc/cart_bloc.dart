@@ -67,12 +67,14 @@ class SetTableNumber extends CartEvent {
 
 class CheckoutCart extends CartEvent {
   final String paymentMethod;
+  final String? paymentAccount;
   final String? note;
   final String? tableNumber;
   final String? orderSource;
   final String? submittingAction;
   const CheckoutCart({
     this.paymentMethod = 'CASH',
+    this.paymentAccount,
     this.note,
     this.tableNumber,
     this.orderSource,
@@ -80,7 +82,7 @@ class CheckoutCart extends CartEvent {
   });
   
   @override
-  List<Object?> get props => [paymentMethod, note, tableNumber, orderSource, submittingAction];
+  List<Object?> get props => [paymentMethod, paymentAccount, note, tableNumber, orderSource, submittingAction];
 }
 
 class HoldCurrentCart extends CartEvent {
@@ -276,6 +278,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       await orderRepository.submitOrder(
         state.items,
         event.paymentMethod,
+        paymentAccount: event.paymentAccount,
         customerId: customerId,
         bonusSpent: state.bonusToSpend > 0 ? state.bonusToSpend : null,
         note: event.note,

@@ -186,15 +186,13 @@ class _OrderCardState extends State<OrderCard> {
             Row(
               children: [
                 Icon(
-                  widget.order.paymentMethod == 'cash' 
-                      ? PhosphorIconsRegular.money 
-                      : PhosphorIconsRegular.creditCard,
+                  widget.order.paymentMethod.toLowerCase() == 'cash' ? PhosphorIconsRegular.money : PhosphorIconsRegular.qrCode,
                   size: 16,
                   color: subtextColor,
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  widget.order.paymentMethod == 'cash' ? 'Наличные' : 'Безналичный',
+                  widget.order.paymentMethodLabel,
                   style: AppTextStyles.caption.copyWith(color: subtextColor, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(width: 8),

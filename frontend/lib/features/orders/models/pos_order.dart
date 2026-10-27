@@ -4,6 +4,7 @@ class PosOrder {
   final int orderNumber;
   final String status;
   final String paymentMethod;
+  final String? paymentAccount;
   final double total;
   final String? note;
   final DateTime createdAt;
@@ -14,6 +15,7 @@ class PosOrder {
     required this.orderNumber,
     required this.status,
     required this.paymentMethod,
+    this.paymentAccount,
     required this.total,
     this.note,
     required this.createdAt,
@@ -25,6 +27,7 @@ class PosOrder {
     int? orderNumber,
     String? status,
     String? paymentMethod,
+    String? paymentAccount,
     double? total,
     String? note,
     DateTime? createdAt,
@@ -35,11 +38,38 @@ class PosOrder {
       orderNumber: orderNumber ?? this.orderNumber,
       status: status ?? this.status,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      paymentAccount: paymentAccount ?? this.paymentAccount,
       total: total ?? this.total,
       note: note ?? this.note,
       createdAt: createdAt ?? this.createdAt,
       items: items ?? this.items,
     );
+  }
+
+  String get paymentMethodLabel {
+    final method = paymentMethod.toLowerCase();
+    final account = (paymentAccount ?? '').toLowerCase();
+    final rawNote = (note ?? '').toLowerCase();
+
+    if (account == 'dc' || account.contains('dc')) return 'Перевод (DC)';
+    if (account == 'alif' || account.contains('alif')) return 'Перевод (Алиф)';
+    if (account == 'spitamen' || account.contains('spitamen')) return 'Перевод (Спитамен)';
+    if (account == 'other') return 'Перевод (Другой)';
+    if (account == 'cash') return 'Наличные';
+
+    if (rawNote.contains('dc') || rawNote.contains('dushanbe')) return 'Перевод (DC)';
+    if (rawNote.contains('alif') || rawNote.contains('алиф')) return 'Перевод (Алиф)';
+    if (rawNote.contains('spitamen') || rawNote.contains('спитамен')) return 'Перевод (Спитамен)';
+    if (rawNote.startsWith('перевод:')) return note!;
+
+    if (method.contains('dc')) return 'Перевод (DC)';
+    if (method.contains('alif')) return 'Перевод (Алиф)';
+    if (method.contains('spitamen')) return 'Перевод (Спитамен)';
+    if (method == 'cash') return 'Наличные';
+    if (method == 'transfer' || method == 'card') return 'Перевод';
+    if (method == 'debt') return 'В долг';
+    if (method == 'deposit') return 'Депозит';
+    return 'Безналичный';
   }
 
   factory PosOrder.fromJson(Map<String, dynamic> json) {
@@ -60,6 +90,7 @@ class PosOrder {
       orderNumber: json['order_number'] as int,
       status: json['status'] as String,
       paymentMethod: json['payment_method'] as String,
+      paymentAccount: json['payment_account'] as String?,
       total: (json['total'] as num).toDouble(),
       note: json['note'] as String?,
       createdAt: parsedDate,

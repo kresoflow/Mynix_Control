@@ -6,18 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select, func
 
-from app.pos.models import (
-    Order, OrderItem, CashTransaction,
-    OrderStatus, PaymentMethod, CashTransactionType,
-    CreateOrderRequest
-)
+from app.pos.models import Order, OrderItem, CashTransaction, OrderStatus, PaymentMethod, CashTransactionType, CreateOrderRequest
 from app.inventory.models import MenuItem
 from app.inventory import services as inventory_svc
 from app.pos.services.shift_service import get_open_shift
 from app.pos.services.checkout_payment_helper import process_customer_checkout, process_cash_income
 from app.users.models import Tenant
 from app.exceptions import NotFoundError, ConflictError
-
 
 async def get_next_order_number(session: AsyncSession, shift_id: int) -> int:
     """Get the next sequential order number within a shift."""
@@ -26,7 +21,6 @@ async def get_next_order_number(session: AsyncSession, shift_id: int) -> int:
     )
     result = await session.execute(stmt)
     return (result.scalar() or 0) + 1
-
 
 def format_order_dict(order: Order, created_by_name: str) -> dict:
     """Standardized serialization of order payload for responses and WS events."""
@@ -38,6 +32,7 @@ def format_order_dict(order: Order, created_by_name: str) -> dict:
         "order_source": order.order_source,
         "status": order.status,
         "payment_method": order.payment_method,
+        "payment_account": order.payment_account,
         "total": order.total,
         "note": order.note,
         "created_by": created_by_name,
@@ -54,7 +49,6 @@ def format_order_dict(order: Order, created_by_name: str) -> dict:
             for oi in (order.items or [])
         ],
     }
-
 
 async def create_order(
     session: AsyncSession,
@@ -109,7 +103,6 @@ async def create_order(
 
     order_items_data = []
     total = 0.0
-
 
     # Batch load all MenuItems in a single query (N+1 query elimination)
     all_item_ids = list({item_req.menu_item_id for item_req in data.items})
@@ -191,6 +184,7 @@ async def create_order(
         order_source=data.order_source or "pos",
         status=initial_status,
         payment_method="unpaid" if is_dine_in_order else data.payment_method,
+        payment_account=None if is_dine_in_order else (data.payment_account or ("cash" if str(data.payment_method).lower() == "cash" else None)),
         bonus_spent=round(data.bonus_spent or 0.0, 2),
         total=round(total, 2),
         note=data.note,
@@ -229,7 +223,6 @@ async def create_order(
     await session.flush()
     return order
 
-
 async def process_new_order(session: AsyncSession, current_user, data: CreateOrderRequest) -> dict:
     """Orchestrates order creation and triggers appropriate WS notifications."""
     from app.pos.ws import notify_inventory_updated
@@ -246,7 +239,6 @@ async def process_new_order(session: AsyncSession, current_user, data: CreateOrd
     await notify_inventory_updated(current_user.tenant_id)
     return order_data
 
-
 def parse_filter_dt(val: str, is_end: bool = False) -> datetime:
     val = val.strip()
     if "T" in val:
@@ -257,7 +249,6 @@ def parse_filter_dt(val: str, is_end: bool = False) -> datetime:
         return dt
     time_str = "23:59:59" if is_end else "00:00:00"
     return datetime.strptime(f"{val} {time_str}", "%Y-%m-%d %H:%M:%S")
-
 
 async def list_orders(
     session: AsyncSession,
@@ -288,13 +279,11 @@ async def list_orders(
     result = await session.execute(stmt)
     return list(result.scalars().all())
 
-
 async def get_order_by_id(session: AsyncSession, order_id: int) -> Optional[Order]:
     """Get a single order with its items."""
     stmt = select(Order).where(Order.id == order_id).options(selectinload(Order.items))
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
-
 
 async def update_order_status(session: AsyncSession, order_id: int, new_status: OrderStatus) -> Order:
     """Update order status."""

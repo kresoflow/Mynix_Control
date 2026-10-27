@@ -10,51 +10,31 @@ from app.pos.models import (
 )
 from app.users.models import User
 
-
-async def get_open_shift(
-    session: AsyncSession,
-) -> Optional[Shift]:
+async def get_open_shift(session: AsyncSession) -> Optional[Shift]:
     """Get the currently open shift for a tenant (if any)."""
     stmt = select(Shift).where(Shift.is_open == True)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 
-
-async def calculate_expected_cash(
-    session: AsyncSession,
-    shift_id: int,
-    opening_cash: float,
-) -> float:
+async def calculate_expected_cash(session: AsyncSession, shift_id: int, opening_cash: float) -> float:
     """Calculate the current expected cash in drawer for a shift."""
-    stmt_income = select(
-        func.coalesce(func.sum(CashTransaction.amount), 0)
-    ).where(
+    stmt_income = select(func.coalesce(func.sum(CashTransaction.amount), 0)).where(
         CashTransaction.shift_id == shift_id,
         CashTransaction.type == CashTransactionType.INCOME.value,
     )
     res_inc = await session.execute(stmt_income)
     total_income = float(res_inc.scalar() or 0.0)
 
-    stmt_expenses = select(
-        func.coalesce(func.sum(CashTransaction.amount), 0)
-    ).where(
+    stmt_expenses = select(func.coalesce(func.sum(CashTransaction.amount), 0)).where(
         CashTransaction.shift_id == shift_id,
-        CashTransaction.type.in_([
-            CashTransactionType.EXPENSE.value,
-            CashTransactionType.WITHDRAWAL.value,
-        ]),
+        CashTransaction.type.in_([CashTransactionType.EXPENSE.value, CashTransactionType.WITHDRAWAL.value]),
     )
     res_exp = await session.execute(stmt_expenses)
     total_expenses = float(res_exp.scalar() or 0.0)
 
     return round(opening_cash + total_income - total_expenses, 2)
 
-
-async def open_shift(
-    session: AsyncSession,
-    user_id: int,
-    opening_cash: float,
-) -> Shift:
+async def open_shift(session: AsyncSession, user_id: int, opening_cash: float) -> Shift:
     """Open a new cash shift. Only one shift can be open at a time."""
     existing = await get_open_shift(session)
     if existing:
@@ -69,12 +49,7 @@ async def open_shift(
     await session.flush()
     return shift
 
-
-async def close_shift(
-    session: AsyncSession,
-    user_id: int,
-    closing_cash_actual: float,
-) -> Shift:
+async def close_shift(session: AsyncSession, user_id: int, closing_cash_actual: float) -> Shift:
     """Close the current open shift and calculate discrepancy."""
     shift = await get_open_shift(session)
     if not shift:
@@ -109,13 +84,7 @@ async def close_shift(
 
     return shift
 
-
-async def record_expense(
-    session: AsyncSession,
-    user_id: int,
-    amount: float,
-    description: str,
-) -> CashTransaction:
+async def record_expense(session: AsyncSession, user_id: int, amount: float, description: str) -> CashTransaction:
     """Record a cash expense during an open shift (e.g., buying napkins)."""
     if amount <= 0:
         raise ValueError("Сумма расхода должна быть больше 0.")
@@ -141,7 +110,6 @@ async def record_expense(
     session.add(txn)
     await session.flush()
     return txn
-
 
 async def get_x_report(
     session: AsyncSession,
@@ -209,6 +177,13 @@ async def get_x_report(
         for uid, full_name, username in res_users.all():
             users_map[uid] = full_name or f"@{username}"
 
+    stmt_accounts = select(
+        func.coalesce(Order.payment_account, Order.payment_method).label("account"),
+        func.sum(Order.total),
+    ).where(Order.shift_id == shift_id, Order.status != OrderStatus.CANCELLED.value).group_by("account")
+    res_accounts = await session.execute(stmt_accounts)
+    revenue_by_account = {str(row[0] or "other"): round(float(row[1] or 0.0), 2) for row in res_accounts.all()}
+
     return {
         "shift_id": shift.id,
         "is_open": shift.is_open,
@@ -231,8 +206,8 @@ async def get_x_report(
         "closing_cash_actual": shift.closing_cash_actual,
         "closing_cash_expected": shift.closing_cash_expected,
         "discrepancy": shift.discrepancy,
+        "revenue_by_account": revenue_by_account,
     }
-
 
 async def get_shifts_history(
     session: AsyncSession,

@@ -29,9 +29,11 @@ class _PosCheckoutPanelState extends State<PosCheckoutPanel> {
     final note = _paymentMethod == 'TRANSFER'
         ? 'Перевод: ${_getProviderLabel(_transferProvider)}'
         : null;
+    final paymentAccount = _paymentMethod == 'TRANSFER' ? _transferProvider : 'cash';
     context.read<CartBloc>().add(
           CheckoutCart(
             paymentMethod: _paymentMethod,
+            paymentAccount: paymentAccount,
             note: note,
             orderSource: 'pos',
             submittingAction: 'checkout',

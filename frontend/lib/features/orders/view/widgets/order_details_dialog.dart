@@ -112,7 +112,7 @@ class OrderDetailsDialog extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
                   children: [
-                    _buildMetaRow('Способ оплаты', order.paymentMethod == 'cash' ? 'Наличные' : 'Банковская карта / Перевод', text, subtext),
+                    _buildMetaRow('Способ оплаты', order.paymentMethodLabel, text, subtext),
                     const SizedBox(height: 10),
                     _buildMetaRow('Статус чека', _localizeStatus(order.status), _getStatusColor(order.status), subtext),
                   ],

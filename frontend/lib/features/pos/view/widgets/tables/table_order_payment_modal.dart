@@ -24,7 +24,7 @@ import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 
 class TableOrderPaymentModal extends StatefulWidget {
   final Map<String, dynamic> order;
-  final Future<void> Function(String paymentMethod) onConfirm;
+  final Future<void> Function(String paymentMethod, String paymentAccount) onConfirm;
 
   const TableOrderPaymentModal({
     super.key,
@@ -35,7 +35,7 @@ class TableOrderPaymentModal extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     required Map<String, dynamic> order,
-    required Future<void> Function(String paymentMethod) onConfirm,
+    required Future<void> Function(String paymentMethod, String paymentAccount) onConfirm,
   }) {
     return showDialog(
       context: context,
@@ -63,8 +63,8 @@ class _TableOrderPaymentModalState extends State<TableOrderPaymentModal> {
   Future<void> _handleConfirm() async {
     setState(() => _isLoading = true);
     try {
-      final method = _selectedMethod == 'transfer' ? 'transfer_$_transferProvider' : _selectedMethod;
-      await widget.onConfirm(method);
+      final account = _selectedMethod == 'transfer' ? _transferProvider : 'cash';
+      await widget.onConfirm(_selectedMethod, account);
       if (mounted) Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _isLoading = false);

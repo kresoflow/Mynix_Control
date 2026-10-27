@@ -13,6 +13,7 @@ class OrderRepository {
   Future<void> submitOrder(
     List<CartItem> items,
     String paymentMethod, {
+    String? paymentAccount,
     int? customerId,
     double? bonusSpent,
     String? note,
@@ -52,6 +53,7 @@ class OrderRepository {
     final orderData = {
       'client_uuid': clientUuid,
       'payment_method': paymentMethod.toLowerCase(),
+      if (paymentAccount != null && paymentAccount.isNotEmpty) 'payment_account': paymentAccount.toLowerCase(),
       if (customerId != null) 'customer_id': customerId,
       if (bonusSpent != null && bonusSpent > 0) 'bonus_spent': bonusSpent,
       if (note != null && note.isNotEmpty) 'note': note,
@@ -128,6 +130,7 @@ class OrderRepository {
   Future<Map<String, dynamic>> settleTableOrder(
     int orderId,
     String paymentMethod, {
+    String? paymentAccount,
     String? note,
   }) async {
     try {
@@ -135,6 +138,7 @@ class OrderRepository {
         '/orders/$orderId/settle',
         data: {
           'payment_method': paymentMethod.toLowerCase(),
+          if (paymentAccount != null && paymentAccount.isNotEmpty) 'payment_account': paymentAccount.toLowerCase(),
           if (note != null && note.isNotEmpty) 'note': note,
         },
       );
@@ -183,6 +187,7 @@ class OrderRepository {
     int orderId,
     List<Map<String, dynamic>> splitItems,
     String paymentMethod, {
+    String? paymentAccount,
     String? note,
   }) async {
     try {
@@ -191,6 +196,7 @@ class OrderRepository {
         data: {
           'items': splitItems,
           'payment_method': paymentMethod.toLowerCase(),
+          if (paymentAccount != null && paymentAccount.isNotEmpty) 'payment_account': paymentAccount.toLowerCase(),
           if (note != null && note.isNotEmpty) 'note': note,
         },
       );

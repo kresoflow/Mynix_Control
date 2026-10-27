@@ -18,17 +18,13 @@ from app.pos.services.order_table_service import (
 
 router = APIRouter(tags=["POS — Orders & Checkout"])
 
-
-
-
 class SettleOrderRequest(BaseModel):
     payment_method: str = "cash"
+    payment_account: Optional[str] = None
     note: Optional[str] = None
-
 
 class AppendOrderItemsRequest(BaseModel):
     items: list[OrderItemCreate]
-
 
 class SplitOrderItemRequest(BaseModel):
     menu_item_id: int
@@ -38,13 +34,11 @@ class SplitOrderItemRequest(BaseModel):
     item_type: Optional[str] = "dish"
     selected_options: Optional[dict] = None
 
-
 class SplitOrderRequest(BaseModel):
     items: list[SplitOrderItemRequest]
     payment_method: str = "cash"
+    payment_account: Optional[str] = None
     note: Optional[str] = None
-
-
 
 @router.post(
     "/orders/",
@@ -62,7 +56,6 @@ async def api_create_order(
     If pos: immediate deduction and kitchen notification.
     """
     return await process_new_order(session, current_user, data)
-
 
 @router.get(
     "/orders/",
@@ -99,6 +92,7 @@ async def api_list_orders(
             "order_source": o.order_source,
             "status": o.status,
             "payment_method": o.payment_method,
+            "payment_account": o.payment_account,
             "total": o.total,
             "note": o.note,
             "created_at": f"{o.created_at.isoformat()}Z" if o.created_at else None,
@@ -116,7 +110,6 @@ async def api_list_orders(
         }
         for o in orders
     ]
-
 
 @router.get(
     "/orders/{order_id}",
@@ -138,6 +131,7 @@ async def api_get_order(
         "order_source": order.order_source,
         "status": order.status,
         "payment_method": order.payment_method,
+        "payment_account": order.payment_account,
         "total": order.total,
         "note": order.note,
         "created_at": f"{order.created_at.isoformat()}Z" if order.created_at else None,
@@ -153,9 +147,6 @@ async def api_get_order(
             for oi in (order.items or [])
         ],
     }
-
-
-
 
 @router.patch(
     "/orders/{order_id}/status",
@@ -174,7 +165,6 @@ async def api_update_status(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @router.get(
     "/tables/active",
     dependencies=[Depends(require_permission(Perm.ORDERS_VIEW))],
@@ -185,7 +175,6 @@ async def api_get_active_tables(
 ):
     """Returns active hall orders grouped by table with elapsed time and items."""
     return await get_active_tables_orders(session)
-
 
 @router.post(
     "/orders/{order_id}/settle",
@@ -201,9 +190,9 @@ async def api_settle_table_order(
     return await settle_table_order(
         session, current_user, order_id,
         payment_method=body.payment_method,
+        payment_account=body.payment_account,
         note=body.note,
     )
-
 
 @router.post(
     "/orders/{order_id}/append",
@@ -220,7 +209,6 @@ async def api_append_table_order(
         session, current_user, order_id, body.items
     )
 
-
 @router.post(
     "/orders/{order_id}/split",
     dependencies=[Depends(require_permission(Perm.ORDERS_CREATE))],
@@ -236,9 +224,9 @@ async def api_split_table_order(
     return await split_table_order(
         session, current_user, order_id, split_dicts,
         payment_method=body.payment_method,
+        payment_account=body.payment_account,
         note=body.note,
     )
-
 
 @router.post(
     "/orders/{order_id}/serve",
@@ -251,6 +239,4 @@ async def api_serve_table_order(
 ):
     """Marks a dine-in table order as served (status: ready, clears dozakaz flag)."""
     return await serve_table_order(session, current_user, order_id)
-
-
 

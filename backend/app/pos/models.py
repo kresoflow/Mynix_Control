@@ -22,11 +22,9 @@ from app.pos.models_cash_operation import (
     CashOperationRead, CashOperationsSummary
 )
 
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  ENUMS
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 
 class OrderStatus(str, Enum):
     PENDING_APPROVAL = "pending_approval"  # Created from hall/waiter/QR, waiting for cashier approval
@@ -45,7 +43,6 @@ class OrderStatus(str, Enum):
                     return member
         return None
 
-
 class PaymentMethod(str, Enum):
     CASH = "cash"
     CARD = "card"
@@ -63,7 +60,6 @@ class PaymentMethod(str, Enum):
                     return member
         return None
 
-
 class CashTransactionType(str, Enum):
     INCOME = "income"         # Payment received
     EXPENSE = "expense"       # Cash expense (e.g. napkins purchase)
@@ -78,11 +74,9 @@ class CashTransactionType(str, Enum):
                     return member
         return None
 
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  SHIFT — cash register session
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 
 class Shift(TenantModel, table=True):
     """
@@ -113,11 +107,9 @@ class Shift(TenantModel, table=True):
     orders: List["Order"] = Relationship(back_populates="shift")
     cash_transactions: List["CashTransaction"] = Relationship(back_populates="shift")
 
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  ORDER — customer order
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 
 from sqlalchemy.types import TypeDecorator, String
 
@@ -161,7 +153,6 @@ class PaymentMethodType(TypeDecorator):
                 return member
         return PaymentMethod.CASH
 
-
 class Order(TenantModel, table=True):
     __tablename__ = "orders"
 
@@ -181,6 +172,7 @@ class Order(TenantModel, table=True):
         default=PaymentMethod.CASH,
         sa_column=Column(PaymentMethodType(), nullable=False, default=PaymentMethod.CASH)
     )
+    payment_account: Optional[str] = Field(default=None, max_length=30)
     bonus_spent: float = Field(default=0.0)
     total: float = Field(default=0.0)
     note: Optional[str] = Field(default=None, max_length=500)
@@ -189,11 +181,9 @@ class Order(TenantModel, table=True):
     shift: Optional[Shift] = Relationship(back_populates="orders")
     items: List["OrderItem"] = Relationship(back_populates="order")
 
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  ORDER ITEM — single line in an order
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 
 class OrderItem(SQLModel, table=True):
     __tablename__ = "order_items"
@@ -212,11 +202,9 @@ class OrderItem(SQLModel, table=True):
     # Relationships
     order: Optional[Order] = Relationship(back_populates="items")
 
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  CASH TRANSACTION — cash movement log
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 
 class CashTransaction(TenantModel, table=True):
     __tablename__ = "cash_transactions"
@@ -231,19 +219,15 @@ class CashTransaction(TenantModel, table=True):
     # Relationships
     shift: Optional[Shift] = Relationship(back_populates="cash_transactions")
 
-
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  API SCHEMAS
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-
 class OpenShiftRequest(SQLModel):
     opening_cash: float = Field(default=0.0, ge=0.0)
 
-
 class CloseShiftRequest(SQLModel):
     closing_cash_actual: float = Field(default=0.0, ge=0.0)
-
 
 class OrderItemCreate(SQLModel):
     menu_item_id: int
@@ -252,10 +236,10 @@ class OrderItemCreate(SQLModel):
     options_json: Optional[str] = None
     selected_options: Optional[dict] = None
 
-
 class CreateOrderRequest(SQLModel):
     items: list[OrderItemCreate]
     payment_method: PaymentMethod = PaymentMethod.CASH
+    payment_account: Optional[str] = None
     customer_id: Optional[int] = None
     bonus_spent: float = Field(default=0.0, ge=0.0)
     note: Optional[str] = None
@@ -263,11 +247,9 @@ class CreateOrderRequest(SQLModel):
     table_number: Optional[str] = None
     order_source: Optional[str] = "pos"
 
-
 class RecordExpenseRequest(SQLModel):
     amount: float = Field(gt=0)
     description: str
-
 
 class OrderRead(SQLModel):
     id: int
@@ -277,6 +259,7 @@ class OrderRead(SQLModel):
     order_source: Optional[str] = "pos"
     status: OrderStatus
     payment_method: PaymentMethod
+    payment_account: Optional[str] = None
     customer_id: Optional[int] = None
     customer_name: Optional[str] = None
     bonus_spent: float = 0.0
@@ -285,7 +268,6 @@ class OrderRead(SQLModel):
     created_by: int
     items: list[dict] = []
     created_at: datetime
-
 
 class ShiftRead(SQLModel):
     id: int

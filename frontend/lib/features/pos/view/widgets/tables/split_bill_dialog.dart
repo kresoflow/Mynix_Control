@@ -116,10 +116,16 @@ class _SplitBillDialogState extends State<SplitBillDialog> {
     await TableOrderPaymentModal.show(
       context,
       order: mockOrderPayload,
-      onConfirm: (paymentMethod) async {
+      onConfirm: (paymentMethod, paymentAccount) async {
         setState(() => _isProcessing = true);
         try {
-          await _orderRepo.splitOrder(orderId, items, paymentMethod);
+          await _orderRepo.splitOrder(
+            orderId,
+            items,
+            paymentMethod,
+            paymentAccount: paymentAccount,
+            note: paymentMethod == 'transfer' ? 'Перевод: ${paymentAccount.toUpperCase()}' : null,
+          );
           if (mounted) {
             AppToast.showSuccess(context, 'Чек гостя $guestIndex оплачен');
             final now = DateTime.now();

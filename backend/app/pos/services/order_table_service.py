@@ -17,7 +17,6 @@ from app.pos.services.checkout_service import format_order_dict, get_order_by_id
 from app.users.models import Tenant
 from app.exceptions import NotFoundError, ConflictError
 
-
 async def get_active_tables_orders(session: AsyncSession) -> List[dict]:
     """Returns all active, unpaid hall orders grouped by table with batches and clean aggregation."""
     active_statuses = [
@@ -82,6 +81,7 @@ async def get_active_tables_orders(session: AsyncSession) -> List[dict]:
             "order_source": o.order_source,
             "status": o.status,
             "payment_method": o.payment_method,
+            "payment_account": o.payment_account,
             "total": o.total,
             "note": o.note,
             "elapsed_minutes": elapsed_minutes,
@@ -95,12 +95,12 @@ async def get_active_tables_orders(session: AsyncSession) -> List[dict]:
 
     return tables_data
 
-
 async def settle_table_order(
     session: AsyncSession,
     current_user,
     order_id: int,
     payment_method: str,
+    payment_account: Optional[str] = None,
     note: Optional[str] = None,
 ) -> dict:
     """Settles and completes a dine-in table order (post-payment)."""
@@ -138,8 +138,17 @@ async def settle_table_order(
         ]
         await inventory_svc.deduct_ingredients(session, inventory_items, current_user.id)
 
+    clean_method = payment_method.lower()
+    inferred_account = payment_account
+    if clean_method.startswith("transfer_"):
+        inferred_account = inferred_account or clean_method.split("transfer_", 1)[1]
+        clean_method = "transfer"
+    elif clean_method == "cash":
+        inferred_account = inferred_account or "cash"
+
     order.status = OrderStatus.COMPLETED
-    order.payment_method = payment_method.lower()
+    order.payment_method = clean_method
+    order.payment_account = inferred_account
     if note:
         order.note = f"{order.note or ''} | {note}".strip(" |")
     session.add(order)
@@ -164,7 +173,6 @@ async def settle_table_order(
     await notify_inventory_updated(current_user.tenant_id)
 
     return order_data
-
 
 async def append_items_to_table_order(
     session: AsyncSession,
@@ -258,13 +266,13 @@ async def append_items_to_table_order(
     await notify_inventory_updated(current_user.tenant_id)
     return order_data
 
-
 async def split_table_order(
     session: AsyncSession,
     current_user,
     order_id: int,
     split_items: list,
     payment_method: str,
+    payment_account: Optional[str] = None,
     note: Optional[str] = None,
 ) -> dict:
     """Splits selected items from active table order and completes their payment."""
@@ -318,6 +326,14 @@ async def split_table_order(
     parent_new_total = sum(oi.subtotal for oi in remaining_items)
     order.total = round(parent_new_total, 2)
 
+    clean_split_method = payment_method.lower()
+    inferred_split_account = payment_account
+    if clean_split_method.startswith("transfer_"):
+        inferred_split_account = inferred_split_account or clean_split_method.split("transfer_", 1)[1]
+        clean_split_method = "transfer"
+    elif clean_split_method == "cash":
+        inferred_split_account = inferred_split_account or "cash"
+
     unique_uuid = f"split_{order.id}_{int(datetime.now(timezone.utc).timestamp() * 1000)}"
     child_order = Order(
         client_uuid=unique_uuid,
@@ -327,7 +343,8 @@ async def split_table_order(
         table_number=order.table_number,
         order_source="pos_split",
         status=OrderStatus.COMPLETED,
-        payment_method=payment_method.lower(),
+        payment_method=clean_split_method,
+        payment_account=inferred_split_account,
         total=round(split_total, 2),
         note=f"Раздельный чек ({order.table_number or 'Зал'}) {note or ''}".strip(),
     )
@@ -362,7 +379,6 @@ async def split_table_order(
         "is_table_fully_paid": order.status == OrderStatus.COMPLETED,
     }
 
-
 async def serve_table_order(
     session: AsyncSession,
     current_user,
@@ -388,5 +404,4 @@ async def serve_table_order(
     full_order = await get_order_by_id(session, order.id)
     order_data = format_order_dict(full_order or order, current_user.full_name)
     return order_data
-
 
