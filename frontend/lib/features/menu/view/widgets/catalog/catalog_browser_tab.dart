@@ -43,7 +43,7 @@ class CatalogBrowserTab extends StatefulWidget {
 class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
-  late final TextEditingController _searchController;
+  final TextEditingController _searchController = TextEditingController();
   List<dynamic> _navigationHistory = [];
   CategoryManageMode _manageMode = CategoryManageMode.none;
   CategoryViewMode _viewMode = CategoryViewMode.grid;
@@ -68,6 +68,12 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
   Future<void> _saveViewMode(CategoryViewMode mode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('category_view_mode', mode == CategoryViewMode.list ? 'list' : 'grid');
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   int? get _currentCategoryId => _navigationHistory.isEmpty ? null : _navigationHistory.last.id;

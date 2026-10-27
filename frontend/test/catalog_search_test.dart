@@ -4,12 +4,31 @@
 // Description: Модульные тесты фильтрации и изоляции поиска в каталоге меню.
 // ==============================================================================
 
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
+import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_browser_actions.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_browser_tab.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_header.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/models/menu_category.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+import 'package:kreso_frontend/features/pos/repository/menu_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class _FakeCategoryBloc extends Bloc<CategoryEvent, CategoryState> implements CategoryBloc {
+  _FakeCategoryBloc(super.initialState);
+  @override
+  InventoryRepository get repository => throw UnimplementedError();
+}
+
+class _FakeMenuBloc extends Bloc<MenuEvent, MenuState> implements MenuBloc {
+  _FakeMenuBloc(super.initialState);
+  @override
+  MenuRepository get menuRepository => throw UnimplementedError();
+}
 
 void main() {
   group('CatalogBrowserActions Search Tests', () {
@@ -60,7 +79,6 @@ void main() {
     });
 
     test('На вкладке блюд (dish) при поиске папки категорий скрываются', () {
-      // Ищем по запросу "шаур": папка "Шаурма" не должна попасть в выдачу на вкладке "Блюда"
       final categories = CatalogBrowserActions.filterCategories(
         catState: catState,
         categoryType: 'dish',
@@ -73,7 +91,6 @@ void main() {
     });
 
     test('На вкладке витрины (retail) при поиске папки категорий скрываются', () {
-      // Ищем по запросу "снэк": папки категорий не должны попадать в выдачу витрины
       final categories = CatalogBrowserActions.filterCategories(
         catState: catState,
         categoryType: 'retail',
@@ -86,7 +103,6 @@ void main() {
     });
 
     test('На вкладке категорий (all) поиск возвращает подходящие категории', () {
-      // На общей вкладке категорий поиск должен находить папки по имени
       final categories = CatalogBrowserActions.filterCategories(
         catState: catState,
         categoryType: 'all',
@@ -100,7 +116,6 @@ void main() {
     });
 
     test('При пустом поисковом запросе категории фильтруются по parentId', () {
-      // В корневом каталоге должны отображаться только категории с parentId == null
       final rootCategories = CatalogBrowserActions.filterCategories(
         catState: catState,
         categoryType: 'dish',
@@ -112,7 +127,6 @@ void main() {
       expect(rootCategories.length, equals(2));
       expect(rootCategories.map((c) => c.name), containsAll(['Шаурма', 'Напитки']));
 
-      // Внутри категории 1 (Шаурма) должна отображаться подкатегория parentId == 1
       final subCategories = CatalogBrowserActions.filterCategories(
         catState: catState,
         categoryType: 'dish',
@@ -131,7 +145,7 @@ void main() {
         showArchived: false,
         searchQuery: 'шаур',
         currentCategoryId: null,
-        itemFilter: (item) => item.categoryId != '3', // фильтр блюд
+        itemFilter: (item) => item.categoryId != '3',
       );
 
       expect(items.length, equals(2));
@@ -144,11 +158,42 @@ void main() {
         showArchived: false,
         searchQuery: 'шаур',
         currentCategoryId: null,
-        itemFilter: (item) => item.categoryId == '3', // фильтр витрины
+        itemFilter: (item) => item.categoryId == '3',
       );
 
       expect(items.length, equals(1));
       expect(items.first.name, equals('Чипсы со вкусом шаурмы'));
+    });
+
+    testWidgets('CatalogBrowserTab монтируется без ошибки LateInitializationError', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final catBloc = _FakeCategoryBloc(catState);
+      final menuBloc = _FakeMenuBloc(menuState);
+      addTearDown(() {
+        catBloc.close();
+        menuBloc.close();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider<CategoryBloc>.value(value: catBloc),
+              BlocProvider<MenuBloc>.value(value: menuBloc),
+            ],
+            child: CatalogBrowserTab(
+              categoryType: 'dish',
+              rootTitle: 'Все блюда',
+              itemFilter: (item) => true,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CatalogBrowserTab), findsOneWidget);
+      expect(find.byType(CatalogHeader), findsOneWidget);
+      expect(find.text('Шаурма'), findsOneWidget);
     });
   });
 }
