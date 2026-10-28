@@ -1,9 +1,9 @@
-import 'dart:convert';
 // ==============================================================================
-// МОДУЛЬ: Меню и Каталог / Диалог создания и редактирования ритейл-товара
+// МОДУЛЬ: Меню и Каталог / Диалог создания и редактирования товара витрины
 // ДОМЕН: lib/features/menu/view/widgets/catalog/dialogs/create_retail_product_dialog.dart
 // ==============================================================================
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -11,15 +11,16 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
-import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
+
 import 'create_retail_duplicate_helper.dart';
 import 'create_retail_product_form.dart';
 import 'create_retail_submit_helper.dart';
+import 'retail_product_snapshot.dart';
 
-// ─── 1. Точка входа в диалог ──────────────────────────────────────────────────
+// ─── 1. Хелпер открытия модалки ──────────────────────────────────────────────
 
 void showAddRetailProductDialog(BuildContext context, {int? currentCategoryId, MenuItem? itemToEdit}) {
   showDialog(
@@ -45,7 +46,8 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
   late final TextEditingController _sortOrderController, _sellingPriceController, _barcodeController;
   final List<Map<String, dynamic>> _variations = [];
   int? _selectedCategoryId;
-  late String _selectedUnit;
+  late String _stockUnit;
+  late String _displayUnit;
   String? _selectedIcon;
   late final RetailProductSnapshot _initialSnapshot;
 
@@ -69,28 +71,19 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
       _variations.addAll(parsedVars);
       _volumeController = TextEditingController(text: '');
     } else {
-      _volumeController = TextEditingController(text: item?.variationsSummary ?? '');
+      _volumeController = TextEditingController(text: CreateRetailSubmitHelper.parseInitialVolume(item));
     }
 
-    // Инициализация единицы измерения: из атрибутов товара либо из первой вариации
-    String detectedUnit = 'pcs';
-    final rawUnit = item?.attributes?['unit']?.toString();
-    if (rawUnit != null && rawUnit.isNotEmpty) {
-      detectedUnit = UnitFormatter.toDbKey(rawUnit, 'pcs');
-    } else if (parsedVars.isNotEmpty) {
-      final varUnit = parsedVars.first['unit']?.toString();
-      if (varUnit != null && varUnit.isNotEmpty) {
-        detectedUnit = UnitFormatter.toDbKey(varUnit, 'pcs');
-      }
-    }
-    _selectedUnit = detectedUnit;
+    final initialUnits = CreateRetailSubmitHelper.parseInitialUnits(item, parsedVars);
+    _stockUnit = initialUnits.stockUnit;
+    _displayUnit = initialUnits.displayUnit;
 
     _initialSnapshot = RetailProductSnapshot(
       name: _nameController.text.trim(), flavor: _flavorController.text.trim(),
       volume: _volumeController.text.trim(), sortOrder: _sortOrderController.text.trim(),
       price: _sellingPriceController.text.trim(), barcode: _barcodeController.text.trim(),
-      categoryId: _selectedCategoryId, unit: _selectedUnit, icon: _selectedIcon,
-      variationsJson: jsonEncode(_variations),
+      categoryId: _selectedCategoryId, stockUnit: _stockUnit, displayUnit: _displayUnit,
+      icon: _selectedIcon, variationsJson: jsonEncode(_variations),
     );
   }
 
@@ -112,17 +105,17 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
         final currentPrice = double.tryParse(_sellingPriceController.text.trim()) ?? 0.0;
         final currentBc = _barcodeController.text.trim();
         _variations.add({
-          'name': currentVol.isNotEmpty ? currentVol : '0.5 л',
+          'name': currentVol.isNotEmpty ? currentVol : '0.5',
           'price': currentPrice,
           'barcode': currentBc.isNotEmpty ? currentBc : null,
-          'unit': _selectedUnit,
+          'unit': _stockUnit,
         });
       }
       _variations.add({
         'name': '',
         'price': 0.0,
         'barcode': null,
-        'unit': _selectedUnit,
+        'unit': _stockUnit,
       });
     });
   }
@@ -156,7 +149,8 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
         currentPrice: _sellingPriceController.text.trim(),
         currentBarcode: _barcodeController.text.trim(),
         currentCategoryId: _selectedCategoryId,
-        currentUnit: _selectedUnit,
+        currentStockUnit: _stockUnit,
+        currentDisplayUnit: _displayUnit,
         currentIcon: _selectedIcon,
         currentVariations: _variations,
       );
@@ -205,7 +199,8 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
       baseBarcode: barcode,
       flavor: flavor,
       rawVolume: rawVolume,
-      selectedUnit: _selectedUnit,
+      stockUnit: _stockUnit,
+      displayUnit: _displayUnit,
       selectedIcon: _selectedIcon,
       variations: _variations,
     );
@@ -216,7 +211,7 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
       name: name,
       categoryId: _selectedCategoryId,
       sortOrder: sortOrder,
-      unit: _selectedUnit,
+      stockUnit: _stockUnit,
       payload: payload,
     );
     Navigator.pop(context);
@@ -259,7 +254,8 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
             sellingPriceController: _sellingPriceController,
             barcodeController: _barcodeController,
             selectedCategoryId: _selectedCategoryId,
-            selectedUnit: _selectedUnit,
+            selectedStockUnit: _stockUnit,
+            selectedDisplayUnit: _displayUnit,
             selectedIcon: _selectedIcon,
             duplicateMatch: duplicateMatch,
             variations: _variations,
@@ -267,12 +263,8 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
             onRemoveVariation: _removeVariation,
             onExtractVariation: _extractVariation,
             onCategoryChanged: (val) => setState(() => _selectedCategoryId = val),
-            onUnitChanged: (val) => setState(() {
-              _selectedUnit = val;
-              for (final v in _variations) {
-                v['unit'] = val;
-              }
-            }),
+            onStockUnitChanged: (val) => setState(() => _stockUnit = val),
+            onDisplayUnitChanged: (val) => setState(() => _displayUnit = val),
             onIconChanged: (icon) => setState(() => _selectedIcon = icon),
             onFieldsChanged: () => setState(() {}),
           ),

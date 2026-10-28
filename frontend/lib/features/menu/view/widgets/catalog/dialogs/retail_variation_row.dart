@@ -58,7 +58,7 @@ class RetailVariationRow extends StatelessWidget {
             child: TextFormField(
               initialValue: v['name']?.toString() ?? '',
               decoration: _inputDeco(
-                'Объем (0.5 л, 100г)',
+                'Объем (напр. 0.5, 1)',
                 prefix: Icon(PhosphorIconsRegular.package, size: 16, color: AppColors.brandPrimary),
               ),
               onChanged: (val) {
@@ -99,13 +99,17 @@ class RetailVariationRow extends StatelessWidget {
           ),
           if (onExtract != null)
             IconButton(
-              icon: Icon(PhosphorIconsRegular.arrowSquareOut, color: AppColors.brandPrimary, size: 18),
+              icon: Icon(
+                PhosphorIconsRegular.arrowSquareOut,
+                size: 18,
+                color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+              ),
               tooltip: 'Отсоединить в отдельный товар',
               onPressed: onExtract,
             ),
           IconButton(
-            icon: const Icon(PhosphorIconsRegular.trash, color: AppColors.danger, size: 18),
-            tooltip: 'Удалить',
+            icon: const Icon(PhosphorIconsRegular.x, size: 18, color: AppColors.danger),
+            tooltip: 'Удалить вариант',
             onPressed: onRemove,
           ),
         ],

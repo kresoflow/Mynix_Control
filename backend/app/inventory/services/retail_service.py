@@ -35,7 +35,7 @@ async def _process_retail_item(
     clean_attrs = dict(attributes) if attributes else None
     effective_price = float(data.get("selling_price") or 0.0)
     effective_cost = float(data.get("purchase_price") or 0.0)
-    effective_unit = str(data.get("unit") or "pcs")
+    effective_unit = str((attributes or {}).get("stock_unit") or data.get("unit") or "pcs")
     effective_barcode = data.get("barcode")
 
     if valid_vars and not has_variations:

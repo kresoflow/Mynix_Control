@@ -22,7 +22,7 @@ class RetailRowData {
     String volume = '',
     String sell = '0',
     String barcode = '',
-    this.selectedUnit = 'pcs',
+    this.selectedUnit = 'l',
     this.categoryId,
     this.categoryName,
   }) : id = id ?? UniqueKey().toString(),
@@ -127,7 +127,7 @@ class _RetailRowWidgetState extends State<RetailRowWidget> {
             width: 85,
             child: DropdownButtonFormField<String>(
               initialValue: widget.row.selectedUnit,
-              decoration: buildBulkInputDecoration(context, 'Ед. изм.'),
+              decoration: buildBulkInputDecoration(context, 'Тара'),
               isExpanded: true,
               icon: const Icon(Icons.arrow_drop_down, size: 20),
               padding: EdgeInsets.zero,

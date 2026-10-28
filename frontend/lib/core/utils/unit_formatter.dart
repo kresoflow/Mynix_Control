@@ -119,6 +119,37 @@ class UnitFormatter {
     return '$qtyStr ${format(unit)}';
   }
 
+  /// [ИНВАРИАНТ] Разделяет строку объема/фасовки (напр. "1 л", "0.5л", "250 мл", "100г")
+  /// на чистое числовое значение и нормализованный ключ единицы ('l', 'ml', 'g', 'kg', 'pcs').
+  static ({String value, String unit}) parseVolumeAndUnit(String? raw, [String defaultUnit = 'l']) {
+    if (raw == null || raw.trim().isEmpty) {
+      return (value: '', unit: defaultUnit);
+    }
+    final trimmed = raw.trim();
+    final match = RegExp(r'^([0-9]+(?:[.,][0-9]+)?)\s*(.*)$').firstMatch(trimmed);
+    if (match != null) {
+      final valStr = match.group(1)!.replaceAll(',', '.');
+      final rest = match.group(2)!.trim();
+      if (rest.isNotEmpty) {
+        final detectedKey = toDbKey(rest, defaultUnit);
+        return (value: valStr, unit: detectedKey);
+      }
+      return (value: valStr, unit: defaultUnit);
+    }
+    return (value: trimmed, unit: defaultUnit);
+  }
+
+  /// [ИНВАРИАНТ] Формирует чистую строку объема из числа и единицы (напр. "1" + "l" -> "1 л").
+  static String formatVolumeString(String? value, String? unit) {
+    if (value == null) return '';
+    final clean = value.trim();
+    if (clean.isEmpty) return '';
+    final parsed = parseVolumeAndUnit(clean, unit ?? 'l');
+    if (parsed.value.isEmpty) return clean;
+    final uLabel = format(unit ?? parsed.unit);
+    return '${parsed.value} $uLabel'.trim();
+  }
+
   // ─── 3. Генераторы элементов выпадающих списков ─────────────────────────────
 
   /// Элементы для DropdownButtonFormField, где value = ключ БД ('l', 'ml', 'kg', 'g', 'pcs')

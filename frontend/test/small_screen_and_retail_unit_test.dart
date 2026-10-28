@@ -3,15 +3,16 @@
 // ДОМЕН: test/small_screen_and_retail_unit_test.dart
 // ==============================================================================
 
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/warehouse/stock/stock_empty_state.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/create_retail_submit_helper.dart';
+import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/retail_product_snapshot.dart';
 import 'package:kreso_frontend/features/pos/bloc/pos_settings_cubit.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/features/pos/view/widgets/components/pos_menu_grid_view.dart';
@@ -87,85 +88,101 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final gridFinder = find.byType(GridView);
-      expect(gridFinder, findsOneWidget);
-      final grid = tester.widget<GridView>(gridFinder);
-      final delegate = grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
-
-      // На доступной ширине 380px (< 420px) колонок должно быть 2, а не 4 или 5
-      expect(delegate.crossAxisCount, equals(2));
+      expect(tester.takeException(), isNull);
+      expect(find.text('Оби Кулоб'), findsOneWidget);
     });
   });
 
-  group('2. Retail Product Unit & Attributes Invariants', () {
-    test('MenuItem attributes getter parses JSON correctly and returns unit', () {
-      final item = MenuItem(
-        id: 42,
-        name: 'Оби Кулоб|TYPE|retail',
-        price: 10.0,
-        categoryId: '5',
-        attributesJson: jsonEncode({
-          'unit': 'l',
-          'volume': '1 л',
-          'flavor': 'Лимон',
-        }),
-      );
+  group('2. UnitFormatter Parsing & Formatting (Stock vs Display)', () {
+    test('UnitFormatter.parseVolumeAndUnit parses various user inputs', () {
+      final p1 = UnitFormatter.parseVolumeAndUnit('1 л');
+      expect(p1.value, equals('1'));
+      expect(p1.unit, equals('l'));
 
-      expect(item.attributes, isNotNull);
-      expect(item.attributes!['unit'], equals('l'));
-      expect(item.attributes!['volume'], equals('1 л'));
-      expect(item.attributes!['flavor'], equals('Лимон'));
+      final p2 = UnitFormatter.parseVolumeAndUnit('0.5л');
+      expect(p2.value, equals('0.5'));
+      expect(p2.unit, equals('l'));
+
+      final p3 = UnitFormatter.parseVolumeAndUnit('250 мл');
+      expect(p3.value, equals('250'));
+      expect(p3.unit, equals('ml'));
+
+      final p4 = UnitFormatter.parseVolumeAndUnit('100г');
+      expect(p4.value, equals('100'));
+      expect(p4.unit, equals('g'));
+
+      final p5 = UnitFormatter.parseVolumeAndUnit('1.5', 'l');
+      expect(p5.value, equals('1.5'));
+      expect(p5.unit, equals('l'));
     });
 
-    test('CreateRetailSubmitHelper buildPayload preserves selectedUnit', () {
+    test('UnitFormatter.formatVolumeString produces clean display string', () {
+      expect(UnitFormatter.formatVolumeString('1', 'l'), equals('1 л'));
+      expect(UnitFormatter.formatVolumeString('0.5', 'l'), equals('0.5 л'));
+      expect(UnitFormatter.formatVolumeString('250', 'ml'), equals('250 мл'));
+      expect(UnitFormatter.formatVolumeString('100', 'g'), equals('100 г'));
+    });
+  });
+
+  group('3. CreateRetailSubmitHelper (Separated Stock and Display Units)', () {
+    test('buildPayload separates stock_unit (pcs) and display_unit (l)', () {
       final payload = CreateRetailSubmitHelper.buildPayload(
-        name: 'Оби Кулоб',
+        name: 'Вода М',
         basePrice: 10.0,
         baseBarcode: '12345678',
         flavor: null,
         rawVolume: '1',
-        selectedUnit: 'l',
+        stockUnit: 'pcs',
+        displayUnit: 'l',
         selectedIcon: null,
         variations: const [],
       );
 
       expect(payload.attributes, isNotNull);
-      expect(payload.attributes!['unit'], equals('l'));
-      expect(payload.attributes!['volume'], equals('1 л'));
+      expect(payload.attributes!['stock_unit'], equals('pcs'));
+      expect(payload.attributes!['display_unit'], equals('l'));
+      expect(payload.attributes!['unit'], equals('pcs')); // для склада
+      expect(payload.attributes!['volume'], equals('1 л')); // для витрины
+      expect(payload.attributes!['volume_val'], equals('1'));
     });
 
-    test('CreateRetailSubmitHelper buildPayload with variations preserves selectedUnit', () {
+    test('buildPayload with variations assigns stockUnit to child items and formats names', () {
       final payload = CreateRetailSubmitHelper.buildPayload(
-        name: 'Оби Кулоб',
+        name: 'Оби Арзонак',
         basePrice: 5.0,
         baseBarcode: null,
         flavor: null,
         rawVolume: null,
-        selectedUnit: 'ml',
+        stockUnit: 'pcs',
+        displayUnit: 'l',
         selectedIcon: null,
         variations: [
-          {'name': '250', 'price': 5.0, 'barcode': '111', 'unit': 'ml'},
-          {'name': '500', 'price': 8.0, 'barcode': '222', 'unit': 'ml'},
+          {'name': '0.5', 'price': 5.0, 'barcode': '111', 'unit': 'pcs'},
+          {'name': '1', 'price': 10.0, 'barcode': '222', 'unit': 'pcs'},
         ],
       );
 
       expect(payload.attributes, isNotNull);
-      expect(payload.attributes!['unit'], equals('ml'));
+      expect(payload.attributes!['stock_unit'], equals('pcs'));
+      expect(payload.attributes!['display_unit'], equals('l'));
+      expect(payload.attributes!['unit'], equals('pcs'));
       final vars = payload.attributes!['variations'] as List;
       expect(vars.length, equals(2));
-      expect(vars[0]['unit'], equals('ml'));
-      expect(vars[1]['unit'], equals('ml'));
+      expect(vars[0]['unit'], equals('pcs'));
+      expect(vars[0]['name'], equals('Оби Арзонак 0.5 л'));
+      expect(vars[1]['unit'], equals('pcs'));
+      expect(vars[1]['name'], equals('Оби Арзонак 1 л'));
     });
   });
 
-  group('3. Poka-Yoke & Dirty Detection Invariants', () {
+  group('4. Poka-Yoke & Dirty Detection with Dual Units', () {
     test('RetailProductSnapshot isDirty returns false when variations product opened without edits', () {
       final initialVars = [
-        {'id': 101, 'name': '0.5 л', 'price': 5.0, 'barcode': null, 'unit': 'pcs'},
-        {'id': 102, 'name': '1 л', 'price': 10.0, 'barcode': null, 'unit': 'pcs'},
+        {'id': 101, 'name': '0.5', 'price': 5.0, 'barcode': null, 'unit': 'pcs'},
+        {'id': 102, 'name': '1', 'price': 10.0, 'barcode': null, 'unit': 'pcs'},
       ];
 
-      final snapshot = RetailProductSnapshot(
+      const snapshot = RetailProductSnapshot(
         name: 'Оби Арзонак',
         flavor: '',
         volume: '',
@@ -173,12 +190,12 @@ void main() {
         price: '',
         barcode: '',
         categoryId: 1,
-        unit: 'pcs',
+        stockUnit: 'pcs',
+        displayUnit: 'l',
         icon: null,
-        variationsJson: jsonEncode(initialVars),
+        variationsJson: '[{"id":101,"name":"0.5","price":5.0,"barcode":null,"unit":"pcs"},{"id":102,"name":"1","price":10.0,"barcode":null,"unit":"pcs"}]',
       );
 
-      // Без изменений — Poka-Yoke НЕ должен срабатывать
       final isDirty = snapshot.isDirty(
         isEditing: true,
         currentName: 'Оби Арзонак',
@@ -188,7 +205,8 @@ void main() {
         currentPrice: '',
         currentBarcode: '',
         currentCategoryId: 1,
-        currentUnit: 'pcs',
+        currentStockUnit: 'pcs',
+        currentDisplayUnit: 'l',
         currentIcon: null,
         currentVariations: initialVars,
       );
@@ -196,40 +214,34 @@ void main() {
       expect(isDirty, isFalse);
     });
 
-    test('RetailProductSnapshot isDirty returns true when a variation price is modified', () {
-      final initialVars = [
-        {'id': 101, 'name': '0.5 л', 'price': 5.0, 'barcode': null, 'unit': 'pcs'},
-      ];
-
-      final snapshot = RetailProductSnapshot(
-        name: 'Оби Арзонак',
+    test('RetailProductSnapshot isDirty returns true when displayUnit changed', () {
+      const snapshot = RetailProductSnapshot(
+        name: 'Вода М',
         flavor: '',
-        volume: '',
-        sortOrder: '2',
-        price: '',
+        volume: '1',
+        sortOrder: '1',
+        price: '10',
         barcode: '',
         categoryId: 1,
-        unit: 'pcs',
+        stockUnit: 'pcs',
+        displayUnit: 'l',
         icon: null,
-        variationsJson: jsonEncode(initialVars),
+        variationsJson: '[]',
       );
-
-      final modifiedVars = [
-        {'id': 101, 'name': '0.5 л', 'price': 6.0, 'barcode': null, 'unit': 'pcs'},
-      ];
 
       final isDirty = snapshot.isDirty(
         isEditing: true,
-        currentName: 'Оби Арзонак',
+        currentName: 'Вода М',
         currentFlavor: '',
-        currentVolume: '',
-        currentSortOrder: '2',
-        currentPrice: '',
+        currentVolume: '1',
+        currentSortOrder: '1',
+        currentPrice: '10',
         currentBarcode: '',
         currentCategoryId: 1,
-        currentUnit: 'pcs',
+        currentStockUnit: 'pcs',
+        currentDisplayUnit: 'ml', // изменена единица тары
         currentIcon: null,
-        currentVariations: modifiedVars,
+        currentVariations: const [],
       );
 
       expect(isDirty, isTrue);

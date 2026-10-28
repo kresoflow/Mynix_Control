@@ -222,6 +222,9 @@ class MenuItem extends Equatable {
     return null;
   }
 
+  String get stockUnit => attributes?['stock_unit']?.toString() ?? attributes?['unit']?.toString() ?? 'pcs';
+  String get displayUnit => attributes?['display_unit']?.toString() ?? attributes?['unit']?.toString() ?? 'pcs';
+
   bool get hasModifiers {
     if (attributesJson != null && attributesJson!.isNotEmpty) {
       try {

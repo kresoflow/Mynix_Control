@@ -1,46 +1,40 @@
 // ==============================================================================
-// МОДУЛЬ: Меню и Каталог / Поля формы ритейл-товара
+// МОДУЛЬ: Меню и Каталог / Разметка формы ритейл-товара
 // ДОМЕН: lib/features/menu/view/widgets/catalog/dialogs/create_retail_product_form.dart
 // ==============================================================================
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/icon_picker_field.dart';
-import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
-import 'package:kreso_frontend/features/menu/view/widgets/catalog/dialogs/duplicate_warning_chip.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/features/settings/bloc/settings_bloc.dart';
+import 'duplicate_warning_chip.dart';
 import 'create_retail_product_dialog.dart';
 import 'retail_variation_row.dart';
 
 // ─── 1. Виджет полей формы ритейл-товара ──────────────────────────────────────
 
 class CreateRetailProductForm extends StatelessWidget {
-  final TextEditingController nameController;
-  final TextEditingController flavorController;
-  final TextEditingController volumeController;
-  final TextEditingController sortOrderController;
-  final TextEditingController sellingPriceController;
-  final TextEditingController barcodeController;
+  final TextEditingController nameController, flavorController, volumeController;
+  final TextEditingController sortOrderController, sellingPriceController, barcodeController;
   final int? selectedCategoryId;
-  final String selectedUnit;
+  final String selectedStockUnit, selectedDisplayUnit;
   final String? selectedIcon;
   final DuplicateMatch<MenuItem>? duplicateMatch;
   final List<Map<String, dynamic>> variations;
-  final VoidCallback onAddVariation;
+  final VoidCallback onAddVariation, onFieldsChanged;
   final void Function(int) onRemoveVariation;
   final void Function(int)? onExtractVariation;
   final ValueChanged<int?> onCategoryChanged;
-  final ValueChanged<String> onUnitChanged;
+  final ValueChanged<String> onStockUnitChanged, onDisplayUnitChanged;
   final ValueChanged<String?> onIconChanged;
-  final VoidCallback onFieldsChanged;
 
   const CreateRetailProductForm({
     super.key,
@@ -51,7 +45,8 @@ class CreateRetailProductForm extends StatelessWidget {
     required this.sellingPriceController,
     required this.barcodeController,
     required this.selectedCategoryId,
-    required this.selectedUnit,
+    required this.selectedStockUnit,
+    required this.selectedDisplayUnit,
     required this.selectedIcon,
     required this.duplicateMatch,
     required this.variations,
@@ -59,20 +54,13 @@ class CreateRetailProductForm extends StatelessWidget {
     required this.onRemoveVariation,
     this.onExtractVariation,
     required this.onCategoryChanged,
-    required this.onUnitChanged,
+    required this.onStockUnitChanged,
+    required this.onDisplayUnitChanged,
     required this.onIconChanged,
     required this.onFieldsChanged,
   });
 
-  InputDecoration _deco(
-    String label,
-    bool isDark, {
-    Widget? prefix,
-    String? suffix,
-    String? hint,
-    bool isDense = false,
-    EdgeInsetsGeometry? contentPadding,
-  }) => InputDecoration(
+  InputDecoration _deco(String label, bool isDark, {Widget? prefix, String? suffix, String? hint, bool isDense = false, EdgeInsetsGeometry? contentPadding}) => InputDecoration(
     labelText: label,
     hintText: hint,
     prefixIcon: prefix,
@@ -146,39 +134,35 @@ class CreateRetailProductForm extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  'Фасовки и объемы (Серия)',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                  ),
-                ),
+                child: Text('Фасовки (Серия)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkText : AppColors.lightText)),
               ),
               SizedBox(
-                width: 85,
+                width: 95,
                 child: DropdownButtonFormField<String>(
-                  initialValue: selectedUnit,
+                  initialValue: selectedStockUnit,
                   isDense: true,
                   isExpanded: true,
                   dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                  decoration: _deco(
-                    'Ед. изм.',
-                    isDark,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  ),
+                  decoration: _deco('Склад', isDark, isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
                   items: UnitFormatter.dropdownItems,
-                  onChanged: (val) => val != null ? onUnitChanged(val) : null,
+                  onChanged: (val) => val != null ? onStockUnitChanged(val) : null,
                 ),
               ),
               const SizedBox(width: 8),
-              AppGhostButton(
-                label: 'Добавить',
-                icon: PhosphorIconsRegular.plus,
-                size: AppButtonSize.sm,
-                onPressed: onAddVariation,
+              SizedBox(
+                width: 95,
+                child: DropdownButtonFormField<String>(
+                  initialValue: selectedDisplayUnit,
+                  isDense: true,
+                  isExpanded: true,
+                  dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  decoration: _deco('Тара', isDark, isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+                  items: UnitFormatter.dropdownItems,
+                  onChanged: (val) => val != null ? onDisplayUnitChanged(val) : null,
+                ),
               ),
+              const SizedBox(width: 8),
+              AppGhostButton(label: 'Добавить', icon: PhosphorIconsRegular.plus, size: AppButtonSize.sm, onPressed: onAddVariation),
             ],
           ),
           const SizedBox(height: 8),
@@ -188,10 +172,8 @@ class CreateRetailProductForm extends StatelessWidget {
             isDark: isDark,
             onRemove: () => onRemoveVariation(entry.key),
             onFieldsChanged: onFieldsChanged,
-            onExtract: entry.value['id'] != null && onExtractVariation != null
-                ? () => onExtractVariation!(entry.key)
-                : null,
-          ),),
+            onExtract: entry.value['id'] != null && onExtractVariation != null ? () => onExtractVariation!(entry.key) : null,
+          )),
         ] else ...[
           const SizedBox(height: 16),
           Row(
@@ -201,6 +183,7 @@ class CreateRetailProductForm extends StatelessWidget {
                 child: TextFormField(
                   controller: sellingPriceController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) => onFieldsChanged(),
                   decoration: _deco('Цена продажи на кассе', isDark, suffix: currency, prefix: Icon(PhosphorIconsRegular.tag, color: AppColors.brandPrimary)),
                 ),
               ),
@@ -208,12 +191,12 @@ class CreateRetailProductForm extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: DropdownButtonFormField<String>(
-                  initialValue: selectedUnit,
+                  initialValue: selectedStockUnit,
                   isExpanded: true,
                   dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                  decoration: _deco('Ед. изм.', isDark, prefix: Icon(PhosphorIconsRegular.scales, size: 18, color: AppColors.brandPrimary)),
+                  decoration: _deco('Ед. склада', isDark, prefix: Icon(PhosphorIconsRegular.scales, size: 18, color: AppColors.brandPrimary)),
                   items: UnitFormatter.dropdownItems,
-                  onChanged: (val) => val != null ? onUnitChanged(val) : null,
+                  onChanged: (val) => val != null ? onStockUnitChanged(val) : null,
                 ),
               ),
             ],
@@ -222,18 +205,27 @@ class CreateRetailProductForm extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                flex: 3,
                 child: TextFormField(
                   controller: volumeController,
                   onChanged: (_) => onFieldsChanged(),
-                  decoration: _deco('Объем / фасовка (0.5л, 100г)', isDark, prefix: Icon(PhosphorIconsRegular.package, color: AppColors.brandPrimary)),
+                  decoration: _deco('Объем / фасовка (напр. 1, 0.5)', isDark, prefix: Icon(PhosphorIconsRegular.package, color: AppColors.brandPrimary)),
                 ),
               ),
               const SizedBox(width: 8),
-              AppGhostButton(
-                onPressed: onAddVariation,
-                icon: PhosphorIconsRegular.plus,
-                label: 'Серия объемов',
+              SizedBox(
+                width: 100,
+                child: DropdownButtonFormField<String>(
+                  initialValue: selectedDisplayUnit,
+                  isExpanded: true,
+                  dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  decoration: _deco('Ед. тары', isDark, prefix: Icon(PhosphorIconsRegular.drop, size: 16, color: AppColors.brandPrimary)),
+                  items: UnitFormatter.dropdownItems,
+                  onChanged: (val) => val != null ? onDisplayUnitChanged(val) : null,
+                ),
               ),
+              const SizedBox(width: 8),
+              AppGhostButton(onPressed: onAddVariation, icon: PhosphorIconsRegular.plus, label: 'Серия'),
             ],
           ),
           const SizedBox(height: 16),
@@ -250,18 +242,15 @@ class CreateRetailProductForm extends StatelessWidget {
               child: TextFormField(
                 controller: sortOrderController,
                 keyboardType: TextInputType.number,
+                onChanged: (_) => onFieldsChanged(),
                 decoration: _deco('Порядок в меню', isDark, hint: '1, 2, 3... (пусто = авто)', prefix: Icon(PhosphorIconsRegular.sortAscending, color: AppColors.brandPrimary)),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        IconPickerField(
-          selectedIcon: selectedIcon,
-          onIconSelected: onIconChanged,
-        ),
+        IconPickerField(selectedIcon: selectedIcon, onIconSelected: onIconChanged),
       ],
     );
   }
 }
-

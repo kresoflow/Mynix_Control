@@ -63,7 +63,6 @@ async def create_menu_item(session: AsyncSession, data: dict) -> MenuItem:
     items = await bulk_create_menu_items(session, [data])
     return items[0]
 
-
 async def delete_menu_item(session: AsyncSession, item_id: int, mode: str = "soft") -> dict:
     stmt = select(MenuItem).order_by(MenuItem.sort_order, MenuItem.id).where(MenuItem.id == item_id)
     result = await session.execute(stmt)
@@ -135,7 +134,6 @@ async def delete_menu_item(session: AsyncSession, item_id: int, mode: str = "sof
     await cascade_menu_item_availability(session, item, False)
     await session.flush()
     return {"status": "archived", "message": "Товар заархивирован."}
-
 
 async def restore_menu_item(session: AsyncSession, item_id: int) -> MenuItem:
     """
@@ -265,10 +263,11 @@ async def update_menu_item(session: AsyncSession, menu_item_id: int, data: dict)
             if "attributes" in data and data["attributes"] is not None:
                 rp.attributes = data["attributes"]
                 flag_modified(rp, "attributes")
-                if "unit" in data["attributes"] and data["attributes"]["unit"]:
+                stock_u = data["attributes"].get("stock_unit") or data["attributes"].get("unit")
+                if stock_u:
                     try:
                         from app.inventory.models.enums import UnitType
-                        rp.unit = UnitType(str(data["attributes"]["unit"]).lower())
+                        rp.unit = UnitType(str(stock_u).lower())
                     except ValueError:
                         pass
             session.add(rp)

@@ -1,4 +1,3 @@
-import 'dart:convert';
 // ==============================================================================
 // МОДУЛЬ: Меню и Каталог / Хелпер сборки полезной нагрузки ритейл-товара
 // ДОМЕН: lib/features/menu/view/widgets/catalog/dialogs/create_retail_submit_helper.dart
@@ -27,6 +26,7 @@ class CreateRetailSubmitPayload {
 }
 
 class CreateRetailSubmitHelper {
+  /// Извлекает вариации с разделением на чистое числовое значение и единицу.
   static List<Map<String, dynamic>> parseInitialVariations(MenuItem? item) {
     if (item?.variations == null || item!.variations!.isEmpty) return [];
     final result = <Map<String, dynamic>>[];
@@ -42,10 +42,12 @@ class CreateRetailSubmitHelper {
       } else if (prefix2.isNotEmpty && varName.toLowerCase().startsWith(prefix2)) {
         varName = varName.substring(prefix2.length).trim();
       }
+      final parsed = UnitFormatter.parseVolumeAndUnit(varName);
+      final displayName = parsed.value.isNotEmpty ? parsed.value : varName;
       result.add({
         'id': rawMap['id'],
         'retail_product_id': rawMap['retail_product_id'],
-        'name': varName.isNotEmpty ? varName : (rawMap['name']?.toString() ?? ''),
+        'name': displayName.isNotEmpty ? displayName : (rawMap['name']?.toString() ?? ''),
         'price': (rawMap['price'] is num)
             ? (rawMap['price'] as num).toDouble()
             : (double.tryParse(rawMap['price']?.toString() ?? '') ?? 0.0),
@@ -54,6 +56,41 @@ class CreateRetailSubmitHelper {
       });
     }
     return result;
+  }
+
+  /// [ИНВАРИАНТ] Определяет начальные единицы: складскую (ШТ) и единицу тары/показа (Л).
+  static ({String stockUnit, String displayUnit}) parseInitialUnits(MenuItem? item, List<Map<String, dynamic>> parsedVars) {
+    String stockUnit = 'pcs';
+    final rawStock = item?.attributes?['stock_unit'] ?? item?.attributes?['unit'];
+    if (rawStock != null && rawStock.toString().trim().isNotEmpty) {
+      stockUnit = UnitFormatter.toDbKey(rawStock.toString(), 'pcs');
+    }
+
+    String displayUnit = 'l';
+    final rawDisplay = item?.attributes?['display_unit'];
+    if (rawDisplay != null && rawDisplay.toString().trim().isNotEmpty) {
+      displayUnit = UnitFormatter.toDbKey(rawDisplay.toString(), 'l');
+    } else {
+      final vol = item?.attributes?['volume']?.toString() ?? item?.variationsSummary;
+      if (vol != null && vol.isNotEmpty) {
+        final parsed = UnitFormatter.parseVolumeAndUnit(vol, 'l');
+        if (parsed.unit.isNotEmpty) displayUnit = parsed.unit;
+      } else if (parsedVars.isNotEmpty) {
+        final varUnit = parsedVars.first['unit']?.toString();
+        if (varUnit != null && varUnit.isNotEmpty && varUnit != 'pcs') {
+          displayUnit = UnitFormatter.toDbKey(varUnit, 'l');
+        }
+      }
+    }
+    return (stockUnit: stockUnit, displayUnit: displayUnit);
+  }
+
+  /// Извлекает числовой объем без буквы (например "1" из "1 л").
+  static String parseInitialVolume(MenuItem? item) {
+    if (item == null) return '';
+    final rawVol = item.attributes?['volume_val']?.toString() ?? item.attributes?['volume']?.toString() ?? item.variationsSummary ?? '';
+    final parsed = UnitFormatter.parseVolumeAndUnit(rawVol);
+    return parsed.value.isNotEmpty ? parsed.value : rawVol;
   }
 
   static void showExtractVariationDialog(
@@ -89,27 +126,13 @@ class CreateRetailSubmitHelper {
     );
   }
 
-  static String formatVolume(String volume, String unit) {
-    final clean = volume.trim();
-    if (clean.isEmpty) return '';
-    if (clean.contains(RegExp(r'[а-яА-Яa-zA-Z]'))) {
-      return clean;
-    }
-    final uLabel = UnitFormatter.format(unit);
-    if (uLabel.isNotEmpty) {
-      return '$clean $uLabel'.trim();
-    }
-    return clean;
-  }
-
-
   static void dispatchSubmit({
     required BuildContext context,
     required MenuItem? item,
     required String name,
     required int? categoryId,
     required int sortOrder,
-    required String unit,
+    required String stockUnit,
     required CreateRetailSubmitPayload payload,
   }) {
     if (item != null) {
@@ -131,7 +154,7 @@ class CreateRetailSubmitHelper {
             CreateRetailProduct(
               name: name,
               categoryId: categoryId,
-              unit: unit,
+              unit: stockUnit,
               purchasePrice: 0.0,
               sellingPrice: payload.effectivePrice,
               sortOrder: sortOrder,
@@ -148,11 +171,13 @@ class CreateRetailSubmitHelper {
     required String? baseBarcode,
     required String? flavor,
     required String? rawVolume,
-    required String selectedUnit,
+    required String stockUnit,
+    required String displayUnit,
     required String? selectedIcon,
     required List<Map<String, dynamic>> variations,
   }) {
-    final formattedVol = rawVolume != null ? formatVolume(rawVolume, selectedUnit) : null;
+    final cleanVolVal = rawVolume?.trim() ?? '';
+    final formattedVol = cleanVolVal.isNotEmpty ? UnitFormatter.formatVolumeString(cleanVolVal, displayUnit) : null;
     Map<String, dynamic>? attributes;
     double effectivePrice = basePrice;
     String? effectiveBarcode = baseBarcode;
@@ -166,13 +191,13 @@ class CreateRetailSubmitHelper {
             : (double.tryParse(v['price']?.toString() ?? '') ?? 0.0);
         final vBarcode = v['barcode']?.toString().trim();
         if (rawVName.isNotEmpty) {
-          final vName = formatVolume(rawVName, selectedUnit);
+          final vName = UnitFormatter.formatVolumeString(rawVName, displayUnit);
           final fullName = [name, if (flavor != null) flavor, vName].join(' ');
           validVars.add({
             if (v['id'] != null) 'id': v['id'],
             if (v['retail_product_id'] != null) 'retail_product_id': v['retail_product_id'],
             'name': fullName,
-            'unit': selectedUnit,
+            'unit': stockUnit,
             'price': vPrice,
             'selling_price': vPrice,
             'purchase_price': 0.0,
@@ -188,11 +213,14 @@ class CreateRetailSubmitHelper {
       attributes = {
         if (selectedIcon != null) 'icon': 'icon:$selectedIcon',
         if (flavor != null) 'flavor': flavor,
-        'unit': selectedUnit,
+        'stock_unit': stockUnit,
+        'display_unit': displayUnit,
+        'unit': stockUnit,
         'variations': validVars,
       };
     } else {
       String? singleVol = formattedVol;
+      String? singleVolVal = cleanVolVal;
       if (validVars.length == 1) {
         final sVar = validVars.first;
         effectivePrice = sVar['price'] as double;
@@ -201,13 +229,17 @@ class CreateRetailSubmitHelper {
           effectiveBarcode = sBc;
         }
         final matchingRow = variations.firstWhere((v) => (v['name']?.toString().trim().isNotEmpty ?? false));
-        singleVol = formatVolume(matchingRow['name'].toString(), selectedUnit);
+        singleVolVal = matchingRow['name'].toString().trim();
+        singleVol = UnitFormatter.formatVolumeString(singleVolVal, displayUnit);
       }
       attributes = {
         if (selectedIcon != null) 'icon': 'icon:$selectedIcon',
         if (flavor != null) 'flavor': flavor,
         if (singleVol != null && singleVol.isNotEmpty) 'volume': singleVol,
-        'unit': selectedUnit,
+        if (singleVolVal.isNotEmpty) 'volume_val': singleVolVal,
+        'stock_unit': stockUnit,
+        'display_unit': displayUnit,
+        'unit': stockUnit,
       };
     }
 
@@ -216,75 +248,5 @@ class CreateRetailSubmitHelper {
       effectivePrice: effectivePrice,
       effectiveBarcode: effectiveBarcode,
     );
-  }
-}
-
-class RetailProductSnapshot {
-  final String name;
-  final String flavor;
-  final String volume;
-  final String sortOrder;
-  final String price;
-  final String barcode;
-  final int? categoryId;
-  final String unit;
-  final String? icon;
-  final String variationsJson;
-
-  const RetailProductSnapshot({
-    required this.name,
-    required this.flavor,
-    required this.volume,
-    required this.sortOrder,
-    required this.price,
-    required this.barcode,
-    required this.categoryId,
-    required this.unit,
-    required this.icon,
-    required this.variationsJson,
-  });
-
-  bool isDirty({
-    required bool isEditing,
-    required String currentName,
-    required String currentFlavor,
-    required String currentVolume,
-    required String currentSortOrder,
-    required String currentPrice,
-    required String currentBarcode,
-    required int? currentCategoryId,
-    required String currentUnit,
-    required String? currentIcon,
-    required List<Map<String, dynamic>> currentVariations,
-  }) {
-    if (!isEditing) {
-      return currentName.isNotEmpty ||
-          currentFlavor.isNotEmpty ||
-          currentVolume.isNotEmpty ||
-          currentSortOrder.isNotEmpty ||
-          currentPrice.isNotEmpty ||
-          currentBarcode.isNotEmpty ||
-          currentVariations.isNotEmpty ||
-          currentCategoryId != categoryId ||
-          currentUnit != unit ||
-          currentIcon != icon;
-    }
-
-    if (currentName != name) return true;
-    if (currentFlavor != flavor) return true;
-    if (currentSortOrder != sortOrder) return true;
-    if (currentBarcode != barcode) return true;
-    if (currentCategoryId != categoryId) return true;
-    if (currentUnit != unit) return true;
-    if (currentIcon != icon) return true;
-
-    if (currentVariations.isNotEmpty || variationsJson != '[]') {
-      return jsonEncode(currentVariations) != variationsJson;
-    }
-
-    if (currentVolume != volume) return true;
-    if (currentPrice != price) return true;
-
-    return false;
   }
 }

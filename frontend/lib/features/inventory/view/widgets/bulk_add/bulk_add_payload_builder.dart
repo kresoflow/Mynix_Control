@@ -162,6 +162,10 @@ List<Map<String, dynamic>> buildRetailPayload({
           'icon': 'package',
           if (flavor.isNotEmpty) 'flavor': flavor,
           if (vol != null && vol.isNotEmpty) 'volume': vol,
+          if (volumes.isNotEmpty && volumes.first.isNotEmpty) 'volume_val': volumes.first,
+          'stock_unit': 'pcs',
+          'display_unit': row.selectedUnit,
+          'unit': 'pcs',
         };
 
         items.add({
@@ -213,6 +217,9 @@ List<Map<String, dynamic>> buildRetailPayload({
         'attributes': {
           'icon': 'package',
           if (flavor.isNotEmpty) 'flavor': flavor,
+          'stock_unit': 'pcs',
+          'display_unit': row.selectedUnit,
+          'unit': 'pcs',
           'variations': variations,
         },
       });

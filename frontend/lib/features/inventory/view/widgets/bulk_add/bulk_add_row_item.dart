@@ -69,6 +69,7 @@ class _BulkAddRowItemState extends State<BulkAddRowItem> {
       oldWidget.controller.removeListener(_onBatchChanged);
       widget.controller.addListener(_onBatchChanged);
     }
+    setState(() {});
   }
 
   @override
