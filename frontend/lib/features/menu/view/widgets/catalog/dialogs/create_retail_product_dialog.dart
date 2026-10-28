@@ -1,3 +1,4 @@
+import 'dart:convert';
 // ==============================================================================
 // МОДУЛЬ: Меню и Каталог / Диалог создания и редактирования ритейл-товара
 // ДОМЕН: lib/features/menu/view/widgets/catalog/dialogs/create_retail_product_dialog.dart
@@ -40,17 +41,13 @@ class CreateRetailProductDialog extends StatefulWidget {
 }
 
 class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _flavorController;
-  late final TextEditingController _volumeController;
-  late final TextEditingController _sortOrderController;
-  late final TextEditingController _sellingPriceController;
-  late final TextEditingController _barcodeController;
+  late final TextEditingController _nameController, _flavorController, _volumeController;
+  late final TextEditingController _sortOrderController, _sellingPriceController, _barcodeController;
   final List<Map<String, dynamic>> _variations = [];
   int? _selectedCategoryId;
   late String _selectedUnit;
-  late final String _initialUnit;
   String? _selectedIcon;
+  late final RetailProductSnapshot _initialSnapshot;
 
   @override
   void initState() {
@@ -67,12 +64,6 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
     if (_selectedCategoryId == 0) _selectedCategoryId = null;
     _selectedIcon = item?.icon;
 
-    final rawUnit = item?.attributes?['unit']?.toString();
-    _initialUnit = (rawUnit != null && rawUnit.isNotEmpty)
-        ? UnitFormatter.toDbKey(rawUnit, 'pcs')
-        : 'pcs';
-    _selectedUnit = _initialUnit;
-
     final parsedVars = CreateRetailSubmitHelper.parseInitialVariations(item);
     if (parsedVars.isNotEmpty) {
       _variations.addAll(parsedVars);
@@ -80,6 +71,27 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
     } else {
       _volumeController = TextEditingController(text: item?.variationsSummary ?? '');
     }
+
+    // Инициализация единицы измерения: из атрибутов товара либо из первой вариации
+    String detectedUnit = 'pcs';
+    final rawUnit = item?.attributes?['unit']?.toString();
+    if (rawUnit != null && rawUnit.isNotEmpty) {
+      detectedUnit = UnitFormatter.toDbKey(rawUnit, 'pcs');
+    } else if (parsedVars.isNotEmpty) {
+      final varUnit = parsedVars.first['unit']?.toString();
+      if (varUnit != null && varUnit.isNotEmpty) {
+        detectedUnit = UnitFormatter.toDbKey(varUnit, 'pcs');
+      }
+    }
+    _selectedUnit = detectedUnit;
+
+    _initialSnapshot = RetailProductSnapshot(
+      name: _nameController.text.trim(), flavor: _flavorController.text.trim(),
+      volume: _volumeController.text.trim(), sortOrder: _sortOrderController.text.trim(),
+      price: _sellingPriceController.text.trim(), barcode: _barcodeController.text.trim(),
+      categoryId: _selectedCategoryId, unit: _selectedUnit, icon: _selectedIcon,
+      variationsJson: jsonEncode(_variations),
+    );
   }
 
   @override
@@ -135,21 +147,19 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
     );
   }
 
-  bool _isDirty() {
-    final item = widget.itemToEdit;
-    final parsedCat = (item?.categoryId != null && item!.categoryId != '0') ? int.tryParse(item.categoryId) : null;
-    final initialCat = widget.currentCategoryId ?? parsedCat;
-    if (_variations.isNotEmpty && (item == null || item.variations == null || item.variations!.isEmpty)) return true;
-    return _nameController.text.trim() != (item?.cleanName ?? '') ||
-        _flavorController.text.trim() != (item?.flavorString ?? '') ||
-        _volumeController.text.trim() != (item?.variationsSummary ?? '') ||
-        _sortOrderController.text.trim() != ((item != null && item.sortOrder > 0) ? item.sortOrder.toString() : '') ||
-        _sellingPriceController.text.trim() != (item != null ? (item.price % 1 == 0 ? item.price.toInt().toString() : item.price.toString()) : '') ||
-        _barcodeController.text.trim() != (item?.barcode ?? '') ||
-        _selectedCategoryId != (initialCat == 0 ? null : initialCat) ||
-        _selectedUnit != _initialUnit ||
-        _selectedIcon != item?.icon;
-  }
+  bool _isDirty() => _initialSnapshot.isDirty(
+        isEditing: widget.itemToEdit != null,
+        currentName: _nameController.text.trim(),
+        currentFlavor: _flavorController.text.trim(),
+        currentVolume: _volumeController.text.trim(),
+        currentSortOrder: _sortOrderController.text.trim(),
+        currentPrice: _sellingPriceController.text.trim(),
+        currentBarcode: _barcodeController.text.trim(),
+        currentCategoryId: _selectedCategoryId,
+        currentUnit: _selectedUnit,
+        currentIcon: _selectedIcon,
+        currentVariations: _variations,
+      );
 
   void _submit() {
     final name = _nameController.text.trim();
@@ -200,34 +210,15 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
       variations: _variations,
     );
 
-    if (item != null) {
-      context.read<MenuBloc>().add(
-            UpdateMenuItem(
-              item.id,
-              {
-                'name': name,
-                'price': payload.effectivePrice,
-                'category_id': _selectedCategoryId,
-                'sort_order': sortOrder,
-                'barcode': payload.effectiveBarcode,
-                'attributes': payload.attributes,
-              },
-            ),
-          );
-    } else {
-      context.read<MenuBloc>().add(
-            CreateRetailProduct(
-              name: name,
-              categoryId: _selectedCategoryId,
-              unit: _selectedUnit,
-              purchasePrice: 0.0,
-              sellingPrice: payload.effectivePrice,
-              sortOrder: sortOrder,
-              barcode: payload.effectiveBarcode,
-              attributes: payload.attributes,
-            ),
-          );
-    }
+    CreateRetailSubmitHelper.dispatchSubmit(
+      context: context,
+      item: item,
+      name: name,
+      categoryId: _selectedCategoryId,
+      sortOrder: sortOrder,
+      unit: _selectedUnit,
+      payload: payload,
+    );
     Navigator.pop(context);
   }
 
@@ -276,7 +267,12 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
             onRemoveVariation: _removeVariation,
             onExtractVariation: _extractVariation,
             onCategoryChanged: (val) => setState(() => _selectedCategoryId = val),
-            onUnitChanged: (val) => setState(() => _selectedUnit = val),
+            onUnitChanged: (val) => setState(() {
+              _selectedUnit = val;
+              for (final v in _variations) {
+                v['unit'] = val;
+              }
+            }),
             onIconChanged: (icon) => setState(() => _selectedIcon = icon),
             onFieldsChanged: () => setState(() {}),
           ),

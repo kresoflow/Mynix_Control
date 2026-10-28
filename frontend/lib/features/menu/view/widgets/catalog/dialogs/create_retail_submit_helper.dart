@@ -1,3 +1,4 @@
+import 'dart:convert';
 // ==============================================================================
 // МОДУЛЬ: Меню и Каталог / Хелпер сборки полезной нагрузки ритейл-товара
 // ДОМЕН: lib/features/menu/view/widgets/catalog/dialogs/create_retail_submit_helper.dart
@@ -101,6 +102,46 @@ class CreateRetailSubmitHelper {
     return clean;
   }
 
+
+  static void dispatchSubmit({
+    required BuildContext context,
+    required MenuItem? item,
+    required String name,
+    required int? categoryId,
+    required int sortOrder,
+    required String unit,
+    required CreateRetailSubmitPayload payload,
+  }) {
+    if (item != null) {
+      context.read<MenuBloc>().add(
+            UpdateMenuItem(
+              item.id,
+              {
+                'name': name,
+                'price': payload.effectivePrice,
+                'category_id': categoryId,
+                'sort_order': sortOrder,
+                'barcode': payload.effectiveBarcode,
+                'attributes': payload.attributes,
+              },
+            ),
+          );
+    } else {
+      context.read<MenuBloc>().add(
+            CreateRetailProduct(
+              name: name,
+              categoryId: categoryId,
+              unit: unit,
+              purchasePrice: 0.0,
+              sellingPrice: payload.effectivePrice,
+              sortOrder: sortOrder,
+              barcode: payload.effectiveBarcode,
+              attributes: payload.attributes,
+            ),
+          );
+    }
+  }
+
   static CreateRetailSubmitPayload buildPayload({
     required String name,
     required double basePrice,
@@ -147,6 +188,7 @@ class CreateRetailSubmitHelper {
       attributes = {
         if (selectedIcon != null) 'icon': 'icon:$selectedIcon',
         if (flavor != null) 'flavor': flavor,
+        'unit': selectedUnit,
         'variations': validVars,
       };
     } else {
@@ -174,5 +216,75 @@ class CreateRetailSubmitHelper {
       effectivePrice: effectivePrice,
       effectiveBarcode: effectiveBarcode,
     );
+  }
+}
+
+class RetailProductSnapshot {
+  final String name;
+  final String flavor;
+  final String volume;
+  final String sortOrder;
+  final String price;
+  final String barcode;
+  final int? categoryId;
+  final String unit;
+  final String? icon;
+  final String variationsJson;
+
+  const RetailProductSnapshot({
+    required this.name,
+    required this.flavor,
+    required this.volume,
+    required this.sortOrder,
+    required this.price,
+    required this.barcode,
+    required this.categoryId,
+    required this.unit,
+    required this.icon,
+    required this.variationsJson,
+  });
+
+  bool isDirty({
+    required bool isEditing,
+    required String currentName,
+    required String currentFlavor,
+    required String currentVolume,
+    required String currentSortOrder,
+    required String currentPrice,
+    required String currentBarcode,
+    required int? currentCategoryId,
+    required String currentUnit,
+    required String? currentIcon,
+    required List<Map<String, dynamic>> currentVariations,
+  }) {
+    if (!isEditing) {
+      return currentName.isNotEmpty ||
+          currentFlavor.isNotEmpty ||
+          currentVolume.isNotEmpty ||
+          currentSortOrder.isNotEmpty ||
+          currentPrice.isNotEmpty ||
+          currentBarcode.isNotEmpty ||
+          currentVariations.isNotEmpty ||
+          currentCategoryId != categoryId ||
+          currentUnit != unit ||
+          currentIcon != icon;
+    }
+
+    if (currentName != name) return true;
+    if (currentFlavor != flavor) return true;
+    if (currentSortOrder != sortOrder) return true;
+    if (currentBarcode != barcode) return true;
+    if (currentCategoryId != categoryId) return true;
+    if (currentUnit != unit) return true;
+    if (currentIcon != icon) return true;
+
+    if (currentVariations.isNotEmpty || variationsJson != '[]') {
+      return jsonEncode(currentVariations) != variationsJson;
+    }
+
+    if (currentVolume != volume) return true;
+    if (currentPrice != price) return true;
+
+    return false;
   }
 }

@@ -76,7 +76,7 @@ void main() {
                 height: 600,
                 child: PosMenuGridView(
                   categories: const [],
-                  items: [dummyItem],
+                  items: const [dummyItem],
                   posSettings: posSettingsCubit.state,
                   onCategoryTap: (_) {},
                 ),
@@ -126,7 +126,7 @@ void main() {
         rawVolume: '1',
         selectedUnit: 'l',
         selectedIcon: null,
-        variations: [],
+        variations: const [],
       );
 
       expect(payload.attributes, isNotNull);
@@ -150,10 +150,89 @@ void main() {
       );
 
       expect(payload.attributes, isNotNull);
+      expect(payload.attributes!['unit'], equals('ml'));
       final vars = payload.attributes!['variations'] as List;
       expect(vars.length, equals(2));
       expect(vars[0]['unit'], equals('ml'));
       expect(vars[1]['unit'], equals('ml'));
+    });
+  });
+
+  group('3. Poka-Yoke & Dirty Detection Invariants', () {
+    test('RetailProductSnapshot isDirty returns false when variations product opened without edits', () {
+      final initialVars = [
+        {'id': 101, 'name': '0.5 л', 'price': 5.0, 'barcode': null, 'unit': 'pcs'},
+        {'id': 102, 'name': '1 л', 'price': 10.0, 'barcode': null, 'unit': 'pcs'},
+      ];
+
+      final snapshot = RetailProductSnapshot(
+        name: 'Оби Арзонак',
+        flavor: '',
+        volume: '',
+        sortOrder: '2',
+        price: '',
+        barcode: '',
+        categoryId: 1,
+        unit: 'pcs',
+        icon: null,
+        variationsJson: jsonEncode(initialVars),
+      );
+
+      // Без изменений — Poka-Yoke НЕ должен срабатывать
+      final isDirty = snapshot.isDirty(
+        isEditing: true,
+        currentName: 'Оби Арзонак',
+        currentFlavor: '',
+        currentVolume: '',
+        currentSortOrder: '2',
+        currentPrice: '',
+        currentBarcode: '',
+        currentCategoryId: 1,
+        currentUnit: 'pcs',
+        currentIcon: null,
+        currentVariations: initialVars,
+      );
+
+      expect(isDirty, isFalse);
+    });
+
+    test('RetailProductSnapshot isDirty returns true when a variation price is modified', () {
+      final initialVars = [
+        {'id': 101, 'name': '0.5 л', 'price': 5.0, 'barcode': null, 'unit': 'pcs'},
+      ];
+
+      final snapshot = RetailProductSnapshot(
+        name: 'Оби Арзонак',
+        flavor: '',
+        volume: '',
+        sortOrder: '2',
+        price: '',
+        barcode: '',
+        categoryId: 1,
+        unit: 'pcs',
+        icon: null,
+        variationsJson: jsonEncode(initialVars),
+      );
+
+      final modifiedVars = [
+        {'id': 101, 'name': '0.5 л', 'price': 6.0, 'barcode': null, 'unit': 'pcs'},
+      ];
+
+      final isDirty = snapshot.isDirty(
+        isEditing: true,
+        currentName: 'Оби Арзонак',
+        currentFlavor: '',
+        currentVolume: '',
+        currentSortOrder: '2',
+        currentPrice: '',
+        currentBarcode: '',
+        currentCategoryId: 1,
+        currentUnit: 'pcs',
+        currentIcon: null,
+        currentVariations: modifiedVars,
+      );
+
+      expect(isDirty, isTrue);
     });
   });
 }
