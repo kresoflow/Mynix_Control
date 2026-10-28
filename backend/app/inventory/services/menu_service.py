@@ -265,6 +265,12 @@ async def update_menu_item(session: AsyncSession, menu_item_id: int, data: dict)
             if "attributes" in data and data["attributes"] is not None:
                 rp.attributes = data["attributes"]
                 flag_modified(rp, "attributes")
+                if "unit" in data["attributes"] and data["attributes"]["unit"]:
+                    try:
+                        from app.inventory.models.enums import UnitType
+                        rp.unit = UnitType(str(data["attributes"]["unit"]).lower())
+                    except ValueError:
+                        pass
             session.add(rp)
 
     await session.flush()
@@ -281,7 +287,7 @@ async def update_menu_item(session: AsyncSession, menu_item_id: int, data: dict)
         else:
             new_attrs.pop("variations", None)
             if item.type == "retail" and not item.retail_product_id:
-                rp = RetailProduct(name=item.name, category_id=item.category_id, price=item.price, cost=0.0, unit="pcs", current_stock=0.0, is_available=item.is_available, attributes=new_attrs)
+                rp = RetailProduct(name=item.name, category_id=item.category_id, price=item.price, cost=0.0, unit=new_attrs.get("unit", "pcs"), current_stock=0.0, is_available=item.is_available, attributes=new_attrs)
                 session.add(rp)
                 await session.flush()
                 item.retail_product_id = rp.id

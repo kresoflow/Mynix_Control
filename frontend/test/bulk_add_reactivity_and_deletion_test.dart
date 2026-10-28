@@ -8,14 +8,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:kreso_frontend/features/inventory/bloc/category_bloc.dart';
-import 'package:kreso_frontend/features/inventory/bloc/category_event.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_add_controller.dart';
 import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_add_list_widget.dart';
 import 'package:kreso_frontend/features/menu/view/widgets/catalog/catalog_deletion_dialogs.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
-import 'package:kreso_frontend/features/pos/bloc/menu_event.dart';
-import 'package:kreso_frontend/features/pos/bloc/menu_state.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
 import 'package:kreso_frontend/features/pos/repository/menu_repository.dart';
 

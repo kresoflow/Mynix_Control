@@ -296,13 +296,17 @@ class _AppButtonState extends State<AppButton> {
                   SizedBox(width: effectiveSize == AppButtonSize.xs ? 4 : 6),
               ],
               if (widget.label.isNotEmpty)
-                Text(
-                  widget.label,
-                  style: AppTextStyles.button.copyWith(
-                    color: fg,
-                    fontSize: effectiveFontSize,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.2,
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: AppTextStyles.button.copyWith(
+                      color: fg,
+                      fontSize: effectiveFontSize,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
             ],

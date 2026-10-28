@@ -121,18 +121,21 @@ class StockMetricsHeader extends StatelessWidget {
             );
           }
 
-          return Column(
-            children: [
-              card1,
-              const SizedBox(height: 10),
-              card2,
-              const SizedBox(height: 10),
-              card3,
-              const SizedBox(height: 10),
-              card4,
-              const SizedBox(height: 10),
-              card5,
-            ],
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                SizedBox(width: 170, child: card1),
+                const SizedBox(width: 10),
+                SizedBox(width: 170, child: card2),
+                const SizedBox(width: 10),
+                SizedBox(width: 170, child: card3),
+                const SizedBox(width: 10),
+                SizedBox(width: 170, child: card4),
+                const SizedBox(width: 10),
+                SizedBox(width: 170, child: card5),
+              ],
+            ),
           );
         },
       ),

@@ -10,6 +10,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/app_dialog.dart';
 import 'package:kreso_frontend/core/widgets/dirty_pop_scope.dart';
+import 'package:kreso_frontend/core/utils/unit_formatter.dart';
 import 'package:kreso_frontend/features/menu/services/duplicate_detector.dart';
 import 'package:kreso_frontend/features/pos/bloc/menu_bloc.dart';
 import 'package:kreso_frontend/features/pos/models/menu_item.dart';
@@ -47,7 +48,8 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
   late final TextEditingController _barcodeController;
   final List<Map<String, dynamic>> _variations = [];
   int? _selectedCategoryId;
-  String _selectedUnit = 'pcs';
+  late String _selectedUnit;
+  late final String _initialUnit;
   String? _selectedIcon;
 
   @override
@@ -64,6 +66,12 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
     _selectedCategoryId = widget.currentCategoryId ?? parsedCat;
     if (_selectedCategoryId == 0) _selectedCategoryId = null;
     _selectedIcon = item?.icon;
+
+    final rawUnit = item?.attributes?['unit']?.toString();
+    _initialUnit = (rawUnit != null && rawUnit.isNotEmpty)
+        ? UnitFormatter.toDbKey(rawUnit, 'pcs')
+        : 'pcs';
+    _selectedUnit = _initialUnit;
 
     final parsedVars = CreateRetailSubmitHelper.parseInitialVariations(item);
     if (parsedVars.isNotEmpty) {
@@ -139,7 +147,7 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
         _sellingPriceController.text.trim() != (item != null ? (item.price % 1 == 0 ? item.price.toInt().toString() : item.price.toString()) : '') ||
         _barcodeController.text.trim() != (item?.barcode ?? '') ||
         _selectedCategoryId != (initialCat == 0 ? null : initialCat) ||
-        _selectedUnit != 'pcs' ||
+        _selectedUnit != _initialUnit ||
         _selectedIcon != item?.icon;
   }
 
@@ -211,7 +219,7 @@ class _CreateRetailProductDialogState extends State<CreateRetailProductDialog> {
             CreateRetailProduct(
               name: name,
               categoryId: _selectedCategoryId,
-              unit: 'pcs',
+              unit: _selectedUnit,
               purchasePrice: 0.0,
               sellingPrice: payload.effectivePrice,
               sortOrder: sortOrder,

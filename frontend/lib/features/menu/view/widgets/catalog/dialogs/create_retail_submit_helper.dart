@@ -131,7 +131,7 @@ class CreateRetailSubmitHelper {
             if (v['id'] != null) 'id': v['id'],
             if (v['retail_product_id'] != null) 'retail_product_id': v['retail_product_id'],
             'name': fullName,
-            'unit': 'pcs',
+            'unit': selectedUnit,
             'price': vPrice,
             'selling_price': vPrice,
             'purchase_price': 0.0,

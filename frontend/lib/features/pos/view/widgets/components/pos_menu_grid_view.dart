@@ -25,60 +25,70 @@ class PosMenuGridView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-
-    return GridView.builder(
-      padding: EdgeInsets.fromLTRB(
-        isMobile ? 10 : 24,
-        isMobile ? 10 : 24,
-        isMobile ? 10 : 24,
-        isMobile ? 120 : 24,
-      ),
-      gridDelegate: isMobile
-          ? const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.88,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            )
-          : SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: posSettings.columnsCount,
-              childAspectRatio: 0.85,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20,
-            ),
-      itemCount: categories.length + items.length,
-      itemBuilder: (context, index) {
-        if (index < categories.length) {
-          final cat = categories[index];
-          Color? customColor;
-          try {
-            final catState = context.read<CategoryBloc>().state;
-            if (catState is CategoryLoaded) {
-              final hex = cat.getInheritedColor(catState.categories);
-              customColor = ColorPickerUtils.parseHex(hex);
-            } else {
-              customColor = ColorPickerUtils.parseHex(cat.color);
-            }
-          } catch (_) {
-            customColor = ColorPickerUtils.parseHex(cat.color);
-          }
-          final accent = (posSettings.enableRainbowColors && customColor != null)
-              ? customColor
-              : AppColors.brandPrimary;
-          return PosCategoryCard(
-            cat: cat,
-            accent: accent,
-            onTap: () => onCategoryTap(cat),
-          );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        final isCompact = availableWidth < 500;
+        final int effectiveColumns;
+        if (availableWidth < 420) {
+          effectiveColumns = 2;
+        } else if (availableWidth < 680) {
+          effectiveColumns = posSettings.columnsCount.clamp(2, 3);
+        } else if (availableWidth < 950) {
+          effectiveColumns = posSettings.columnsCount.clamp(2, 4);
         } else {
-          final item = items[index - categories.length];
-          return PosItemCard(
-            item: item,
-            onTap: () => handlePosItemClick(context, item as MenuItem),
-          );
+          effectiveColumns = posSettings.columnsCount;
         }
+
+        final double spacing = isCompact ? 10 : 16;
+        final padding = EdgeInsets.fromLTRB(
+          isCompact ? 10 : 20,
+          isCompact ? 10 : 20,
+          isCompact ? 10 : 20,
+          isCompact ? 120 : 24,
+        );
+
+        return GridView.builder(
+          padding: padding,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: effectiveColumns,
+            childAspectRatio: isCompact ? 0.88 : 0.85,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+          ),
+          itemCount: categories.length + items.length,
+          itemBuilder: (context, index) {
+            if (index < categories.length) {
+              final cat = categories[index];
+              Color? customColor;
+              try {
+                final catState = context.read<CategoryBloc>().state;
+                if (catState is CategoryLoaded) {
+                  final hex = cat.getInheritedColor(catState.categories);
+                  customColor = ColorPickerUtils.parseHex(hex);
+                } else {
+                  customColor = ColorPickerUtils.parseHex(cat.color);
+                }
+              } catch (_) {
+                customColor = ColorPickerUtils.parseHex(cat.color);
+              }
+              final accent = (posSettings.enableRainbowColors && customColor != null)
+                  ? customColor
+                  : AppColors.brandPrimary;
+              return PosCategoryCard(
+                cat: cat,
+                accent: accent,
+                onTap: () => onCategoryTap(cat),
+              );
+            } else {
+              final item = items[index - categories.length];
+              return PosItemCard(
+                item: item,
+                onTap: () => handlePosItemClick(context, item as MenuItem),
+              );
+            }
+          },
+        );
       },
     );
   }

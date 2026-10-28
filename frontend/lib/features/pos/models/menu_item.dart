@@ -211,6 +211,17 @@ class MenuItem extends Equatable {
 
   bool get hasVariations => variations != null && variations!.isNotEmpty;
 
+  Map<String, dynamic>? get attributes {
+    if (attributesJson != null && attributesJson!.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(attributesJson!);
+        if (decoded is Map<String, dynamic>) return decoded;
+        if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+    return null;
+  }
+
   bool get hasModifiers {
     if (attributesJson != null && attributesJson!.isNotEmpty) {
       try {

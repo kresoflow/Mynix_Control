@@ -45,14 +45,14 @@ class StockEmptyState extends StatelessWidget {
             : 'Поступлений товаров и сырья еще не зафиксировано');
 
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 68,
-              height: 68,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkCard : AppColors.lightCard,
                 shape: BoxShape.circle,
@@ -67,12 +67,12 @@ class StockEmptyState extends StatelessWidget {
                   isSearchActive
                       ? PhosphorIconsRegular.magnifyingGlass
                       : PhosphorIconsRegular.package,
-                  size: 30,
+                  size: 28,
                   color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
