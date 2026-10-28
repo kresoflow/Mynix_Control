@@ -1,12 +1,21 @@
+// ==============================================================================
+// МОДУЛЬ: Склад / Список строк массового добавления (Bulk Add List Widget)
+// ДОМЕН: lib/features/inventory/view/widgets/bulk_add/bulk_add_list_widget.dart
+// ==============================================================================
+
 import 'package:flutter/material.dart';
+import 'bulk_add_controller.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
 import 'category_row.dart';
 import 'bulk_add_row_item.dart';
 
+// ─── 1. Виджет скроллируемого списка строк массового ввода ───────────────────
+
 class BulkAddListWidget extends StatelessWidget {
   final int tabIndex;
+  final BulkAddController controller;
   final List<DishRowData> dishRows;
   final List<RetailRowData> retailRows;
   final List<IngredientRowData> ingredientRows;
@@ -18,6 +27,7 @@ class BulkAddListWidget extends StatelessWidget {
   const BulkAddListWidget({
     super.key,
     required this.tabIndex,
+    required this.controller,
     required this.dishRows,
     required this.retailRows,
     required this.ingredientRows,
@@ -82,6 +92,7 @@ class BulkAddListWidget extends StatelessWidget {
                       key: ValueKey(rowId),
                       index: index,
                       tabIndex: tabIndex,
+                      controller: controller,
                       dishRows: dishRows,
                       retailRows: retailRows,
                       ingredientRows: ingredientRows,

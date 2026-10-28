@@ -188,6 +188,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                         context: context,
                         selectedItems: _selectedItems,
                         selectedCategories: _selectedCategories,
+                        isArchived: _showArchived,
                         onCleared: _clearSelection,
                       ),
                       onNavigateUp: _navigateUp,
@@ -276,10 +277,7 @@ class _CatalogBrowserTabState extends State<CatalogBrowserTab> with AutomaticKee
                                       ),
                                     );
                                   } else {
-                                    AppToast.showInfo(
-                                      context,
-                                      'У блюда нет опций',
-                                    );
+                                    AppToast.showInfo(context, 'У блюда нет опций');
                                   }
                                 }
                               },

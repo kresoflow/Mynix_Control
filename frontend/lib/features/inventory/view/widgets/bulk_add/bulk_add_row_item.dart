@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
+import 'bulk_add_controller.dart';
 import 'dish_row.dart';
 import 'ingredient_row.dart';
 import 'retail_row.dart';
@@ -16,10 +17,11 @@ import 'bulk_add_duplicate_validator.dart';
 // ─── 1. Виджет строки массового ввода ─────────────────────────────────────────
 
 /// Индивидуальная строка таблицы массового ввода с поддержкой дублирования,
-/// удаления, навигации стрелками и мгновенной проверки на коллизии дубликатов.
+/// удаления, навигации стрелками и мгновенной реактивной проверки на коллизии дубликатов.
 class BulkAddRowItem extends StatefulWidget {
   final int index;
   final int tabIndex;
+  final BulkAddController controller;
   final List<DishRowData> dishRows;
   final List<RetailRowData> retailRows;
   final List<IngredientRowData> ingredientRows;
@@ -34,6 +36,7 @@ class BulkAddRowItem extends StatefulWidget {
     super.key,
     required this.index,
     required this.tabIndex,
+    required this.controller,
     required this.dishRows,
     required this.retailRows,
     required this.ingredientRows,
@@ -51,60 +54,44 @@ class BulkAddRowItem extends StatefulWidget {
 
 class _BulkAddRowItemState extends State<BulkAddRowItem> {
   late final ValueNotifier<bool> _isHovered;
-  final List<TextEditingController> _observedControllers = [];
 
   @override
   void initState() {
     super.initState();
     _isHovered = ValueNotifier<bool>(false);
-    _attachListeners();
+    widget.controller.addListener(_onBatchChanged);
   }
 
   @override
   void didUpdateWidget(BulkAddRowItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.index != widget.index || oldWidget.tabIndex != widget.tabIndex) {
-      _detachListeners();
-      _attachListeners();
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_onBatchChanged);
+      widget.controller.addListener(_onBatchChanged);
     }
   }
 
   @override
   void dispose() {
-    _detachListeners();
+    widget.controller.removeListener(_onBatchChanged);
     _isHovered.dispose();
     super.dispose();
   }
 
-  void _attachListeners() {
-    _observedControllers.clear();
-    if (widget.tabIndex == 0 && widget.index < widget.dishRows.length) {
-      _observedControllers.add(widget.dishRows[widget.index].nameController);
-    } else if (widget.tabIndex == 1 && widget.index < widget.retailRows.length) {
-      final r = widget.retailRows[widget.index];
-      _observedControllers.addAll([r.nameController, r.flavorController, r.volumeController, r.barcodeController]);
-    } else if (widget.tabIndex == 2 && widget.index < widget.ingredientRows.length) {
-      _observedControllers.add(widget.ingredientRows[widget.index].nameController);
-    } else if (widget.tabIndex == 3 && widget.index < widget.categoryRows.length) {
-      _observedControllers.add(widget.categoryRows[widget.index].nameController);
-    }
-    for (final c in _observedControllers) {
-      c.addListener(_onFieldChanged);
-    }
-  }
-
-  void _detachListeners() {
-    for (final c in _observedControllers) {
-      c.removeListener(_onFieldChanged);
-    }
-    _observedControllers.clear();
-  }
-
-  void _onFieldChanged() {
+  void _onBatchChanged() {
     if (mounted) setState(() {});
   }
 
+  bool get _isOutOfBounds {
+    if (widget.tabIndex == 0) return widget.index >= widget.dishRows.length;
+    if (widget.tabIndex == 1) return widget.index >= widget.retailRows.length;
+    if (widget.tabIndex == 2) return widget.index >= widget.ingredientRows.length;
+    if (widget.tabIndex == 3) return widget.index >= widget.categoryRows.length;
+    return true;
+  }
+
   Widget _buildRowWidget() {
+    if (_isOutOfBounds) return const SizedBox.shrink();
     if (widget.tabIndex == 0) {
       return DishRowWidget(
         row: widget.dishRows[widget.index],
@@ -138,6 +125,7 @@ class _BulkAddRowItemState extends State<BulkAddRowItem> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isOutOfBounds) return const SizedBox.shrink();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final dupWarning = BulkAddDuplicateValidator.checkDuplicate(
       context: context,
@@ -195,7 +183,7 @@ class _BulkAddRowItemState extends State<BulkAddRowItem> {
                     Expanded(child: _buildRowWidget()),
                     const SizedBox(width: 8),
                     SizedBox(
-                      width: 64,
+                      width: 80,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [

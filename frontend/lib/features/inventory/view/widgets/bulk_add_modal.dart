@@ -190,6 +190,7 @@ class _BulkAddModalState extends State<BulkAddModal> {
                     padding: const EdgeInsets.symmetric(horizontal: 28),
                     child: BulkAddListWidget(
                       tabIndex: _tabIndex,
+                      controller: _controller,
                       dishRows: _controller.dishRows,
                       retailRows: _controller.retailRows,
                       ingredientRows: _controller.ingredientRows,

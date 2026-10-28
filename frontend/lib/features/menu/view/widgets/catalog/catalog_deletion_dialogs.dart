@@ -110,34 +110,60 @@ class CatalogDeletionDialogs {
     }
   }
 
-  /// Подтверждение массовой архивации выбранных элементов каталога.
+  /// Подтверждение массового удаления или архивации выбранных элементов каталога.
   static Future<void> confirmDeleteSelected({
     required BuildContext context,
     required Set<int> selectedItems,
     required Set<int> selectedCategories,
     required VoidCallback onCleared,
+    bool isArchived = false,
   }) async {
     final selectedCount = selectedItems.length + selectedCategories.length;
+    if (selectedCount == 0) return;
+
+    bool effectivelyArchived = isArchived;
+    if (!effectivelyArchived) {
+      final menuState = context.read<MenuBloc>().state;
+      final catState = context.read<CategoryBloc>().state;
+      final allItemsArchived = selectedItems.isEmpty ||
+          (menuState is MenuLoaded &&
+              selectedItems.every(
+                (id) => menuState.items.any((i) => i.id == id && !i.isAvailable),
+              ));
+      final allCatsArchived = selectedCategories.isEmpty ||
+          (catState is CategoryLoaded &&
+              selectedCategories.every(
+                (id) => catState.categories.any((c) => c.id == id && c.isArchived),
+              ));
+      if (allItemsArchived && allCatsArchived) {
+        effectivelyArchived = true;
+      }
+    }
+
     final confirmed = await AppConfirmDialog.show(
       context: context,
-      title: 'Массовая архивация',
-      message: 'Переместить выбранные элементы ($selectedCount шт.) в архив?\n'
-          'Они будут скрыты из кассы, но сохранятся в архиве.',
-      confirmLabel: 'Архивировать',
-      confirmIcon: PhosphorIconsRegular.archive,
+      title: effectivelyArchived ? 'Удаление навсегда' : 'Массовая архивация',
+      message: effectivelyArchived
+          ? 'Окончательно удалить выбранные элементы ($selectedCount шт.) из базы данных?\n'
+              'Это действие необратимо и возможно только если по ним нет истории продаж и склада.'
+          : 'Переместить выбранные элементы ($selectedCount шт.) в архив?\n'
+              'Они будут скрыты из кассы, но сохранятся в архиве.',
+      confirmLabel: effectivelyArchived ? 'Удалить навсегда' : 'Архивировать',
+      confirmIcon: effectivelyArchived ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
       isDanger: true,
-      icon: PhosphorIconsRegular.archive,
+      icon: effectivelyArchived ? PhosphorIconsRegular.trash : PhosphorIconsRegular.archive,
     );
 
     if (confirmed == true && context.mounted) {
+      final mode = effectivelyArchived ? 'hard' : 'soft';
       if (selectedItems.isNotEmpty) {
         context.read<MenuBloc>().add(
-          DeleteMenuItemsBulk(selectedItems.toList(), mode: 'soft'),
+          DeleteMenuItemsBulk(selectedItems.toList(), mode: mode),
         );
       }
       if (selectedCategories.isNotEmpty) {
         context.read<CategoryBloc>().add(
-          DeleteCategoriesBulk(selectedCategories.toList(), mode: 'soft'),
+          DeleteCategoriesBulk(selectedCategories.toList(), mode: mode),
         );
       }
       onCleared();
