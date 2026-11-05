@@ -36,63 +36,83 @@ def setup_logging() -> None:
         except Exception:
             pass
 
-    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    can_write_files = False
+    try:
+        LOGS_DIR.mkdir(parents=True, exist_ok=True)
+        can_write_files = True
+    except OSError as err:
+        sys.stderr.write(
+            f"[LOGGING WARNING] Не удалось создать директорию логов {LOGS_DIR}: {err}. "
+            "Переключение на консольное логирование (stdout/stderr).\n"
+        )
 
     formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt=DATE_FORMAT)
 
-    # Консольный поток (для терминала VS Code)
+    # Консольный поток (для терминала и docker json-file логов)
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
     console_handler.setLevel(logging.INFO)
 
-    # Файловый поток общего бэкенда (для чтения агентом и анализа ошибок)
-    file_handler = RotatingFileHandler(
-        filename=BACKEND_LOG_FILE,
-        maxBytes=15 * 1024 * 1024,  # 15 MB
-        backupCount=5,
-        encoding="utf-8",
-    )
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.INFO)
+    file_handler = None
+    audit_handler = None
+    frontend_handler = None
 
-    # Защита от бесконечного цикла вотчера: исключаем логи watchfiles из записи в файл
-    class _ExcludeWatchfilesFilter(logging.Filter):
-        def filter(self, record: logging.LogRecord) -> bool:
-            return not record.name.startswith("watchfiles")
+    if can_write_files:
+        try:
+            # Файловый поток общего бэкенда (для чтения агентом и анализа ошибок)
+            file_handler = RotatingFileHandler(
+                filename=BACKEND_LOG_FILE,
+                maxBytes=15 * 1024 * 1024,  # 15 MB
+                backupCount=5,
+                encoding="utf-8",
+            )
+            file_handler.setFormatter(formatter)
+            file_handler.setLevel(logging.INFO)
 
-    file_handler.addFilter(_ExcludeWatchfilesFilter())
+            # Защита от бесконечного цикла вотчера: исключаем логи watchfiles из записи в файл
+            class _ExcludeWatchfilesFilter(logging.Filter):
+                def filter(self, record: logging.LogRecord) -> bool:
+                    return not record.name.startswith("watchfiles")
+
+            file_handler.addFilter(_ExcludeWatchfilesFilter())
+
+            # Файловый поток для алертов подозрительного трафика и медленных запросов
+            audit_handler = RotatingFileHandler(
+                filename=AUDIT_LOG_FILE,
+                maxBytes=10 * 1024 * 1024,  # 10 MB
+                backupCount=3,
+                encoding="utf-8",
+            )
+            audit_handler.setFormatter(formatter)
+            audit_handler.setLevel(logging.WARNING)
+
+            # Файловый поток для клиентских ошибок фронтенда (RenderFlex overflow, UI crashes)
+            frontend_handler = RotatingFileHandler(
+                filename=FRONTEND_LOG_FILE,
+                maxBytes=10 * 1024 * 1024,  # 10 MB
+                backupCount=3,
+                encoding="utf-8",
+            )
+            frontend_handler.setFormatter(formatter)
+            frontend_handler.setLevel(logging.INFO)
+        except OSError as err:
+            sys.stderr.write(
+                f"[LOGGING WARNING] Ошибка создания файловых хэндлеров: {err}. Используется только консоль.\n"
+            )
+            file_handler = None
+            audit_handler = None
+            frontend_handler = None
 
     # Глушим шумные логи вотчера в целом
     for watch_name in ("watchfiles", "watchfiles.main"):
         logging.getLogger(watch_name).setLevel(logging.WARNING)
-
-    # Файловый поток для алертов подозрительного трафика и медленных запросов
-    audit_handler = RotatingFileHandler(
-        filename=AUDIT_LOG_FILE,
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=3,
-        encoding="utf-8",
-    )
-    audit_handler.setFormatter(formatter)
-    audit_handler.setLevel(logging.WARNING)
-
-    # Файловый поток для клиентских ошибок фронтенда (RenderFlex overflow, UI crashes)
-    frontend_handler = RotatingFileHandler(
-        filename=FRONTEND_LOG_FILE,
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=3,
-        encoding="utf-8",
-    )
-    frontend_handler.setFormatter(formatter)
-    frontend_handler.setLevel(logging.INFO)
 
     # Настройка корневого логгера
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
 
     # Гарантируем наличие консольного и файлового хэндлеров на root
-    has_file = any(isinstance(h, RotatingFileHandler) for h in root_logger.handlers)
-    if not has_file:
+    if file_handler and not any(isinstance(h, RotatingFileHandler) for h in root_logger.handlers):
         root_logger.addHandler(file_handler)
 
     has_console = any(isinstance(h, logging.StreamHandler) and not isinstance(h, RotatingFileHandler) for h in root_logger.handlers)
@@ -103,7 +123,7 @@ def setup_logging() -> None:
     for logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access", "app"):
         target_logger = logging.getLogger(logger_name)
         target_logger.setLevel(logging.INFO)
-        if not any(isinstance(h, RotatingFileHandler) for h in target_logger.handlers):
+        if file_handler and not any(isinstance(h, RotatingFileHandler) for h in target_logger.handlers):
             target_logger.addHandler(file_handler)
         if not any(isinstance(h, logging.StreamHandler) and not isinstance(h, RotatingFileHandler) for h in target_logger.handlers):
             target_logger.addHandler(console_handler)
@@ -111,17 +131,24 @@ def setup_logging() -> None:
     # Отдельный логгер для аудита трафика
     audit_logger = logging.getLogger("traffic_audit")
     audit_logger.setLevel(logging.INFO)
-    if not any(h == audit_handler for h in audit_logger.handlers):
+    if audit_handler and not any(h == audit_handler for h in audit_logger.handlers):
         audit_logger.addHandler(audit_handler)
+    if file_handler and not any(h == file_handler for h in audit_logger.handlers):
         audit_logger.addHandler(file_handler)
+    if not any(isinstance(h, logging.StreamHandler) and not isinstance(h, RotatingFileHandler) for h in audit_logger.handlers):
+        audit_logger.addHandler(console_handler)
 
     # Отдельный логгер для клиентских ошибок фронтенда
     frontend_logger = logging.getLogger("frontend_client")
     frontend_logger.setLevel(logging.INFO)
-    if not any(h == frontend_handler for h in frontend_logger.handlers):
+    if frontend_handler and not any(h == frontend_handler for h in frontend_logger.handlers):
         frontend_logger.addHandler(frontend_handler)
+    if not any(isinstance(h, logging.StreamHandler) and not isinstance(h, RotatingFileHandler) for h in frontend_logger.handlers):
         frontend_logger.addHandler(console_handler)
 
-    logging.info(
-        f"[LOGGING] Файловые потоки активны: {BACKEND_LOG_FILE}, {AUDIT_LOG_FILE}, {FRONTEND_LOG_FILE}"
-    )
+    if file_handler:
+        logging.info(
+            f"[LOGGING] Файловые потоки активны: {BACKEND_LOG_FILE}, {AUDIT_LOG_FILE}, {FRONTEND_LOG_FILE}"
+        )
+    else:
+        logging.info("[LOGGING] Активен только консольный поток (stdout).")

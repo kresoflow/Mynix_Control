@@ -16,6 +16,9 @@ RUN groupadd -g 10001 appgroup && \
 
 WORKDIR /app
 
+# Ensure /app and logs directory exist with non-root ownership
+RUN mkdir -p /app/logs && chown -R appuser:appgroup /app
+
 # Copy dependency files with ownership
 COPY --chown=appuser:appgroup pyproject.toml uv.lock ./
 
@@ -24,6 +27,9 @@ RUN uv sync --frozen --no-cache
 
 # Copy the rest of application code with non-root ownership
 COPY --chown=appuser:appgroup . .
+
+# Final ownership check so appuser can write logs and temp files
+RUN chown -R appuser:appgroup /app
 
 # Switch to non-root user for security
 USER appuser
