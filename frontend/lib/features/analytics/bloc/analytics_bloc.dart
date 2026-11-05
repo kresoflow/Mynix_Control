@@ -29,7 +29,10 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
 
     _wsSubscription = webSocketService.messages.listen((data) {
       final event = data['event'];
-      if ((event == 'new_order' || event == 'status_update' || event == 'inventory_updated') &&
+      if ((event == 'order_created' ||
+              event == 'new_order' ||
+              event == 'status_update' ||
+              event == 'inventory_updated') &&
           state is AnalyticsLoaded) {
         _wsDebounceTimer?.cancel();
         _wsDebounceTimer = Timer(const Duration(milliseconds: 500), () {

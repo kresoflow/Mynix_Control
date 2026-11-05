@@ -12,6 +12,7 @@ import 'package:kreso_frontend/features/analytics/view/analytics_dashboard_scree
 import 'package:kreso_frontend/features/settings/view/settings_screen.dart';
 import 'package:kreso_frontend/features/orders/view/orders_screen.dart';
 import 'package:kreso_frontend/features/hub/view/hub_screen.dart';
+import 'package:kreso_frontend/core/router/app_route_observer.dart';
 import 'package:kreso_frontend/core/widgets/main_layout.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -23,6 +24,7 @@ class AppRouter {
 
   late final GoRouter router = GoRouter(
     navigatorKey: rootNavigatorKey,
+    observers: [AppRouteObserver()],
     initialLocation: '/splash',
     refreshListenable: _GoRouterRefreshStream(authBloc.stream),
     redirect: (context, state) {

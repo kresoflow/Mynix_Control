@@ -100,6 +100,10 @@ class RecipeSpecificationSection extends StatelessWidget {
         allowDecimals: true,
         onQuantityChanged: (index, newQuantity) {
           final r = recipes[index];
+          final oldQty = (r['quantity_required'] as num?)?.toDouble() ?? 0.0;
+          if (oldQty == newQuantity) return;
+
+
           final ingId = r['ingredient_id'] as int;
           context.read<RecipeBloc>().add(
                 UpdateIngredientQuantityInRecipe(

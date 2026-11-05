@@ -30,6 +30,7 @@ enum WriteOffCategoryFilter {
 /// [ИНВАРИАНТ] Панель инструментов каталога списания с поиском, чипами и кнопкой сворачивания.
 class WriteOffCategoryToolbar extends StatelessWidget {
   final TextEditingController searchController;
+  final FocusNode? searchFocusNode;
   final ValueChanged<String> onSearchChanged;
   final WriteOffCategoryFilter activeFilter;
   final ValueChanged<WriteOffCategoryFilter> onFilterChanged;
@@ -41,6 +42,7 @@ class WriteOffCategoryToolbar extends StatelessWidget {
   const WriteOffCategoryToolbar({
     super.key,
     required this.searchController,
+    this.searchFocusNode,
     required this.onSearchChanged,
     required this.activeFilter,
     required this.onFilterChanged,
@@ -60,8 +62,10 @@ class WriteOffCategoryToolbar extends StatelessWidget {
         Expanded(
           child: AppSearchField(
             controller: searchController,
+            focusNode: searchFocusNode,
             size: AppSearchFieldSize.sm,
             hintText: 'Фильтр позиций...',
+            autoFocus: true,
             onChanged: onSearchChanged,
             onClear: () => onSearchChanged(''),
           ),

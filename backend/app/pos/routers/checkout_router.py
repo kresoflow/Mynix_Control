@@ -15,6 +15,7 @@ from app.pos.services.order_table_service import (
     get_active_tables_orders, settle_table_order, append_items_to_table_order,
     split_table_order, serve_table_order
 )
+from app.pos.ws import notify_order_created
 
 router = APIRouter(tags=["POS — Orders & Checkout"])
 
@@ -161,6 +162,7 @@ async def api_update_status(
     """Update order status (e.g., cooking -> ready -> completed)."""
     try:
         order = await update_order_status(session, order_id, new_status)
+        await notify_order_created(current_user.tenant_id, {"id": order.id, "status": order.status})
         return {"status": "ok", "order_id": order.id, "new_status": order.status}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

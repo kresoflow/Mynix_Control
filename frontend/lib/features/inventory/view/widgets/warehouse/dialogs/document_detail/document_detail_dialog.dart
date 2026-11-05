@@ -43,12 +43,24 @@ class DocumentDetailDialog extends StatefulWidget {
 }
 
 class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
+  static final Map<int, InventoryDocument> _documentCache = {};
   late Future<InventoryDocument> _documentFuture;
 
   @override
   void initState() {
     super.initState();
-    _documentFuture = context.read<InventoryRepository>().getDocument(widget.documentId);
+    final cached = _documentCache[widget.documentId];
+    if (cached != null) {
+      _documentFuture = Future.value(cached);
+    } else {
+      _documentFuture = context
+          .read<InventoryRepository>()
+          .getDocument(widget.documentId)
+          .then((doc) {
+        _documentCache[doc.id] = doc;
+        return doc;
+      });
+    }
   }
 
   void _showSnack(String msg) {
@@ -62,6 +74,7 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
   }
 
   void _completeDraft(InventoryDocument doc) {
+    _documentCache.remove(doc.id);
     context.read<DocumentBloc>().add(CompleteDocument(doc.id));
     _showSnack('Накладная #${doc.id} проводится...');
     Navigator.of(context).pop();
@@ -91,6 +104,7 @@ class _DocumentDetailDialogState extends State<DocumentDetailDialog> {
     );
 
     if (confirmed == true && mounted) {
+      _documentCache.remove(doc.id);
       context.read<DocumentBloc>().add(DeleteDocument(doc.id));
       _showSnack('Черновик #${doc.id} удален');
       Navigator.of(context).pop();

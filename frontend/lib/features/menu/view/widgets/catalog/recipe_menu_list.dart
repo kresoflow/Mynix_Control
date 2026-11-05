@@ -146,27 +146,10 @@ class _RecipeMenuListState extends State<RecipeMenuList> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Tooltip(
-                      message: _allExpanded ? 'Свернуть все' : 'Развернуть все',
-                      child: InkWell(
-                        onTap: () => _toggleExpandAll(groupedItems.keys.toList()),
-                        borderRadius: AppRadii.inputRadius,
-                        child: Container(
-                          height: 34,
-                          width: 34,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                            borderRadius: AppRadii.inputRadius,
-                            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                          ),
-                          child: Icon(
-                            _allExpanded ? PhosphorIconsRegular.caretUp : PhosphorIconsRegular.caretDown,
-                            size: 15,
-                            color: isDark ? AppColors.darkText : AppColors.lightText,
-                          ),
-                        ),
-                      ),
+                    AppExpandAllButton(
+                      isExpanded: _allExpanded,
+                      onToggle: () => _toggleExpandAll(groupedItems.keys.toList()),
+                      mode: AppExpandAllMode.compact,
                     ),
                   ],
                 ),

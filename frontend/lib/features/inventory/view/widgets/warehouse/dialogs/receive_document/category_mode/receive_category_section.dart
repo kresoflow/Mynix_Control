@@ -18,6 +18,7 @@ class ReceiveCategorySection extends StatefulWidget {
   final bool isRetail;
   final String currency;
   final ReceiveCategorySyncAdapter adapter;
+  final FocusNode? searchFocusNode;
 
   const ReceiveCategorySection({
     super.key,
@@ -25,6 +26,7 @@ class ReceiveCategorySection extends StatefulWidget {
     required this.isRetail,
     required this.currency,
     required this.adapter,
+    this.searchFocusNode,
   });
 
   @override
@@ -33,14 +35,31 @@ class ReceiveCategorySection extends StatefulWidget {
 
 class _ReceiveCategorySectionState extends State<ReceiveCategorySection> {
   final TextEditingController _searchController = TextEditingController();
+  FocusNode? _internalFocusNode;
+  FocusNode get _effectiveFocusNode => widget.searchFocusNode ?? (_internalFocusNode ??= FocusNode());
+
   ReceiveCategoryFilter _activeFilter = ReceiveCategoryFilter.all;
   final Map<String, bool> _expansionMap = {};
   bool _isAllExpanded = false;
   String _searchQuery = '';
 
   @override
+  void didUpdateWidget(ReceiveCategorySection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isRetail != widget.isRetail ||
+        oldWidget.availableIngredients.length != widget.availableIngredients.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_effectiveFocusNode.hasFocus) {
+          _effectiveFocusNode.requestFocus();
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
+    _internalFocusNode?.dispose();
     super.dispose();
   }
 
@@ -170,6 +189,7 @@ class _ReceiveCategorySectionState extends State<ReceiveCategorySection> {
           // Тулбар поиска и фильтрации
           ReceiveCategoryToolbar(
             searchController: _searchController,
+            searchFocusNode: _effectiveFocusNode,
             onSearchChanged: _onSearchChanged,
             activeFilter: _activeFilter,
             onFilterChanged: _onFilterChanged,

@@ -57,18 +57,9 @@ class _SupplierRowState extends State<SupplierRow> {
       onExit: (_) => setState(() => _isHovered = false),
       child: InkWell(
         onTap: widget.onOpenSettlement,
-        borderRadius: widget.isLast ? const BorderRadius.vertical(bottom: Radius.circular(12)) : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
-          decoration: BoxDecoration(
-            color: rowBg,
-            borderRadius: widget.isLast ? const BorderRadius.vertical(bottom: Radius.circular(12)) : null,
-            border: Border(
-              left: BorderSide(color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              right: BorderSide(color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              bottom: BorderSide(color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            ),
-          ),
+          color: rowBg,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [

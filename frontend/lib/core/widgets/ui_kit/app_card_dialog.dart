@@ -56,6 +56,9 @@ class AppCardDialog extends StatelessWidget {
   /// Внутренние отступы содержимого body (по умолчанию 24, 16, 24, 0)
   final EdgeInsetsGeometry? contentPadding;
 
+  /// Опциональный оверлей (шторка-корзина внутри модалки)
+  final Widget? overlay;
+
   const AppCardDialog({
     super.key,
     required this.title,
@@ -70,6 +73,7 @@ class AppCardDialog extends StatelessWidget {
     this.maxHeight,
     this.onClose,
     this.contentPadding,
+    this.overlay,
   });
 
   @override
@@ -106,10 +110,15 @@ class AppCardDialog extends StatelessWidget {
           border: Border.all(color: borderColor),
           boxShadow: AppShadows.deep,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
             // ─── 1. Шапка модального окна ────────────────────────────────────
             Container(
               padding: EdgeInsets.symmetric(
@@ -229,9 +238,38 @@ class AppCardDialog extends StatelessWidget {
                   ],
                 ),
               ),
-          ],
-        ),
+            ],
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: overlay == null,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.0, 0.03),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                ),
+                child: overlay != null
+                    ? KeyedSubtree(
+                        key: const ValueKey('app_card_dialog_overlay_active'),
+                        child: overlay!,
+                      )
+                    : const SizedBox.shrink(key: ValueKey('app_card_dialog_overlay_none')),
+              ),
+            ),
+          ),
+        ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

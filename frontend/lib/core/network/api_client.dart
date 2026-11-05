@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sentry_dio/sentry_dio.dart';
+import 'network_parasite_interceptor.dart';
 
 class ApiClient {
   static String get _baseUrl {
@@ -29,6 +30,7 @@ class ApiClient {
           ),
         ) {
     dio.addSentry();
+    dio.interceptors.add(NetworkParasiteInterceptor());
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {

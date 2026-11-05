@@ -23,7 +23,13 @@ extension DocumentBlocSupplierHandlers on DocumentBloc {
         initialBalance: event.initialBalance,
       );
       final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(suppliers: suppliers, clearError: true));
+      emit(
+        state.copyWith(
+          suppliers: suppliers,
+          suppliersStatus: DocumentStatus.success,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: DocumentBloc._formatError(e)));
     }
@@ -41,7 +47,13 @@ extension DocumentBlocSupplierHandlers on DocumentBloc {
         isActive: event.isActive,
       );
       final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(suppliers: suppliers, clearError: true));
+      emit(
+        state.copyWith(
+          suppliers: suppliers,
+          suppliersStatus: DocumentStatus.success,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: DocumentBloc._formatError(e)));
     }
@@ -54,7 +66,13 @@ extension DocumentBlocSupplierHandlers on DocumentBloc {
     try {
       await _repository.deleteSupplier(event.id);
       final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(suppliers: suppliers, clearError: true));
+      emit(
+        state.copyWith(
+          suppliers: suppliers,
+          suppliersStatus: DocumentStatus.success,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: DocumentBloc._formatError(e)));
     }
@@ -72,7 +90,13 @@ extension DocumentBlocSupplierHandlers on DocumentBloc {
         comment: event.comment,
       );
       final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(suppliers: suppliers, clearError: true));
+      emit(
+        state.copyWith(
+          suppliers: suppliers,
+          suppliersStatus: DocumentStatus.success,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: DocumentBloc._formatError(e)));
     }

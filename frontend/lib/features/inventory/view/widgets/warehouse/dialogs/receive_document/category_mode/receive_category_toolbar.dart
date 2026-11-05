@@ -4,11 +4,8 @@
 // ==============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
-import 'package:kreso_frontend/core/widgets/ui_kit/app_filter_chip.dart';
-import 'package:kreso_frontend/core/widgets/ui_kit/app_search_field.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 
 /// Фильтр отображения позиций в режиме категорий
 enum ReceiveCategoryFilter {
@@ -25,6 +22,7 @@ enum ReceiveCategoryFilter {
 /// Панель инструментов режима категорий: поиск, быстрые фильтры и кнопка сворачивания
 class ReceiveCategoryToolbar extends StatelessWidget {
   final TextEditingController searchController;
+  final FocusNode? searchFocusNode;
   final ValueChanged<String> onSearchChanged;
   final ReceiveCategoryFilter activeFilter;
   final ValueChanged<ReceiveCategoryFilter> onFilterChanged;
@@ -36,6 +34,7 @@ class ReceiveCategoryToolbar extends StatelessWidget {
   const ReceiveCategoryToolbar({
     super.key,
     required this.searchController,
+    this.searchFocusNode,
     required this.onSearchChanged,
     required this.activeFilter,
     required this.onFilterChanged,
@@ -66,8 +65,10 @@ class ReceiveCategoryToolbar extends StatelessWidget {
             width: 240,
             child: AppSearchField(
               controller: searchController,
+              focusNode: searchFocusNode,
               hintText: 'Поиск по складу...',
               size: AppSearchFieldSize.sm,
+              autoFocus: true,
               onChanged: onSearchChanged,
               onClear: () => onSearchChanged(''),
             ),
@@ -107,40 +108,10 @@ class ReceiveCategoryToolbar extends StatelessWidget {
           const Spacer(),
 
           // 5. Кнопка Развернуть/Свернуть всё
-          InkWell(
-            onTap: onToggleExpandAll,
-            borderRadius: AppRadii.badgeRadius,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : AppColors.lightBg,
-                borderRadius: AppRadii.badgeRadius,
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isAllExpanded
-                        ? PhosphorIconsRegular.caretDoubleUp
-                        : PhosphorIconsRegular.caretDoubleDown,
-                    size: 14,
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    isAllExpanded ? 'Свернуть всё' : 'Развернуть всё',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          AppExpandAllButton(
+            isExpanded: isAllExpanded,
+            onToggle: onToggleExpandAll,
+            mode: AppExpandAllMode.full,
           ),
         ],
       ),

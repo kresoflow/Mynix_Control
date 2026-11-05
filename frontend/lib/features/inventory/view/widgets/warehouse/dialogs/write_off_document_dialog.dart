@@ -19,6 +19,7 @@ import 'write_off/write_off_add_item_bar.dart';
 import 'write_off/write_off_items_table.dart';
 import 'write_off/write_off_category_section.dart';
 import 'write_off/write_off_summary_card.dart';
+import 'write_off/write_off_cart_sheet.dart';
 
 // ==============================================================================
 // 2. ДИАЛОГ СОЗДАНИЯ АКТА СПИСАНИЯ
@@ -44,36 +45,44 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
   final List<WriteOffItemEntry> _entries = [];
   WriteOffViewMode _viewMode = WriteOffViewMode.items;
   bool _isLoading = false;
+  bool _isCartOpen = false;
+  final FocusNode _addItemFocusNode = FocusNode();
+  final FocusNode _categorySearchFocusNode = FocusNode();
 
-  final List<String> _reasons = const [
-    'Порча / Просрочка',
-    'Брак / Бой',
-    'Питание персонала',
-    'Угощение гостя',
-    'Прочее',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _focusSearch();
+  }
+
+  void _focusSearch() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_viewMode == WriteOffViewMode.items) {
+        _addItemFocusNode.requestFocus();
+      } else {
+        _categorySearchFocusNode.requestFocus();
+      }
+    });
+  }
+
+  final List<String> _reasons = const ['Порча / Просрочка', 'Брак / Бой', 'Питание персонала', 'Угощение гостя', 'Прочее'];
 
   @override
   void dispose() {
+    _addItemFocusNode.dispose();
+    _categorySearchFocusNode.dispose();
     _commentController.dispose();
-    for (var e in _entries) {
-      e.controller.dispose();
-    }
+    for (var e in _entries) { e.controller.dispose(); }
     super.dispose();
   }
 
   void _addItem(Ingredient item) {
     if (_entries.any((e) => e.item.isSameAs(item))) {
-      AppToast.showWarning(
-        context,
-        'Внимание',
-        subtitle: '«${item.name}» уже в списке',
-      );
+      AppToast.showWarning(context, 'Внимание', subtitle: '«${item.name}» уже в списке');
       return;
     }
-    setState(() {
-      _entries.add(WriteOffItemEntry(item: item, quantity: 1.0));
-    });
+    setState(() => _entries.add(WriteOffItemEntry(item: item, quantity: 1.0)));
   }
 
   void _removeItem(int index) {
@@ -174,76 +183,98 @@ class _WriteOffDocumentDialogState extends State<WriteOffDocumentDialog> {
     final availableIngredients =
         ingState is IngredientLoaded ? ingState.ingredients : <Ingredient>[];
 
-    return DirtyPopScope(
-      isDirtyCheck: () => _isDirty,
-      title: 'Отменить списание?',
-      message:
-          'Все выбранные позиции и данные акта будут сброшены. Вы уверены, что хотите выйти?',
-      confirmLabel: 'Сбросить акт',
-      child: AppCardDialog(
-        title: 'Акт списания со склада',
-        icon: PhosphorIconsRegular.archive,
-        width: 680,
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            WriteOffMetaRow(
-              selectedReason: _selectedReason,
-              reasons: _reasons,
-              onReasonChanged: (r) => setState(() => _selectedReason = r),
-              commentController: _commentController,
-            ),
-            const SizedBox(height: 12),
-            WriteOffTabsBar(
-              viewMode: _viewMode,
-              onViewModeChanged: (mode) => setState(() => _viewMode = mode),
-              itemsCount: _entries.where((e) => e.quantity > 0).length,
-            ),
-            const SizedBox(height: 10),
-            if (_viewMode == WriteOffViewMode.items) ...[
-              WriteOffAddItemBar(
-                availableIngredients: availableIngredients,
-                onIngredientSelected: _addItem,
+    return AppSaveShortcutScope(
+      onSave: _entries.isNotEmpty && !_isLoading ? _submit : null,
+      onCancel: () => _isCartOpen ? setState(() => _isCartOpen = false) : Navigator.maybePop(context),
+      onSearch: _focusSearch,
+      child: DirtyPopScope(
+        isDirtyCheck: () => _isDirty,
+        title: 'Отменить списание?',
+        message:
+            'Все выбранные позиции и данные акта будут сброшены. Вы уверены, что хотите выйти?',
+        confirmLabel: 'Сбросить акт',
+        child: AppCardDialog(
+          title: 'Акт списания со склада',
+          icon: PhosphorIconsRegular.archive,
+          width: 680,
+          overlay: _isCartOpen
+              ? WriteOffCartSheet(
+                  items: _entries,
+                  currency: currency,
+                  onRemove: _removeItem,
+                  onChanged: () => setState(() {}),
+                  onClose: () => setState(() => _isCartOpen = false),
+                )
+              : null,
+          body: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              WriteOffMetaRow(
+                selectedReason: _selectedReason,
+                reasons: _reasons,
+                onReasonChanged: (r) => setState(() => _selectedReason = r),
+                commentController: _commentController,
               ),
               const SizedBox(height: 12),
-              WriteOffItemsTable(
-                items: _entries,
-                currency: currency,
-                onRemove: _removeItem,
-                onChanged: () => setState(() {}),
+              WriteOffTabsBar(
+                viewMode: _viewMode,
+                onViewModeChanged: (mode) {
+                  setState(() => _viewMode = mode);
+                  _focusSearch();
+                },
+                itemsCount: _entries.where((e) => e.quantity > 0).length,
               ),
-            ] else ...[
-              WriteOffCategorySection(
-                availableIngredients: availableIngredients,
-                activeEntries: _entries,
+              const SizedBox(height: 10),
+              if (_viewMode == WriteOffViewMode.items) ...[
+                WriteOffAddItemBar(
+                  availableIngredients: availableIngredients,
+                  onIngredientSelected: _addItem,
+                  focusNode: _addItemFocusNode,
+                  autoFocus: true,
+                ),
+                const SizedBox(height: 12),
+                WriteOffItemsTable(
+                  items: _entries,
+                  currency: currency,
+                  onRemove: _removeItem,
+                  onChanged: () => setState(() {}),
+                ),
+              ] else ...[
+                WriteOffCategorySection(
+                  availableIngredients: availableIngredients,
+                  activeEntries: _entries,
+                  currency: currency,
+                  onQuantityChanged: _onCategoryQuantityChanged,
+                  searchFocusNode: _categorySearchFocusNode,
+                ),
+              ],
+              const SizedBox(height: 14),
+              WriteOffSummaryCard(
+                itemsCount: _entries.where((e) => e.quantity > 0).length,
+                totalUnits: _totalUnits,
+                totalAmount: _totalAmount,
                 currency: currency,
-                onQuantityChanged: _onCategoryQuantityChanged,
+                isCartOpen: _isCartOpen,
+                onToggleCart: () => setState(() => _isCartOpen = !_isCartOpen),
               ),
             ],
-            const SizedBox(height: 14),
-            WriteOffSummaryCard(
-              itemsCount: _entries.where((e) => e.quantity > 0).length,
-              totalUnits: _totalUnits,
-              totalAmount: _totalAmount,
-              currency: currency,
+          ),
+          actions: [
+            AppGhostButton(
+              label: 'Отмена',
+              height: 38,
+              onPressed: _isLoading ? null : () => Navigator.maybePop(context),
+            ),
+            AppPrimaryButton(
+              label: 'Провести',
+              icon: PhosphorIconsRegular.checkCircle,
+              height: 38,
+              isLoading: _isLoading,
+              onPressed: _isLoading || _entries.isEmpty ? null : _submit,
             ),
           ],
         ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            height: 38,
-            onPressed: _isLoading ? null : () => Navigator.maybePop(context),
-          ),
-          AppPrimaryButton(
-            label: 'Провести списание',
-            icon: PhosphorIconsRegular.checkCircle,
-            height: 38,
-            isLoading: _isLoading,
-            onPressed: _isLoading || _entries.isEmpty ? null : _submit,
-          ),
-        ],
       ),
     );
   }

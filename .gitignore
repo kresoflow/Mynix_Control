@@ -61,3 +61,4 @@ backend/logs/
 *.zip
 temp/
 scratch/
+oxion_chat_app/

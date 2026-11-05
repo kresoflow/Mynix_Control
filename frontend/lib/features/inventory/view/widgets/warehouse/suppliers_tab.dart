@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
+import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
@@ -35,54 +36,57 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
   @override
   void initState() {
     super.initState();
-    context.read<DocumentBloc>().add(const LoadSuppliers());
+    final docBloc = context.read<DocumentBloc>();
+    if (docBloc.state.suppliers.isEmpty) {
+      docBloc.add(const LoadSuppliers());
+    }
   }
 
   Future<void> _openCreate(BuildContext context) async {
-    final result = await showDialog<Map<String, dynamic>>(
+    final res = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (_) => const CreateSupplierDialog(),
     );
-    if (result != null && context.mounted) {
+    if (res != null && context.mounted) {
       context.read<DocumentBloc>().add(
         CreateSupplier(
-          result['name'],
-          contactInfo: result['contact_info'],
-          initialBalance: result['initial_balance'] != null ? double.tryParse(result['initial_balance'].toString()) : null,
+          res['name'],
+          contactInfo: res['contact_info'],
+          initialBalance: double.tryParse(res['initial_balance']?.toString() ?? ''),
         ),
       );
     }
   }
 
   Future<void> _openEdit(BuildContext ctx, Supplier supplier) async {
-    final result = await showDialog<Map<String, dynamic>>(
+    final res = await showDialog<Map<String, dynamic>>(
       context: ctx,
       builder: (_) => EditSupplierDialog(supplier: supplier),
     );
-    if (result != null && ctx.mounted) {
+    if (res != null && ctx.mounted) {
       ctx.read<DocumentBloc>().add(
         UpdateSupplier(
           supplier.id,
-          name: result['name'],
-          contactInfo: result['contact_info'],
-          isActive: result['is_active'],
+          name: res['name'],
+          contactInfo: res['contact_info'],
+          isActive: res['is_active'],
         ),
       );
     }
   }
 
   Future<void> _openPayDebt(BuildContext ctx, Supplier supplier, String currency) async {
-    final result = await showDialog<Map<String, dynamic>>(
+    final res = await showDialog<Map<String, dynamic>>(
       context: ctx,
       builder: (_) => SupplierPaymentDialog(supplier: supplier, currency: currency),
     );
-    if (result != null && ctx.mounted) {
+    if (res != null && ctx.mounted) {
       ctx.read<DocumentBloc>().add(
         RecordSupplierPayment(
           supplier.id,
-          amount: result['amount'],
-          paymentMethod: result['payment_method'] ?? 'cash',
-          comment: result['comment'],
+          amount: res['amount'],
+          paymentMethod: res['payment_method'] ?? 'cash',
+          comment: res['comment'],
         ),
       );
     }
@@ -92,8 +96,7 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
     final confirmed = await AppConfirmDialog.show(
       context: ctx,
       title: 'Удалить поставщика?',
-      message:
-          'Поставщик «${supplier.name}» будет удалён.\nЕсли к нему привязаны накладные, история взаиморасчётов сохранится в архиве.',
+      message: 'Поставщик «${supplier.name}» будет удалён.\nИстория взаиморасчётов сохранится в архиве.',
       confirmLabel: 'Удалить',
       isDanger: true,
       icon: PhosphorIconsRegular.trash,
@@ -101,6 +104,37 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
     if (confirmed == true && ctx.mounted) {
       ctx.read<DocumentBloc>().add(DeleteSupplier(supplier.id));
     }
+  }
+
+  Widget _buildEmptyState() {
+    final hasSearch = _searchQuery.isNotEmpty;
+    return Center(
+      child: AppEmptyState(
+        icon: PhosphorIconsRegular.truck,
+        title: hasSearch ? 'Поставщики не найдены' : (_showArchived ? 'Архив поставщиков пуст' : 'Нет поставщиков'),
+        description: hasSearch
+            ? 'Проверьте правильность написания или сбросьте поиск'
+            : (_showArchived
+                ? 'В архиве пока нет скрытых контрагентов'
+                : 'Добавьте первого контрагента для учета поставок и взаиморасчетов'),
+        size: AppEmptyStateSize.md,
+        action: hasSearch
+            ? AppSecondaryButton(
+                label: 'Сбросить поиск',
+                icon: PhosphorIconsRegular.arrowCounterClockwise,
+                size: AppButtonSize.sm,
+                onPressed: () => setState(() => _searchQuery = ''),
+              )
+            : (!_showArchived
+                ? AppPrimaryButton(
+                    label: 'Добавить поставщика',
+                    icon: PhosphorIconsRegular.plus,
+                    size: AppButtonSize.md,
+                    onPressed: () => _openCreate(context),
+                  )
+                : null),
+      ),
+    );
   }
 
   @override
@@ -123,7 +157,7 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
         }
       },
       builder: (context, state) {
-        if (state.status == DocumentStatus.loading && state.suppliers.isEmpty) {
+        if (state.suppliersStatus == DocumentStatus.loading && state.suppliers.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(24),
             child: SkeletonList(),
@@ -140,11 +174,12 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
               s.id.toString().contains(q);
         }).toList();
 
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              child: Row(
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
@@ -152,18 +187,12 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
                     children: [
                       Text(
                         _showArchived ? 'Архив поставщиков' : 'Поставщики и взаиморасчеты',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? AppColors.darkText : AppColors.lightText,
-                          letterSpacing: -0.5,
-                        ),
+                        style: AppTextStyles.h2,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${suppliers.length} записей',
-                        style: TextStyle(
-                          fontSize: 13,
+                        style: AppTextStyles.caption.copyWith(
                           color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
                         ),
                       ),
@@ -202,58 +231,63 @@ class _SuppliersTabState extends State<SuppliersTab> with AutomaticKeepAliveClie
                   ),
                 ],
               ),
-            ),
-            const SuppliersTableHeader(),
-            Expanded(
-              child: suppliers.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            PhosphorIconsRegular.truck,
-                            size: 48,
-                            color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _searchQuery.isNotEmpty ? 'Поставщики не найдены' : 'Нет поставщиков',
-                            style: TextStyle(color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      itemCount: suppliers.length,
-                      itemBuilder: (context, index) {
-                        final supplier = suppliers[index];
-                        final isLast = index == suppliers.length - 1;
-                        return SupplierRow(
-                          supplier: supplier,
-                          currency: currency,
-                          isLast: isLast,
-                          isDark: isDark,
-                          onEdit: () => _openEdit(context, supplier),
-                          onDelete: () => _confirmDelete(context, supplier),
-                          onPayDebt: () => _openPayDebt(context, supplier, currency),
-                          onOpenSettlement: () => SupplierSettlementDialog.show(context, supplier, currency),
-                          onToggleActive: () {
-                            context.read<DocumentBloc>().add(
-                              UpdateSupplier(
-                                supplier.id,
-                                name: supplier.name,
-                                contactInfo: supplier.contactInfo,
-                                isActive: !supplier.isActive,
-                              ),
-                            );
-                          },
-                        );
-                      },
+              const SizedBox(height: 16),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                    borderRadius: AppRadii.cardRadius,
+                    border: Border.all(
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     ),
-            ),
-            const SizedBox(height: 16),
-          ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: AppRadii.cardRadius,
+                    child: Column(
+                      children: [
+                        const SuppliersTableHeader(),
+                        Expanded(
+                          child: suppliers.isEmpty
+                              ? _buildEmptyState()
+                              : ListView.separated(
+                                  itemCount: suppliers.length,
+                                  separatorBuilder: (context, index) => Divider(
+                                    height: 1,
+                                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                                  ),
+                                  itemBuilder: (context, index) {
+                                    final supplier = suppliers[index];
+                                    final isLast = index == suppliers.length - 1;
+                                    return SupplierRow(
+                                      supplier: supplier,
+                                      currency: currency,
+                                      isLast: isLast,
+                                      isDark: isDark,
+                                      onEdit: () => _openEdit(context, supplier),
+                                      onDelete: () => _confirmDelete(context, supplier),
+                                      onPayDebt: () => _openPayDebt(context, supplier, currency),
+                                      onOpenSettlement: () => SupplierSettlementDialog.show(context, supplier, currency),
+                                      onToggleActive: () {
+                                        context.read<DocumentBloc>().add(
+                                          UpdateSupplier(
+                                            supplier.id,
+                                            name: supplier.name,
+                                            contactInfo: supplier.contactInfo,
+                                            isActive: !supplier.isActive,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

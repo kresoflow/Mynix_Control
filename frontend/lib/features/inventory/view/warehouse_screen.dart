@@ -31,10 +31,14 @@ class _WarehouseScreenState extends State<WarehouseScreen>
     
     // Auto-refresh data from database every time this screen is opened
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<IngredientBloc>().add(const LoadIngredients());
-      context.read<CategoryBloc>().add(const LoadCategories());
-      context.read<DocumentBloc>().add(const LoadDocuments());
-      context.read<DocumentBloc>().add(const LoadSuppliers());
+      if (!mounted) return;
+      final ingBloc = context.read<IngredientBloc>();
+      if (ingBloc.state is! IngredientLoaded) ingBloc.add(const LoadIngredients());
+      final catBloc = context.read<CategoryBloc>();
+      if (catBloc.state is! CategoryLoaded) catBloc.add(const LoadCategories());
+      final docBloc = context.read<DocumentBloc>();
+      if (docBloc.state.documents.isEmpty) docBloc.add(const LoadDocuments());
+      if (docBloc.state.suppliers.isEmpty) docBloc.add(const LoadSuppliers());
     });
   }
 

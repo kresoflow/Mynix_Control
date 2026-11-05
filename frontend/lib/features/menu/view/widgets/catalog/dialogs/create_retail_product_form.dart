@@ -173,7 +173,8 @@ class CreateRetailProductForm extends StatelessWidget {
             onRemove: () => onRemoveVariation(entry.key),
             onFieldsChanged: onFieldsChanged,
             onExtract: entry.value['id'] != null && onExtractVariation != null ? () => onExtractVariation!(entry.key) : null,
-          )),
+          ),
+        ),
         ] else ...[
           const SizedBox(height: 16),
           Row(

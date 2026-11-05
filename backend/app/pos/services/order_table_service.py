@@ -16,6 +16,7 @@ from app.pos.services.shift_service import get_open_shift
 from app.pos.services.checkout_service import format_order_dict, get_order_by_id
 from app.users.models import Tenant
 from app.exceptions import NotFoundError, ConflictError
+from app.pos.ws import notify_inventory_updated, notify_order_created
 
 async def get_active_tables_orders(session: AsyncSession) -> List[dict]:
     """Returns all active, unpaid hall orders grouped by table with batches and clean aggregation."""
@@ -104,7 +105,6 @@ async def settle_table_order(
     note: Optional[str] = None,
 ) -> dict:
     """Settles and completes a dine-in table order (post-payment)."""
-    from app.pos.ws import notify_inventory_updated
 
     # [БЕЗОПАСНОСТЬ] [ТРАНЗАКЦИЯ] Блокировка строки заказа от состояния гонки
     stmt = (
@@ -171,6 +171,7 @@ async def settle_table_order(
     order_data = format_order_dict(full_order or order, current_user.full_name)
 
     await notify_inventory_updated(current_user.tenant_id)
+    await notify_order_created(current_user.tenant_id, order_data)
 
     return order_data
 
@@ -181,7 +182,6 @@ async def append_items_to_table_order(
     items_data: list,
 ) -> dict:
     """Appends additional items (дозаказ) to an active table order."""
-    from app.pos.ws import notify_inventory_updated
 
     order = await get_order_by_id(session, order_id)
     if not order:
@@ -264,6 +264,7 @@ async def append_items_to_table_order(
     await session.flush()
     order_data = format_order_dict(order, current_user.full_name)
     await notify_inventory_updated(current_user.tenant_id)
+    await notify_order_created(current_user.tenant_id, order_data)
     return order_data
 
 async def split_table_order(
@@ -276,7 +277,6 @@ async def split_table_order(
     note: Optional[str] = None,
 ) -> dict:
     """Splits selected items from active table order and completes their payment."""
-    from app.pos.ws import notify_inventory_updated
 
     order = await get_order_by_id(session, order_id)
     if not order:
@@ -372,6 +372,7 @@ async def split_table_order(
     full_child = await get_order_by_id(session, child_order.id)
     order_data = format_order_dict(full_child or child_order, current_user.full_name)
     await notify_inventory_updated(current_user.tenant_id)
+    await notify_order_created(current_user.tenant_id, order_data)
 
     return {
         "split_order": order_data,

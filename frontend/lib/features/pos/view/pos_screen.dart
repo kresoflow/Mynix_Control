@@ -82,17 +82,10 @@ class _PosScreenState extends State<PosScreen> {
       if (!mounted) return;
       final event = msg['event'];
 
-      if (event == 'status_update') {
-        _debouncedRefreshCounts();
-        final orderId = msg['order_id'];
-        final status = msg['status']?.toString().toUpperCase();
-        if (mounted) {
-          if (status == 'READY') {
-            AppToast.showSuccess(context, 'Заказ готов к выдаче!', subtitle: 'Заказ #$orderId');
-          }
-          _debouncedUpdateOrdersAndShift();
-        }
-      } else if (event == 'new_order') {
+      if (event == 'order_created' ||
+          event == 'new_order' ||
+          event == 'status_update' ||
+          event == 'order_status_updated') {
         _debouncedRefreshCounts();
         if (mounted) {
           _debouncedUpdateOrdersAndShift();

@@ -8,9 +8,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kreso_frontend/core/router/app_route_observer.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
+import 'package:kreso_frontend/core/widgets/app_save_shortcut_scope.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Размеры поля поиска
@@ -72,6 +74,7 @@ class AppSearchField extends StatefulWidget {
 
 class _AppSearchFieldState extends State<AppSearchField> {
   static KeyEvent? _lastHandledKeyEvent;
+  static _AppSearchFieldState? _activeFocusedInstance;
   late TextEditingController _controller;
   late FocusNode _focusNode;
   Timer? _debounceTimer;
@@ -104,10 +107,27 @@ class _AppSearchFieldState extends State<AppSearchField> {
     if (widget.enableHotkeys) {
       HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
     }
+
+    if (widget.autoFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_focusNode.hasFocus) {
+          _focusNode.requestFocus();
+        }
+      });
+    }
   }
 
   void _onFocusChange() {
-    if (mounted) setState(() => _isFocused = _focusNode.hasFocus);
+    if (mounted) {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+        if (_isFocused) {
+          _activeFocusedInstance = this;
+        } else if (_activeFocusedInstance == this) {
+          _activeFocusedInstance = null;
+        }
+      });
+    }
   }
 
   void _onTextChanged(String val) {
@@ -157,6 +177,24 @@ class _AppSearchFieldState extends State<AppSearchField> {
     final modalRoute = ModalRoute.of(context);
     if (modalRoute != null && !modalRoute.isCurrent) {
       return false;
+    }
+
+    // 1.1. Абсолютная изоляция модальных окон (AppSaveShortcutScope / AppRouteObserver / rootNav):
+    // Если открыт модальный диалог, а текущий поиск находится на фоновом экране (не в PopupRoute),
+    // фоновый поиск полностью блокируется и не реагирует на хоткеи!
+    final isAnyModalPresent = AppSaveShortcutScope.isAnyModalOpen || AppRouteObserver.isModalOpen;
+    if (isAnyModalPresent && (modalRoute == null || modalRoute is! PopupRoute)) {
+      return false;
+    }
+
+    // 1.2. Изоляция веток StatefulShellRoute от корневых диалогов (rootNavigator):
+    // Если поиск находится во вложенном навигаторе ветки, а на корневом навигаторе
+    // открыт диалог/модалка (rootNav.canPop() == true), фоновый поиск полностью блокируется.
+    final rootNav = Navigator.maybeOf(context, rootNavigator: true);
+    if (rootNav != null && modalRoute != null && modalRoute.navigator != rootNav) {
+      if (rootNav.canPop()) {
+        return false;
+      }
     }
 
     // 2. Изоляция веток IndexedStack (проверяем Visibility в дереве предков)
@@ -258,22 +296,38 @@ class _AppSearchFieldState extends State<AppSearchField> {
       return true;
     }
 
-    // Escape: очистить, расфокусировать и свернуть
+    // Escape для развёрнутого collapsible-поиска, даже если курсор кликнули вне поля (в таблицу)
     if (event.logicalKey == LogicalKeyboardKey.escape ||
         event.physicalKey == PhysicalKeyboardKey.escape) {
-      if (_isFocused || (widget.mode == AppSearchMode.collapsible && _isExpanded)) {
-        _debounceTimer?.cancel();
-        _controller.clear();
-        widget.onChanged?.call('');
-        widget.onClear?.call();
-        _focusNode.unfocus();
-        if (widget.mode == AppSearchMode.collapsible) {
-          setState(() {
-            _isExpanded = false;
-            widget.onExpandedChanged?.call(false);
-            widget.onCollapsed?.call();
-          });
+      if (widget.mode == AppSearchMode.collapsible && _isExpanded) {
+        if (_activeFocusedInstance != null && _activeFocusedInstance != this) {
+          return false;
         }
+
+        if (!_isActiveAndVisible()) return false;
+
+        if (identical(_lastHandledKeyEvent, event)) {
+          return true;
+        }
+        _lastHandledKeyEvent = event;
+
+        _debounceTimer?.cancel();
+
+        // Фаза 1: Если в поле есть текст — очищаем текст и сбрасываем фильтр
+        if (_controller.text.isNotEmpty) {
+          _controller.clear();
+          widget.onChanged?.call('');
+          widget.onClear?.call();
+          return true;
+        }
+
+        // Фаза 2: Поле пустое — сворачиваем его
+        setState(() {
+          _isExpanded = false;
+          widget.onExpandedChanged?.call(false);
+          widget.onCollapsed?.call();
+        });
+        _focusNode.unfocus();
         return true;
       }
     }
@@ -281,8 +335,48 @@ class _AppSearchFieldState extends State<AppSearchField> {
     return false;
   }
 
+  // ── 3. Локальный перехват Escape в дереве фокуса (Desktop Standard) ────────
+  KeyEventResult _handleFocusKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+
+    if (event.logicalKey == LogicalKeyboardKey.escape ||
+        event.physicalKey == PhysicalKeyboardKey.escape) {
+      if (identical(_lastHandledKeyEvent, event)) {
+        return KeyEventResult.handled;
+      }
+      _lastHandledKeyEvent = event;
+
+      _debounceTimer?.cancel();
+
+      // Фаза 1: Если в поле есть введённый текст — очищаем только текст, сохраняя фокус
+      if (_controller.text.isNotEmpty) {
+        _controller.clear();
+        widget.onChanged?.call('');
+        widget.onClear?.call();
+        _focusNode.requestFocus();
+        return KeyEventResult.handled;
+      }
+
+      // Фаза 2: Если поле уже пустое — снимаем фокус и сворачиваем (если collapsible)
+      _focusNode.unfocus();
+      if (widget.mode == AppSearchMode.collapsible && _isExpanded) {
+        setState(() {
+          _isExpanded = false;
+          widget.onExpandedChanged?.call(false);
+          widget.onCollapsed?.call();
+        });
+      }
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
+  }
+
   @override
   void dispose() {
+    if (_activeFocusedInstance == this) {
+      _activeFocusedInstance = null;
+    }
     _debounceTimer?.cancel();
     if (widget.enableHotkeys) {
       HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
@@ -471,50 +565,53 @@ class _AppSearchFieldState extends State<AppSearchField> {
                   child: Center(
                     child: Transform.translate(
                       offset: Offset(0, opticalYOffset),
-                      child: TextField(
-                        controller: _controller,
-                        focusNode: _focusNode,
-                        autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
-                        onChanged: _onTextChanged,
-                        textAlignVertical: TextAlignVertical.center,
-                        cursorHeight: fontSize * 1.15,
-                        cursorWidth: 1.6,
-                        cursorColor: AppColors.brandPrimary,
-                        strutStyle: StrutStyle(
-                          fontSize: fontSize,
-                          height: 1.0,
-                          forceStrutHeight: true,
-                          leadingDistribution: TextLeadingDistribution.even,
-                        ),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: textColor,
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.w400,
-                          height: 1.0,
-                          leadingDistribution: TextLeadingDistribution.even,
-                        ),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          isCollapsed: true,
-                          hintText: widget.hintText,
-                          hintStyle: AppTextStyles.bodyMedium.copyWith(
-                            color: subtextColor,
+                      child: Focus(
+                        onKeyEvent: _handleFocusKeyEvent,
+                        child: TextField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          autofocus: widget.autoFocus || (widget.mode == AppSearchMode.collapsible),
+                          onChanged: _onTextChanged,
+                          textAlignVertical: TextAlignVertical.center,
+                          cursorHeight: fontSize * 1.15,
+                          cursorWidth: 1.6,
+                          cursorColor: AppColors.brandPrimary,
+                          strutStyle: StrutStyle(
+                            fontSize: fontSize,
+                            height: 1.0,
+                            forceStrutHeight: true,
+                            leadingDistribution: TextLeadingDistribution.even,
+                          ),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: textColor,
                             fontSize: fontSize,
                             fontWeight: FontWeight.w400,
                             height: 1.0,
                             leadingDistribution: TextLeadingDistribution.even,
                           ),
-                          filled: false,
-                          fillColor: Colors.transparent,
-                          hoverColor: Colors.transparent,
-                          focusColor: Colors.transparent,
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          errorBorder: InputBorder.none,
-                          focusedErrorBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            isCollapsed: true,
+                            hintText: widget.hintText,
+                            hintStyle: AppTextStyles.bodyMedium.copyWith(
+                              color: subtextColor,
+                              fontSize: fontSize,
+                              fontWeight: FontWeight.w400,
+                              height: 1.0,
+                              leadingDistribution: TextLeadingDistribution.even,
+                            ),
+                            filled: false,
+                            fillColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            focusColor: Colors.transparent,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            errorBorder: InputBorder.none,
+                            focusedErrorBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         ),
                       ),
                     ),
@@ -553,7 +650,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
                     ),
                   ),
                   SizedBox(width: rightPadding),
-                ] else if (widget.shortcutHint != null && !_isFocused) ...[
+                ] else if (widget.shortcutHint != null && _controller.text.isEmpty) ...[
                   SizedBox(width: iconGap),
                   Center(
                     child: Container(

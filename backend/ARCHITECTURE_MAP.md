@@ -27,8 +27,10 @@
    - `services/` — вся бизнес-логика, расчет себестоимости, списание остатков и транзакции с базой данных.
 4. **Связанность кода (Locality of Behavior):**
    - Монолитные связные транзакции допускают до 300–350 строк, механический распил единых методов запрещен.
-5. **Real-time Синхронизация (WebSockets):**
-   - Любые изменения заказов, остатков и документов склада автоматически транслируются через `kitchen_manager.broadcast_to_tenant` (`new_order`, `status_update`, `inventory_updated`).
+5. **Real-time Синхронизация (WebSockets) & Резерв Redis:**
+   - Изменения заказов, остатков и документов склада транслируются изолированно по тенантам через `tenant_ws_hub` (`TenantConnectionManager` в `app/pos/ws.py`).
+   - События строго декомпозированы: `order_created` (новые чеки, дозаказы, сплит столов), `document_updated` (черновики документов склада), `inventory_updated` (проводка накладных, списания остатков).
+   - Redis: зарезервирован под multi-worker Pub/Sub масштабирование во 2-й фазе; в single-instance пилоте WebSocket Hub работает in-memory с нулевым сетевым оверхедом.
 
 ---
 
@@ -79,7 +81,7 @@ backend/
 │   │   ├── services/                 # Бизнес-логика: checkout_service, shift_service, order_table_service
 │   │   ├── __init__.py               # Инициализация пакета pos
 │   │   ├── models.py                 # Модели: Order, OrderItem, Shift, Cashbox, OrderTable
-│   │   └── ws.py                     # WebSocket хаб реального времени (уведомления касс, кухни и склада)
+│   │   └── ws.py                     # WebSocket хаб реального времени: TenantConnectionManager (касса, склад, аналитика)
 │   ├── system/                       # Модуль: Системные настройки, Управление кластером и Диагностика
 │   │   ├── __pycache__/              # Байт-код модуля system
 │   │   ├── routers/                  # HTTP-маршруты системного управления

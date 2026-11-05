@@ -111,31 +111,10 @@ class _IngredientCategorySidebarState extends State<IngredientCategorySidebar> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Tooltip(
-                      message: (_forceExpanded == true) ? 'Свернуть все' : 'Развернуть все',
-                      child: InkWell(
-                        onTap: () => setState(() => _forceExpanded = !(_forceExpanded ?? false)),
-                        borderRadius: AppRadii.badgeRadius,
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                            borderRadius: AppRadii.badgeRadius,
-                            border: Border.all(
-                              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                            ),
-                          ),
-                          child: Icon(
-                            (_forceExpanded == true)
-                                ? PhosphorIconsRegular.caretUp
-                                : PhosphorIconsRegular.caretDown,
-                            size: 16,
-                            color: isDark ? AppColors.darkText : AppColors.lightText,
-                          ),
-                        ),
-                      ),
+                    AppExpandAllButton(
+                      isExpanded: _forceExpanded == true,
+                      onToggle: () => setState(() => _forceExpanded = !(_forceExpanded ?? false)),
+                      mode: AppExpandAllMode.compact,
                     ),
                   ],
                 ),

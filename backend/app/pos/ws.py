@@ -1,3 +1,14 @@
+# ==============================================================================
+# МОДУЛЬ: POS / WebSocket-хаб событий тенанта (Real-time Event Hub)
+# ДОМЕН: backend/app/pos/ws.py
+# ==============================================================================
+#
+# [ИНВАРИАНТ] [MULTI-TENANCY] Полная изоляция потоков событий по tenant_id:
+# 1. Авторизация WebSocket через JWT-токен в query-параметрах с проверкой tenant_id.
+# 2. Адресная рассылка доменных событий: order_created, inventory_updated, document_updated.
+#
+# ==============================================================================
+
 from typing import Dict, Set, Optional
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, status
@@ -10,16 +21,16 @@ from app.users import services as user_svc
 router = APIRouter()
 
 
-# ── Connection Manager ───────────────────────────────────────────
+# ─── 1. Менеджер WebSocket-подключений тенанта ────────────────────────────────
 
-class KitchenConnectionManager:
+class TenantConnectionManager:
     """
-    Manages WebSocket connections per tenant.
-    Multiple kitchen screens can connect for the same tenant.
+    Управляет активными WebSocket-подключениями в разрезе тенантов.
+    Гарантирует изоляцию: клиенты тенанта А никогда не получают события тенанта Б.
     """
 
     def __init__(self):
-        # tenant_id → set of active WebSocket connections
+        # tenant_id → множество активных WebSocket-соединений
         self.active_connections: Dict[int, Set[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, tenant_id: int):
@@ -35,7 +46,7 @@ class KitchenConnectionManager:
                 del self.active_connections[tenant_id]
 
     async def broadcast_to_tenant(self, tenant_id: int, message: dict):
-        """Send a message to all kitchen screens for a given tenant."""
+        """Рассылка сообщения всем активным клиентам конкретного тенанта."""
         connections = self.active_connections.get(tenant_id, set())
         dead = []
         for ws in connections:
@@ -43,27 +54,29 @@ class KitchenConnectionManager:
                 await ws.send_json(message)
             except Exception:
                 dead.append(ws)
-        # Clean up dead connections
+        # Очистка оборванных соединений
         for ws in dead:
             self.disconnect(ws, tenant_id)
 
 
-# Singleton manager instance
-kitchen_manager = KitchenConnectionManager()
+# Синглтон менеджера соединений
+tenant_ws_hub = TenantConnectionManager()
+kitchen_manager = tenant_ws_hub  # Алиас для обратной совместимости
 
 
+# ─── 2. WebSocket-эндпоинт ───────────────────────────────────────────────────
+
+@router.websocket("/ws/{tenant_id}")
 @router.websocket("/ws/pos/{tenant_id}")
-@router.websocket("/ws/kitchen/{tenant_id}")
-async def pos_websocket(
+async def tenant_websocket(
     websocket: WebSocket,
     tenant_id: int,
     token: Optional[str] = Query(None),
 ):
     """
-    Live POS event stream (orders, status updates, inventory synchronization).
-    Requires valid JWT token belonging to the target tenant_id.
+    Поток живых событий тенанта (заказы, остатки, накладные).
+    Требует валидный JWT-токен пользователя, принадлежащего целевому tenant_id.
     """
-    # Fallback to query param from websocket if not parsed by Query
     if not token:
         token = websocket.query_params.get("token")
 
@@ -83,54 +96,49 @@ async def pos_websocket(
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token signature")
         return
 
-    # Verify user is active and belongs to the requested tenant
+    # Проверка активности пользователя и принадлежности к тенанту
     async with async_session_factory() as session:
         user = await user_svc.get_user_by_id(session, int(user_id))
         if not user or not user.is_active or user.tenant_id != tenant_id:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized tenant access")
             return
 
-    await kitchen_manager.connect(websocket, tenant_id)
+    await tenant_ws_hub.connect(websocket, tenant_id)
     try:
         while True:
-            # Keep connection alive; listen for pings/heartbeats
+            # Поддержание соединения живым (Heartbeat ping/pong)
             data = await websocket.receive_text()
-            # Client can send "ping" to keep alive
             if data == "ping":
                 await websocket.send_text("pong")
     except (WebSocketDisconnect, Exception):
         pass
     finally:
-        kitchen_manager.disconnect(websocket, tenant_id)
+        tenant_ws_hub.disconnect(websocket, tenant_id)
 
 
-# ── Helper: notify kitchen about new/updated orders ─────────────
+# ─── 3. Доменные функции рассылки уведомлений ─────────────────────────────────
 
-async def notify_kitchen_new_order(tenant_id: int, order_data: dict):
-    """Called by POS services when a new order is created."""
-    await kitchen_manager.broadcast_to_tenant(tenant_id, {
-        "event": "new_order",
+async def notify_order_created(tenant_id: int, order_data: dict):
+    """Уведомление кассовых терминалов о создании нового чека/заказа."""
+    await tenant_ws_hub.broadcast_to_tenant(tenant_id, {
+        "event": "order_created",
         "order": order_data,
     })
 
 
-async def notify_kitchen_status_update(
-    tenant_id: int, order_id: int, new_status: str
-):
-    """Called when an order status changes."""
-    await kitchen_manager.broadcast_to_tenant(tenant_id, {
-        "event": "status_update",
-        "order_id": order_id,
-        "new_status": new_status,
+async def notify_document_updated(tenant_id: int):
+    """Уведомление складских экранов об изменении журнала накладных (приход, списание)."""
+    await tenant_ws_hub.broadcast_to_tenant(tenant_id, {
+        "event": "document_updated",
     })
 
 
 async def notify_inventory_updated(tenant_id: int):
-    """Called when inventory stock levels change."""
-    await kitchen_manager.broadcast_to_tenant(tenant_id, {
+    """Уведомление об изменении остатков товаров/ингредиентов на складе."""
+    await tenant_ws_hub.broadcast_to_tenant(tenant_id, {
         "event": "inventory_updated",
     })
 
 
-
-
+# Алиасы обратной совместимости
+notify_kitchen_new_order = notify_order_created

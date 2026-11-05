@@ -20,6 +20,7 @@ class WriteOffCategorySection extends StatefulWidget {
   final List<WriteOffItemEntry> activeEntries;
   final String currency;
   final void Function(Ingredient item, double qty) onQuantityChanged;
+  final FocusNode? searchFocusNode;
 
   const WriteOffCategorySection({
     super.key,
@@ -27,6 +28,7 @@ class WriteOffCategorySection extends StatefulWidget {
     required this.activeEntries,
     required this.currency,
     required this.onQuantityChanged,
+    this.searchFocusNode,
   });
 
   @override
@@ -140,6 +142,7 @@ class _WriteOffCategorySectionState extends State<WriteOffCategorySection> {
         // ─── Панель инструментов: поиск и быстрые фильтры ───
         WriteOffCategoryToolbar(
           searchController: _searchController,
+          searchFocusNode: widget.searchFocusNode,
           onSearchChanged: (val) {
             setState(() => _searchQuery = val.trim().toLowerCase());
           },

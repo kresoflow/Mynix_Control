@@ -112,14 +112,20 @@ class ReceiveDocumentTabsBar extends StatelessWidget {
                   label: 'По строкам',
                   icon: PhosphorIconsRegular.listDashes,
                   isSelected: viewMode == ReceiveViewMode.lines,
-                  onTap: () => onViewModeChanged(ReceiveViewMode.lines),
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    onViewModeChanged(ReceiveViewMode.lines);
+                  },
                   isDark: isDark,
                 ),
                 _buildViewPill(
                   label: 'По категориям',
                   icon: PhosphorIconsRegular.squaresFour,
                   isSelected: viewMode == ReceiveViewMode.categories,
-                  onTap: () => onViewModeChanged(ReceiveViewMode.categories),
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    onViewModeChanged(ReceiveViewMode.categories);
+                  },
                   isDark: isDark,
                 ),
               ],

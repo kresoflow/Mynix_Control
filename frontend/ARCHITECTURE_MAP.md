@@ -33,8 +33,10 @@
    - Целевой размер файлов: 200–250 строк. Жесткий потолок: 300 строк.
    - Запрещены файлы-карлики (<60 строк).
 6. **Desktop Инварианты & Hotkeys:**
-   - Аппаратные хоткеи: `Ctrl + S` / `Cmd + S` (сохранение в модальных окнах), `Esc` (закрытие диалогов), `Ctrl + 1..6` (быстрая навигация по сайдбару), `Ctrl + B` (свернуть/развернуть меню).
-   - Ограничение окна Windows Desktop (`WM_GETMINMAXINFO`): минимальный размер 1024x700 px (защита от сжатия POS-терминалов кассы).
+   - Каскадная иерархия Esc: 1) очистка текста активного поиска -> 2) расфокусировка/сворачивание активного поиска (соседние открытые колонки поиска изолированы и не схлопываются) -> 3) закрытие модального окна (AppSaveShortcutScope).
+   - Хоткеи поиска: Ctrl + F / Cmd + K / F2 (поддержка RU/EN через physicalKey) во всех модалках и разделах; строгая изоляция от корневых диалогов rootNavigator (фоновый поиск блокируется); чистый UI без визуального мусора бейджей; автокурсор при смене вкладок и режимов строк/категорий.
+   - Аппаратные хоткеи: Ctrl + S / Cmd + S (сохранение в модальных окнах), Ctrl + 1..6 (быстрая навигация по сайдбару), Ctrl + B (свернуть/развернуть меню).
+   - Ограничение окна Windows Desktop (WM_GETMINMAXINFO): минимальный размер 1024x700 px (защита от сжатия POS-терминалов кассы).
 
 ---
 
@@ -97,8 +99,8 @@ frontend/
 │   │   │   ├── models/               # document.dart, ingredient.dart, supplier.dart, supplier_transaction.dart
 │   │   │   ├── repository/           # inventory_repository.dart, parts/ (stock_part, documents_part)
 │   │   │   ├── services/             # document_export_service.dart, export_helper (web/stub)
-│   │   │   └── view/                 # warehouse_screen.dart, receive_retail_screen.dart, widgets/ (bulk_add/, stock_tab)
-│   │   ├── kitchen/                  # Модуль: Кухонный терминал (KDS)
+│   │   │   └── view/                 # warehouse_screen.dart, widgets/ (dialogs/ с корзинами cart_sheet и 2 режимами)
+│   │   ├── kitchen/                  # [Архивирован в пилоте] Модуль: Кухонный терминал (KDS)
 │   │   │   ├── bloc/                 # kitchen_bloc.dart, kitchen_event.dart, kitchen_state.dart
 │   │   │   ├── repository/           # kitchen_repository.dart
 │   │   │   └── view/                 # kitchen_screen.dart, kds_board.dart, widgets/ (карточки заказов, таймеры)
@@ -106,7 +108,7 @@ frontend/
 │   │   │   ├── services/             # duplicate_detector.dart (предотвращение дубликатов позиций)
 │   │   │   └── view/                 # catalog_screen.dart, widgets/ (каталог блюд, модификаторы, техкарты)
 │   │   ├── orders/                   # Модуль: Журнал чеков и История заказов
-│   │   │   ├── bloc/                 # orders_bloc.dart
+│   │   │   ├── bloc/                 # orders_bloc.dart (live-обновление чеков по WebSocket)
 │   │   │   ├── models/               # pos_order.dart (модель чека с позициями и скидками)
 │   │   │   ├── repository/           # orders_repository.dart
 │   │   │   └── view/                 # orders_screen.dart, widgets/ (order_details_dialog.dart, возврат)

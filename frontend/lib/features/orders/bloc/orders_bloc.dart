@@ -1,6 +1,8 @@
 
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:kreso_frontend/core/network/websocket_service.dart';
 import '../models/pos_order.dart';
 import '../repository/orders_repository.dart';
 
@@ -63,14 +65,44 @@ class OrdersError extends OrdersState {
 // --- BLoC ---
 class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
   final OrdersRepository repository;
+  final WebSocketService? _wsService;
+  StreamSubscription? _wsSubscription;
+  Timer? _wsDebounceTimer;
+  String? _lastStartDate;
+  String? _lastEndDate;
 
-  OrdersBloc({required this.repository}) : super(OrdersInitial()) {
+  OrdersBloc({required this.repository, WebSocketService? wsService})
+      : _wsService = wsService,
+        super(OrdersInitial()) {
     on<LoadOrders>(_onLoadOrders);
     on<CancelOrder>(_onCancelOrder);
     on<CompleteOrder>(_onCompleteOrder);
+
+    _wsSubscription = (_wsService ?? webSocketService).messages.listen((data) {
+      final event = data['event'];
+      if (event == 'order_created' ||
+          event == 'new_order' ||
+          event == 'order_status_updated' ||
+          event == 'order_updated') {
+        _wsDebounceTimer?.cancel();
+        _wsDebounceTimer = Timer(const Duration(milliseconds: 350), () {
+          // Автоматическое обновление списка заказов для активного диапазона дат
+          add(LoadOrders(startDate: _lastStartDate, endDate: _lastEndDate));
+        });
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _wsDebounceTimer?.cancel();
+    _wsSubscription?.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadOrders(LoadOrders event, Emitter<OrdersState> emit) async {
+    _lastStartDate = event.startDate;
+    _lastEndDate = event.endDate;
     emit(OrdersLoading());
     try {
       final orders = await repository.fetchOrders(

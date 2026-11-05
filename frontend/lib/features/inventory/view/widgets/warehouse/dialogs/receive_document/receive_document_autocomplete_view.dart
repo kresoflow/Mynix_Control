@@ -3,7 +3,9 @@
 // ДОМЕН: lib/features/inventory/view/widgets/warehouse/dialogs/receive_document/
 // ==============================================================================
 
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
@@ -15,8 +17,11 @@ import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_inp
 import 'receipt_row_data.dart';
 import 'receive_document_row_callbacks.dart';
 
-/// Поле автокомплита поиска номенклатуры в строке приходной накладной.
-class ReceiveDocumentAutocompleteField extends StatelessWidget {
+// ─── 1. Поле автокомплита номенклатуры со стабильным OverlayEntry ────────────
+
+/// [UI-KIT] [ИНВАРИАНТ] Поле ввода номенклатуры с выпадающим списком позиций.
+/// Реализовано на базе прямого `OverlayEntry`, исключая баги Flutter `OverlayPortalController.hide()`.
+class ReceiveDocumentAutocompleteField extends StatefulWidget {
   final ReceiptRowData item;
   final int index;
   final List<ReceiptRowData> items;
@@ -41,66 +46,163 @@ class ReceiveDocumentAutocompleteField extends StatelessWidget {
   });
 
   @override
+  State<ReceiveDocumentAutocompleteField> createState() => _ReceiveDocumentAutocompleteFieldState();
+}
+
+class _ReceiveDocumentAutocompleteFieldState extends State<ReceiveDocumentAutocompleteField> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  Timer? _dismissTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.item.nameFocusNode.addListener(_handleFocusOrTextChanged);
+    widget.item.nameController.addListener(_handleFocusOrTextChanged);
+  }
+
+  @override
+  void didUpdateWidget(ReceiveDocumentAutocompleteField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item != widget.item) {
+      oldWidget.item.nameFocusNode.removeListener(_handleFocusOrTextChanged);
+      oldWidget.item.nameController.removeListener(_handleFocusOrTextChanged);
+      widget.item.nameFocusNode.addListener(_handleFocusOrTextChanged);
+      widget.item.nameController.addListener(_handleFocusOrTextChanged);
+    }
+    if (_overlayEntry != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _overlayEntry != null) _overlayEntry!.markNeedsBuild();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _dismissTimer?.cancel();
+    _removeOverlay();
+    widget.item.nameFocusNode.removeListener(_handleFocusOrTextChanged);
+    widget.item.nameController.removeListener(_handleFocusOrTextChanged);
+    super.dispose();
+  }
+
+  void _handleFocusOrTextChanged() {
+    if (!mounted) return;
+    final hasFocus = widget.item.nameFocusNode.hasFocus;
+    final text = widget.item.nameController.text.trim();
+
+    if (hasFocus && text.isNotEmpty && widget.item.ingredient == null) {
+      _dismissTimer?.cancel();
+      _showOverlay();
+    } else if (!hasFocus) {
+      _dismissTimer?.cancel();
+      _dismissTimer = Timer(const Duration(milliseconds: 200), () {
+        if (mounted && !widget.item.nameFocusNode.hasFocus) _removeOverlay();
+      });
+    } else {
+      _removeOverlay();
+    }
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  List<Ingredient> _filterIngredients(String query) {
+    if (query.isEmpty) return const [];
+    final q = query.toLowerCase();
+    return widget.availableIngredients.where((opt) {
+      if (opt.isArchived || !opt.name.toLowerCase().contains(q)) return false;
+      final isRetail = opt.attributes?['is_retail'] == true;
+      return widget.tabIndex == 1 ? isRetail : (widget.tabIndex == 2 ? !isRetail : true);
+    }).toList();
+  }
+
+  void _showOverlay() {
+    if (!mounted || widget.item.ingredient != null) { _removeOverlay(); return; }
+    final filtered = _filterIngredients(widget.item.nameController.text);
+    if (filtered.isEmpty) { _removeOverlay(); return; }
+    if (_overlayEntry != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _overlayEntry != null) _overlayEntry!.markNeedsBuild();
+      });
+      return;
+    }
+    final overlayState = Overlay.maybeOf(context);
+    if (overlayState == null) return;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) {
+        final currentFiltered = _filterIngredients(widget.item.nameController.text);
+        if (currentFiltered.isEmpty) return const SizedBox.shrink();
+
+        return Positioned(
+          width: 360,
+          child: CompositedTransformFollower(
+            link: _layerLink, showWhenUnlinked: false, offset: const Offset(0, 42),
+            child: TapRegion(
+              groupId: widget.item,
+              child: ReceiveDocumentAutocompleteOptionsView(
+                options: currentFiltered,
+                onSelected: (selection) {
+                  _dismissTimer?.cancel();
+                  _removeOverlay();
+                  widget.onIngredientSelected(selection);
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    overlayState.insert(_overlayEntry!);
+  }
+
+  KeyEventResult _handleRowKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape && _overlayEntry != null) {
+      _dismissTimer?.cancel();
+      _removeOverlay();
+      return KeyEventResult.handled;
+    }
+    return ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
+      event: event, items: widget.items, index: widget.index, targetNode: (r) => r.nameFocusNode,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Expanded(
-      flex: tabIndex == 2 ? 5 : 3,
+      flex: widget.tabIndex == 2 ? 5 : 3,
       child: SizedBox(
         height: 40,
-        child: Focus(
-          onKeyEvent: (_, event) => ReceiveDocumentRowCallbacks.handleArrowKeyNavigation(
-            event: event,
-            items: items,
-            index: index,
-            targetNode: (r) => r.nameFocusNode,
-          ),
-          child: RawAutocomplete<Ingredient>(
-            textEditingController: item.nameController,
-            focusNode: item.nameFocusNode,
-            displayStringForOption: (option) => option.name,
-            optionsBuilder: (textEditingValue) {
-              if (textEditingValue.text.isEmpty) {
-                return const Iterable<Ingredient>.empty();
-              }
-              return availableIngredients.where((option) {
-                if (option.isArchived) return false;
-                final matchesText = option.name
-                    .toLowerCase()
-                    .contains(textEditingValue.text.toLowerCase());
-                if (!matchesText) return false;
-                final isOptionRetail = option.attributes?['is_retail'] == true;
-                if (tabIndex == 1) return isOptionRetail;
-                if (tabIndex == 2) return !isOptionRetail;
-                return true;
-              });
-            },
-            onSelected: onIngredientSelected,
-            fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-              return TextFormField(
-                controller: controller,
-                focusNode: focusNode,
+        child: CompositedTransformTarget(
+          link: _layerLink,
+          child: TapRegion(
+            groupId: widget.item,
+            child: Focus(
+              onKeyEvent: _handleRowKeyEvent,
+              child: TextFormField(
+                controller: widget.item.nameController,
+                focusNode: widget.item.nameFocusNode,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: isDark ? AppColors.darkText : AppColors.lightText,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  color: widget.isDark ? AppColors.darkText : AppColors.lightText,
+                  fontSize: 13, fontWeight: FontWeight.w500,
                 ),
                 decoration: buildBulkInputDecoration(
-                  context,
-                  'Поиск номенклатуры...',
-                  isHintOnly: true,
-                  suffixIcon: item.ingredient != null
-                      ? const Icon(PhosphorIconsRegular.checkCircle, color: AppColors.success, size: 16)
-                      : Icon(PhosphorIconsRegular.magnifyingGlass, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext, size: 16),
+                  context, 'Поиск номенклатуры...', isHintOnly: true,
+                  suffixIcon: widget.item.ingredient != null
+                      ? const Icon(PhosphorIconsRegular.checkCircle, color: AppColors.success, size: 16,)
+                      : Icon(PhosphorIconsRegular.magnifyingGlass, color: widget.isDark ? AppColors.darkSubtext : AppColors.lightSubtext, size: 16,),
                 ),
-                onChanged: onNameChanged,
-                onFieldSubmitted: (_) => onNameSubmitted(),
-              );
-            },
-            optionsViewBuilder: (context, onSelected, options) {
-              return ReceiveDocumentAutocompleteOptionsView(
-                options: options,
-                onSelected: onSelected,
-              );
-            },
+                onChanged: widget.onNameChanged,
+                onFieldSubmitted: (_) {
+                  _dismissTimer?.cancel();
+                  _removeOverlay();
+                  widget.onNameSubmitted();
+                },
+              ),
+            ),
           ),
         ),
       ),
@@ -108,10 +210,12 @@ class ReceiveDocumentAutocompleteField extends StatelessWidget {
   }
 }
 
-/// Выпадающее меню с результатами поиска для автокомплита.
+// ─── 2. Выпадающее меню с результатами поиска ────────────────────────────────
+
+/// [UI-KIT] Выпадающее меню с результатами поиска для автокомплита.
 class ReceiveDocumentAutocompleteOptionsView extends StatelessWidget {
   final Iterable<Ingredient> options;
-  final AutocompleteOnSelected<Ingredient> onSelected;
+  final ValueChanged<Ingredient> onSelected;
 
   const ReceiveDocumentAutocompleteOptionsView({
     super.key,
@@ -122,71 +226,35 @@ class ReceiveDocumentAutocompleteOptionsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? AppColors.darkText : AppColors.lightText;
+    final subtextColor = isDark ? AppColors.darkSubtext : AppColors.lightSubtext;
 
     return Align(
       alignment: Alignment.topLeft,
       child: Material(
-        elevation: 8,
-        borderRadius: AppRadii.inputRadius,
+        elevation: 8, borderRadius: AppRadii.inputRadius,
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         child: Container(
-          width: 360,
-          constraints: const BoxConstraints(maxHeight: 220),
+          width: 360, constraints: const BoxConstraints(maxHeight: 220),
           decoration: BoxDecoration(
             borderRadius: AppRadii.inputRadius,
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            ),
+            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
           ),
           child: ListView.builder(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            itemCount: options.length,
+            padding: EdgeInsets.zero, shrinkWrap: true, itemCount: options.length,
             itemBuilder: (context, optIndex) {
               final option = options.elementAt(optIndex);
               final isDeficit = option.currentStock < 0;
+
               return ListTile(
                 dense: true,
-                title: Text(
-                  option.name,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: isDark ? AppColors.darkText : AppColors.lightText,
-                    fontSize: 13,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  'Закупка: ${option.costPerUnit.toCurrency(context)}',
-                  style: AppTextStyles.caption.copyWith(
-                    color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                    fontSize: 11,
-                  ),
-                ),
+                title: Text(option.name, style: AppTextStyles.bodyMedium.copyWith(color: textColor, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                subtitle: Text('Закупка: ${option.costPerUnit.toCurrency(context)}', style: AppTextStyles.caption.copyWith(color: subtextColor, fontSize: 11)),
                 trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      UnitFormatter.formatAmount(option.currentStock, option.unit),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: isDeficit
-                            ? AppColors.danger
-                            : (isDark ? AppColors.darkText : AppColors.lightText),
-                      ),
-                    ),
-                    Text(
-                      isDeficit ? 'дефицит' : 'на складе',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: isDeficit ? FontWeight.w600 : FontWeight.normal,
-                        color: isDeficit
-                            ? AppColors.danger
-                            : (isDark ? AppColors.darkSubtext : AppColors.lightSubtext),
-                      ),
-                    ),
+                    Text(UnitFormatter.formatAmount(option.currentStock, option.unit,), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDeficit ? AppColors.danger : textColor)),
+                    Text(isDeficit ? 'дефицит' : 'на складе', style: TextStyle(fontSize: 10, fontWeight: isDeficit ? FontWeight.w600 : FontWeight.normal, color: isDeficit ? AppColors.danger : subtextColor)),
                   ],
                 ),
                 onTap: () => onSelected(option),

@@ -36,7 +36,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
 
     _wsSubscription = webSocketService.messages.listen((data) {
       final event = data['event'];
-      if (event == 'inventory_updated' ||
+      if (event == 'document_updated' ||
           event == 'document_created' ||
           event == 'document_completed') {
         _wsDebounceTimer?.cancel();
@@ -75,6 +75,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     LoadDocuments event,
     Emitter<DocumentState> emit,
   ) async {
+    if (!event.forceRefresh && state.documents.isNotEmpty && (event.type == null || event.type == 'all')) {
+      return;
+    }
     if (state.documents.isEmpty) {
       emit(state.copyWith(status: DocumentStatus.loading));
     }
@@ -100,17 +103,26 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     LoadSuppliers event,
     Emitter<DocumentState> emit,
   ) async {
+    if (!event.forceRefresh && state.suppliers.isNotEmpty) {
+      return;
+    }
     if (state.suppliers.isEmpty) {
-      emit(state.copyWith(status: DocumentStatus.loading));
+      emit(state.copyWith(suppliersStatus: DocumentStatus.loading));
     }
     try {
       final suppliers = await _repository.getSuppliers();
-      emit(state.copyWith(suppliers: suppliers, clearError: true));
+      emit(
+        state.copyWith(
+          suppliers: suppliers,
+          suppliersStatus: DocumentStatus.success,
+          clearError: true,
+        ),
+      );
     } catch (e) {
       if (state.suppliers.isEmpty) {
         emit(
           state.copyWith(
-            status: DocumentStatus.failure,
+            suppliersStatus: DocumentStatus.failure,
             errorMessage: _formatError(e),
           ),
         );
@@ -130,6 +142,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         isSubmitting: false, 
         documents: documents, 
         suppliers: suppliers,
+        status: DocumentStatus.success,
+        suppliersStatus: DocumentStatus.success,
         clearError: true,
       ),
     );

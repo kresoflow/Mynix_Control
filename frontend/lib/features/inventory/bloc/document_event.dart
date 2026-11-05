@@ -11,14 +11,21 @@ abstract class DocumentEvent extends Equatable {
 class LoadDocuments extends DocumentEvent {
   final String? type;
 
-  const LoadDocuments({this.type});
+  final bool forceRefresh;
+
+  const LoadDocuments({this.type, this.forceRefresh = false});
 
   @override
-  List<Object?> get props => [type];
+  List<Object?> get props => [type, forceRefresh];
 }
 
 class LoadSuppliers extends DocumentEvent {
-  const LoadSuppliers();
+  final bool forceRefresh;
+
+  const LoadSuppliers({this.forceRefresh = false});
+
+  @override
+  List<Object?> get props => [forceRefresh];
 }
 
 class CreateDocument extends DocumentEvent {

@@ -5,12 +5,9 @@
 // ==============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
 import 'package:kreso_frontend/core/theme/app_radii.dart';
-import 'package:kreso_frontend/features/analytics/bloc/analytics_bloc.dart';
-import 'package:kreso_frontend/features/analytics/bloc/analytics_event.dart';
 
 // ─── 1. Виджет выбора аналитического периода ──────────────────────────────────
 
@@ -68,10 +65,7 @@ class AnalyticsPeriodSelector extends StatelessWidget {
         children: _periods.map((p) {
           final isSelected = selectedPeriod == p.$1;
           return InkWell(
-            onTap: () {
-              onPeriodChanged(p.$1);
-              context.read<AnalyticsBloc>().add(LoadAnalytics(period: p.$1));
-            },
+            onTap: () => onPeriodChanged(p.$1),
             borderRadius: AppRadii.badgeRadius,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
@@ -122,15 +116,6 @@ class AnalyticsPeriodSelector extends StatelessWidget {
 
         if (picked != null) {
           onCustomDateSelected(picked.start, picked.end);
-          if (context.mounted) {
-            context.read<AnalyticsBloc>().add(
-                  LoadAnalytics(
-                    period: 'custom',
-                    startDate: picked.start,
-                    endDate: picked.end,
-                  ),
-                );
-          }
         }
       },
       borderRadius: AppRadii.inputRadius,
@@ -152,23 +137,25 @@ class AnalyticsPeriodSelector extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              PhosphorIconsRegular.calendar,
+              PhosphorIconsRegular.calendarBlank,
               size: 14,
               color: isSelected
                   ? AppColors.pureWhite
                   : (isDark ? AppColors.darkText : AppColors.lightText),
             ),
-            const SizedBox(width: 6),
-            Text(
-              'Период',
-              style: TextStyle(
-                color: isSelected
-                    ? AppColors.pureWhite
-                    : (isDark ? AppColors.darkText : AppColors.lightText),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 12,
+            if (startDate != null && endDate != null) ...[
+              const SizedBox(width: 6),
+              Text(
+                '${startDate!.day}.${startDate!.month} - ${endDate!.day}.${endDate!.month}',
+                style: TextStyle(
+                  color: isSelected
+                      ? AppColors.pureWhite
+                      : (isDark ? AppColors.darkText : AppColors.lightText),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

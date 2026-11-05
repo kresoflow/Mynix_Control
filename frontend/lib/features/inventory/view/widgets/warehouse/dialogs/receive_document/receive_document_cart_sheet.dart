@@ -6,12 +6,10 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
-import 'package:kreso_frontend/core/theme/app_shadows.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
 import 'package:kreso_frontend/core/utils/currency_formatter.dart';
 import 'package:kreso_frontend/core/utils/unit_formatter.dart';
-import 'package:kreso_frontend/features/inventory/view/widgets/bulk_add/bulk_input_decoration.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'category_mode/receive_category_sync_adapter.dart';
 import 'receipt_row_data.dart';
 
@@ -42,60 +40,75 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
       totalSum += it.quantity * it.price;
     }
 
-    return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.pureBlack.withValues(alpha: 0.45),
-          borderRadius: AppRadii.dialogRadius,
-        ),
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.58,
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppRadii.dialog),
-              bottom: Radius.circular(AppRadii.dialog),
-            ),
-            boxShadow: AppShadows.dialog,
+    return Material(
+      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+      child: Column(
+        children: [
+          _buildHeader(context, isDark, validItems.length),
+          _buildTableHeader(isDark),
+          Expanded(
+            child: validItems.isEmpty
+                ? _buildEmpty(isDark)
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    itemCount: validItems.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: isDark ? AppColors.darkBorder.withValues(alpha: 0.5) : AppColors.lightBorder.withValues(alpha: 0.5),
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = validItems[index];
+                      return _buildCartRow(context, item, isDark);
+                    },
+                  ),
           ),
-          child: Column(
-            children: [
-              _buildHeader(context, isDark, validItems.length, totalSum),
-              const Divider(height: 1),
-              Expanded(
-                child: validItems.isEmpty
-                    ? _buildEmpty(isDark)
-                    : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        itemCount: validItems.length,
-                        separatorBuilder: (_, __) => Divider(
-                          height: 1,
-                          color: isDark ? AppColors.darkBorder.withValues(alpha: 0.5) : AppColors.lightBorder.withValues(alpha: 0.5),
-                        ),
-                        itemBuilder: (context, index) {
-                          final item = validItems[index];
-                          return _buildCartRow(context, item, isDark);
-                        },
-                      ),
-              ),
-            ],
-          ),
-        ),
+          _buildFooter(context, isDark, validItems.length, totalSum),
+        ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark, int count, double totalSum) {
-    return Padding(
+  Widget _buildTableHeader(bool isDark) {
+    final style = AppTextStyles.caption.copyWith(
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.pureWhite.withValues(alpha: 0.03) : AppColors.pureBlack.withValues(alpha: 0.03),
+        border: Border(bottom: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text('Номенклатура', style: style)),
+          const SizedBox(width: 12),
+          SizedBox(width: 110, child: Text('Кол-во', style: style, textAlign: TextAlign.center)),
+          const SizedBox(width: 14),
+          SizedBox(width: 80, child: Text('Цена', style: style, textAlign: TextAlign.right)),
+          const SizedBox(width: 14),
+          SizedBox(width: 85, child: Text('Сумма', style: style, textAlign: TextAlign.right)),
+          const SizedBox(width: 10),
+          const SizedBox(width: 36),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, bool isDark, int count) {
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
+      ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: AppColors.brandPrimary.withValues(alpha: 0.12),
-              borderRadius: AppRadii.inputRadius,
+              borderRadius: BorderRadius.circular(AppRadii.xs),
             ),
             child: Icon(PhosphorIconsRegular.shoppingCart, size: 20, color: AppColors.brandPrimary),
           ),
@@ -106,14 +119,37 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: AppColors.brandPrimary.withValues(alpha: 0.12),
-              borderRadius: AppRadii.radiusLg,
+              borderRadius: BorderRadius.circular(AppRadii.xs),
             ),
             child: Text('$count поз.', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.brandPrimary)),
           ),
           const Spacer(),
-          Text('Σ ${totalSum.toCurrency(context)}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? AppColors.darkText : AppColors.lightText)),
-          const SizedBox(width: 16),
           IconButton(icon: const Icon(PhosphorIconsRegular.x, size: 18), tooltip: 'Закрыть', onPressed: onClose),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(BuildContext context, bool isDark, int count, double totalSum) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface.withValues(alpha: 0.5) : AppColors.lightSurface,
+        border: Border(top: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.lightBorder)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'ИТОГО: ${totalSum.toCurrency(context)}',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: isDark ? AppColors.darkText : AppColors.lightText),
+          ),
+          AppSecondaryButton(
+            label: 'Назад к накладной',
+            size: AppButtonSize.sm,
+            icon: PhosphorIconsRegular.arrowLeft,
+            onPressed: onClose,
+          ),
         ],
       ),
     );
@@ -135,7 +171,7 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
               color: isRetail
                   ? AppColors.brandPrimary.withValues(alpha: 0.12)
                   : AppColors.brandTertiary.withValues(alpha: 0.12),
-              borderRadius: AppRadii.badgeRadius,
+              borderRadius: BorderRadius.circular(AppRadii.xs),
             ),
             child: Text(
               isRetail ? 'Витрина' : 'Сырьё',
@@ -169,37 +205,37 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // 3. Поле количества
-          SizedBox(
-            width: 75,
-            height: 32,
-            child: TextField(
-              controller: row.qtyController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              decoration: buildBulkInputDecoration(context, '0', isHintOnly: true, contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6)),
-              onChanged: (val) {
-                final qty = double.tryParse(val.replaceAll(',', '.')) ?? 0.0;
-                adapter.updateQuantity(ing, qty);
-                onStateUpdate();
-              },
-            ),
+          // 3. Унифицированный счетчик количества из UI Kit
+          AppQuantityStepper(
+            value: row.quantity,
+            allowDecimals: true,
+            size: AppStepperSize.sm,
+            unit: UnitFormatter.format(row.selectedUnit),
+            min: 0,
+            onChanged: (val) {
+              final qty = val.toDouble();
+              adapter.updateQuantity(ing, qty);
+              row.qtyController.text = qty == qty.truncateToDouble() ? qty.toInt().toString() : qty.toString();
+              onStateUpdate();
+            },
+            onRemove: () {
+              adapter.updateQuantity(ing, 0.0);
+              row.qtyController.clear();
+              onStateUpdate();
+            },
           ),
-          const SizedBox(width: 6),
-          Text(UnitFormatter.format(row.selectedUnit), style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
           const SizedBox(width: 14),
 
           // 4. Цена закупки
           SizedBox(
-            width: 90,
+            width: 80,
             child: Text('${row.price.toCurrency(context)}/ед', textAlign: TextAlign.right, style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext)),
           ),
           const SizedBox(width: 14),
 
           // 5. Сумма строки
           SizedBox(
-            width: 90,
+            width: 85,
             child: Text(lineTotal.toCurrency(context), textAlign: TextAlign.right, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
           ),
           const SizedBox(width: 10),
@@ -210,6 +246,7 @@ class ReceiveDocumentCartSheet extends StatelessWidget {
             tooltip: 'Удалить из накладной',
             onPressed: () {
               adapter.updateQuantity(ing, 0.0);
+              row.qtyController.clear();
               onStateUpdate();
             },
           ),

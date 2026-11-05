@@ -12,14 +12,18 @@ import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/ingredient_event.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
+import 'blind_inventory/blind_inventory_tabs_bar.dart';
+import 'blind_inventory/blind_inventory_add_item_bar.dart';
+import 'blind_inventory/blind_inventory_items_table.dart';
 import 'blind_inventory/blind_inventory_toolbar.dart';
 import 'blind_inventory/blind_inventory_grouped_view.dart';
 import 'blind_inventory/blind_inventory_progress_card.dart';
+import 'blind_inventory/blind_inventory_cart_sheet.dart';
 
 // ==============================================================================
 // 2. ДИАЛОГ СЛЕПОЙ ИНВЕНТАРИЗАЦИИ
 // ==============================================================================
-/// [ИНВАРИАНТ] Диалог ревизии склада с группировкой номенклатуры по цехам.
+/// [ИНВАРИАНТ] Диалог ревизии склада со строчным и категорийным режимами и корзиной.
 class BlindInventoryDialog extends StatefulWidget {
   const BlindInventoryDialog({super.key});
 
@@ -35,15 +39,39 @@ class BlindInventoryDialog extends StatefulWidget {
 }
 
 class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
+  final FocusNode _searchFocusNode = FocusNode();
+  final FocusNode _addItemFocusNode = FocusNode();
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, bool> _expansionMap = {};
-  String _searchQuery = '';
+  final List<Ingredient> _addedItems = [];
+  BlindInventoryViewMode _viewMode = BlindInventoryViewMode.items;
   BlindInventoryFilter _activeFilter = BlindInventoryFilter.all;
+  String _searchQuery = '';
   bool _isAllExpanded = false;
+  bool _isCartOpen = false;
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _focusSearch();
+  }
+
+  void _focusSearch() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_viewMode == BlindInventoryViewMode.items) {
+        _addItemFocusNode.requestFocus();
+      } else {
+        _searchFocusNode.requestFocus();
+      }
+    });
+  }
+
+  @override
   void dispose() {
+    _searchFocusNode.dispose();
+    _addItemFocusNode.dispose();
     for (var controller in _controllers.values) {
       controller.dispose();
     }
@@ -53,13 +81,21 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
   bool get _isDirty => _controllers.values.any((c) => c.text.trim().isNotEmpty);
 
   int _getFilledCount(List<Ingredient> ingredients) {
-    int count = 0;
-    for (final it in ingredients) {
-      if (_controllers[it.uniqueKey]?.text.trim().isNotEmpty == true) {
-        count++;
-      }
+    return ingredients.where((it) => _controllers[it.uniqueKey]?.text.trim().isNotEmpty == true).length;
+  }
+
+  void _onIngredientSelected(Ingredient item) {
+    if (!_addedItems.any((e) => e.isSameAs(item))) {
+      setState(() => _addedItems.add(item));
     }
-    return count;
+    _controllers.putIfAbsent(item.uniqueKey, () => TextEditingController());
+  }
+
+  void _removeItem(Ingredient item) {
+    setState(() {
+      _controllers[item.uniqueKey]?.clear();
+      _addedItems.removeWhere((e) => e.isSameAs(item));
+    });
   }
 
   Future<void> _submit(List<Ingredient> ingredients) async {
@@ -82,151 +118,148 @@ class _BlindInventoryDialogState extends State<BlindInventoryDialog> {
       }
 
       if (items.isEmpty) {
-        AppToast.showWarning(
-          context,
-          'Внимание',
-          subtitle: 'Вы не ввели ни одного остатка',
-        );
+        AppToast.showWarning(context, 'Внимание', subtitle: 'Вы не ввели ни одного остатка');
         setState(() => _isLoading = false);
         return;
       }
 
-      final docData = {
+      final doc = await repo.createDocument({
         'type': 'inventory',
         'reason': 'Слепая инвентаризация',
         'items': items,
-      };
-
-      final doc = await repo.createDocument(docData);
+      });
       await repo.completeDocument(doc.id);
 
       if (mounted) {
         context.read<IngredientBloc>().add(const LoadIngredients());
-        try {
-          context.read<DocumentBloc>().add(const LoadDocuments());
-        } catch (_) {}
-
+        try { context.read<DocumentBloc>().add(const LoadDocuments()); } catch (_) {}
         Navigator.pop(context);
         AppToast.showSuccess(context, 'Инвентаризация успешно проведена!');
       }
     } catch (e) {
-      if (mounted) {
-        AppToast.showError(
-          context,
-          'Ошибка проведения',
-          subtitle: e.toString(),
-        );
-      }
+      if (mounted) AppToast.showError(context, 'Ошибка проведения', subtitle: e.toString());
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return DirtyPopScope(
-      isDirtyCheck: () => _isDirty,
-      title: 'Отменить инвентаризацию?',
-      message:
-          'Все введенные фактические остатки будут сброшены. Вы уверены, что хотите выйти?',
-      confirmLabel: 'Сбросить и выйти',
-      child: AppCardDialog(
-        title: 'Слепая Инвентаризация',
-        subtitle: 'Сплошной пересчет фактических остатков склада',
-        icon: PhosphorIconsRegular.clipboardText,
-        width: 680,
-        body: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BlocBuilder<IngredientBloc, IngredientState>(
-              builder: (context, state) {
-                final all = (state is IngredientLoaded)
-                    ? state.ingredients.where((i) => !i.isArchived).toList()
-                    : <Ingredient>[];
-                final filledCount = _getFilledCount(all);
-                final unfilledCount = all.length - filledCount;
+    return AppSaveShortcutScope(
+      onCancel: () => _isCartOpen ? setState(() => _isCartOpen = false) : Navigator.maybePop(context),
+      onSearch: _focusSearch,
+      child: DirtyPopScope(
+        isDirtyCheck: () => _isDirty,
+        title: 'Отменить инвентаризацию?',
+        message: 'Все введенные фактические остатки будут сброшены. Вы уверены, что хотите выйти?',
+        confirmLabel: 'Сбросить и выйти',
+        child: BlocBuilder<IngredientBloc, IngredientState>(
+          builder: (context, state) {
+            final all = (state is IngredientLoaded)
+                ? state.ingredients.where((i) => !i.isArchived).toList()
+                : <Ingredient>[];
+            final filledCount = _getFilledCount(all);
+            final unfilledCount = all.length - filledCount;
 
-                return BlindInventoryToolbar(
-                  searchQuery: _searchQuery,
-                  onSearchChanged: (val) =>
-                      setState(() => _searchQuery = val.toLowerCase().trim()),
-                  activeFilter: _activeFilter,
-                  onFilterChanged: (filter) =>
-                      setState(() => _activeFilter = filter),
-                  unfilledCount: unfilledCount,
-                  filledCount: filledCount,
-                  isAllExpanded: _isAllExpanded,
-                  onToggleExpandAll: () =>
-                      setState(() => _isAllExpanded = !_isAllExpanded),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            BlocBuilder<IngredientBloc, IngredientState>(
-              builder: (context, state) {
-                if (state is IngredientLoading) {
-                  return const SizedBox(
-                    height: 240,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                if (state is! IngredientLoaded) {
-                  return const SizedBox(
-                    height: 160,
-                    child: Center(child: Text('Ошибка загрузки позиций')),
-                  );
-                }
+            final activeItems = all.where((it) {
+              final hasText = _controllers[it.uniqueKey]?.text.trim().isNotEmpty == true;
+              final isExplicitlyAdded = _addedItems.any((e) => e.isSameAs(it));
+              return hasText || isExplicitlyAdded;
+            }).toList();
 
-                return BlindInventoryGroupedView(
-                  items: state.ingredients,
-                  controllers: _controllers,
-                  searchQuery: _searchQuery,
-                  activeFilter: _activeFilter,
-                  isAllExpanded: _isAllExpanded,
-                  expansionMap: _expansionMap,
-                  onExpansionChanged: (cat, exp) {
-                    setState(() => _expansionMap[cat] = exp);
-                  },
-                  onChanged: () => setState(() {}),
+            return AppCardDialog(
+              title: 'Слепая Инвентаризация',
+              subtitle: 'Сплошной пересчет фактических остатков склада',
+              icon: PhosphorIconsRegular.clipboardText,
+              width: 680,
+              overlay: _isCartOpen
+                  ? BlindInventoryCartSheet(
+                      allItems: all,
+                      controllers: _controllers,
+                      onRemove: _removeItem,
+                      onChanged: () => setState(() {}),
+                      onClose: () => setState(() => _isCartOpen = false),
+                    )
+                  : null,
+              body: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BlindInventoryTabsBar(
+                        viewMode: _viewMode,
+                        onViewModeChanged: (mode) {
+                          setState(() => _viewMode = mode);
+                          _focusSearch();
+                        },
+                        filledCount: filledCount,
+                      ),
+                      const SizedBox(height: 10),
+                      if (_viewMode == BlindInventoryViewMode.items) ...[
+                        BlindInventoryAddItemBar(
+                          availableIngredients: all,
+                          onIngredientSelected: _onIngredientSelected,
+                          focusNode: _addItemFocusNode,
+                          autoFocus: true,
+                        ),
+                        const SizedBox(height: 12),
+                        BlindInventoryItemsTable(
+                          activeItems: activeItems,
+                          controllers: _controllers,
+                          onRemove: _removeItem,
+                          onChanged: () => setState(() {}),
+                        ),
+                      ] else ...[
+                        BlindInventoryToolbar(
+                          searchFocusNode: _searchFocusNode,
+                          searchQuery: _searchQuery,
+                          onSearchChanged: (val) => setState(() => _searchQuery = val.toLowerCase().trim()),
+                          activeFilter: _activeFilter,
+                          onFilterChanged: (filter) => setState(() => _activeFilter = filter),
+                          unfilledCount: unfilledCount,
+                          filledCount: filledCount,
+                          isAllExpanded: _isAllExpanded,
+                          onToggleExpandAll: () => setState(() => _isAllExpanded = !_isAllExpanded),
+                        ),
+                        const SizedBox(height: 12),
+                        state is IngredientLoading
+                            ? const SizedBox(height: 240, child: Center(child: CircularProgressIndicator()))
+                            : BlindInventoryGroupedView(
+                                items: all,
+                                controllers: _controllers,
+                                searchQuery: _searchQuery,
+                                activeFilter: _activeFilter,
+                                isAllExpanded: _isAllExpanded,
+                                expansionMap: _expansionMap,
+                                onExpansionChanged: (cat, exp) => setState(() => _expansionMap[cat] = exp),
+                                onChanged: () => setState(() {}),
+                              ),
+                      ],
+                      const SizedBox(height: 14),
+                      BlindInventoryProgressCard(
+                        filledCount: filledCount,
+                        totalCount: all.length,
+                        isCartOpen: _isCartOpen,
+                        onToggleCart: () => setState(() => _isCartOpen = !_isCartOpen),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    AppGhostButton(
+                      label: 'Отмена',
+                      height: 38,
+                      onPressed: _isLoading ? null : () => Navigator.maybePop(context),
+                    ),
+                    AppPrimaryButton(
+                      label: 'Провести',
+                      icon: PhosphorIconsRegular.checkCircle,
+                      height: 38,
+                      isLoading: _isLoading,
+                      onPressed: !_isLoading && filledCount > 0 ? () => _submit(all) : null,
+                    ),
+                  ],
                 );
-              },
-            ),
-            const SizedBox(height: 14),
-            BlocBuilder<IngredientBloc, IngredientState>(
-              builder: (context, state) {
-                if (state is! IngredientLoaded) return const SizedBox.shrink();
-                final all =
-                    state.ingredients.where((i) => !i.isArchived).toList();
-                return BlindInventoryProgressCard(
-                  filledCount: _getFilledCount(all),
-                  totalCount: all.length,
-                );
-              },
-            ),
-          ],
+          },
         ),
-        actions: [
-          AppGhostButton(
-            label: 'Отмена',
-            height: 38,
-            onPressed: _isLoading ? null : () => Navigator.maybePop(context),
-          ),
-          BlocBuilder<IngredientBloc, IngredientState>(
-            builder: (context, state) {
-              final isReady = !_isLoading && state is IngredientLoaded;
-              return AppPrimaryButton(
-                label: 'Завершить инвентаризацию',
-                icon: PhosphorIconsRegular.checkCircle,
-                height: 38,
-                isLoading: _isLoading,
-                onPressed: isReady ? () => _submit(state.ingredients) : null,
-              );
-            },
-          ),
-        ],
       ),
     );
   }

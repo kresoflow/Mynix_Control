@@ -7,6 +7,7 @@ import 'package:kreso_frontend/core/widgets/app_save_shortcut_scope.dart';
 import 'package:kreso_frontend/core/widgets/app_toast.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
+import 'package:kreso_frontend/features/inventory/bloc/ingredient_bloc.dart';
 import 'package:kreso_frontend/features/inventory/models/document.dart';
 import 'package:kreso_frontend/features/inventory/models/ingredient.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
@@ -50,6 +51,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   bool _isCartOpen = false;
 
   final List<ReceiptRowData> _items = [];
+  final FocusNode _categorySearchFocusNode = FocusNode();
   List<Ingredient> _availableIngredients = [];
   bool _isLoadingIngredients = true;
   bool _isSaving = false;
@@ -60,13 +62,33 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
     _totalSumNotifier = ValueNotifier<double>(0.0);
     _cartCountNotifier = ValueNotifier<int>(0);
     _categoryAdapter = ReceiveCategorySyncAdapter(items: _items, onTotalChanged: _updateTotal);
-    context.read<DocumentBloc>().add(const LoadSuppliers());
+    final docBloc = context.read<DocumentBloc>();
+    if (docBloc.state.suppliers.isEmpty) {
+      docBloc.add(const LoadSuppliers());
+    }
     _loadIngredients();
     if (widget.initialDocument != null) {
       _initFromDraft(widget.initialDocument!);
     } else {
       _addItem();
     }
+  }
+
+  void _focusSearch() {
+    if (_isLoadingIngredients) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isLoadingIngredients) return;
+      if (_viewMode == ReceiveViewMode.lines) {
+        if (_items.isEmpty) { _addItem(); return; }
+        final target = _items.firstWhere((it) => it.ingredient == null, orElse: () => _items.last);
+        target.nameFocusNode.requestFocus();
+        target.nameController.selection = target.nameController.text.isNotEmpty
+            ? TextSelection(baseOffset: 0, extentOffset: target.nameController.text.length)
+            : const TextSelection.collapsed(offset: 0);
+      } else {
+        _categorySearchFocusNode.requestFocus();
+      }
+    });
   }
 
   void _initFromDraft(InventoryDocument doc) {
@@ -84,6 +106,7 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   @override
   void dispose() {
     for (var item in _items) { item.dispose(); }
+    _categorySearchFocusNode.dispose();
     _totalSumNotifier.dispose();
     _cartCountNotifier.dispose();
     _invoiceNumberController.dispose();
@@ -120,16 +143,19 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
 
   Future<void> _loadIngredients() async {
     try {
+      final s = context.read<IngredientBloc>().state;
       final repo = context.read<InventoryRepository>();
-      final ingredients = await repo.getIngredients();
-      final retail = await repo.getRetailProducts();
+      final loaded = (s is IngredientLoaded && s.ingredients.isNotEmpty)
+          ? s.ingredients.where((i) => !i.isArchived).toList()
+          : [...await repo.getIngredients(), ...await repo.getRetailProducts()].where((i) => !i.isArchived).toList();
       if (mounted) {
         setState(() {
-          _availableIngredients = [...ingredients, ...retail].where((i) => !i.isArchived).toList();
+          _availableIngredients = loaded;
           _isLoadingIngredients = false;
           ReceiveDocumentProcessor.bindDraftIngredients(_items, _availableIngredients, widget.initialDocument?.items);
           _updateTotal();
         });
+        _focusSearch();
       }
     } catch (_) {
       if (mounted) setState(() => _isLoadingIngredients = false);
@@ -139,14 +165,11 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
   void _addItem() {
     setState(() => _items.add(ReceiptRowData()));
     _updateTotal();
-    ReceiveDocumentRowCallbacks.focusRow(_items.last.nameFocusNode);
+    if (!_isLoadingIngredients) ReceiveDocumentRowCallbacks.focusRow(_items.last.nameFocusNode);
   }
 
   void _removeItem(int index) {
-    setState(() {
-      _items[index].dispose();
-      _items.removeAt(index);
-    });
+    setState(() { _items[index].dispose(); _items.removeAt(index); });
     _updateTotal();
   }
 
@@ -185,7 +208,8 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
 
     return AppSaveShortcutScope(
       onSave: () => _save(complete: true),
-      onCancel: () => Navigator.of(context).maybePop(),
+      onCancel: () => _isCartOpen ? setState(() => _isCartOpen = false) : Navigator.of(context).maybePop(),
+      onSearch: _focusSearch,
       child: DirtyPopScope(
           isDirtyCheck: () => _isDirty,
           title: 'Отменить приходную накладную?',
@@ -210,70 +234,57 @@ class _ReceiveDocumentDialogState extends State<ReceiveDocumentDialog> {
                       ReceiveDocumentHeader(onClose: () => Navigator.of(context).maybePop()),
                       const SizedBox(height: 14),
                       ReceiveDocumentTabsBar(
-                        tabIndex: _tabIndex,
-                        onTabSelected: (val) => setState(() => _tabIndex = val),
-                        viewMode: _viewMode,
-                        onViewModeChanged: (mode) => setState(() => _viewMode = mode),
+                        tabIndex: _tabIndex, onTabSelected: (val) { setState(() => _tabIndex = val); _focusSearch(); },
+                        viewMode: _viewMode, onViewModeChanged: (mode) { setState(() => _viewMode = mode); _focusSearch(); },
                         onAddRow: _addItem,
                       ),
                       const SizedBox(height: 6),
                       ReceiveDocumentMetaSection(
                         selectedSupplierId: _selectedSupplierId,
                         onSupplierChanged: (val) => setState(() => _selectedSupplierId = val),
-                        invoiceController: _invoiceNumberController,
-                        reasonController: _reasonController,
-                        documentDate: _documentDate,
-                        onDateChanged: (val) => setState(() => _documentDate = val),
-                        isAdHocPurchase: _isAdHocPurchase,
-                        onAdHocChanged: (val) => setState(() => _isAdHocPurchase = val),
+                        invoiceController: _invoiceNumberController, reasonController: _reasonController,
+                        documentDate: _documentDate, onDateChanged: (val) => setState(() => _documentDate = val),
+                        isAdHocPurchase: _isAdHocPurchase, onAdHocChanged: (val) => setState(() => _isAdHocPurchase = val),
                       ),
                       _viewMode == ReceiveViewMode.lines
                           ? ReceiveDocumentTableSection(
-                              isLoading: _isLoadingIngredients,
-                              items: _items,
-                              availableIngredients: _availableIngredients,
-                              tabIndex: _tabIndex,
-                              currency: currency,
-                              totalSumNotifier: _totalSumNotifier,
-                              onAddItem: _addItem,
-                              onRemoveItem: _removeItem,
-                              onTotalChanged: _updateTotal,
+                              isLoading: _isLoadingIngredients, items: _items, availableIngredients: _availableIngredients,
+                              tabIndex: _tabIndex, currency: currency, totalSumNotifier: _totalSumNotifier,
+                              onAddItem: _addItem, onRemoveItem: _removeItem, onTotalChanged: _updateTotal,
                               onStateUpdate: (fn) => setState(fn),
                             )
                           : ReceiveCategorySection(
                               availableIngredients: _availableIngredients.where((i) => _tabIndex == 1 ? i.isRetail : (_tabIndex == 2 ? !i.isRetail : true)).toList(),
-                              isRetail: _tabIndex == 1,
-                              currency: currency,
-                              adapter: _categoryAdapter,
+                              isRetail: _tabIndex == 1, currency: currency, adapter: _categoryAdapter,
+                              searchFocusNode: _categorySearchFocusNode,
                             ),
                       ReceiveDocumentFooter(
-                        totalSum: _totalSumNotifier.value,
-                        totalSumListenable: _totalSumNotifier,
-                        cartCountListenable: _cartCountNotifier,
-                        cartItemCount: _calculateCartCount(),
-                        currency: currency,
-                        isSaving: _isSaving,
-                        paymentStatus: _paymentStatus,
-                        paymentMethod: _paymentMethod,
-                        paidAmountController: _paidAmountController,
+                        totalSum: _totalSumNotifier.value, totalSumListenable: _totalSumNotifier,
+                        cartCountListenable: _cartCountNotifier, cartItemCount: _calculateCartCount(),
+                        currency: currency, isSaving: _isSaving, paymentStatus: _paymentStatus,
+                        paymentMethod: _paymentMethod, paidAmountController: _paidAmountController,
                         onPaymentStatusChanged: _onPaymentStatusChanged,
                         onPaymentMethodChanged: (val) => setState(() => _paymentMethod = val),
-                        isCartOpen: _isCartOpen,
-                        onToggleCart: () => setState(() => _isCartOpen = !_isCartOpen),
+                        isCartOpen: _isCartOpen, onToggleCart: () => setState(() => _isCartOpen = !_isCartOpen),
                         onCancel: () => Navigator.of(context).maybePop(),
-                        onSaveDraft: () => _save(complete: false),
-                        onSaveComplete: () => _save(complete: true),
+                        onSaveDraft: () => _save(complete: false), onSaveComplete: () => _save(complete: true),
                       ),
                     ],
                   ),
-                  if (_isCartOpen)
-                    ReceiveDocumentCartSheet(
-                      items: _items,
-                      adapter: _categoryAdapter,
-                      currency: currency,
-                      onClose: () => setState(() => _isCartOpen = false),
-                      onStateUpdate: () => setState(() => _updateTotal()),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: !_isCartOpen,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (w, a) => FadeTransition(opacity: a, child: SlideTransition(position: Tween<Offset>(begin: const Offset(0, 0.03), end: Offset.zero).animate(a), child: w)),
+                        child: _isCartOpen
+                            ? ReceiveDocumentCartSheet(key: const ValueKey('rec_cart'), items: _items, adapter: _categoryAdapter, currency: currency, onClose: () => setState(() => _isCartOpen = false), onStateUpdate: () => setState(() => _updateTotal()))
+                            : const SizedBox.shrink(key: ValueKey('rec_none')),
+                      ),
                     ),
+                  ),
                   if (_isSaving)
                     Container(color: AppColors.darkBg.withValues(alpha: 0.54), child: const Center(child: CircularProgressIndicator())),
                 ],

@@ -225,11 +225,13 @@ async def create_order(
 
 async def process_new_order(session: AsyncSession, current_user, data: CreateOrderRequest) -> dict:
     """Orchestrates order creation and triggers appropriate WS notifications."""
-    from app.pos.ws import notify_inventory_updated
+    from app.pos.ws import notify_inventory_updated, notify_order_created
 
     order = await create_order(session, current_user.id, current_user.tenant_id, data)
     if getattr(order, "_is_appended_dozakaz", False):
-        return getattr(order, "_dozakaz_order_data")
+        dozakaz_data = getattr(order, "_dozakaz_order_data")
+        await notify_order_created(current_user.tenant_id, dozakaz_data)
+        return dozakaz_data
 
     full_order = await get_order_by_id(session, order.id)
     if not full_order:
@@ -237,6 +239,7 @@ async def process_new_order(session: AsyncSession, current_user, data: CreateOrd
 
     order_data = format_order_dict(full_order, current_user.full_name)
     await notify_inventory_updated(current_user.tenant_id)
+    await notify_order_created(current_user.tenant_id, order_data)
     return order_data
 
 def parse_filter_dt(val: str, is_end: bool = False) -> datetime:

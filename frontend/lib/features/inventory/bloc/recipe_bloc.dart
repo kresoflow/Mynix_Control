@@ -9,6 +9,7 @@
 //
 // ==============================================================================
 
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kreso_frontend/features/inventory/repository/inventory_repository.dart';
 import 'recipe_event.dart';
@@ -18,6 +19,7 @@ export 'recipe_state.dart';
 
 class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   final InventoryRepository repository;
+  Timer? _saveDebounceTimer;
 
   RecipeBloc(this.repository) : super(const RecipeInitial()) {
     on<LoadRecipesSummary>(_onLoadRecipesSummary);
@@ -128,9 +130,15 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     UpdateIngredientQuantityInRecipe event,
     Emitter<RecipeState> emit,
   ) async {
-    final previousState = state;
+
     if (state is RecipeLoaded && (state as RecipeLoaded).menuItemId == event.menuItemId) {
       final current = state as RecipeLoaded;
+      final existing = current.recipes.firstWhere((r) => r['ingredient_id'] == event.ingredientId, orElse: () => {});
+      final currentQty = (existing['quantity_required'] as num?)?.toDouble();
+      if (currentQty != null && currentQty == event.quantity) {
+        return; // [ИНВАРИАНТ] Количество не изменилось — 0 сетевых запросов
+      }
+
       final updatedRecipes = current.recipes.map((r) {
         if (r['ingredient_id'] == event.ingredientId) {
           return Map<String, dynamic>.from(r)..['quantity_required'] = event.quantity;
@@ -154,16 +162,17 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
       );
     }
 
-    try {
-      await repository.addIngredientToRecipe(
-        event.menuItemId,
-        event.ingredientId,
-        event.quantity,
-      );
-    } catch (e) {
-      // Откат при сетевом сбое
-      emit(previousState);
-    }
+    // Дебаунс автосохранения (350 мс)
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = Timer(const Duration(milliseconds: 350), () async {
+      try {
+        await repository.addIngredientToRecipe(
+          event.menuItemId,
+          event.ingredientId,
+          event.quantity,
+        );
+      } catch (_) {}
+    });
   }
 
   Future<void> _onRemoveIngredient(
@@ -171,6 +180,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     Emitter<RecipeState> emit,
   ) async {
     final previousState = state;
+
     if (state is RecipeLoaded && (state as RecipeLoaded).menuItemId == event.menuItemId) {
       final current = state as RecipeLoaded;
       final updatedRecipes = current.recipes
@@ -260,5 +270,11 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
         emit(RecipeError(message: e.toString(), recipesSummary: state.recipesSummary));
       }
     }
+  }
+
+  @override
+  Future<void> close() {
+    _saveDebounceTimer?.cancel();
+    return super.close();
   }
 }

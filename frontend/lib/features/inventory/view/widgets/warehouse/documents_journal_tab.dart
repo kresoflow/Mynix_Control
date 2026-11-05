@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:kreso_frontend/core/theme/app_colors.dart';
-import 'package:kreso_frontend/core/theme/app_radii.dart';
 import 'package:kreso_frontend/core/theme/app_text_styles.dart';
-import 'package:kreso_frontend/core/widgets/app_button.dart';
 import 'package:kreso_frontend/core/widgets/skeleton_loader.dart';
+import 'package:kreso_frontend/core/widgets/ui_kit/ui_kit.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_bloc.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_event.dart';
 import 'package:kreso_frontend/features/inventory/bloc/document_state.dart';
@@ -34,7 +33,10 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
   @override
   void initState() {
     super.initState();
-    context.read<DocumentBloc>().add(const LoadDocuments());
+    final docBloc = context.read<DocumentBloc>();
+    if (docBloc.state.documents.isEmpty) {
+      docBloc.add(const LoadDocuments());
+    }
   }
 
   void _showReceiveDocumentDialog(BuildContext context) {
@@ -99,9 +101,6 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
             selectedFilter: _selectedFilter,
             onFilterChanged: (val) {
               setState(() => _selectedFilter = val);
-              context.read<DocumentBloc>().add(
-                    LoadDocuments(type: _selectedFilter == 'all' ? null : _selectedFilter),
-                  );
             },
             searchQuery: _searchQuery,
             onSearchChanged: (val) => setState(() => _searchQuery = val),
@@ -144,6 +143,7 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
                           }
 
                           final docs = state.documents.where((d) {
+                            if (_selectedFilter != 'all' && d.type != _selectedFilter) return false;
                             if (_searchQuery.isEmpty) return true;
                             final q = _searchQuery.toLowerCase().trim();
                             return d.id.toString().contains(q) ||
@@ -153,12 +153,33 @@ class _DocumentsJournalTabState extends State<DocumentsJournalTab> with Automati
                           }).toList();
 
                           if (docs.isEmpty) {
+                            final isFiltered = _searchQuery.isNotEmpty || _selectedFilter != 'all';
                             return Center(
-                              child: Text(
-                                'Документы не найдены',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: isDark ? AppColors.darkSubtext : AppColors.lightSubtext,
-                                ),
+                              child: AppEmptyState(
+                                icon: PhosphorIconsRegular.receipt,
+                                title: isFiltered ? 'Документы не найдены' : 'Журнал документов пуст',
+                                description: isFiltered
+                                    ? 'Попробуйте изменить параметры поиска или сбросить фильтрацию'
+                                    : 'Оформите первый приход, списание или инвентаризацию',
+                                size: AppEmptyStateSize.md,
+                                action: isFiltered
+                                    ? AppSecondaryButton(
+                                        label: 'Сбросить фильтры',
+                                        icon: PhosphorIconsRegular.arrowCounterClockwise,
+                                        size: AppButtonSize.sm,
+                                        onPressed: () {
+                                          setState(() {
+                                            _searchQuery = '';
+                                            _selectedFilter = 'all';
+                                          });
+                                        },
+                                      )
+                                    : AppPrimaryButton(
+                                        label: 'Оформить приход',
+                                        icon: PhosphorIconsRegular.truck,
+                                        size: AppButtonSize.md,
+                                        onPressed: () => _showReceiveDocumentDialog(context),
+                                      ),
                               ),
                             );
                           }
