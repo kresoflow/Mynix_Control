@@ -9,6 +9,7 @@
 #
 # ==============================================================================
 
+import logging
 from typing import Dict, Set, Optional
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, status
@@ -17,6 +18,8 @@ from jose import jwt, JWTError
 from app.config import settings
 from app.database import async_session_factory
 from app.users import services as user_svc
+
+logger = logging.getLogger("app.pos.ws")
 
 router = APIRouter()
 
@@ -81,6 +84,7 @@ async def tenant_websocket(
         token = websocket.query_params.get("token")
 
     if not token:
+        logger.warning("[WS] Отклонено соединение к /ws/pos/%s: отсутствует токен авторизации", tenant_id)
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Missing authentication token")
         return
 
@@ -90,9 +94,15 @@ async def tenant_websocket(
         )
         user_id = payload.get("sub")
         if not user_id:
+            logger.warning("[WS] Отклонено соединение к /ws/pos/%s: в токене отсутствует sub", tenant_id)
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token")
             return
-    except JWTError:
+    except JWTError as err:
+        logger.warning(
+            "[WS] Отклонено соединение к /ws/pos/%s: неверная подпись токена (%s). Клиенту требуется повторный вход (Login).",
+            tenant_id,
+            err,
+        )
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token signature")
         return
 
@@ -100,6 +110,11 @@ async def tenant_websocket(
     async with async_session_factory() as session:
         user = await user_svc.get_user_by_id(session, int(user_id))
         if not user or not user.is_active or user.tenant_id != tenant_id:
+            logger.warning(
+                "[WS] Отклонено соединение к /ws/pos/%s: пользователь id=%s не найден, не активен или не принадлежит тенанту",
+                tenant_id,
+                user_id,
+            )
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized tenant access")
             return
 
