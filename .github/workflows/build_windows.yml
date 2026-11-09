@@ -31,12 +31,20 @@ jobs:
         working-directory: ./frontend
         run: flutter build windows --release --dart-define=API_URL=https://api.kresoflow.com/api/v1 --dart-define=WS_URL=wss://api.kresoflow.com/ws
 
-      - name: Compress Release Bundle
+      - name: Prepare and Package Windows Release
         shell: pwsh
         run: |
-          $releaseDir = Get-ChildItem -Path "frontend/build/windows" -Filter "Release" -Directory -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          $exe = Get-ChildItem -Path "frontend" -Filter "*.exe" -Recurse | Select-Object -First 1
+          if (-not $exe) {
+            Write-Error "kreso_flow.exe not found after build!"
+            exit 1
+          }
+          $releaseDir = $exe.Directory.FullName
           Write-Host "Found Release bundle at: $releaseDir"
-          Compress-Archive -Path "$releaseDir/*" -DestinationPath "kreso_flow_windows_x64.zip" -Force
+          New-Item -ItemType Directory -Path "dist" -Force
+          Copy-Item -Path "$releaseDir\*" -Destination "dist" -Recurse
+          Compress-Archive -Path "dist\*" -DestinationPath "kreso_flow_windows_x64.zip" -Force
+          Get-Item "kreso_flow_windows_x64.zip" | Select-Object Name, Length
 
       - name: Upload Windows Build Artifact
         uses: actions/upload-artifact@v4
@@ -44,3 +52,4 @@ jobs:
           name: kreso-flow-windows-x64
           path: kreso_flow_windows_x64.zip
           retention-days: 14
+          if-no-files-found: error
