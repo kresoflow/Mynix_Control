@@ -1,0 +1,46 @@
+name: Build Windows App (Manual)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build Native Windows (.exe)
+    runs-on: windows-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: 'stable'
+          cache: true
+
+      - name: Enable Windows Desktop Support
+        run: flutter config --enable-windows-desktop
+
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: flutter pub get
+
+      - name: Build Windows Application
+        working-directory: ./frontend
+        run: flutter build windows --release --dart-define=API_URL=https://api.kresoflow.com/api/v1 --dart-define=WS_URL=wss://api.kresoflow.com/ws
+
+      - name: Compress Release Bundle
+        shell: pwsh
+        run: |
+          $releaseDir = Get-ChildItem -Path "frontend/build/windows" -Filter "Release" -Directory -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          Write-Host "Found Release bundle at: $releaseDir"
+          Compress-Archive -Path "$releaseDir/*" -DestinationPath "kreso_flow_windows_x64.zip" -Force
+
+      - name: Upload Windows Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kreso-flow-windows-x64
+          path: kreso_flow_windows_x64.zip
+          retention-days: 14
