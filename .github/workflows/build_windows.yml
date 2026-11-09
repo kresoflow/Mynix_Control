@@ -31,25 +31,24 @@ jobs:
         working-directory: ./frontend
         run: flutter build windows --release --dart-define=API_URL=https://api.kresoflow.com/api/v1 --dart-define=WS_URL=wss://api.kresoflow.com/ws
 
-      - name: Prepare and Package Windows Release
+      - name: Prepare Windows Release Distribution
         shell: pwsh
         run: |
-          $exe = Get-ChildItem -Path "frontend" -Filter "*.exe" -Recurse | Select-Object -First 1
-          if (-not $exe) {
-            Write-Error "kreso_flow.exe not found after build!"
+          $releaseDir = (Get-ChildItem -Path "frontend/build/windows" -Directory -Recurse | Where-Object { $_.Name -eq "Release" -and (Test-Path (Join-Path $_.FullName "kreso_flow.exe")) } | Select-Object -First 1).FullName
+          if (-not $releaseDir) {
+            Write-Error "Release directory containing kreso_flow.exe not found!"
             exit 1
           }
-          $releaseDir = $exe.Directory.FullName
           Write-Host "Found Release bundle at: $releaseDir"
           New-Item -ItemType Directory -Path "dist" -Force
           Copy-Item -Path "$releaseDir\*" -Destination "dist" -Recurse
-          Compress-Archive -Path "dist\*" -DestinationPath "kreso_flow_windows_x64.zip" -Force
-          Get-Item "kreso_flow_windows_x64.zip" | Select-Object Name, Length
+          Write-Host "Prepared distribution files in dist:"
+          Get-ChildItem -Path "dist" | Select-Object Name, Length
 
       - name: Upload Windows Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: kreso-flow-windows-x64
-          path: kreso_flow_windows_x64.zip
+          path: dist/
           retention-days: 14
           if-no-files-found: error
